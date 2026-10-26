@@ -1,0 +1,365 @@
+/* ====================================================================
+   DESIGN SYSTEM TOKENS
+   Bảng màu lấy từ logo: navy #031964 · xanh nhạt #C7E3FE · kem #FFFCF0,
+   các sắc độ ở giữa nội suy cùng tông giữa navy và xanh nhạt.
+   Mọi stylesheet chỉ dùng biến ở đây, không dùng mã màu tự do.
+   ==================================================================== */
+
+:root {
+  /* Thang màu thương hiệu */
+  --brand-navy: #2b2775;
+  --brand-deep: #3730a3;
+  --brand-azure: #4338ca;
+  --brand-blue: #4f46e5;
+  --brand-sky: #6366f1;
+  --brand-light: #a5a8f8;
+  --brand-soft: #c4c7fb;
+  --brand-pale: #d6d9fd;
+  --brand-mist: #e0e3ff;
+  --brand-ice: #eef0ff;
+  --brand-cream: #fffcf0;
+  --brand-gold: #f6b73c;
+  --brand-violet: #8b5cf6;
+  --brand-white: #ffffff;
+
+  /* Primary */
+  --color-primary: var(--brand-blue);
+  --color-primary-hover: #4338ca;
+  --color-primary-active: #3730a3;
+  --color-primary-light: var(--brand-ice);
+  --color-primary-ring: rgba(79, 70, 229, 0.28);
+  --color-accent: var(--brand-sky);
+  --color-accent-gold: var(--brand-gold);
+
+  /* Surface & Background */
+  --color-bg-app: #f7f8ff;
+  --color-bg-surface: #ffffff;
+  --color-bg-subtle: #eef0fd;
+  --color-bg-hover: #e3e6fb;
+  --color-bg-cream: var(--brand-cream);
+
+  /* Nền trang: lưới mảnh rất mờ và vài vầng sáng lớn. Tĩnh. */
+  --bg-pattern:
+    radial-gradient(40vw 360px at 6% 24%, rgba(99, 102, 241, 0.12), transparent 70%),
+    radial-gradient(36vw 320px at 94% 10%, rgba(139, 92, 246, 0.1), transparent 70%),
+    radial-gradient(34vw 300px at 46% 62%, rgba(56, 189, 248, 0.08), transparent 70%),
+    linear-gradient(rgba(79, 70, 229, 0.05) 1px, transparent 1px) 0 0 / 40px 40px,
+    linear-gradient(90deg, rgba(79, 70, 229, 0.05) 1px, transparent 1px) 0 0 / 40px 40px;
+
+  /* Thanh bên và thanh ngang: trắng đặc, viền mảnh */
+  --sidebar-bg: var(--color-bg-surface);
+  --sidebar-border: var(--color-border);
+  --sidebar-text: var(--color-text-secondary);
+  --sidebar-text-strong: var(--color-text-main);
+  --sidebar-hover-bg: var(--brand-ice);
+  --sidebar-active-bg: linear-gradient(90deg, var(--brand-mist) 0%, var(--brand-ice) 100%);
+  --sidebar-active-text: var(--color-primary);
+  --sidebar-ring: var(--color-primary-ring);
+  --topbar-bg: var(--color-bg-surface);
+  --topbar-shadow: 0 1px 0 var(--color-border);
+
+  /* Khối thương hiệu trang đăng nhập: xanh sáng phẳng, chấm trắng mờ */
+  --auth-hero-bg:
+    linear-gradient(160deg, var(--brand-deep) 0%, var(--brand-sky) 100%);
+
+
+  /* Borders & Dividers */
+  --color-border: #e4e6f7;
+  --color-border-hover: #cdd1f0;
+  --color-border-focus: var(--brand-blue);
+
+  /* Typography / Text hierarchy */
+  --color-text-main: #2b2775;
+  --color-text-secondary: #55577f;
+  --color-text-muted: #7f819f;
+  --color-text-inverse: #ffffff;
+  --color-text-brand: var(--brand-blue);
+
+  /* Status Colors (luôn đi kèm chữ mô tả, không chỉ dựa vào màu) */
+  --color-success: #12a56f;
+  --color-success-bg: #e6f7f0;
+  --color-success-border: #a8e3cc;
+  --color-success-text: #0b6b48;
+
+  --color-warning: #e39a12;
+  --color-warning-bg: #fff6e0;
+  --color-warning-border: #f7dc9c;
+  --color-warning-text: #84560a;
+
+  --color-danger: #d93a4a;
+  --color-danger-bg: #fdecee;
+  --color-danger-border: #f6bcc3;
+  --color-danger-text: #8f1f2c;
+
+  --color-info: var(--brand-blue);
+  --color-info-bg: var(--brand-ice);
+  --color-info-border: var(--brand-mist);
+  --color-info-text: #2b2775;
+
+  /* Hộp thông báo (Alert): nền và viền đậm hơn nhãn trạng thái để dễ thấy */
+  --alert-info-bg: var(--brand-pale);
+  --alert-info-border: var(--brand-light);
+  --alert-info-icon: var(--brand-blue);
+  --alert-success-bg: #cdeedf;
+  --alert-success-border: #7fd0ae;
+  --alert-success-icon: var(--color-success);
+  --alert-warning-bg: #fde9b8;
+  --alert-warning-border: #f0c262;
+  --alert-warning-icon: #c27c05;
+  --alert-danger-bg: #fbd5da;
+  --alert-danger-border: #ee9aa4;
+  --alert-danger-icon: var(--color-danger);
+
+  /* Màu nhấn cho trực quan hóa (biểu đồ ngũ giác, quả địa cầu, nền trang chủ).
+     Chỉ dùng cho hình minh họa, không dùng cho nút bấm, chữ hay trạng thái. */
+  --accent-cyan: #22d3ee;
+  --accent-violet: #8b6cff;
+  --accent-magenta: #f05bd0;
+  --accent-teal: #1fd1a5;
+  --accent-coral: #ff8a5c;
+
+  /* Màn làm bài và báo cáo: bảng màu phẳng, dịu. Mỗi sắc có nền nhạt (-bg) và quầng mờ (-glow).
+     Vàng quá sáng cho chữ trắng nên chỉ dùng làm nền thanh, chữ và nền nhạt, không làm nền khối chữ trắng. */
+  --tone-purple: #88619a;
+  --tone-purple-bg: #f2ecf5;
+  --tone-purple-glow: rgba(136, 97, 154, 0.22);
+  --tone-green: #2f9a6b;
+  --tone-green-bg: #e6f4ed;
+  --tone-green-glow: rgba(47, 154, 107, 0.22);
+  --tone-blue: #3a8bab;
+  --tone-blue-bg: #e6f2f6;
+  --tone-blue-glow: rgba(58, 139, 171, 0.22);
+  --tone-yellow: #e4ae3a;
+  --tone-yellow-text: #a87914;
+  --tone-yellow-bg: #fcf4e2;
+  --tone-yellow-glow: rgba(228, 174, 58, 0.26);
+  --tone-red: #e0575b;
+  --tone-red-bg: #fceced;
+  --tone-red-glow: rgba(224, 87, 91, 0.22);
+  --tone-slate: #5f6e8e;
+  --tone-slate-bg: #edf0f5;
+  --tone-slate-glow: rgba(95, 110, 142, 0.22);
+
+  --tone-indigo: #5a65b8;
+  --tone-indigo-bg: #eceef9;
+  --tone-indigo-glow: rgba(90, 101, 184, 0.22);
+  --tone-plum: #b0577f;
+  --tone-plum-bg: #f8ecf2;
+  --tone-plum-glow: rgba(176, 87, 127, 0.22);
+
+  /* Gói và phần là đầu mục, không phải mức đánh giá: chỉ dùng sắc lạnh (xanh biển, chàm, tím, mận),
+     tránh đỏ, cam, vàng, xanh lá vốn dành cho thang mức trả lời */
+  --pack-35: var(--tone-blue);
+  --pack-35-bg: var(--tone-blue-bg);
+  --pack-35-glow: var(--tone-blue-glow);
+  --pack-50: var(--tone-indigo);
+  --pack-50-bg: var(--tone-indigo-bg);
+  --pack-50-glow: var(--tone-indigo-glow);
+  --pack-75: var(--tone-purple);
+  --pack-75-bg: var(--tone-purple-bg);
+  --pack-75-glow: var(--tone-purple-glow);
+
+  --part-1: var(--tone-purple);
+  --part-1-bg: var(--tone-purple-bg);
+  --part-1-glow: var(--tone-purple-glow);
+  --part-2: var(--tone-blue);
+  --part-2-bg: var(--tone-blue-bg);
+  --part-2-glow: var(--tone-blue-glow);
+  --part-3: var(--tone-plum);
+  --part-3-bg: var(--tone-plum-bg);
+  --part-3-glow: var(--tone-plum-glow);
+  --part-4: var(--tone-indigo);
+  --part-4-bg: var(--tone-indigo-bg);
+  --part-4-glow: var(--tone-indigo-glow);
+
+  /* Năm mức trả lời, mỗi mức một sắc riêng: đỏ (thấp), cam, vàng, xanh nõn chuối, xanh lá (cao) */
+  --scale-1: #d64f4f;
+  --scale-1-bg: #fcecec;
+  --scale-1-glow: rgba(214, 79, 79, 0.22);
+  --scale-2: #e2742e;
+  --scale-2-bg: #fdf0e6;
+  --scale-2-glow: rgba(226, 116, 46, 0.22);
+  --scale-3: #c99a14;
+  --scale-3-bg: #fcf6e0;
+  --scale-3-glow: rgba(201, 154, 20, 0.24);
+  --scale-4: #6ea436;
+  --scale-4-bg: #f0f7e6;
+  --scale-4-glow: rgba(110, 164, 54, 0.22);
+  --scale-5: #23926a;
+  --scale-5-bg: #e4f4ed;
+  --scale-5-glow: rgba(35, 146, 106, 0.22);
+
+  /* Hình minh họa hòa vào nền sáng: nét đen xám, màu nhấn dịu chỉ dùng cho biểu tượng và điểm nhấn */
+  --ink-900: #232833;
+  --ink-700: #444b5a;
+  --ink-500: #707789;
+  --ink-300: #a6adbb;
+  --ink-200: #d0d4de;
+  --ink-100: #e7e9ef;
+  --ink-wash: rgba(35, 40, 51, 0.045);
+  --shadow-ink: 0 8px 18px -8px rgba(35, 40, 51, 0.32);
+  /* Màu tươi cho biểu đồ đa giác, quả cầu 360 và các nhóm kết quả */
+  --soft-gold: #fbbf24;
+  --soft-cyan: #22d3ee;
+  --soft-sky: #3b82f6;
+  --soft-violet: #8b5cf6;
+  --soft-magenta: #ec4899;
+  --soft-teal: #10b981;
+  --soft-coral: #fb7185;
+  --soft-glow-gold: rgba(251, 191, 36, 0.38);
+  --soft-glow-cyan: rgba(34, 211, 238, 0.36);
+  --soft-glow-sky: rgba(59, 130, 246, 0.34);
+  --soft-glow-violet: rgba(139, 92, 246, 0.34);
+  --soft-glow-magenta: rgba(236, 72, 153, 0.32);
+  --soft-glow-teal: rgba(16, 185, 129, 0.34);
+  --soft-glow-coral: rgba(251, 113, 133, 0.34);
+
+  /* Phong cách hơi hoạt hình cho hình minh họa: nét viền chàm đậm, bóng đặc lệch xuống dưới */
+  --cartoon-ink: var(--brand-navy);
+  --cartoon-line: var(--brand-soft);
+  --cartoon-wash: rgba(99, 102, 241, 0.06);
+  --cartoon-drop: 0 4px 0 rgba(43, 39, 117, 0.16);
+  --cartoon-drop-lg: 0 6px 0 rgba(43, 39, 117, 0.14), 0 18px 30px -14px rgba(79, 70, 229, 0.35);
+  /* Kiểu hình dán: viền mực dày, bóng đặc lệch xuống (không nhòe); nhô lên khi rê chuột, lún xuống khi bấm */
+  --cartoon-stroke: 3px;
+  --cartoon-stroke-thin: 2px;
+  --cartoon-pop: 0 4px 0 var(--cartoon-ink);
+  --cartoon-pop-hover: 0 6px 0 var(--cartoon-ink);
+  --cartoon-pop-press: 0 1px 0 var(--cartoon-ink);
+  --gradient-rainbow: linear-gradient(100deg, var(--soft-cyan) 0%, var(--soft-sky) 30%, var(--soft-violet) 62%, var(--soft-magenta) 100%);
+
+  /* Bề mặt: thẻ trắng đặc, viền mảnh, bóng nhẹ. --surface-glass giữ lại cho quả cầu và biểu đồ. */
+  --surface-glass: rgba(255, 255, 255, 0.7);
+  --surface-border: var(--color-border);
+  --surface-shadow: 0 1px 2px rgba(67, 56, 202, 0.05), 0 14px 34px -14px rgba(79, 70, 229, 0.16);
+  --chip-bg: var(--color-bg-surface);
+  --chip-border: var(--color-border);
+  --chip-shadow: 0 0 0 0 transparent;
+  --scrim: rgba(30, 27, 90, 0.5);
+
+  /* Màu phẳng thay cho gradient */
+  --gradient-brand: linear-gradient(135deg, var(--brand-azure) 0%, var(--brand-blue) 100%);
+  --gradient-text: linear-gradient(90deg, var(--brand-blue) 0%, var(--brand-violet) 100%);
+  --gradient-feature: linear-gradient(135deg, #2b2775 0%, #4338ca 100%);
+  --gradient-brand-hover: linear-gradient(135deg, var(--brand-deep) 0%, var(--brand-azure) 100%);
+  --gradient-brand-active: linear-gradient(135deg, #2e2792 0%, var(--brand-deep) 100%);
+  /* Nút kêu gọi hành động: dải chàm – tím – hồng, rộng gấp đôi để trượt màu khi rê chuột */
+  --gradient-cta: linear-gradient(110deg, var(--brand-blue) 0%, var(--brand-sky) 30%, var(--brand-violet) 65%, #c026d3 100%);
+  --shadow-cta: 0 10px 24px -10px rgba(124, 58, 237, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  --shadow-cta-hover: 0 16px 32px -12px rgba(124, 58, 237, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.32);
+  --gradient-cta-border: linear-gradient(110deg, var(--brand-sky) 0%, var(--brand-violet) 60%, #d946ef 100%);
+  --gradient-soft-blue: linear-gradient(135deg, var(--brand-ice) 0%, var(--brand-mist) 100%);
+  --logo-a: #818cf8;
+  --logo-b: #4f46e5;
+  --gradient-spectrum: var(--color-primary);
+  --gradient-brand-deep: var(--brand-ice);
+  --gradient-soft: var(--color-bg-app);
+  --gradient-shine: transparent;
+
+  /* Đơn vị co giãn: 1 px thiết kế = 1/14 rem. Gốc html tăng dần trên màn hình rộng
+     (xem reset.css) nên chữ, khoảng cách và ô điều khiển lớn theo, không bị bé tí trên 2K/4K. */
+  --px: calc(1rem / 14);
+
+  /* Spacing Scale (4px base) */
+  --space-0-5: calc(2 * var(--px));
+  --space-1: calc(4 * var(--px));
+  --space-2: calc(8 * var(--px));
+  --space-3: calc(12 * var(--px));
+  --space-4: calc(16 * var(--px));
+  --space-5: calc(20 * var(--px));
+  --space-6: calc(24 * var(--px));
+  --space-8: calc(32 * var(--px));
+  --space-10: calc(40 * var(--px));
+  --space-12: calc(48 * var(--px));
+  --space-16: calc(64 * var(--px));
+
+  /* Khung ứng dụng: thanh điều hướng bên trái; --top-space chừa chỗ cho thông báo và avatar ở góc phải trên */
+  --sidebar-width: 240px;
+  --top-space: calc(var(--space-3) * 2 + 44px);
+  /* Thanh điều hướng ngang ở trang giới thiệu, khám phá trường và khi khách làm bài */
+  --topbar-height: calc(60 * var(--px));
+
+  /* Lề ngang của khung trang: rộng dần theo màn hình, không đặt trần chiều rộng */
+  --page-gutter: clamp(16px, 2.6vw, 64px);
+
+  /* Border Radii: bo mềm hiện đại. --radius-full chỉ dành cho hình tròn thật. */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+  --radius-full: 9999px;
+
+  /* Shadows (pha tông navy) */
+  --shadow-xs: 0 1px 2px rgba(67, 56, 202, 0.05);
+  --shadow-sm: 0 1px 3px rgba(67, 56, 202, 0.08), 0 1px 2px rgba(67, 56, 202, 0.04);
+  --shadow-md: 0 6px 14px -4px rgba(67, 56, 202, 0.12), 0 2px 6px -2px rgba(67, 56, 202, 0.06);
+  --shadow-lg: 0 18px 32px -10px rgba(67, 56, 202, 0.18), 0 6px 12px -6px rgba(67, 56, 202, 0.08);
+  --shadow-glow: var(--shadow-md);
+  --shadow-dropdown: 0 14px 30px rgba(67, 56, 202, 0.16), 0 4px 10px rgba(67, 56, 202, 0.08);
+  --shadow-sticky: 0 -6px 16px rgba(67, 56, 202, 0.08);
+
+  /* Typography */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-size-xs: calc(12 * var(--px));
+  --font-size-sm: calc(13 * var(--px));
+  --font-size-base: calc(14 * var(--px));
+  --font-size-md: calc(15 * var(--px));
+  --font-size-lg: calc(16 * var(--px));
+  --font-size-xl: calc(18 * var(--px));
+  --font-size-2xl: calc(20 * var(--px));
+  --font-size-3xl: calc(24 * var(--px));
+  --font-size-4xl: calc(32 * var(--px));
+  --font-size-5xl: calc(44 * var(--px));
+  --line-tight: 1.2;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: 150ms var(--ease-standard);
+  --transition-normal: 220ms var(--ease-out);
+  --transition-slow: 420ms var(--ease-out);
+  --duration-reveal: 560ms;
+  --duration-fly: 2400ms;
+
+  /* Heights */
+  --control-height-sm: calc(34 * var(--px));
+  --control-height-md: calc(42 * var(--px));
+  --control-height-lg: calc(50 * var(--px));
+  --touch-target: 44px;
+
+  /* Safe area (tai thỏ, thanh điều hướng ảo) */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+
+  /* Z-Index */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-modal-backdrop: 1050;
+  --z-modal: 1060;
+  --z-toast: 1100;
+}
+
+/* Người dùng bật giảm chuyển động: tắt mọi animation và transition */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-fast: 0ms;
+    --transition-normal: 0ms;
+    --transition-slow: 0ms;
+    --duration-reveal: 0ms;
+    --duration-fly: 0ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}

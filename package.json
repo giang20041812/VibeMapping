@@ -1,0 +1,22 @@
+{
+  "name": "vibemapping-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "TypeScript Frontend & Supabase Backend with strict AI rulesets",
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "preview": "npm --prefix frontend run preview",
+    "typecheck": "npm --prefix frontend run typecheck",
+    "supabase:types": "supabase gen types typescript --local > frontend/src/types/supabase.ts"
+  },
+  "keywords": [
+    "typescript",
+    "react",
+    "supabase",
+    "design-system",
+    "responsive"
+  ],
+  "author": "",
+  "license": "ISC"
+}

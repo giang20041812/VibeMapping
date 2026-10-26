@@ -1,0 +1,189 @@
+.app-searchable-select {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 100%;
+}
+
+.select-label {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--control-height-md);
+  padding: 0 var(--space-3);
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-base);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  user-select: none;
+}
+
+.select-trigger:hover {
+  border-color: var(--color-border-hover);
+}
+
+.select-trigger.is-open {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-ring);
+}
+
+.select-trigger.has-value {
+  color: var(--color-text-main);
+}
+
+.select-display-text {
+  flex: 1;
+  text-align: left;
+}
+
+.select-icons {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-text-muted);
+}
+
+.select-clear-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border-radius: var(--radius-xs);
+  color: var(--color-text-muted);
+  transition: color var(--transition-fast);
+}
+
+.select-clear-btn:hover {
+  color: var(--color-text-main);
+  background-color: var(--color-bg-subtle);
+}
+
+.chevron-icon {
+  transition: transform var(--transition-fast);
+}
+
+.chevron-icon.rotate {
+  transform: rotate(180deg);
+}
+
+/* Dropdown Menu Container (Rule 7: Max Height bounded) */
+.select-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  min-width: 220px;
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-dropdown);
+  z-index: var(--z-dropdown);
+  overflow: hidden;
+  animation: dropdown-fade-in var(--transition-fast);
+}
+
+@keyframes dropdown-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Sticky Search Input Header */
+.select-search-header {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-bg-subtle);
+  border-bottom: 1px solid var(--color-border);
+  z-index: 2;
+}
+
+.select-search-header .search-icon {
+  color: var(--color-text-muted);
+}
+
+.select-search-input {
+  flex: 1;
+  height: 28px;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-main);
+}
+
+.select-search-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.search-clear-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+}
+
+/* Options List (Max-height 240px with scroll) */
+.select-options-list {
+  max-height: 240px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-1) 0;
+}
+
+.select-option-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-base);
+  color: var(--color-text-main);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.select-option-item:hover {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.select-option-item.is-selected {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+.select-option-item.is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.option-badge {
+  font-size: var(--font-size-xs);
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-bg-subtle);
+  color: var(--color-text-secondary);
+}
+
+.select-empty-state {
+  padding: var(--space-4);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  text-align: center;
+}

@@ -1,0 +1,105 @@
+.app-filter-bar {
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-xs);
+  margin-bottom: var(--space-5);
+}
+
+.filter-bar-header-mobile {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.filter-count-badge {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  background-color: var(--color-bg-subtle);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+}
+
+.filter-bar-content {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.filter-fields-row {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-3);
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+}
+
+/* Rule 7: Bounded lengths for all filter items */
+.filter-fields-row > * {
+  flex: 1 1 180px;
+  min-width: 160px;
+  max-width: 260px;
+}
+
+/* Search bar can stretch slightly more */
+.filter-fields-row > .filter-item-search {
+  flex: 2 1 240px;
+  min-width: 200px;
+  max-width: 380px;
+}
+
+.filter-actions-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+/* Mobile Responsiveness (Samsung & Android) */
+@media (max-width: 768px) {
+  .app-filter-bar {
+    padding: var(--space-3);
+  }
+
+  .filter-bar-header-mobile {
+    display: flex;
+  }
+
+  .filter-bar-content {
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+    margin-top: var(--space-3);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .filter-bar-content.is-expanded-mobile {
+    display: flex;
+  }
+
+  .filter-fields-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-fields-row > * {
+    max-width: 100%;
+    min-width: 100%;
+  }
+
+  .filter-actions-group {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .btn-filter-reset,
+  .btn-filter-apply {
+    flex: 1;
+  }
+}

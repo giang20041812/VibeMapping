@@ -1,0 +1,39 @@
+.app-card {
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-bg-surface);
+}
+
+.card-title {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.card-body {
+  padding: var(--space-6);
+}
+
+.card-body.no-padding {
+  padding: 0;
+}
+
+@media (max-width: 768px) {
+  .card-header {
+    padding: var(--space-4);
+  }
+  .card-body {
+    padding: var(--space-4);
+  }
+}

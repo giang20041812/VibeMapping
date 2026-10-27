@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-label="Vibe Mapping">
+  <!-- Bản đồ gập theo hình chữ M -->
+  <g stroke="#031964" stroke-width="7" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M24 134 L72 104 L72 188 L24 218 Z" fill="#C7E3FE"/>
+    <path d="M72 104 L120 134 L120 218 L72 188 Z" fill="#66ACE0"/>
+    <path d="M120 134 L168 104 L168 188 L120 218 Z" fill="#C7E3FE"/>
+    <path d="M168 104 L216 134 L216 218 L168 188 Z" fill="#66ACE0"/>
+  </g>
+  <g fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" opacity=".9">
+    <path d="M36 184 Q50 158 62 168"/>
+    <path d="M180 156 Q196 182 208 164"/>
+  </g>
+
+  <!-- Ghim định vị kéo dài, chữ V nằm đúng trên hai cạnh đuôi ghim (đỉnh V là mũi ghim) -->
+  <path d="M120 202 L78.6 116 A46 46 0 1 1 161.4 116 Z" fill="#1E9EDB" stroke="#031964" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M86.3 132 L120 202 L153.7 132" fill="none" stroke="#031964" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M86.3 132 L120 202 L153.7 132" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Nét mặt vui tươi -->
+  <g fill="none" stroke="#031964" stroke-width="5.5" stroke-linecap="round">
+    <path d="M98 101 Q105 91 112 101"/>
+    <path d="M128 101 Q135 91 142 101"/>
+  </g>
+  <path d="M108 111 Q120 131 132 111 Z" fill="#031964" stroke="#031964" stroke-width="4" stroke-linejoin="round"/>
+  <circle cx="94" cy="113" r="5.5" fill="#B9DBF4"/>
+  <circle cx="146" cy="113" r="5.5" fill="#B9DBF4"/>
+
+  <!-- Mũ cử nhân -->
+  <path d="M92 56 L92 69 Q120 83 148 69 L148 56 Z" fill="#154B95" stroke="#031964" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M46 50 L120 26 L194 50 L120 74 Z" fill="#031964" stroke="#031964" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M58 50 L120 30 L120 50 Z" fill="#154B95"/>
+  <circle cx="120" cy="50" r="4.5" fill="#F6B73C"/>
+  <path d="M120 50 Q172 54 182 64 L182 92" fill="none" stroke="#F6B73C" stroke-width="4.5" stroke-linecap="round"/>
+  <rect x="176" y="90" width="12" height="22" rx="5" fill="#F6B73C" stroke="#031964" stroke-width="3.5"/>
+  <path d="M179 118 L179 126 M182 118 L182 128 M185 118 L185 126" stroke="#F6B73C" stroke-width="2.6" stroke-linecap="round"/>
+</svg>

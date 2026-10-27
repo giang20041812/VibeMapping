@@ -176,7 +176,7 @@
 .option-badge {
   font-size: var(--font-size-xs);
   padding: 1px 6px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm);
   background-color: var(--color-bg-subtle);
   color: var(--color-text-secondary);
 }

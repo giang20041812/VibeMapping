@@ -18,7 +18,7 @@ Sử dụng Mobile-First hoặc thống nhất chuẩn Breakpoints:
 | **Tablet / Foldable** | `481px - 768px` | Galaxy Z Fold gập/mở, Android Tablets 7-8 inch |
 | **Laptop / Small PC**| `769px - 1024px` | Laptop 13-14 inch, iPad Pro ngang |
 | **Desktop chuẩn** | `1025px - 1440px`| Màn hình PC văn phòng (Full HD 1920x1080 tỉ lệ 125%/150%) |
-| **Large Monitor** | `> 1440px` | Màn hình 2K, 4K (Cần có container `max-width` không kéo giãn vô tận) |
+| **Large Monitor** | `> 1440px` | Màn hình 2K, 4K (khung phủ hết chiều ngang; chữ và khoảng cách tự lớn theo `--px`, lưới tự thêm cột) |
 
 ---
 
@@ -86,17 +86,15 @@ Sử dụng Mobile-First hoặc thống nhất chuẩn Breakpoints:
   }
   ```
 
-### 4.3. Giới hạn độ rộng tối đa trên màn hình lớn (Ultra-wide screens)
-- Không để nội dung dàn trải vô tận từ cạnh trái sang cạnh phải trên màn hình 2K/4K.
-- Container chính luôn có:
+### 4.3. Màn hình lớn (Ultra-wide screens)
+- Không đặt `max-width` cho khung trang: trang phải phủ hết chiều ngang, không để hai dải trống hai bên.
+- Để ô thông tin không bé tí trên 2K/4K: gốc `html` tăng dần từ 14px lên 18px, mọi chữ/khoảng cách/ô điều khiển dùng đơn vị `--px` nên lớn theo; lề ngang dùng `--page-gutter`.
+- Khung trang:
   ```css
   .app-container {
     width: 100%;
-    max-width: 1440px;
-    margin-left: auto;
-    margin-right: auto;
-    padding-left: var(--space-4);
-    padding-right: var(--space-4);
+    padding-left: var(--page-gutter);
+    padding-right: var(--page-gutter);
   }
   ```
 

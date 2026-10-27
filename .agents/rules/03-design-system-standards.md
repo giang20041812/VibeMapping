@@ -10,24 +10,14 @@ Thiết lập một ngôn ngữ thiết kế chung (Unified Design Language) cho
 Tất cả stylesheet phải sử dụng các biến CSS được định nghĩa trong `src/styles/tokens.css`:
 
 ### 2.1. Màu sắc (Color Palette)
-- **Primary / Brand**:
-  - `--color-primary`: `#2563eb` (Blue 600)
-  - `--color-primary-hover`: `#1d4ed8` (Blue 700)
-  - `--color-primary-light`: `#eff6ff` (Blue 50)
-- **Neutral / Surface**:
-  - `--color-bg-app`: `#f8fafc` (Nền ứng dụng)
-  - `--color-bg-surface`: `#ffffff` (Nền card, table, modal)
-  - `--color-border`: `#e2e8f0` (Viền ngăn cách)
-  - `--color-border-hover`: `#cbd5e1`
-- **Text Hierarchy**:
-  - `--color-text-main`: `#0f172a` (Tiêu đề, chữ chính - tương phản cao)
-  - `--color-text-secondary`: `#475569` (Nhãn trường, phụ đề ngắn)
-  - `--color-text-muted`: `#94a3b8` (Placeholder, meta info)
-- **Status Semantic**:
-  - `--color-success`: `#10b981`, `--color-success-bg`: `#ecfdf5`
-  - `--color-warning`: `#f59e0b`, `--color-warning-bg`: `#fffbeb`
-  - `--color-danger`: `#ef4444`, `--color-danger-bg`: `#fef2f2`
-  - `--color-info`: `#3b82f6`, `--color-info-bg`: `#eff6ff`
+Tông chủ đạo **xanh – trắng**, lấy từ tài liệu đặt tên hệ thống (navy `#031964`, xanh nhạt `#C7E3FE`, kem `#FFFCF0`, các dải xanh dương). Logo dùng đúng màu hệ thống; chỉ tua mũ cử nhân dùng vàng nhấn (`--brand-gold`).
+- **Thang thương hiệu** (khai báo ở `tokens.css`): `--brand-navy`, `--brand-deep`, `--brand-azure`, `--brand-blue`, `--brand-sky`, `--brand-light`, `--brand-soft`, `--brand-pale`, `--brand-mist`, `--brand-ice`, `--brand-cream`, `--brand-gold`.
+- **Primary**: `--color-primary` (= `--brand-deep`), `--color-primary-hover`, `--color-primary-active`, `--color-primary-light`, `--color-accent` (= `--brand-sky`, dùng cho điểm nhấn, focus, biểu đồ).
+- **Neutral / Surface**: `--color-bg-app`, `--color-bg-surface`, `--color-bg-subtle`, `--color-border`, `--color-border-hover`.
+- **Text**: `--color-text-main` (navy), `--color-text-secondary`, `--color-text-muted`, `--color-text-brand`.
+- **Status**: `--color-success|warning|danger|info` kèm `-bg`, `-border`, `-text`. Trạng thái luôn kèm biểu tượng và chữ mô tả, không chỉ dựa vào màu.
+- **Màu nhấn trực quan hóa**: `--accent-cyan`, `--accent-violet`, `--accent-magenta`, `--accent-teal` cùng ánh sáng `--glow-*`, nền tối `--gradient-stage`, `--stage-*` và dải `--gradient-spectrum`. Chỉ dùng cho hình minh họa (biểu đồ ngũ giác, quả địa cầu, nền trang chủ), không dùng cho nút bấm, chữ nội dung hay trạng thái.
+- **Gradient / chuyển động**: `--gradient-brand`, `--gradient-brand-deep`, `--gradient-soft`; `--ease-out`, `--ease-spring`, `--transition-fast|normal|slow`. Mọi animation phải tắt được khi người dùng bật `prefers-reduced-motion` (tokens đã xử lý).
 
 ### 2.2. Khoảng cách (Spacing Scale)
 - `--space-1`: `4px`
@@ -39,10 +29,9 @@ Tất cả stylesheet phải sử dụng các biến CSS được định nghĩa
 - `--space-8`: `32px`
 
 ### 2.3. Bo góc & Hiệu ứng đổ bóng (Radii & Shadows)
-- `--radius-sm`: `6px` (Badge, tag)
-- `--radius-md`: `8px` (Input, Button, Dropdown)
-- `--radius-lg`: `12px` (Card, Table container)
-- `--radius-xl`: `16px` (Modal, Drawer)
+- Góc vuông vắn, chỉ bo rất nhẹ: `--radius-sm` `2px` (Badge, tag, chip), `--radius-md` `4px` (Input, Button, Dropdown), `--radius-lg` `4px` (Alert, ô danh sách), `--radius-xl` `6px` (Card, Modal), `--radius-2xl` `8px` (khung minh họa).
+- `--radius-full` chỉ dành cho hình tròn thật (chấm, vòng tròn); **không** dùng cho chip, tab, thanh tiến độ, công tắc hay nút bấm.
+- Khoảng cách, cỡ chữ, chiều cao ô điều khiển dùng đơn vị co giãn `--px` (1/14 rem) để tự lớn theo màn hình; vùng chạm `--touch-target` giữ `44px` cố định.
 - `--shadow-sm`: `0 1px 2px 0 rgba(0, 0, 0, 0.05)`
 - `--shadow-md`: `0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.04)`
 - `--shadow-lg`: `0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.03)`

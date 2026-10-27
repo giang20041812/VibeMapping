@@ -1,0 +1,37 @@
+.run-layout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.run-top {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.run-exit { align-self: flex-end; }
+
+.run-card .card-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-8) var(--space-8) var(--space-6);
+}
+
+.run-progress { display: flex; flex-direction: column; gap: var(--space-2); }
+.run-progress-text { font-size: var(--font-size-sm); font-weight: 700; color: var(--color-text-secondary); }
+
+.run-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+@media (max-width: 640px) {
+  .run-card .card-body { padding: var(--space-4); gap: var(--space-5); }
+  .run-nav { position: sticky; bottom: 0; margin: 0 calc(var(--space-4) * -1) calc(var(--space-4) * -1); padding: var(--space-3) var(--space-4) calc(var(--space-3) + var(--safe-bottom)); background: var(--color-bg-surface); box-shadow: var(--shadow-sticky); }
+  .run-nav .app-button { flex: 1; }
+}

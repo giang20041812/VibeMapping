@@ -7,6 +7,7 @@ export interface CardProps {
   action?: React.ReactNode;
   className?: string;
   noPadding?: boolean;
+  interactive?: boolean;
 }
 
 export const Card: React.FC<CardProps> = ({
@@ -15,9 +16,10 @@ export const Card: React.FC<CardProps> = ({
   action,
   className = '',
   noPadding = false,
+  interactive = false,
 }) => {
   return (
-    <div className={`app-card ${className}`}>
+    <div className={`app-card ${interactive ? 'is-interactive' : ''} ${className}`}>
       {(title || action) && (
         <div className="card-header">
           {title && <h2 className="card-title">{title}</h2>}

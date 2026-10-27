@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: center;
   font-weight: 500;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm);
   line-height: 1;
   white-space: nowrap;
 }

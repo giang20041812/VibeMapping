@@ -1,0 +1,2 @@
+.personal-layout { display: flex; flex-direction: column; gap: var(--space-10); }
+.personal-section { display: flex; flex-direction: column; gap: var(--space-4); }

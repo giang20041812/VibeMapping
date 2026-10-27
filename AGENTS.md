@@ -41,7 +41,7 @@ Tất cả các AI Agents, Subagents và lập trình viên khi tham gia phát t
   - Kích thước chạm (Touch targets) tối thiểu **44px × 44px**.
   - Hỗ trợ `safe-area-inset` cho tai thỏ và thanh điều hướng ảo của Samsung.
 - **PC & Màn hình lớn**:
-  - Khung chứa chính (Container) có `max-width: 1440px` để không bị kéo giãn vô tận trên màn hình 2K/4K.
+  - Khung chứa chính phủ toàn bộ chiều ngang (không đặt `max-width`); lề ngang `--page-gutter` và kích thước chữ/khoảng cách (đơn vị `--px`, gốc `html` tăng dần theo màn hình) tự lớn lên trên 2K/4K để ô thông tin không bị bé tí. Nội dung dùng lưới `auto-fit`/`auto-fill` để lấp đầy chiều ngang.
   - Sử dụng `min-width: 0` trên các phần tử flex để chống tràn ngang (No horizontal scroll bug).
   - Bảng dữ liệu dài phải bọc trong vùng cuộn ngang mượt mà (`overflow-x: auto`).
 - Hoạt động ổn định trên Google Chrome, Samsung Internet, Firefox, Edge, Safari.
@@ -86,7 +86,7 @@ d:/VibeMapping/
 │       ├── components/
 │       │   ├── common/                 # Nút bấm, Ô nhập, Thẻ, Modal, Badge chuẩn
 │       │   ├── filters/                # SearchableSelect, FilterBar tái sử dụng
-│       │   └── layout/                 # Khung trang, Header, Sidebar, ResponsiveContainer
+│       │   └── layout/                 # Khung trang, TopActions (thông báo + avatar), Sidebar cột biểu tượng bên trái
 │       ├── hooks/                      # useDebounce, useResponsive, useFilter
 │       ├── lib/                        # Supabase client singleton
 │       ├── modules/                    # Phân chia theo module nghiệp vụ (bám sát spec)

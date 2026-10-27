@@ -1,0 +1,67 @@
+.guest-card .card-body { padding: var(--space-8); }
+.guest-card-center .card-body { padding: var(--space-12) var(--space-8); }
+
+.guest-intro { display: flex; flex-direction: column; gap: var(--space-5); }
+.guest-intro-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.guest-title {
+  min-width: 0;
+  font-size: var(--font-size-3xl);
+  font-weight: 800;
+  line-height: var(--line-tight);
+  letter-spacing: -0.02em;
+  color: var(--color-text-main);
+  overflow-wrap: anywhere;
+}
+
+/* Trạng thái: hết hạn, đã nộp */
+.guest-state { display: flex; flex-direction: column; align-items: center; gap: var(--space-3); text-align: center; }
+.guest-state-warning { color: var(--color-warning-text); }
+.guest-state-success { color: var(--color-success); }
+.guest-state-text { font-size: var(--font-size-lg); font-weight: 600; color: var(--color-text-main); }
+.guest-thanks-icon { animation: guest-pop 620ms var(--ease-spring) both; }
+.guest-thanks-title {
+  font-size: var(--font-size-4xl);
+  font-weight: 800;
+  color: var(--color-text-main);
+  animation: guest-rise var(--duration-reveal) 160ms var(--ease-out) both;
+}
+.guest-state-success .guest-state-text { animation: guest-rise var(--duration-reveal) 280ms var(--ease-out) both; }
+
+/* Làm bài */
+.guest-run { display: flex; flex-direction: column; gap: var(--space-4); }
+.guest-run-top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-2); }
+.guest-run-subject { min-width: 0; font-size: var(--font-size-md); font-weight: 800; color: var(--color-text-brand); overflow-wrap: anywhere; }
+.guest-run-saved { font-size: var(--font-size-sm); color: var(--color-text-muted); }
+.guest-block-action { margin-top: var(--space-3); }
+
+.guest-run-body { display: flex; flex-direction: column; gap: var(--space-6); }
+.guest-progress { display: flex; flex-direction: column; gap: var(--space-2); }
+.guest-progress-text { font-size: var(--font-size-sm); font-weight: 700; color: var(--color-text-secondary); }
+
+.guest-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.guest-quality-list { display: flex; flex-direction: column; gap: var(--space-2); padding-left: var(--space-5); font-size: var(--font-size-md); }
+
+@keyframes guest-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes guest-pop { from { opacity: 0; transform: scale(0.4) rotate(-12deg); } to { opacity: 1; transform: scale(1) rotate(0); } }
+
+@media (max-width: 640px) {
+  .guest-card .card-body { padding: var(--space-4); }
+  .guest-card-center .card-body { padding: var(--space-10) var(--space-4); }
+  .guest-title { font-size: var(--font-size-2xl); }
+  .guest-nav {
+    position: sticky;
+    bottom: 0;
+    margin: 0 calc(var(--space-4) * -1) calc(var(--space-4) * -1);
+    padding: var(--space-3) var(--space-4) calc(var(--space-3) + var(--safe-bottom));
+    background: var(--color-bg-surface);
+    box-shadow: var(--shadow-sticky);
+  }
+  .guest-nav .app-button { flex: 1; }
+}

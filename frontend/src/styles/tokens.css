@@ -1,101 +1,183 @@
 /* ====================================================================
    DESIGN SYSTEM TOKENS
-   Unified color palette, typography, spacing scale, radii, and shadows
+   Bảng màu xanh – trắng lấy từ tài liệu đặt tên hệ thống:
+   navy #031964 · xanh nhạt #C7E3FE · kem #FFFCF0 · các dải xanh dương.
+   Mọi stylesheet chỉ dùng biến ở đây, không dùng mã màu tự do.
    ==================================================================== */
 
 :root {
-  /* Brand & Primary Colors */
-  --color-primary: #2563eb;
-  --color-primary-hover: #1d4ed8;
-  --color-primary-active: #1e40af;
-  --color-primary-light: #eff6ff;
-  --color-primary-ring: rgba(37, 99, 235, 0.25);
+  /* Thang màu thương hiệu */
+  --brand-navy: #031964;
+  --brand-deep: #154b95;
+  --brand-azure: #2d74a8;
+  --brand-blue: #338dcc;
+  --brand-sky: #1e9edb;
+  --brand-light: #66ace0;
+  --brand-soft: #8dc3e9;
+  --brand-pale: #b9dbf4;
+  --brand-mist: #c7e3fe;
+  --brand-ice: #e1f2fa;
+  --brand-cream: #fffcf0;
+  --brand-gold: #f6b73c;
+  --brand-white: #ffffff;
+
+  /* Primary */
+  --color-primary: var(--brand-deep);
+  --color-primary-hover: #0f3d80;
+  --color-primary-active: var(--brand-navy);
+  --color-primary-light: var(--brand-ice);
+  --color-primary-ring: rgba(30, 158, 219, 0.28);
+  --color-accent: var(--brand-sky);
+  --color-accent-gold: var(--brand-gold);
 
   /* Surface & Background */
-  --color-bg-app: #f8fafc;
+  --color-bg-app: #f2f5fc;
   --color-bg-surface: #ffffff;
-  --color-bg-subtle: #f1f5f9;
-  --color-bg-hover: #e2e8f0;
+  --color-bg-subtle: #e9eefa;
+  --color-bg-hover: #dde6f7;
+  --color-bg-cream: var(--brand-cream);
 
   /* Borders & Dividers */
-  --color-border: #e2e8f0;
-  --color-border-hover: #cbd5e1;
-  --color-border-focus: #2563eb;
+  --color-border: #d8e2f4;
+  --color-border-hover: #b8cbea;
+  --color-border-focus: var(--brand-sky);
 
   /* Typography / Text hierarchy */
-  --color-text-main: #0f172a;
-  --color-text-secondary: #475569;
-  --color-text-muted: #94a3b8;
+  --color-text-main: var(--brand-navy);
+  --color-text-secondary: #41588c;
+  --color-text-muted: #6a7ca3;
   --color-text-inverse: #ffffff;
+  --color-text-brand: var(--brand-deep);
 
-  /* Status Colors */
-  --color-success: #10b981;
-  --color-success-bg: #ecfdf5;
-  --color-success-border: #a7f3d0;
-  --color-success-text: #065f46;
+  /* Status Colors (luôn đi kèm chữ mô tả, không chỉ dựa vào màu) */
+  --color-success: #12a56f;
+  --color-success-bg: #e6f7f0;
+  --color-success-border: #a8e3cc;
+  --color-success-text: #0b6b48;
 
-  --color-warning: #f59e0b;
-  --color-warning-bg: #fffbeb;
-  --color-warning-border: #fde68a;
-  --color-warning-text: #92400e;
+  --color-warning: #e39a12;
+  --color-warning-bg: #fff6e0;
+  --color-warning-border: #f7dc9c;
+  --color-warning-text: #84560a;
 
-  --color-danger: #ef4444;
-  --color-danger-bg: #fef2f2;
-  --color-danger-border: #fecaca;
-  --color-danger-text: #991b1b;
+  --color-danger: #d93a4a;
+  --color-danger-bg: #fdecee;
+  --color-danger-border: #f6bcc3;
+  --color-danger-text: #8f1f2c;
 
-  --color-info: #3b82f6;
-  --color-info-bg: #eff6ff;
-  --color-info-border: #bfdbfe;
-  --color-info-text: #1e40af;
+  --color-info: var(--brand-blue);
+  --color-info-bg: var(--brand-ice);
+  --color-info-border: var(--brand-pale);
+  --color-info-text: var(--brand-deep);
+
+  /* Màu nhấn cho trực quan hóa (biểu đồ ngũ giác, quả địa cầu, nền trang chủ).
+     Chỉ dùng cho hình minh họa, không dùng cho nút bấm, chữ hay trạng thái. */
+  --accent-cyan: #22d3ee;
+  --accent-violet: #8b6cff;
+  --accent-magenta: #f05bd0;
+  --accent-teal: #1fd1a5;
+  --accent-coral: #ff8a5c;
+
+  /* Ánh sáng trên nền tối */
+  --glow-cyan: rgba(34, 211, 238, 0.55);
+  --glow-violet: rgba(139, 108, 255, 0.55);
+  --glow-magenta: rgba(240, 91, 208, 0.5);
+  --glow-teal: rgba(31, 209, 165, 0.5);
+  --glow-gold: rgba(246, 183, 60, 0.55);
+  --glow-sky: rgba(30, 158, 219, 0.55);
+  --glow-coral: rgba(255, 138, 92, 0.5);
+  --stage-line: rgba(255, 255, 255, 0.16);
+  --stage-fill: rgba(255, 255, 255, 0.06);
+  --stage-text: rgba(255, 255, 255, 0.88);
+  --stage-text-muted: rgba(255, 255, 255, 0.62);
+  --surface-glass: rgba(255, 255, 255, 0.82);
+  --scrim: rgba(3, 25, 100, 0.5);
+
+  /* Gradient */
+  --gradient-brand: linear-gradient(135deg, var(--brand-deep) 0%, var(--brand-sky) 100%);
+  --gradient-stage: radial-gradient(120% 90% at 50% 0%, var(--brand-deep) 0%, var(--brand-navy) 64%);
+  --gradient-spectrum: linear-gradient(110deg, var(--accent-cyan) 0%, var(--accent-violet) 52%, var(--accent-magenta) 100%);
+  --gradient-brand-deep: linear-gradient(160deg, var(--brand-navy) 0%, var(--brand-deep) 55%, var(--brand-azure) 100%);
+  --gradient-soft: linear-gradient(180deg, var(--brand-ice) 0%, var(--color-bg-app) 100%);
+  --gradient-shine: linear-gradient(110deg, transparent 20%, rgba(255, 255, 255, 0.55) 50%, transparent 80%);
+
+  /* Đơn vị co giãn: 1 px thiết kế = 1/14 rem. Gốc html tăng dần trên màn hình rộng
+     (xem reset.css) nên chữ, khoảng cách và ô điều khiển lớn theo, không bị bé tí trên 2K/4K. */
+  --px: calc(1rem / 14);
 
   /* Spacing Scale (4px base) */
-  --space-0-5: 2px;
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-8: 32px;
-  --space-10: 40px;
-  --space-12: 48px;
+  --space-0-5: calc(2 * var(--px));
+  --space-1: calc(4 * var(--px));
+  --space-2: calc(8 * var(--px));
+  --space-3: calc(12 * var(--px));
+  --space-4: calc(16 * var(--px));
+  --space-5: calc(20 * var(--px));
+  --space-6: calc(24 * var(--px));
+  --space-8: calc(32 * var(--px));
+  --space-10: calc(40 * var(--px));
+  --space-12: calc(48 * var(--px));
+  --space-16: calc(64 * var(--px));
 
-  /* Border Radii */
-  --radius-xs: 4px;
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  /* Khung ứng dụng: cột biểu tượng bên trái (thu gọn) và khi mở rộng; --top-space chừa chỗ cho hai icon nổi góc phải trên */
+  --rail-width: 56px;
+  --sidebar-width: 240px;
+  --top-space: calc(var(--space-3) * 2 + 36px);
+
+  /* Lề ngang của khung trang: rộng dần theo màn hình, không đặt trần chiều rộng */
+  --page-gutter: clamp(16px, 2.6vw, 64px);
+
+  /* Border Radii: góc vuông vắn, chỉ bo rất nhẹ. --radius-full chỉ dành cho hình tròn thật. */
+  --radius-xs: 2px;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 4px;
+  --radius-xl: 6px;
+  --radius-2xl: 8px;
   --radius-full: 9999px;
 
-  /* Shadows */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.03);
-  --shadow-dropdown: 0 12px 28px rgba(15, 23, 42, 0.12), 0 4px 8px rgba(15, 23, 42, 0.06);
+  /* Shadows (pha tông navy) */
+  --shadow-xs: 0 1px 2px rgba(3, 25, 100, 0.05);
+  --shadow-sm: 0 1px 3px rgba(3, 25, 100, 0.08), 0 1px 2px rgba(3, 25, 100, 0.04);
+  --shadow-md: 0 6px 14px -4px rgba(3, 25, 100, 0.12), 0 2px 6px -2px rgba(3, 25, 100, 0.06);
+  --shadow-lg: 0 18px 32px -10px rgba(3, 25, 100, 0.18), 0 6px 12px -6px rgba(3, 25, 100, 0.08);
+  --shadow-glow: 0 10px 28px -8px rgba(30, 158, 219, 0.55);
+  --shadow-dropdown: 0 14px 30px rgba(3, 25, 100, 0.16), 0 4px 10px rgba(3, 25, 100, 0.08);
+  --shadow-sticky: 0 -6px 16px rgba(3, 25, 100, 0.08);
 
   /* Typography */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-size-xs: 12px;
-  --font-size-sm: 13px;
-  --font-size-base: 14px;
-  --font-size-md: 15px;
-  --font-size-lg: 16px;
-  --font-size-xl: 18px;
-  --font-size-2xl: 20px;
-  --font-size-3xl: 24px;
+  --font-size-xs: calc(12 * var(--px));
+  --font-size-sm: calc(13 * var(--px));
+  --font-size-base: calc(14 * var(--px));
+  --font-size-md: calc(15 * var(--px));
+  --font-size-lg: calc(16 * var(--px));
+  --font-size-xl: calc(18 * var(--px));
+  --font-size-2xl: calc(20 * var(--px));
+  --font-size-3xl: calc(24 * var(--px));
+  --font-size-4xl: calc(32 * var(--px));
+  --font-size-5xl: calc(44 * var(--px));
+  --line-tight: 1.2;
 
-  /* Transitions */
-  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-normal: 200ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: 150ms var(--ease-standard);
+  --transition-normal: 220ms var(--ease-out);
+  --transition-slow: 420ms var(--ease-out);
+  --duration-reveal: 560ms;
 
   /* Heights */
-  --control-height-sm: 32px;
-  --control-height-md: 40px;
-  --control-height-lg: 48px;
+  --control-height-sm: calc(34 * var(--px));
+  --control-height-md: calc(42 * var(--px));
+  --control-height-lg: calc(50 * var(--px));
+  --touch-target: 44px;
+
+  /* Safe area (tai thỏ, thanh điều hướng ảo) */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
 
   /* Z-Index */
   --z-dropdown: 1000;
@@ -103,4 +185,22 @@
   --z-modal-backdrop: 1050;
   --z-modal: 1060;
   --z-toast: 1100;
+}
+
+/* Người dùng bật giảm chuyển động: tắt mọi animation và transition */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-fast: 0ms;
+    --transition-normal: 0ms;
+    --transition-slow: 0ms;
+    --duration-reveal: 0ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
 }

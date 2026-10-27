@@ -2,21 +2,11 @@
    GLOBAL UTILITIES & LAYOUT
    ==================================================================== */
 
-/* Global bounded container for 2K/4K large screens */
+/* Khung trang: phủ toàn bộ chiều ngang, lề co giãn theo màn hình */
 .app-container {
   width: 100%;
-  max-width: 1440px;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: var(--space-4);
-  padding-right: var(--space-4);
-}
-
-@media (min-width: 768px) {
-  .app-container {
-    padding-left: var(--space-6);
-    padding-right: var(--space-6);
-  }
+  padding-left: var(--page-gutter);
+  padding-right: var(--page-gutter);
 }
 
 /* Responsive Table Wrapper - No horizontal overflow break */
@@ -41,7 +31,7 @@
 
 ::-webkit-scrollbar-thumb {
   background: var(--color-border-hover);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm);
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -66,4 +56,13 @@
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
+}
+
+/* Tiêu đề một khối nội dung trong trang */
+.section-title {
+  font-size: var(--font-size-2xl);
+  font-weight: 800;
+  line-height: var(--line-tight);
+  letter-spacing: -0.01em;
+  color: var(--color-text-main);
 }

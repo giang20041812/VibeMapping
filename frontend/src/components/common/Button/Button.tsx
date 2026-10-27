@@ -7,6 +7,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   isLoading?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
+  block?: boolean;
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -16,13 +17,14 @@ export const Button: React.FC<ButtonProps> = ({
   isLoading = false,
   leftIcon,
   rightIcon,
+  block = false,
   className = '',
   disabled,
   ...props
 }) => {
   return (
     <button
-      className={`app-button btn-${variant} btn-${size} ${isLoading ? 'btn-loading' : ''} ${className}`}
+      className={`app-button btn-${variant} btn-${size} ${block ? 'btn-block' : ''} ${isLoading ? 'btn-loading' : ''} ${className}`}
       disabled={disabled || isLoading}
       {...props}
     >

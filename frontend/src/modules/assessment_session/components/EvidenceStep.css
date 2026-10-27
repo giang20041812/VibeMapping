@@ -1,0 +1,7 @@
+.evidence-step .card-body { display: flex; flex-direction: column; gap: var(--space-4); }
+.evidence-fields { display: flex; flex-direction: column; gap: var(--space-4); }
+.evidence-actions { display: flex; justify-content: flex-end; }
+
+@media (max-width: 640px) {
+  .evidence-actions .app-button { width: 100%; }
+}

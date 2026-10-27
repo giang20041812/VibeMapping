@@ -1,0 +1,24 @@
+{
+  "name": "vibemapping-import-scripts",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "import:ba": "tsx import-ba-data.ts",
+    "import:ba:dry": "tsx import-ba-data.ts --dry-run",
+    "typecheck": "tsc --noEmit",
+    "gen:types": "tsx gen-types.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1",
+    "@types/pg": "^8.23.1",
+    "dotenv": "^16.4.7",
+    "exceljs": "^4.4.0",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}

@@ -1,30 +1,32 @@
-import React from 'react';
-import { Header } from './Header';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
+import { Sidebar } from './Sidebar';
+import { TopActions } from './TopActions';
 import './AppLayout.css';
 
-export interface AppLayoutProps {
-  children: React.ReactNode;
-}
+/** Màn hình làm bài ẩn nút mở menu để tập trung vào câu hỏi */
+const FOCUS_ROUTE = /^\/danh-gia-ca-nhan\/.+/;
 
-export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
+export const AppLayout: React.FC = () => {
+  const location = useLocation();
+  const focusMode = FOCUS_ROUTE.test(location.pathname);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const toggleMenu = useCallback(() => setMenuOpen((value) => !value), []);
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
+
   return (
-    <div className="app-shell">
-      <Header />
+    <div className={`app-shell ${focusMode ? 'is-focus' : ''}`}>
+      <Sidebar open={menuOpen} onToggle={toggleMenu} onClose={closeMenu} />
+      <TopActions />
       <main className="app-main-content">
-        <div className="app-container">{children}</div>
-      </main>
-      <footer className="app-footer">
-        <div className="app-container footer-container">
-          <p className="footer-copyright">
-            © {new Date().getFullYear()} VibeMapping • Chuẩn hóa theo AI Ruleset & Design System
-          </p>
-          <div className="footer-meta">
-            <span>TypeScript Frontend</span>
-            <span className="dot-sep">•</span>
-            <span>Supabase Backend</span>
-          </div>
+        <div key={location.pathname} className="app-container page-enter">
+          <Outlet />
         </div>
-      </footer>
+      </main>
     </div>
   );
 };

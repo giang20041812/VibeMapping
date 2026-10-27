@@ -1,0 +1,13 @@
+.full-page-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--gradient-soft);
+}
+
+.full-page-loader-mark {
+  width: 120px;
+  height: 120px;
+}

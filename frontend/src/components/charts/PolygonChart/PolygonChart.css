@@ -1,0 +1,250 @@
+/* Biểu đồ đa giác – thiết kế cho nền tối (khung .feature-stage / .result-stage).
+   Hoạt ảnh chỉ dùng transform và opacity (chạy trên GPU), không dùng filter hay đổi thuộc tính hình học. */
+.polygon-chart {
+  --axis-1: var(--accent-cyan);
+  --axis-2: var(--brand-sky);
+  --axis-3: var(--accent-violet);
+  --axis-4: var(--accent-magenta);
+  --axis-5: var(--accent-coral);
+  --axis-6: var(--brand-gold);
+  --axis-7: var(--accent-teal);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+  margin: 0;
+  color: var(--stage-text);
+}
+
+.polygon-tone-1 { --tone: var(--axis-1); --tone-glow: var(--glow-cyan); }
+.polygon-tone-2 { --tone: var(--axis-2); --tone-glow: var(--glow-sky); }
+.polygon-tone-3 { --tone: var(--axis-3); --tone-glow: var(--glow-violet); }
+.polygon-tone-4 { --tone: var(--axis-4); --tone-glow: var(--glow-magenta); }
+.polygon-tone-5 { --tone: var(--axis-5); --tone-glow: var(--glow-coral); }
+.polygon-tone-6 { --tone: var(--axis-6); --tone-glow: var(--glow-gold); }
+.polygon-tone-7 { --tone: var(--axis-7); --tone-glow: var(--glow-teal); }
+
+.polygon-stop-1 { stop-color: var(--axis-1); }
+.polygon-stop-2 { stop-color: var(--axis-2); }
+.polygon-stop-3 { stop-color: var(--axis-3); }
+.polygon-stop-4 { stop-color: var(--axis-4); }
+.polygon-stop-5 { stop-color: var(--axis-5); }
+.polygon-stop-6 { stop-color: var(--axis-6); }
+.polygon-stop-7 { stop-color: var(--axis-7); }
+.polygon-stop-line { stop-color: var(--stage-text); stop-opacity: 0.22; }
+.polygon-stop-core { stop-color: var(--accent-violet); stop-opacity: 0.5; }
+.polygon-stop-clear { stop-color: var(--accent-violet); stop-opacity: 0; }
+
+.polygon-stage {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  aspect-ratio: 1 / 1;
+  touch-action: pan-y;
+}
+
+.polygon-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.polygon-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* Khung nền */
+.polygon-ring {
+  fill: none;
+  stroke: var(--stage-line);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+}
+.polygon-ring.is-tinted { fill: var(--stage-fill); }
+
+.polygon-spoke {
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.6;
+  transition: opacity var(--transition-normal), stroke-width var(--transition-normal);
+}
+.polygon-spoke.is-active { opacity: 1; stroke-width: 2.4px; }
+
+.polygon-frame {
+  stroke-width: 2px;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Đa giác dữ liệu */
+.polygon-svg-data { opacity: 0; transform: scale(0.15); transform-origin: 50% 50%; will-change: transform, opacity; }
+.polygon-chart.is-visible .polygon-svg-data { animation: polygon-grow 900ms var(--ease-out) 150ms both; }
+
+.polygon-wedge {
+  fill-opacity: 0.34;
+  transition: fill-opacity var(--transition-normal);
+}
+.polygon-wedge.is-active { fill-opacity: 0.66; }
+
+.polygon-reference {
+  fill: none;
+  stroke: var(--stage-text);
+  stroke-width: 1.6px;
+  stroke-dasharray: 6 5;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.85;
+}
+
+.polygon-edge,
+.polygon-edge-glow {
+  fill: none;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+.polygon-edge { stroke-width: 2.6px; }
+.polygon-edge-glow { stroke-width: 9px; opacity: 0.2; transition: opacity var(--transition-slow); }
+.polygon-chart.is-interacting .polygon-edge-glow { opacity: 0.4; }
+
+.polygon-dot {
+  fill: var(--brand-white);
+  stroke: var(--tone);
+  stroke-width: 2px;
+  vector-effect: non-scaling-stroke;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform var(--transition-normal);
+}
+.polygon-dot.is-active { transform: scale(1.7); }
+.polygon-dot.is-empty { fill: var(--brand-navy); stroke-dasharray: 2 2; }
+
+.polygon-hit {
+  fill: transparent;
+  pointer-events: all;
+  cursor: pointer;
+}
+
+/* Quầng sáng ở đỉnh đang chọn: gợn một lần khi chọn, phần tử HTML, chỉ đổi transform và opacity */
+.polygon-halo {
+  position: absolute;
+  width: 14%;
+  height: 14%;
+  margin: -7% 0 0 -7%;
+  background: radial-gradient(closest-side, var(--tone), transparent);
+  border-radius: var(--radius-full);
+  opacity: 0;
+  animation: polygon-pulse 900ms ease-out both;
+}
+
+/* Nút trục */
+.polygon-node {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--stage-text);
+  background: none;
+  border-radius: var(--radius-lg);
+  transform: translate(-50%, -50%);
+  transition: transform var(--transition-normal), color var(--transition-fast);
+}
+.polygon-node:focus-visible { outline: 2px solid var(--brand-white); outline-offset: 4px; }
+.polygon-node.is-active { color: var(--brand-white); transform: translate(-50%, -50%) scale(1.1); }
+
+.polygon-node-badge {
+  display: grid;
+  place-items: center;
+  width: var(--touch-target);
+  height: var(--touch-target);
+  color: var(--tone);
+  background: var(--brand-navy);
+  border-radius: var(--radius-full);
+  box-shadow: inset 0 0 0 1.5px var(--stage-line);
+  transition: color var(--transition-normal), background-color var(--transition-normal), box-shadow var(--transition-normal);
+}
+.polygon-node:hover .polygon-node-badge,
+.polygon-node.is-active .polygon-node-badge {
+  color: var(--brand-navy);
+  background: var(--tone);
+  box-shadow: 0 0 22px var(--tone-glow);
+}
+
+.polygon-node-name { white-space: nowrap; text-shadow: 0 1px 8px var(--brand-navy); }
+
+/* Số đọc */
+.polygon-readout {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  min-height: var(--touch-target);
+}
+.polygon-readout-line {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2) var(--space-3);
+  max-width: 100%;
+  padding: var(--space-2) var(--space-4);
+  background: var(--stage-fill);
+  border: 1px solid var(--stage-line);
+  border-radius: var(--radius-md);
+  animation: polygon-fade 300ms var(--ease-out) both;
+}
+.polygon-readout-dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  background: var(--tone);
+  border-radius: var(--radius-full);
+  box-shadow: 0 0 12px var(--tone-glow);
+}
+.polygon-readout-name { font-size: var(--font-size-md); color: var(--brand-white); }
+.polygon-readout-caption { font-size: var(--font-size-sm); color: var(--stage-text-muted); }
+.polygon-readout-value {
+  min-width: 3ch;
+  font-size: var(--font-size-xl);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--tone);
+  text-align: right;
+}
+.polygon-readout-level {
+  padding: 2px var(--space-3);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--brand-navy);
+  background: var(--tone);
+  border-radius: var(--radius-sm);
+}
+.polygon-readout-reference { font-size: var(--font-size-sm); font-weight: 600; color: var(--stage-text-muted); }
+
+@keyframes polygon-grow {
+  from { opacity: 0; transform: scale(0.15) rotate(-24deg); }
+  to { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+@keyframes polygon-pulse {
+  0% { transform: scale(0.5); opacity: 0.7; }
+  100% { transform: scale(2); opacity: 0; }
+}
+@keyframes polygon-fade {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 520px) {
+  .polygon-node-name { display: none; }
+  .polygon-readout-line { gap: var(--space-1) var(--space-2); padding: var(--space-2) var(--space-3); }
+}

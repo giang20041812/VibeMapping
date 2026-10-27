@@ -1,0 +1,65 @@
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.profile-group {
+  display: flex;
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: var(--space-4) var(--space-6);
+}
+
+.profile-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.profile-select {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.profile-select-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.profile-select-icon {
+  position: absolute;
+  left: var(--space-3);
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.profile-select-field {
+  width: 100%;
+  min-width: 0;
+  height: var(--control-height-md);
+  padding: 0 var(--space-3) 0 calc(var(--space-8) + var(--space-1));
+  font-size: var(--font-size-base);
+  color: var(--color-text-main);
+  background-color: var(--color-bg-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-normal);
+}
+.profile-select-field:hover { border-color: var(--color-border-hover); }
+.profile-select-field:focus { border-color: var(--color-border-focus); box-shadow: 0 0 0 4px var(--color-primary-ring); }
+.profile-select.has-error .profile-select-field { border-color: var(--color-danger); background-color: var(--color-danger-bg); }
+
+@media (max-width: 768px) {
+  .profile-select-field { height: var(--touch-target); }
+}
+
+@media (max-width: 640px) {
+  .profile-actions .app-button { width: 100%; }
+}

@@ -8,7 +8,9 @@
     "build": "npm --prefix frontend run build",
     "preview": "npm --prefix frontend run preview",
     "typecheck": "npm --prefix frontend run typecheck",
-    "supabase:types": "supabase gen types typescript --local > frontend/src/types/supabase.ts"
+    "import:ba": "npm --prefix supabase/scripts run import:ba",
+    "import:ba:dry": "npm --prefix supabase/scripts run import:ba:dry",
+    "supabase:types": "npm --prefix supabase/scripts run gen:types"
   },
   "keywords": [
     "typescript",

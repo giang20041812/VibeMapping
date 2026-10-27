@@ -1,66 +1,110 @@
 .app-button {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  border-radius: var(--radius-md);
-  font-weight: 500;
-  transition: all var(--transition-fast);
-  white-space: nowrap;
-  position: relative;
+  overflow: hidden;
   border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  white-space: nowrap;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    box-shadow var(--transition-normal),
+    transform var(--transition-normal);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app-button:focus-visible {
+  outline: 3px solid var(--color-primary-ring);
+  outline-offset: 2px;
+}
+
+.app-button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.btn-block {
+  width: 100%;
 }
 
 /* Sizes */
 .btn-sm {
-  height: var(--control-height-sm);
+  min-height: var(--control-height-sm);
   padding: 0 var(--space-3);
   font-size: var(--font-size-xs);
 }
 
 .btn-md {
-  height: var(--control-height-md);
-  padding: 0 var(--space-4);
+  min-height: var(--control-height-md);
+  padding: 0 var(--space-5);
   font-size: var(--font-size-base);
 }
 
 .btn-lg {
-  height: var(--control-height-lg);
-  padding: 0 var(--space-6);
+  min-height: var(--control-height-lg);
+  padding: 0 var(--space-8);
   font-size: var(--font-size-md);
+}
+
+@media (max-width: 768px) {
+  .btn-sm,
+  .btn-md {
+    min-height: var(--touch-target);
+  }
 }
 
 /* Variants */
 .btn-primary {
   background-color: var(--color-primary);
   color: var(--color-text-inverse);
+  box-shadow: var(--shadow-sm);
+}
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-shine);
+  transform: translateX(-120%);
+  pointer-events: none;
 }
 .btn-primary:hover:not(:disabled) {
   background-color: var(--color-primary-hover);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-1px);
+}
+.btn-primary:hover:not(:disabled)::after {
+  transform: translateX(120%);
+  transition: transform 700ms var(--ease-out);
 }
 .btn-primary:active:not(:disabled) {
   background-color: var(--color-primary-active);
 }
 
 .btn-secondary {
-  background-color: var(--color-bg-subtle);
-  color: var(--color-text-main);
-  border-color: var(--color-border);
+  background-color: var(--brand-ice);
+  color: var(--color-text-brand);
+  border-color: var(--brand-pale);
 }
 .btn-secondary:hover:not(:disabled) {
-  background-color: var(--color-bg-hover);
-  border-color: var(--color-border-hover);
+  background-color: var(--brand-mist);
+  border-color: var(--brand-soft);
+  transform: translateY(-1px);
 }
 
 .btn-outline {
-  background-color: transparent;
-  color: var(--color-text-main);
-  border-color: var(--color-border);
+  background-color: var(--color-bg-surface);
+  color: var(--color-text-brand);
+  border-color: var(--color-border-hover);
 }
 .btn-outline:hover:not(:disabled) {
-  background-color: var(--color-bg-subtle);
-  border-color: var(--color-border-hover);
+  background-color: var(--brand-ice);
+  border-color: var(--brand-sky);
+  transform: translateY(-1px);
 }
 
 .btn-danger {
@@ -68,7 +112,8 @@
   color: var(--color-text-inverse);
 }
 .btn-danger:hover:not(:disabled) {
-  background-color: #dc2626;
+  background-color: var(--color-danger-text);
+  transform: translateY(-1px);
 }
 
 .btn-ghost {
@@ -76,8 +121,8 @@
   color: var(--color-text-secondary);
 }
 .btn-ghost:hover:not(:disabled) {
-  background-color: var(--color-bg-subtle);
-  color: var(--color-text-main);
+  background-color: var(--brand-ice);
+  color: var(--color-text-brand);
 }
 
 /* Loading Spinner */
@@ -101,4 +146,8 @@
   display: inline-flex;
   align-items: center;
   font-size: 1.1em;
+  transition: transform var(--transition-normal);
+}
+.app-button:hover:not(:disabled) .btn-icon-right {
+  transform: translateX(3px);
 }

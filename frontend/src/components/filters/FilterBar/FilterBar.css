@@ -19,7 +19,7 @@
   color: var(--color-text-secondary);
   background-color: var(--color-bg-subtle);
   padding: 4px 10px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm);
 }
 
 .filter-bar-content {

@@ -1,0 +1,110 @@
+/* Nội dung nằm trên nền động (HomeBackdrop); chữ hòa vào nền, không đặt khung riêng */
+.home {
+  --home-width: calc(1120 * var(--px));
+  position: relative;
+  z-index: 1;
+  overflow-x: clip;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-16);
+}
+.home > * { width: 100%; max-width: var(--home-width); min-width: 0; }
+
+.text-spectrum {
+  background: var(--gradient-spectrum);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Tên sản phẩm: chữ V được thay bằng biểu tượng */
+.home-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding-top: var(--space-6);
+  text-align: center;
+  animation: home-rise var(--duration-reveal) var(--ease-out) both;
+}
+.home-brand-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0 0.28em;
+  font-size: clamp(calc(38 * var(--px)), 11vw, calc(88 * var(--px)));
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.home-brand-word { display: inline-flex; align-items: baseline; }
+.home-brand-mark {
+  flex: none;
+  width: 1.6em;
+  height: 1.6em;
+  margin-right: -0.1em;
+  transform: translateY(0.12em);
+  filter: drop-shadow(0 6px 14px var(--glow-sky));
+}
+.home-brand-mark .logo-svg { display: block; }
+.home-brand-vibe { color: var(--color-text-main); }
+.home-brand-mapping { color: var(--color-accent); }
+.home-brand-lead {
+  max-width: calc(560 * var(--px));
+  font-size: var(--font-size-2xl);
+  line-height: 1.4;
+  color: var(--color-text-secondary);
+}
+
+/* Hàng giới thiệu so le hai bên: hai cột bằng nhau, chữ và hình cùng cỡ */
+.feature {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: center;
+  gap: var(--space-16);
+}
+.feature-flip .feature-visual { order: -1; }
+
+.feature-visual {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+  opacity: 0;
+  transform: translateX(56px) scale(0.94);
+  transition: opacity var(--transition-slow), transform var(--transition-slow);
+}
+.feature-flip .feature-visual { transform: translateX(-56px) scale(0.94); }
+.feature.is-visible .feature-visual { opacity: 1; transform: none; }
+
+.feature-copy { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-5); min-width: 0; }
+.feature-copy > * { opacity: 0; }
+.feature.is-visible .feature-copy > * { animation: home-rise var(--duration-reveal) var(--ease-out) both; }
+.feature.is-visible .feature-copy > :nth-child(1) { animation-delay: 120ms; }
+.feature.is-visible .feature-copy > :nth-child(2) { animation-delay: 200ms; }
+.feature.is-visible .feature-copy > :nth-child(3) { animation-delay: 280ms; }
+
+/* Khung hình minh họa dùng component Stage; ở đây chỉ đặt cỡ theo cột */
+.feature-stage { max-width: calc(480 * var(--px)); }
+
+.feature-title { font-size: var(--font-size-4xl); font-weight: 800; line-height: var(--line-tight); letter-spacing: -0.02em; color: var(--color-text-main); }
+.feature-lead { max-width: calc(480 * var(--px)); font-size: var(--font-size-xl); line-height: 1.5; color: var(--color-text-secondary); }
+.feature-link { margin-top: var(--space-2); text-decoration: none; border-radius: var(--radius-md); }
+
+@keyframes home-rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 900px) {
+  .home { gap: var(--space-12); }
+  .feature { grid-template-columns: minmax(0, 1fr); gap: var(--space-8); }
+  .feature-flip .feature-visual { order: 0; }
+  .feature-visual,
+  .feature-flip .feature-visual { transform: translateY(32px) scale(0.96); }
+  .feature-title { font-size: var(--font-size-3xl); }
+}
+
+@media (max-width: 520px) {
+  .home { gap: var(--space-10); }
+  .home-brand-lead { font-size: var(--font-size-xl); }
+}

@@ -1,0 +1,52 @@
+/* Khung hình minh họa: viền dải màu đứng yên, nền tối để ánh sáng nổi bật */
+.stage-frame {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2px;
+  overflow: hidden;
+  border-radius: calc(var(--radius-2xl) + 2px);
+  box-shadow: var(--shadow-lg);
+}
+.stage-frame::before {
+  content: '';
+  position: absolute;
+  inset: -70%;
+  z-index: -1;
+  background: conic-gradient(var(--accent-cyan), var(--accent-violet), var(--accent-magenta), var(--brand-gold), var(--accent-teal), var(--accent-cyan));
+  opacity: 0.45;
+}
+
+.stage {
+  position: relative;
+  padding: var(--space-6);
+  overflow: hidden;
+  background: var(--gradient-stage);
+  border-radius: var(--radius-2xl);
+}
+.stage::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(var(--stage-line) 1px, transparent 1.4px);
+  background-size: 22px 22px;
+  -webkit-mask-image: radial-gradient(circle at 50% 45%, black, transparent 74%);
+  mask-image: radial-gradient(circle at 50% 45%, black, transparent 74%);
+}
+.stage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(58% 48% at 12% 0%, var(--glow-violet), transparent),
+    radial-gradient(52% 46% at 100% 100%, var(--glow-cyan), transparent);
+  opacity: 0.55;
+}
+.stage > * { position: relative; z-index: 1; }
+
+@media (max-width: 760px) {
+  .stage { padding: var(--space-4) var(--space-3); }
+}

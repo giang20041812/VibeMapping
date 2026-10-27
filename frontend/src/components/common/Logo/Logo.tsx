@@ -17,6 +17,7 @@ export const LogoMark: React.FC<{ animated?: boolean }> = ({ animated = false })
     role="img"
     aria-label="Vibe Mapping"
   >
+    <g transform="translate(0 10)">
     <g className="logo-map">
       <path className="logo-map-light logo-map-panel logo-map-panel-1" d="M24 134 L72 104 L72 188 L24 218 Z" />
       <path className="logo-map-dark logo-map-panel logo-map-panel-2" d="M72 104 L120 134 L120 218 L72 188 Z" />
@@ -25,7 +26,9 @@ export const LogoMark: React.FC<{ animated?: boolean }> = ({ animated = false })
       <path className="logo-route" d="M36 184 Q50 158 62 168" />
       <path className="logo-route" d="M180 156 Q196 182 208 164" />
     </g>
+    </g>
 
+    <g transform="translate(0 -16)">
     <g className="logo-character">
       <path className="logo-pin" d="M120 202 L78.6 116 A46 46 0 1 1 161.4 116 Z" />
       <path className="logo-pin-v-edge" d="M86.3 132 L120 202 L153.7 132" />
@@ -52,6 +55,7 @@ export const LogoMark: React.FC<{ animated?: boolean }> = ({ animated = false })
           <path className="logo-fringe" d="M179 118 L179 126 M182 118 L182 128 M185 118 L185 126" />
         </g>
       </g>
+    </g>
     </g>
   </svg>
 );

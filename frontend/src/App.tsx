@@ -1,9 +1,14 @@
 import React from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useParams } from 'react-router-dom';
-import { AuthProvider } from './modules/auth/AuthContext';
+import { AuthProvider, useAuth } from './modules/auth/AuthContext';
 import { AuthLayout } from './components/layout/AuthLayout';
 import { AppLayout } from './components/layout/AppLayout';
-import { GuestOnly, RequireAuth } from './components/layout/RouteGuards';
+import { GuestOnly, RequireAuth, RequireRole } from './components/layout/RouteGuards';
+import { PackageAssignmentsPage } from './modules/admin/pages/PackageAssignmentsPage';
+import { QuestionBankPage } from './modules/admin/pages/QuestionBankPage';
+import { CriteriaPage } from './modules/admin/pages/CriteriaPage';
+import { OperationParametersPage } from './modules/admin/pages/OperationParametersPage';
+import { AuditLogsPage } from './modules/admin/pages/AuditLogsPage';
 import { LoginPage } from './modules/auth/pages/LoginPage';
 import { RegisterPage } from './modules/auth/pages/RegisterPage';
 import { ForgotPasswordPage } from './modules/auth/pages/ForgotPasswordPage';
@@ -17,6 +22,14 @@ import { GuestLayout } from './components/layout/GuestLayout';
 import { GuestAssessmentPage } from './modules/guest_assessment/pages/GuestAssessmentPage';
 import { Assessment360Page } from './modules/assessment_360/pages/Assessment360Page';
 import { Assessment360SamplePage } from './modules/assessment_360/pages/Assessment360SamplePage';
+import { SkeletonSamplePage } from './modules/dev/SkeletonSamplePage';
+
+/** Quản trị hệ thống không dùng trang chủ của học sinh: vào thẳng khu quản trị */
+const HomeRoute: React.FC = () => {
+  const { profile, isProfileLoading } = useAuth();
+  if (!isProfileLoading && profile?.role === 'system_admin') return <Navigate to="/quan-tri" replace />;
+  return <HomePage />;
+};
 
 /** Đường dẫn cũ của phiên làm bài */
 const LegacySessionRedirect: React.FC = () => {
@@ -38,11 +51,20 @@ export const App: React.FC = () => (
 
         <Route element={<RequireAuth />}>
           <Route element={<AppLayout />}>
-            <Route path="/" element={<HomePage />} />
+            <Route path="/" element={<HomeRoute />} />
             <Route path="/ho-so" element={<ProfilePage />} />
             <Route path="/danh-gia-ca-nhan" element={<PersonalAssessmentPage />} />
             <Route path="/danh-gia-ca-nhan/:sessionId" element={<AssessmentRunPage />} />
             <Route path="/danh-gia-360" element={<Assessment360Page />} />
+
+            <Route element={<RequireRole roles={['system_admin']} />}>
+              <Route path="/quan-tri" element={<Navigate to="/quan-tri/goi-cau-hoi" replace />} />
+              <Route path="/quan-tri/goi-cau-hoi" element={<PackageAssignmentsPage />} />
+              <Route path="/quan-tri/cau-hoi" element={<QuestionBankPage />} />
+              <Route path="/quan-tri/tieu-chi" element={<CriteriaPage />} />
+              <Route path="/quan-tri/tham-so" element={<OperationParametersPage />} />
+              <Route path="/quan-tri/nhat-ky" element={<AuditLogsPage />} />
+            </Route>
           </Route>
         </Route>
 
@@ -61,6 +83,7 @@ export const App: React.FC = () => (
           <Route element={<AppLayout />}>
             <Route path="/dev/ket-qua-mau" element={<AssessmentResultSamplePage />} />
             <Route path="/dev/danh-gia-360-mau" element={<Assessment360SamplePage />} />
+            <Route path="/dev/khung-cho" element={<SkeletonSamplePage />} />
           </Route>
         )}
 

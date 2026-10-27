@@ -37,7 +37,9 @@
   gap: var(--space-3);
   min-height: 56px;
   padding: var(--space-2) var(--space-4) var(--space-2) var(--space-2);
-  background: var(--color-bg-surface);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-lg);
   cursor: pointer;
@@ -115,7 +117,9 @@
   position: relative;
   width: 24px;
   height: 24px;
-  background: var(--color-bg-surface);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border: 2px solid var(--color-border-hover);
   border-radius: var(--radius-sm);
   transition: background-color var(--transition-fast), border-color var(--transition-fast);

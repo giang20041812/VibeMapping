@@ -1,5 +1,5 @@
 import { Brain, Crown, Fingerprint, Flame, Heart, MessagesSquare, Smile, type LucideIcon } from 'lucide-react';
-import type { CompetencyLevel, ResultStatusLabel } from './assessmentResult.types';
+import type { AssessmentResultSummary, CompetencyLevel, ResultStatusLabel } from './assessmentResult.types';
 
 /** Tên rút gọn hiển thị trên nhãn trục của biểu đồ đa giác */
 export const GROUP_SHORT_LABELS: Record<string, string> = {
@@ -34,6 +34,28 @@ export const NO_DATA_LABEL = 'Chưa đủ dữ liệu';
 
 export const DISCLAIMER_TEXT =
   'Kết quả chỉ mang tính tham khảo định hướng, không phải chẩn đoán tâm lý hay cam kết trúng tuyển.';
+
+/** Bộ khung rỗng để vẽ biểu đồ và bảng điểm khi chưa có kết quả */
+export const EMPTY_RESULT: AssessmentResultSummary = {
+  id: 'empty',
+  statusLabel: 'self_assessment',
+  acceptedCount: 0,
+  expectedCount: 0,
+  groupsCount: 0,
+  thinDataFlag: false,
+  insufficientBasisWarning: false,
+  calculatedAt: null,
+  finalizedAt: null,
+  groups: [
+    { groupCode: 'G1', name: 'Tính cách cá nhân', sortOrder: 1, self: null, combined: null },
+    { groupCode: 'G2', name: 'Tư duy & Năng lực học tập', sortOrder: 2, self: null, combined: null },
+    { groupCode: 'G3', name: 'Giao tiếp & Xã hội', sortOrder: 3, self: null, combined: null },
+    { groupCode: 'G4', name: 'Thái độ & Tinh thần làm việc', sortOrder: 4, self: null, combined: null },
+    { groupCode: 'G5', name: 'Lãnh đạo & Tổ chức', sortOrder: 5, self: null, combined: null },
+    { groupCode: 'G6', name: 'Sở thích cá nhân tương thích giá trị nghề nghiệp', sortOrder: 6, self: null, combined: null },
+    { groupCode: 'G7', name: 'Động lực', sortOrder: 7, self: null, combined: null },
+  ],
+};
 
 export function competencyOf(value: number | null) {
   if (value === null) return null;

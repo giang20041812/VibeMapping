@@ -6,7 +6,9 @@
   gap: var(--space-2);
   overflow: hidden;
   border: 1px solid transparent;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-full);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   font-weight: 600;
   letter-spacing: 0.005em;
   white-space: nowrap;
@@ -60,9 +62,10 @@
 
 /* Variants */
 .btn-primary {
-  background-color: var(--color-primary);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--brand-sky) 82%, transparent), color-mix(in srgb, var(--color-primary) 88%, transparent));
   color: var(--color-text-inverse);
-  box-shadow: var(--shadow-sm);
+  border-color: var(--glass-border);
+  box-shadow: var(--glass-edge), 0 8px 18px -8px color-mix(in srgb, var(--color-primary) 70%, transparent);
 }
 .btn-primary::after {
   content: '';
@@ -73,8 +76,8 @@
   pointer-events: none;
 }
 .btn-primary:hover:not(:disabled) {
-  background-color: var(--color-primary-hover);
-  box-shadow: var(--shadow-glow);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--brand-sky) 92%, transparent), color-mix(in srgb, var(--color-primary-hover) 94%, transparent));
+  box-shadow: var(--glass-edge), var(--shadow-glow);
   transform: translateY(-1px);
 }
 .btn-primary:hover:not(:disabled)::after {
@@ -82,13 +85,14 @@
   transition: transform 700ms var(--ease-out);
 }
 .btn-primary:active:not(:disabled) {
-  background-color: var(--color-primary-active);
+  background: color-mix(in srgb, var(--color-primary-active) 92%, transparent);
 }
 
 .btn-secondary {
-  background-color: var(--brand-ice);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--brand-ice) 85%, transparent), color-mix(in srgb, var(--brand-mist) 55%, transparent));
   color: var(--color-text-brand);
-  border-color: var(--brand-pale);
+  border-color: var(--glass-border);
+  box-shadow: var(--glass-edge);
 }
 .btn-secondary:hover:not(:disabled) {
   background-color: var(--brand-mist);
@@ -97,9 +101,10 @@
 }
 
 .btn-outline {
-  background-color: var(--color-bg-surface);
+  background: var(--glass-bg-strong);
   color: var(--color-text-brand);
-  border-color: var(--color-border-hover);
+  border-color: var(--glass-border);
+  box-shadow: var(--glass-edge);
 }
 .btn-outline:hover:not(:disabled) {
   background-color: var(--brand-ice);
@@ -108,11 +113,13 @@
 }
 
 .btn-danger {
-  background-color: var(--color-danger);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--color-danger) 80%, transparent), color-mix(in srgb, var(--color-danger-text) 88%, transparent));
   color: var(--color-text-inverse);
+  border-color: var(--glass-border);
+  box-shadow: var(--glass-edge);
 }
 .btn-danger:hover:not(:disabled) {
-  background-color: var(--color-danger-text);
+  background: color-mix(in srgb, var(--color-danger-text) 94%, transparent);
   transform: translateY(-1px);
 }
 

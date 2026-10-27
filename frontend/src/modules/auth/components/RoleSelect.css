@@ -27,7 +27,9 @@
   padding: var(--space-2);
   text-align: center;
   color: var(--color-text-secondary);
-  background: var(--color-bg-surface);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-lg);
   cursor: pointer;

@@ -1,0 +1,4 @@
+.guest-intro-head .guest-skeleton-title { height: calc(29 * var(--px)); padding-block: calc(5 * var(--px)); }
+.choice-group .guest-skeleton-legend { margin-bottom: var(--space-2); }
+.choice-options .guest-skeleton-option { flex: none; width: calc(104 * var(--px)); height: var(--touch-target); min-height: 0; border-radius: var(--radius-sm); }
+.guest-intro .guest-skeleton-submit { width: 100%; }

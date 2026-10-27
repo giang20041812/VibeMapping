@@ -33,9 +33,12 @@
   padding: var(--space-2) var(--space-4);
   font-size: var(--font-size-sm);
   color: var(--brand-deep);
-  background: var(--brand-ice);
-  border: 1.5px solid var(--brand-pale);
-  border-radius: var(--radius-md);
+  background: var(--chip-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--chip-border);
+  border-radius: var(--radius-full);
+  box-shadow: var(--chip-shadow);
 }
 .review-progress-chip strong { font-size: var(--font-size-lg); font-weight: 800; }
 .review-progress-name { font-weight: 600; }
@@ -53,7 +56,9 @@
   font-size: var(--font-size-base);
   font-weight: 700;
   color: var(--color-text-secondary);
-  background: var(--color-bg-surface);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-md);
   transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
@@ -91,7 +96,9 @@
   align-items: center;
   gap: var(--space-3) var(--space-5);
   padding: var(--space-4) var(--space-5);
-  background: var(--color-bg-surface);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border: 1.5px solid var(--color-border);
   border-left-width: 5px;
   border-radius: var(--radius-lg);

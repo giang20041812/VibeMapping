@@ -3,11 +3,11 @@
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  background: var(--gradient-soft);
-  background-color: var(--color-bg-app);
 }
 
 .guest-header {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -15,6 +15,8 @@
 }
 
 .guest-main {
+  position: relative;
+  z-index: 1;
   flex: 1 0 auto;
   width: 100%;
   max-width: 760px;

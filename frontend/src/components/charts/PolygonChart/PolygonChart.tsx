@@ -30,6 +30,8 @@ export interface PolygonChartProps {
   noDataLabel?: string;
   /** Hiện dòng số đọc (điểm và mức) của trục đang chọn; mặc định bật */
   showReadout?: boolean;
+  /** Hiện điểm % ngay dưới tên mỗi nhóm; mặc định tắt */
+  showNodeValues?: boolean;
   className?: string;
 }
 
@@ -264,6 +266,7 @@ export const PolygonChart: React.FC<PolygonChartProps> = ({
   referenceLabel = 'Tự đánh giá',
   noDataLabel = 'Chưa đủ dữ liệu',
   showReadout = true,
+  showNodeValues = false,
   className = '',
 }) => {
   const uid = useId().replace(/[^a-zA-Z0-9_-]/g, '');
@@ -336,6 +339,7 @@ export const PolygonChart: React.FC<PolygonChartProps> = ({
                 <Icon size={20} aria-hidden="true" />
               </span>
               <span className="polygon-node-name">{axis.shortLabel ?? axis.label}</span>
+              {showNodeValues && <span className="polygon-node-value">{axis.value === null ? '–' : `${Math.round(axis.value)}%`}</span>}
             </button>
           );
         })}

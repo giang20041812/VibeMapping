@@ -1,0 +1,19 @@
+.polygon-skeleton {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  margin-inline: auto;
+  aspect-ratio: 1 / 1;
+}
+
+.polygon-skeleton-outer,
+.polygon-skeleton-inner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  aspect-ratio: 1 / 1;
+  border-radius: 0;
+  clip-path: polygon(50% 0%, 90% 19%, 100% 62%, 72% 97%, 28% 97%, 0% 62%, 10% 19%);
+}
+.polygon-skeleton-outer { width: 74%; transform: translate(-50%, -50%); }
+.polygon-skeleton-inner { width: 40%; transform: translate(-50%, -50%); animation-delay: 160ms; opacity: 0.7; }

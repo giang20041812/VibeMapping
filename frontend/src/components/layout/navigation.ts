@@ -1,20 +1,31 @@
-import { Globe, Home, Radar, type LucideIcon } from 'lucide-react';
+import type React from 'react';
+import { ClipboardList, History, Layers, Library, SlidersHorizontal } from 'lucide-react';
+import { Globe360Icon, HomeIcon, PersonalIcon, type NavIconProps } from './NavIcons';
 import type { UserRole } from '../../modules/auth/auth.types';
 
 export interface NavItem {
   to: string;
   label: string;
-  icon: LucideIcon;
+  icon: React.FC<NavIconProps>;
   /** Chỉ hiện cho các vai trò này; bỏ trống là hiện cho mọi vai trò */
   roles?: UserRole[];
   end?: boolean;
 }
 
+/** Mọi vai trò dùng trang chủ, trừ quản trị hệ thống (vào thẳng khu quản trị) */
+const HOME_ROLES: UserRole[] = ['student', 'university_student', 'parent', 'teacher', 'mentor', 'school_admin'];
+const ADMIN_ROLES: UserRole[] = ['system_admin'];
+
 /** Mục điều hướng chính của thanh bên trái; hồ sơ, đổi mật khẩu, thông báo nằm trong menu avatar */
 export const NAV_ITEMS: NavItem[] = [
-  { to: '/', label: 'Trang chủ', icon: Home, end: true },
-  { to: '/danh-gia-ca-nhan', label: 'Đánh giá cá nhân', icon: Radar, roles: ['student', 'university_student'] },
-  { to: '/danh-gia-360', label: 'Đánh giá 360', icon: Globe, roles: ['student', 'university_student'] },
+  { to: '/', label: 'Trang chủ', icon: HomeIcon, roles: HOME_ROLES, end: true },
+  { to: '/danh-gia-ca-nhan', label: 'Đánh giá cá nhân', icon: PersonalIcon, roles: ['student', 'university_student'] },
+  { to: '/danh-gia-360', label: 'Đánh giá 360', icon: Globe360Icon, roles: ['student', 'university_student'] },
+  { to: '/quan-tri/goi-cau-hoi', label: 'Gán câu hỏi vào gói', icon: Layers, roles: ADMIN_ROLES },
+  { to: '/quan-tri/cau-hoi', label: 'Ngân hàng câu hỏi', icon: Library, roles: ADMIN_ROLES },
+  { to: '/quan-tri/tieu-chi', label: 'Tiêu chí', icon: ClipboardList, roles: ADMIN_ROLES },
+  { to: '/quan-tri/tham-so', label: 'Tham số vận hành', icon: SlidersHorizontal, roles: ADMIN_ROLES },
+  { to: '/quan-tri/nhat-ky', label: 'Nhật ký', icon: History, roles: ADMIN_ROLES },
 ];
 
 export function navItemsFor(role: UserRole | undefined): NavItem[] {

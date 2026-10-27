@@ -111,6 +111,15 @@
   --glow-sky: rgba(30, 158, 219, 0.55);
   --glow-coral: rgba(255, 138, 92, 0.5);
   --surface-glass: rgba(255, 255, 255, 0.82);
+  --glass-bg: linear-gradient(125deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.14) 38%, rgba(255, 255, 255, 0.1) 62%, rgba(255, 255, 255, 0.34) 100%);
+  --glass-bg-strong: linear-gradient(125deg, rgba(255, 255, 255, 0.66) 0%, rgba(255, 255, 255, 0.3) 40%, rgba(255, 255, 255, 0.24) 62%, rgba(255, 255, 255, 0.5) 100%);
+  --glass-border: rgba(255, 255, 255, 0.85);
+  --glass-blur: blur(10px) saturate(1.4);
+  --chip-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.46));
+  --chip-border: rgba(255, 255, 255, 0.9);
+  --chip-shadow: inset 0 1px 0 rgba(255, 255, 255, 1), 0 1px 2px rgba(3, 25, 100, 0.12), 0 4px 10px -4px rgba(3, 25, 100, 0.18);
+  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 0 rgba(255, 255, 255, 0.5), inset 1px 0 0 rgba(255, 255, 255, 0.6), inset -1px 0 0 rgba(255, 255, 255, 0.35);
+  --glass-shadow: var(--glass-edge), 0 10px 28px -14px rgba(3, 25, 100, 0.28);
   --scrim: rgba(3, 25, 100, 0.5);
 
   /* Gradient */

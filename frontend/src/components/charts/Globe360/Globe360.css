@@ -99,7 +99,7 @@
   color: var(--globe-chip-text);
   background: var(--globe-chip-bg);
   border: 1px solid var(--globe-chip-line);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-full);
   box-shadow: inset 0 -2px 0 var(--tone);
   transition:
     transform var(--transition-normal),

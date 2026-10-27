@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Bell, CheckCheck } from 'lucide-react';
+import { Skeleton, SkeletonRegion } from '../common';
 import { useAuth } from '../../modules/auth/AuthContext';
 import {
   countUnreadNotifications,
@@ -11,6 +12,7 @@ import {
 import type { AppNotification } from '../../modules/account/account.service';
 
 const REFRESH_MS = 60_000;
+const NOTIF_SKELETONS = [0, 1, 2];
 
 const formatAgo = (iso: string) => {
   const minutes = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60_000));
@@ -160,7 +162,17 @@ export const NotificationMenu: React.FC = () => {
 
           {hasError && <p className="top-popover-error">Không tải hoặc không lưu được thông báo</p>}
 
-          {items === null && !hasError && <p className="notif-empty">Đang tải…</p>}
+          {items === null && !hasError && (
+            <SkeletonRegion className="notif-list">
+              {NOTIF_SKELETONS.map((slot) => (
+                <div key={slot} className="notif-item notif-item-skeleton" aria-hidden="true">
+                  <Skeleton shape="text" width={65} />
+                  <Skeleton shape="text" width={90} />
+                  <Skeleton shape="text" width={25} className="notif-skeleton-time" />
+                </div>
+              ))}
+            </SkeletonRegion>
+          )}
           {items !== null && items.length === 0 && <p className="notif-empty">Chưa có thông báo</p>}
 
           {items !== null && items.length > 0 && (

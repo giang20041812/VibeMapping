@@ -99,7 +99,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onToggle, onClose }) => 
                 onClick={collapse}
               >
                 <span className="sidebar-link-icon">
-                  <Icon size={20} aria-hidden="true" />
+                  <Icon size={22} />
                 </span>
                 <span className="sidebar-link-label">{item.label}</span>
               </NavLink>

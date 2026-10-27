@@ -32,7 +32,9 @@
   flex-direction: column;
   gap: var(--space-2);
   padding: var(--space-6);
-  background: var(--color-bg-surface);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border: 2px solid var(--color-border);
   border-radius: var(--radius-xl);
   cursor: pointer;
@@ -66,7 +68,9 @@
   right: var(--space-4);
   width: 24px;
   height: 24px;
-  background: var(--color-bg-surface);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border: 2px solid var(--color-border-hover);
   border-radius: var(--radius-sm);
   transition: background-color var(--transition-fast), border-color var(--transition-fast);
@@ -110,6 +114,9 @@
 }
 
 .start-actions { display: flex; justify-content: flex-end; }
+
+/* Trong hộp thoại: bảng số câu xuống dưới thẻ chọn gói */
+.modal-dialog .start-choice { grid-template-columns: minmax(0, 1fr); }
 
 @keyframes package-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes resume-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }

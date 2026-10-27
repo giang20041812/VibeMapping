@@ -2,6 +2,8 @@ import React from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { LogoMark } from '../common';
 import { useAuth } from '../../modules/auth/AuthContext';
+import type { UserRole } from '../../modules/auth/auth.types';
+import { PageSkeleton } from './PageSkeleton';
 import './RouteGuards.css';
 
 const FullPageLoader: React.FC = () => (
@@ -18,6 +20,14 @@ export const RequireAuth: React.FC = () => {
   const location = useLocation();
   if (isLoading) return <FullPageLoader />;
   if (!session) return <Navigate to="/dang-nhap" replace state={{ from: location.pathname }} />;
+  return <Outlet />;
+};
+
+/** Chỉ cho vai trò được liệt kê (trang quản trị: system_admin); vai trò khác về trang chủ */
+export const RequireRole: React.FC<{ roles: UserRole[] }> = ({ roles }) => {
+  const { profile, isProfileLoading } = useAuth();
+  if (isProfileLoading) return <PageSkeleton />;
+  if (!profile || !roles.includes(profile.role)) return <Navigate to="/" replace />;
   return <Outlet />;
 };
 

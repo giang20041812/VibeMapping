@@ -194,6 +194,13 @@ Guard theo `user_profiles.role`; trang quản trị chỉ `system_admin`.
 | `/danh-gia-ca-nhan/:sessionId` | Làm bài | 4 phần tuần tự có khóa, 1 câu một màn hình, thang 1–5 (phím 1–5, Enter), "Không đủ cơ sở" lưu NULL, lưu ngay từng câu, báo cáo tính cách, giá trị cốt lõi (chọn 3–5, sắp thứ tự), mã Holland, minh chứng, hoàn thành |
 | `/dev/ket-qua-mau` | Xem thử (chỉ khi `npm run dev`) | Dữ liệu mẫu |
 | `/dev/danh-gia-360-mau` | Xem thử (chỉ khi `npm run dev`) | Đánh giá 360 với dữ liệu mẫu, bấm công tắc để xem quả địa cầu đổi màu |
+| `/quan-tri/goi-cau-hoi` | Gán câu hỏi vào gói (chỉ `system_admin`) | Câu hỏi góc nhìn bản thân, lọc theo nhóm/tiêu chí/phần/mức; tích từng gói 35/50/75 hoặc chọn nhiều dòng rồi thêm/gỡ theo lô (RPC `set_package_assignments`, một dòng nhật ký cho cả lô); đếm số câu mỗi gói |
+| `/quan-tri/cau-hoi` | Ngân hàng câu hỏi | Lọc + phân trang 25 dòng; thêm/sửa (mã chỉ nhập khi thêm), ẩn/hiện; không xóa vì câu trả lời đã tham chiếu |
+| `/quan-tri/tieu-chi` | Tiêu chí | Sửa nhóm (tên, thứ tự, dùng/ẩn) và tiêu chí (định nghĩa, chỉ báo, mã Holland, hiển thị + phương pháp thang đo theo từng nhóm người đánh giá). Chưa thêm/xóa tiêu chí |
+| `/quan-tri/tham-so` | Tham số vận hành | Mỗi lần lưu là một bản ghi mới (bản cũ tự đóng), có lịch sử; kiểm tra: `self_weight` 0–1, mức quy đổi > 0, ngưỡng năng lực giảm dần (trigger `validate_operation_parameter` kiểm lại ở database) |
+| `/quan-tri/nhat-ky` | Nhật ký | Lọc theo thao tác, người dùng (người thực hiện hoặc học sinh), đối tượng, khoảng ngày; bấm dòng xem chi tiết. Migration `20261028000100_phase1_admin_tools.sql` thêm trigger tự ghi mọi thay đổi cấu hình của admin (bỏ qua service role) |
+
+**Quản trị – chưa kiểm tra:** chưa chạy trên Supabase thật (cần áp migration `20261028000100` và một tài khoản `system_admin` cấp tay). `typecheck` và `build` sạch. `supabase/all-migrations.sql` đã cũ (dừng ở migration 9), chưa gộp thêm.
 
 **Cách đã kiểm tra:** chạy trọn luồng đăng nhập, hồ sơ, chọn gói, trả lời 31 câu, giá trị cốt lõi, minh chứng, hoàn thành, kết quả bằng Chrome giả lập ở 1280 px và 390 px với một tài khoản thử tạo qua API quản trị trên Supabase thật (đã xóa sau mỗi lần). Kiểm trong database: câu trả lời, NULL "không đủ cơ sở", giá trị cốt lõi, minh chứng, kết quả "Tự đánh giá", điểm 7 nhóm đều đúng. Chưa thử: Samsung Internet, Safari, Firefox, trình đọc màn hình, đăng ký bằng email thật.
 

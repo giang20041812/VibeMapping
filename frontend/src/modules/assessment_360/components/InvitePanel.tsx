@@ -1,13 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
-import { Alert, Button, Modal, Skeleton } from '../../../components/common';
+import { Alert, Button, Modal } from '../../../components/common';
 import type { GlobeNode } from '../../../components/charts/Globe360/Globe360';
 import { GroupPicker } from '../../invitation_link/components/GroupPicker';
 import { LinkCard } from '../../invitation_link/components/LinkCard';
 import { CONSENT_NOTE, CONSENT_QUESTION, GROUP_LABEL } from '../../invitation_link/invitation.constants';
 import type { InviteController } from '../useInviteController';
 import { GlobeSwitch } from './GlobeSwitch';
+import { GlobeSwitchSkeleton } from './Assessment360Skeleton';
 
 export interface InvitePanelProps {
   controller: InviteController;
@@ -21,7 +22,7 @@ export const InvitePanel: React.FC<InvitePanelProps> = ({ controller, nodes }) =
   if (isLoading) {
     return (
       <div className="t360-wide">
-        <Skeleton className="skeleton-block" />
+        <GlobeSwitchSkeleton />
       </div>
     );
   }

@@ -12,6 +12,8 @@
   animation: modal-fade 220ms var(--ease-out) both;
 }
 
+.modal-dialog.is-wide { max-width: 880px; }
+
 .modal-dialog {
   z-index: var(--z-modal);
   display: flex;

@@ -217,6 +217,13 @@
 }
 
 .polygon-node-name { white-space: nowrap; text-shadow: var(--chart-name-shadow); }
+.polygon-node-value {
+  font-size: var(--font-size-sm);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--chart-text-strong);
+  text-shadow: var(--chart-name-shadow);
+}
 
 /* Số đọc */
 .polygon-readout {

@@ -11,9 +11,12 @@
   font-size: var(--font-size-md);
   font-weight: 700;
   color: var(--color-text-secondary);
-  background: var(--color-bg-surface);
-  border: 1.5px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  background: var(--chip-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--chip-border);
+  border-radius: var(--radius-full);
+  box-shadow: var(--chip-shadow);
   transition:
     background-color var(--transition-fast),
     border-color var(--transition-fast),

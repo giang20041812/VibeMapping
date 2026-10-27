@@ -61,5 +61,6 @@
 }
 
 @media (max-width: 640px) {
-  .profile-actions .app-button { width: 100%; }
+  .profile-actions .app-button,
+  .profile-actions .skeleton-button-lg { width: 100%; }
 }

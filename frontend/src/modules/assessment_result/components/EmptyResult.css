@@ -5,7 +5,9 @@
   gap: var(--space-4);
   padding: var(--space-16) var(--space-4);
   text-align: center;
-  background: var(--color-bg-surface);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border: 1.5px dashed var(--color-border-hover);
   border-radius: var(--radius-xl);
   animation: empty-in var(--duration-reveal) var(--ease-out) both;
@@ -29,12 +31,6 @@
   color: var(--color-text-secondary);
 }
 
-.result-skeleton {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-5);
-}
-
 @keyframes empty-in {
   from { opacity: 0; transform: scale(0.97); }
   to { opacity: 1; transform: scale(1); }
@@ -42,8 +38,4 @@
 @keyframes empty-float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-6px); }
-}
-
-@media (max-width: 760px) {
-  .result-skeleton { grid-template-columns: minmax(0, 1fr); }
 }

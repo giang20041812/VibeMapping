@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Calendar, GraduationCap, School, Tag, User } from 'lucide-react';
 import { Alert, Badge, Button, Card, Input } from '../../../components/common';
 import { useAuth } from '../../auth/AuthContext';
+import { ProfileSkeleton } from '../components/ProfileSkeleton';
 import {
   GRADE_OPTIONS,
   ageOf,
@@ -89,7 +90,7 @@ export const ProfilePage: React.FC = () => {
     }
   };
 
-  if (!profile) return null;
+  if (!profile) return <ProfileSkeleton />;
 
   return (
     <>

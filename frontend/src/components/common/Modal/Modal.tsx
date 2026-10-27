@@ -12,9 +12,11 @@ export interface ModalProps {
   actions?: React.ReactNode;
   /** Không cho đóng bằng Esc hoặc bấm nền (dùng khi đang xử lý) */
   locked?: boolean;
+  /** Hộp thoại rộng cho nội dung nhiều cột */
+  wide?: boolean;
 }
 
-export const Modal: React.FC<ModalProps> = ({ open, title, onClose, children, actions, locked = false }) => {
+export const Modal: React.FC<ModalProps> = ({ open, title, onClose, children, actions, locked = false, wide = false }) => {
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const previousFocus = useRef<HTMLElement | null>(null);
@@ -57,7 +59,7 @@ export const Modal: React.FC<ModalProps> = ({ open, title, onClose, children, ac
 
   return createPortal(
     <div className="modal-backdrop" onMouseDown={(event) => event.target === event.currentTarget && !locked && onClose()}>
-      <div ref={dialogRef} className="modal-dialog" role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1}>
+      <div ref={dialogRef} className={`modal-dialog ${wide ? 'is-wide' : ''}`} role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1}>
         <header className="modal-header">
           <h2 id={titleId} className="modal-title">
             {title}

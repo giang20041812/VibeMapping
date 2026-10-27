@@ -1,13 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { AlertTriangle, ArrowLeft, ArrowRight, Check, CheckCircle2 } from 'lucide-react';
-import { Alert, Badge, Button, Card, Input, Modal, ProgressBar, Skeleton } from '../../../components/common';
+import { Alert, Badge, Button, Card, Input, Modal, ProgressBar } from '../../../components/common';
 import { isAnswered } from '../../assessment_session/assessmentScores';
 import type { AnswerMap } from '../../assessment_session/assessmentSession.types';
 import { QuestionCard } from '../../assessment_session/components/QuestionCard';
 import { GROUP_LABEL } from '../../invitation_link/invitation.constants';
 import type { InviteGroup } from '../../invitation_link/invitation.constants';
 import { ChoiceGroup } from '../components/ChoiceGroup';
+import { GuestIntroSkeleton } from '../components/GuestIntroSkeleton';
 import {
   DEPTH_OPTIONS,
   DURATION_OPTIONS,
@@ -326,7 +327,7 @@ export const GuestAssessmentPage: React.FC = () => {
 
   // ---- Hiển thị
   if (stage.kind === 'loading') {
-    return <Skeleton className="skeleton-block" />;
+    return <GuestIntroSkeleton />;
   }
 
   if (stage.kind === 'unavailable') {

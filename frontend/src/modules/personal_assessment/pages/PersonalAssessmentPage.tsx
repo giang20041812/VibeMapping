@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { BarChart3 } from 'lucide-react';
-import { Alert, Skeleton } from '../../../components/common';
+import { useNavigate } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
+import { getInProgressSession } from '../../assessment_session/assessmentSession.service';
+import { Alert, Button, Modal } from '../../../components/common';
+import { EMPTY_RESULT } from '../../assessment_result/assessmentResult.constants';
 import { getLatestAssessmentResult } from '../../assessment_result/assessmentResult.service';
 import type { AssessmentResultSummary } from '../../assessment_result/assessmentResult.types';
+import { ResultSkeleton } from '../../assessment_result/components/ResultSkeleton';
 import { ResultView } from '../../assessment_result/components/ResultView';
 import { AssessmentStartPanel } from '../../assessment_session/components/AssessmentStartPanel';
 import { useAuth } from '../../auth/AuthContext';
@@ -18,15 +22,20 @@ export const PersonalAssessmentPage: React.FC = () => {
   const [result, setResult] = useState<AssessmentResultSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [retakeOpen, setRetakeOpen] = useState(false);
+  const [inProgressId, setInProgressId] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!userId || !learner) return;
     let active = true;
     setIsLoading(true);
     setHasError(false);
-    getLatestAssessmentResult(userId)
-      .then((value) => {
-        if (active) setResult(value);
+    Promise.all([getLatestAssessmentResult(userId), getInProgressSession(userId).catch(() => null)])
+      .then(([value, current]) => {
+        if (!active) return;
+        setResult(value);
+        setInProgressId(current?.id ?? null);
       })
       .catch(() => {
         if (active) setHasError(true);
@@ -49,26 +58,29 @@ export const PersonalAssessmentPage: React.FC = () => {
   }
 
   const resultSection = (
-    <section className="personal-section" aria-labelledby="personal-result-title">
-      <h2 id="personal-result-title" className="section-title">
-        Kết quả
-      </h2>
-      {isLoading && (
-        <div className="result-skeleton">
-          <Skeleton className="skeleton-block" />
-          <Skeleton className="skeleton-block" />
-        </div>
-      )}
+    <section className="personal-section" aria-label="Kết quả">
+
+      {isLoading && <ResultSkeleton />}
       {!isLoading && hasError && <Alert variant="danger">Không tải được kết quả đánh giá</Alert>}
       {!isLoading && !hasError && !result && (
-        <div className="empty-result">
-          <span className="empty-result-badge">
-            <BarChart3 size={36} aria-hidden="true" />
-          </span>
-          <p className="empty-result-title">Chưa có kết quả đánh giá</p>
-        </div>
+        <ResultView
+          result={EMPTY_RESULT}
+          cover={
+            <Button
+              size="lg"
+              onClick={() => (inProgressId ? navigate(`/danh-gia-ca-nhan/${inProgressId}`) : setRetakeOpen(true))}
+              rightIcon={<ArrowRight size={18} />}
+            >
+              {inProgressId ? 'Tiếp tục bài đang làm dở' : 'Làm bài đánh giá'}
+            </Button>
+          }
+        />
       )}
-      {!isLoading && !hasError && result && <ResultView result={result} />}
+      {!isLoading && !hasError && result && <ResultView
+          result={result}
+          onRetake={() => setRetakeOpen(true)}
+          onContinue={inProgressId ? () => navigate(`/danh-gia-ca-nhan/${inProgressId}`) : undefined}
+        />}
     </section>
   );
 
@@ -76,17 +88,10 @@ export const PersonalAssessmentPage: React.FC = () => {
     <>
       <h1 className="page-title">Đánh giá cá nhân</h1>
       <div className="personal-layout">
-        {result ? (
-          <>
-            {resultSection}
-            <AssessmentStartPanel showDisclaimer={false} />
-          </>
-        ) : (
-          <>
-            <AssessmentStartPanel />
-            {resultSection}
-          </>
-        )}
+        {resultSection}
+        <Modal wide open={retakeOpen} title="Làm bài đánh giá" onClose={() => setRetakeOpen(false)}>
+          <AssessmentStartPanel showDisclaimer={!result} showTitle={false} />
+        </Modal>
       </div>
     </>
   );

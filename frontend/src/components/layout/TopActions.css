@@ -202,3 +202,8 @@
 .notif-read-all:hover { background: var(--color-bg-subtle); }
 
 @keyframes top-popover-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Danh sách thông báo khi đang tải */
+.notif-item-skeleton { cursor: default; }
+.notif-item-skeleton:hover { background: transparent; }
+.notif-item-skeleton .notif-skeleton-time { height: calc(17 * var(--px)); padding-block: calc(3 * var(--px)); }

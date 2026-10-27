@@ -1684,6 +1684,10 @@ export type Database = {
         Args: { p_submission_id: string; p_decision: string };
         Returns: undefined;
       };
+      set_package_assignments: {
+        Args: { p_question_ids: string[]; p_package_size: number; p_assigned: boolean };
+        Returns: number;
+      };
       finalize_my_result: {
         Args: { p_result_id: string };
         Returns: Json;

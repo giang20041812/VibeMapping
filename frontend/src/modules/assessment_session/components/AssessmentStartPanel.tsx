@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Clock, PlayCircle } from 'lucide-react';
-import { Alert, Button, Card, Skeleton } from '../../../components/common';
+import { Alert, Button, Card } from '../../../components/common';
 import { DISCLAIMER_TEXT } from '../../assessment_result/assessmentResult.constants';
 import { useAuth } from '../../auth/AuthContext';
 import { isInviteLocked } from '../../profile/profile.logic';
@@ -22,12 +22,16 @@ import {
 import type { AssessmentSession, BankQuestion, PackageSize } from '../assessmentSession.types';
 import { selectQuestions } from '../selectQuestions';
 import { computeProgress } from '../sessionProgress';
+import { StartPanelSkeleton } from './StartPanelSkeleton';
 import './AssessmentStartPanel.css';
 
 const formatDateTime = (iso: string) =>
   new Date(iso).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
 
-export const AssessmentStartPanel: React.FC<{ showDisclaimer?: boolean }> = ({ showDisclaimer = true }) => {
+export const AssessmentStartPanel: React.FC<{ showDisclaimer?: boolean; showTitle?: boolean }> = ({
+  showDisclaimer = true,
+  showTitle = true,
+}) => {
   const { session, profile } = useAuth();
   const navigate = useNavigate();
   const userId = session?.user.id;
@@ -120,15 +124,13 @@ export const AssessmentStartPanel: React.FC<{ showDisclaimer?: boolean }> = ({ s
 
   return (
     <section className="start-panel" aria-labelledby="start-title">
-      <h2 id="start-title" className="section-title">
-        Làm bài đánh giá
-      </h2>
-
-      {isLoading && (
-        <div className="start-skeleton">
-          <Skeleton className="skeleton-block" />
-        </div>
+      {showTitle && (
+        <h2 id="start-title" className="section-title">
+          Làm bài đánh giá
+        </h2>
       )}
+
+      {isLoading && <StartPanelSkeleton />}
       {!isLoading && loadError && <Alert variant="danger">Không tải được bài đánh giá</Alert>}
 
       {!isLoading && !loadError && (

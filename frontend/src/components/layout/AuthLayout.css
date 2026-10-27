@@ -3,7 +3,6 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   min-height: 100vh;
   min-height: 100dvh;
-  background: var(--color-bg-app);
 }
 
 /* Khối thương hiệu */
@@ -74,6 +73,8 @@
 
 /* Khối form */
 .auth-panel {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -88,6 +89,13 @@
 .auth-panel-inner {
   width: 100%;
   max-width: 440px;
+  padding: var(--space-8);
+  background: var(--glass-bg-strong);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
   gap: var(--space-6);

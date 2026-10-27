@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Check, Save } from 'lucide-react';
-import { Alert, Button, Card, ProgressBar, Skeleton } from '../../../components/common';
+import { Alert, Button, Card, ProgressBar } from '../../../components/common';
 import { useAuth } from '../../auth/AuthContext';
 import { INSUFFICIENT_WARNING_RATIO, PARTS } from '../assessmentSession.constants';
 import {
@@ -33,6 +33,7 @@ import { EvidenceStep } from '../components/EvidenceStep';
 import { HollandReport, PersonalityReport } from '../components/PartReports';
 import { PartStepper } from '../components/PartStepper';
 import { QuestionCard } from '../components/QuestionCard';
+import { RunSkeleton } from '../components/RunSkeleton';
 import { computeProgress, questionsOfPart } from '../sessionProgress';
 import { selectQuestions } from '../selectQuestions';
 import './AssessmentRunPage.css';
@@ -42,6 +43,9 @@ type Stage =
   | { kind: 'report'; part: 1 | 3 }
   | { kind: 'values' }
   | { kind: 'evidence' };
+
+/** Dừng ngắn để người dùng thấy mức vừa chọn trước khi chuyển câu */
+const ADVANCE_DELAY_MS = 220;
 
 const EMPTY_EVIDENCE: EvidenceValues = { gradePointAverage: '', certificates: '', achievements: '' };
 
@@ -66,6 +70,11 @@ export const AssessmentRunPage: React.FC = () => {
   const [isSavingValues, setIsSavingValues] = useState(false);
   const [isFinishing, setIsFinishing] = useState(false);
   const [finishError, setFinishError] = useState<string | null>(null);
+
+  const advanceTimer = useRef<number | null>(null);
+  useEffect(() => () => {
+    if (advanceTimer.current) window.clearTimeout(advanceTimer.current);
+  }, []);
 
   const progress = useMemo(() => computeProgress(questions, answers), [questions, answers]);
   const partDone = useCallback(
@@ -151,6 +160,10 @@ export const AssessmentRunPage: React.FC = () => {
     stage?.kind === 'questions' ? questionsOfPart(questions, stage.part)[stage.index] : undefined;
 
   const go = (next: Stage, dir: 'forward' | 'back' = 'forward') => {
+    if (advanceTimer.current) {
+      window.clearTimeout(advanceTimer.current);
+      advanceTimer.current = null;
+    }
     setDirection(dir);
     setLockedMessage(null);
     setStage(next);
@@ -167,13 +180,28 @@ export const AssessmentRunPage: React.FC = () => {
       if (!session || !currentQuestion) return;
       setSaveError(false);
       setAnswers((prev) => new Map(prev).set(currentQuestion.id, { score, insufficient: false }));
+
+      // Chọn xong tự sang câu kế; câu cuối của phần vẫn dùng nút Hoàn thành phần
+      if (stage?.kind === 'questions') {
+        const list = questionsOfPart(questions, stage.part);
+        if (stage.index < list.length - 1) {
+          const { part, index } = stage;
+          if (advanceTimer.current) window.clearTimeout(advanceTimer.current);
+          advanceTimer.current = window.setTimeout(() => {
+            advanceTimer.current = null;
+            go({ kind: 'questions', part, index: index + 1 });
+          }, ADVANCE_DELAY_MS);
+        }
+      }
+
       try {
         await saveAnswer(session.id, currentQuestion, { score, insufficient: false });
       } catch {
         setSaveError(true);
       }
     },
-    [session, currentQuestion],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [session, currentQuestion, stage, questions],
   );
 
   const handleInsufficient = async (checked: boolean) => {
@@ -285,13 +313,7 @@ export const AssessmentRunPage: React.FC = () => {
 
   const insufficientTooHigh = insufficientRatio(questions, answers) > INSUFFICIENT_WARNING_RATIO;
 
-  if (isLoading) {
-    return (
-      <div className="run-layout">
-        <Skeleton className="skeleton-block" />
-      </div>
-    );
-  }
+  if (isLoading) return <RunSkeleton />;
   if (loadError || !session || !stage) {
     return (
       <div className="run-layout">

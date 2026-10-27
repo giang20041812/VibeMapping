@@ -45,7 +45,9 @@
   font-size: var(--font-size-lg);
   font-weight: 800;
   color: var(--color-text-muted);
-  background: var(--color-bg-surface);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border: 2px solid var(--color-border);
   border-radius: 50%;
   transition:

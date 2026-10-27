@@ -1,10 +1,12 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { Logo } from '../common';
+import { HomeBackdrop } from '../../modules/home/HomeBackdrop';
 import './AuthLayout.css';
 
 export const AuthLayout: React.FC = () => (
   <div className="auth-shell">
+    <HomeBackdrop />
     <aside className="auth-hero">
       <svg className="auth-hero-contours" viewBox="0 0 400 400" aria-hidden="true">
         <path d="M-20 300 C 60 240, 120 330, 200 270 S 340 220, 430 280" />

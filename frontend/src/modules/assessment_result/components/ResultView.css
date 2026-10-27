@@ -12,10 +12,12 @@
   justify-content: space-between;
   gap: var(--space-5) var(--space-8);
   padding: var(--space-6);
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-border);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--glass-shadow);
   animation: result-rise var(--duration-reveal) var(--ease-out) both;
 }
 
@@ -36,9 +38,12 @@
   font-weight: 800;
   letter-spacing: -0.01em;
   color: var(--brand-deep);
-  background: var(--brand-ice);
-  border: 1.5px solid var(--brand-pale);
-  border-radius: var(--radius-md);
+  background: var(--chip-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--chip-border);
+  border-radius: var(--radius-full);
+  box-shadow: var(--chip-shadow);
 }
 
 .result-status-dot {
@@ -93,9 +98,23 @@
   gap: var(--space-5);
   align-items: stretch;
 }
+/* Bìa khi chưa có kết quả: biểu đồ và bảng điểm mờ phía sau, nút ở giữa */
+.result-stage { position: relative; }
+.result-stage.has-cover .result-grid { filter: blur(3px) saturate(0.6); opacity: 0.55; pointer-events: none; user-select: none; }
+.result-cover {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
 .result-chart { display: flex; flex-direction: column; justify-content: center; align-self: stretch; min-width: 0; }
 
 .result-groups-card { animation-delay: 100ms; }
+
+.result-retake { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-5); }
 
 /* Danh sách điểm nhóm: tự chia cột theo bề rộng còn lại */
 .group-list {

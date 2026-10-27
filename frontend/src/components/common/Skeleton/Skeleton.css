@@ -1,11 +1,54 @@
 .app-skeleton {
   display: block;
-  min-height: 16px;
+  max-width: 100%;
   background: linear-gradient(90deg, var(--color-bg-subtle) 25%, var(--brand-ice) 50%, var(--color-bg-subtle) 75%);
   background-size: 200% 100%;
   border-radius: var(--radius-md);
   animation: skeleton-wave 1.4s ease-in-out infinite;
 }
-.skeleton-block { height: 220px; border-radius: var(--radius-xl); }
-.skeleton-line { height: 14px; }
 @keyframes skeleton-wave { to { background-position: -200% 0; } }
+
+/* Dòng chữ: khung cao bằng một dòng thật, chỉ phần giữa được tô để các khối xếp chồng không lệch nhịp */
+.skeleton-text,
+.skeleton-heading,
+.skeleton-title {
+  background-clip: content-box;
+  background-origin: content-box;
+  border-radius: 0;
+}
+.skeleton-text { width: 100%; height: calc(21 * var(--px)); padding-block: calc(4 * var(--px)); }
+.skeleton-heading { width: 45%; height: calc(24 * var(--px)); padding-block: calc(4 * var(--px)); }
+.skeleton-title { width: 30%; height: calc(38 * var(--px)); padding-block: calc(6 * var(--px)); }
+
+.skeleton-chip { width: calc(88 * var(--px)); height: calc(26 * var(--px)); border-radius: var(--radius-full); }
+.skeleton-bar { width: 100%; height: 8px; border-radius: var(--radius-sm); }
+.skeleton-input { width: 100%; height: var(--control-height-md); }
+.skeleton-button-sm { width: calc(84 * var(--px)); height: var(--control-height-sm); }
+.skeleton-button { width: calc(120 * var(--px)); height: var(--control-height-md); }
+.skeleton-button-lg { width: calc(160 * var(--px)); height: var(--control-height-lg); }
+.skeleton-circle { width: 100%; aspect-ratio: 1 / 1; border-radius: 50%; }
+.skeleton-block { width: 100%; height: 100%; min-height: calc(16 * var(--px)); border-radius: var(--radius-xl); }
+
+@media (max-width: 768px) {
+  .skeleton-input { height: var(--touch-target); }
+  .skeleton-button-sm,
+  .skeleton-button { height: var(--touch-target); }
+}
+
+.skeleton-w-15 { width: 15%; }
+.skeleton-w-20 { width: 20%; }
+.skeleton-w-25 { width: 25%; }
+.skeleton-w-30 { width: 30%; }
+.skeleton-w-35 { width: 35%; }
+.skeleton-w-40 { width: 40%; }
+.skeleton-w-45 { width: 45%; }
+.skeleton-w-50 { width: 50%; }
+.skeleton-w-55 { width: 55%; }
+.skeleton-w-60 { width: 60%; }
+.skeleton-w-65 { width: 65%; }
+.skeleton-w-70 { width: 70%; }
+.skeleton-w-75 { width: 75%; }
+.skeleton-w-80 { width: 80%; }
+.skeleton-w-85 { width: 85%; }
+.skeleton-w-90 { width: 90%; }
+.skeleton-w-100 { width: 100%; }

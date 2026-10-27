@@ -1,0 +1,16 @@
+/* Công tắc quả địa cầu khi đang tải: giữ khung, không phản hồi chuột */
+.globe-switch.is-skeleton { cursor: default; }
+.globe-switch.is-skeleton:hover { border-color: var(--ink-200); }
+.globe-switch-body .globe-skeleton-title { height: calc(24 * var(--px)); padding-block: calc(4 * var(--px)); }
+.globe-switch-body .globe-skeleton-state { width: calc(84 * var(--px)); height: calc(24 * var(--px)); border-radius: var(--radius-sm); }
+.globe-switch-groups .globe-skeleton-group { width: calc(76 * var(--px)); }
+.globe-switch .globe-skeleton-track { background: var(--ink-100); }
+
+/* Bài đã nộp khi đang tải */
+.t360-review-skeleton { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
+.review-progress .review-skeleton-chip { width: calc(120 * var(--px)); height: calc(36 * var(--px)); }
+.review-tabs .review-skeleton-tab { flex: none; width: calc(96 * var(--px)); height: var(--touch-target); border-radius: var(--radius-md); }
+.review-row-skeleton:hover { box-shadow: none; }
+.review-row .review-skeleton-avatar { flex: none; width: 44px; height: 44px; min-height: 0; border-radius: var(--radius-md); }
+.review-skeleton-text { flex: 1 1 auto; }
+.review-quality .skeleton-text { align-self: stretch; }

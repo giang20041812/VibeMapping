@@ -1,10 +1,11 @@
 import React from 'react';
 import { Check, Flag, RotateCcw, X } from 'lucide-react';
-import { Alert, Badge, Button, Card, Modal, Skeleton } from '../../../components/common';
+import { Alert, Badge, Button, Card, Modal } from '../../../components/common';
 import { GROUP_LABEL, INVITE_GROUPS } from '../../invitation_link/invitation.constants';
 import { QUALITY_TEXT, TRUST_LABEL_TEXT, understandingLabel } from '../../submission_review/submission.service';
 import type { SubmissionRow, SubmissionStatus } from '../../submission_review/submission.service';
 import type { ReviewController } from '../useReviewController';
+import { ReviewSkeleton } from './Assessment360Skeleton';
 
 const STATUS_TEXT: Record<SubmissionStatus, string> = {
   pending: 'Chờ duyệt',
@@ -88,7 +89,7 @@ export const ReviewPanel: React.FC<{ controller: ReviewController }> = ({ contro
         Bài đã nộp
       </h2>
 
-      {controller.isLoading && <Skeleton className="skeleton-block" />}
+      {controller.isLoading && <ReviewSkeleton />}
       {!controller.isLoading && controller.hasError && <Alert variant="danger">Không tải được danh sách bài đã nộp</Alert>}
 
       {!controller.isLoading && !controller.hasError && summary && (

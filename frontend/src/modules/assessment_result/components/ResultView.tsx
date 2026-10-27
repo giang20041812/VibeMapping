@@ -1,17 +1,15 @@
 import React, { useMemo } from 'react';
-import { Badge, Alert, Card, ProgressBar } from '../../../components/common';
+import { ArrowRight, RotateCcw } from 'lucide-react';
+import { Badge, Alert, Button, Card, ProgressBar } from '../../../components/common';
 import { PolygonChart } from '../../../components/charts/PolygonChart/PolygonChart';
 import type { PolygonAxis } from '../../../components/charts/PolygonChart/PolygonChart';
 import { useCountUp } from '../../../hooks/useCountUp';
 import {
   COMPETENCY_LEVELS,
-  DISCLAIMER_TEXT,
   GROUP_ICONS,
   GROUP_SHORT_LABELS,
   NO_DATA_LABEL,
   competencyOf,
-  statusCaption,
-  statusTitle,
 } from '../assessmentResult.constants';
 import type { AssessmentResultSummary, CompetencyLevel, GroupScore } from '../assessmentResult.types';
 import './ResultView.css';
@@ -52,7 +50,15 @@ const GroupRow: React.FC<{ group: GroupScore; index: number }> = ({ group, index
   );
 };
 
-export const ResultView: React.FC<{ result: AssessmentResultSummary; showDisclaimer?: boolean }> = ({ result, showDisclaimer = true }) => {
+interface ResultViewProps {
+  result: AssessmentResultSummary;
+  onRetake?: () => void;
+  onContinue?: () => void;
+  /** Phủ lên biểu đồ và bảng điểm (ví dụ nút làm bài khi chưa có kết quả); nội dung bên dưới bị làm mờ và khóa */
+  cover?: React.ReactNode;
+}
+
+export const ResultView: React.FC<ResultViewProps> = ({ result, onRetake, onContinue, cover }) => {
   const hasCombined = result.groups.some((g) => g.combined !== null);
 
   const axes: PolygonAxis[] = useMemo(
@@ -71,16 +77,8 @@ export const ResultView: React.FC<{ result: AssessmentResultSummary; showDisclai
 
   return (
     <div className="result-view">
-      <header className="result-hero">
-        <div className="result-status">
-          <span className={`result-status-chip status-${result.statusLabel}`}>
-            <span className="result-status-dot" aria-hidden="true" />
-            {statusTitle(result.statusLabel, result.acceptedCount, result.expectedCount)}
-          </span>
-          <p className="result-status-caption">{statusCaption(result.statusLabel, result.groupsCount)}</p>
-        </div>
-
-        {progress !== null && (
+      {progress !== null && (
+        <header className="result-hero">
           <div className="result-progress">
             <div className="result-progress-head">
               <span>Bài đánh giá đã chấp nhận</span>
@@ -90,8 +88,8 @@ export const ResultView: React.FC<{ result: AssessmentResultSummary; showDisclai
             </div>
             <ProgressBar value={progress} label="Tiến độ đánh giá 360°" />
           </div>
-        )}
-      </header>
+        </header>
+      )}
 
       {result.thinDataFlag && (
         <Alert variant="warning" title="Dữ liệu mỏng">
@@ -104,9 +102,17 @@ export const ResultView: React.FC<{ result: AssessmentResultSummary; showDisclai
         </Alert>
       )}
 
-      <div className="result-grid">
+      <div className={`result-stage ${cover ? 'has-cover' : ''}`}>
+      <div className="result-grid" aria-hidden={cover ? true : undefined} inert={cover ? true : undefined}>
         <div className="result-chart">
-          <PolygonChart axes={axes} levels={LEVELS} valueLabel="Tổng hợp 360°" referenceLabel="Tự đánh giá" noDataLabel={NO_DATA_LABEL} />
+          <PolygonChart
+            axes={axes}
+            levels={LEVELS}
+            valueLabel="Tổng hợp 360°"
+            referenceLabel="Tự đánh giá"
+            noDataLabel={NO_DATA_LABEL}
+            showNodeValues
+          />
         </div>
 
         <Card title="Điểm theo nhóm tiêu chí" className="result-groups-card">
@@ -115,14 +121,24 @@ export const ResultView: React.FC<{ result: AssessmentResultSummary; showDisclai
               <GroupRow key={group.groupCode} group={group} index={index} />
             ))}
           </ul>
+          {(onRetake || onContinue) && (
+            <div className="result-retake">
+              {onContinue && (
+                <Button onClick={onContinue} rightIcon={<ArrowRight size={18} />}>
+                  Tiếp tục bài đang làm dở
+                </Button>
+              )}
+              {onRetake && (
+                <Button variant={onContinue ? 'secondary' : 'primary'} onClick={onRetake} leftIcon={<RotateCcw size={18} />}>
+                  Làm lại đánh giá
+                </Button>
+              )}
+            </div>
+          )}
         </Card>
       </div>
-
-      {showDisclaimer && (
-        <Alert variant="info" className="result-disclaimer">
-          {DISCLAIMER_TEXT}
-        </Alert>
-      )}
+      {cover && <div className="result-cover">{cover}</div>}
+      </div>
     </div>
   );
 };

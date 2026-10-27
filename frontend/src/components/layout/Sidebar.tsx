@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
-import { Logo } from '../common';
+import { LogoMark } from '../common';
 import { useAuth } from '../../modules/auth/AuthContext';
 import { navItemsFor } from './navigation';
 import './Sidebar.css';
@@ -72,7 +72,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onToggle, onClose }) => 
       >
         <div className="sidebar-top">
           <Link to="/" className="sidebar-brand" aria-label="Vibe Mapping" onClick={collapse}>
-            <Logo variant="full" size="sm" />
+            <span className="sidebar-brand-word" aria-hidden="true">
+              <span className="sidebar-brand-mark">
+                <LogoMark />
+              </span>
+              <span className="sidebar-brand-text">
+                <span className="sidebar-brand-vibe">ibe</span>
+                <span className="sidebar-brand-mapping">Mapping</span>
+              </span>
+            </span>
           </Link>
           <button type="button" className="sidebar-close" aria-label="Đóng menu" onClick={onClose}>
             <X size={20} aria-hidden="true" />

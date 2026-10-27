@@ -11,4 +11,3 @@ export { ProgressBar } from './ProgressBar/ProgressBar';
 export { Skeleton } from './Skeleton/Skeleton';
 export { Textarea } from './Textarea/Textarea';
 export { Modal } from './Modal/Modal';
-export { Stage } from './Stage/Stage';

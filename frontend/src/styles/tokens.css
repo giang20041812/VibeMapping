@@ -78,7 +78,31 @@
   --accent-teal: #1fd1a5;
   --accent-coral: #ff8a5c;
 
-  /* Ánh sáng trên nền tối */
+  /* Hình minh họa hòa vào nền sáng: nét đen xám, màu nhấn dịu chỉ dùng cho biểu tượng và điểm nhấn */
+  --ink-900: #232833;
+  --ink-700: #444b5a;
+  --ink-500: #707789;
+  --ink-300: #a6adbb;
+  --ink-200: #d0d4de;
+  --ink-100: #e7e9ef;
+  --ink-wash: rgba(35, 40, 51, 0.045);
+  --shadow-ink: 0 8px 18px -8px rgba(35, 40, 51, 0.32);
+  --soft-gold: #d9a845;
+  --soft-cyan: #3fa9c6;
+  --soft-sky: #5a9fd0;
+  --soft-violet: #8d7fd6;
+  --soft-magenta: #cf73b0;
+  --soft-teal: #43b698;
+  --soft-coral: #e48c66;
+  --soft-glow-gold: rgba(217, 168, 69, 0.32);
+  --soft-glow-cyan: rgba(63, 169, 198, 0.3);
+  --soft-glow-sky: rgba(90, 159, 208, 0.3);
+  --soft-glow-violet: rgba(141, 127, 214, 0.3);
+  --soft-glow-magenta: rgba(207, 115, 176, 0.3);
+  --soft-glow-teal: rgba(67, 182, 152, 0.3);
+  --soft-glow-coral: rgba(228, 140, 102, 0.3);
+
+  /* Ánh sáng nền trang chủ */
   --glow-cyan: rgba(34, 211, 238, 0.55);
   --glow-violet: rgba(139, 108, 255, 0.55);
   --glow-magenta: rgba(240, 91, 208, 0.5);
@@ -86,16 +110,11 @@
   --glow-gold: rgba(246, 183, 60, 0.55);
   --glow-sky: rgba(30, 158, 219, 0.55);
   --glow-coral: rgba(255, 138, 92, 0.5);
-  --stage-line: rgba(255, 255, 255, 0.16);
-  --stage-fill: rgba(255, 255, 255, 0.06);
-  --stage-text: rgba(255, 255, 255, 0.88);
-  --stage-text-muted: rgba(255, 255, 255, 0.62);
   --surface-glass: rgba(255, 255, 255, 0.82);
   --scrim: rgba(3, 25, 100, 0.5);
 
   /* Gradient */
   --gradient-brand: linear-gradient(135deg, var(--brand-deep) 0%, var(--brand-sky) 100%);
-  --gradient-stage: radial-gradient(120% 90% at 50% 0%, var(--brand-deep) 0%, var(--brand-navy) 64%);
   --gradient-spectrum: linear-gradient(110deg, var(--accent-cyan) 0%, var(--accent-violet) 52%, var(--accent-magenta) 100%);
   --gradient-brand-deep: linear-gradient(160deg, var(--brand-navy) 0%, var(--brand-deep) 55%, var(--brand-azure) 100%);
   --gradient-soft: linear-gradient(180deg, var(--brand-ice) 0%, var(--color-bg-app) 100%);

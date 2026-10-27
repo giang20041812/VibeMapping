@@ -40,9 +40,43 @@
   align-items: center;
   min-height: var(--touch-target);
   white-space: nowrap;
+  text-decoration: none;
   border-radius: var(--radius-md);
 }
 .sidebar-brand:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+
+/* Tên sản phẩm: biểu tượng thay cho chữ V, đáy chữ V (mũi ghim) nằm trên đường chân chữ */
+.sidebar-brand-word {
+  display: inline-flex;
+  align-items: baseline;
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.sidebar-brand-mark {
+  flex: none;
+  display: block;
+  width: 32px;
+  height: 32px;
+  margin-right: -0.1em;
+  transform: translateY(0.3em);
+}
+.sidebar-brand-mark .logo-svg { display: block; }
+.sidebar-brand-text {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.28em;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+.sidebar:hover .sidebar-brand-text,
+.sidebar:focus-within .sidebar-brand-text { opacity: 1; }
+.sidebar.is-collapsed .sidebar-brand-text,
+.sidebar.is-collapsed:hover .sidebar-brand-text,
+.sidebar.is-collapsed:focus-within .sidebar-brand-text { opacity: 0; }
+.sidebar-brand-vibe { color: var(--color-text-main); }
+.sidebar-brand-mapping { color: var(--color-accent); }
 .sidebar-close { display: none; }
 
 .sidebar-nav { display: flex; flex-direction: column; gap: 2px; padding: var(--space-2) var(--space-2) 0; }
@@ -118,7 +152,9 @@
   }
   .sidebar-close:hover { background: var(--color-bg-subtle); }
   .sidebar .sidebar-link-label,
-  .sidebar.is-collapsed .sidebar-link-label { opacity: 1; }
+  .sidebar.is-collapsed .sidebar-link-label,
+  .sidebar .sidebar-brand-text,
+  .sidebar.is-collapsed .sidebar-brand-text { opacity: 1; }
 
   /* Nút mở menu nổi ở góc trên bên trái, không có nền */
   .sidebar-toggle {

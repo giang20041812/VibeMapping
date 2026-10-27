@@ -93,8 +93,7 @@
   gap: var(--space-5);
   align-items: stretch;
 }
-.result-chart { align-self: stretch; display: flex; }
-.result-chart .stage { display: flex; flex: 1; flex-direction: column; justify-content: center; }
+.result-chart { display: flex; flex-direction: column; justify-content: center; align-self: stretch; min-width: 0; }
 
 .result-groups-card { animation-delay: 100ms; }
 

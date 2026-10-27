@@ -28,6 +28,8 @@ export interface PolygonChartProps {
   valueLabel?: string;
   referenceLabel?: string;
   noDataLabel?: string;
+  /** Hiện dòng số đọc (điểm và mức) của trục đang chọn; mặc định bật */
+  showReadout?: boolean;
   className?: string;
 }
 
@@ -261,6 +263,7 @@ export const PolygonChart: React.FC<PolygonChartProps> = ({
   valueLabel,
   referenceLabel = 'Tự đánh giá',
   noDataLabel = 'Chưa đủ dữ liệu',
+  showReadout = true,
   className = '',
 }) => {
   const uid = useId().replace(/[^a-zA-Z0-9_-]/g, '');
@@ -338,19 +341,21 @@ export const PolygonChart: React.FC<PolygonChartProps> = ({
         })}
       </div>
 
-      <figcaption className="polygon-readout" aria-live="polite">
-        {active && activeIndex !== null && (
-          <Readout
-            key={active.key}
-            axis={active}
-            tone={toneOf(activeIndex)}
-            level={levelOf(active.value)}
-            valueLabel={valueLabel}
-            referenceLabel={referenceLabel}
-            noDataLabel={noDataLabel}
-          />
-        )}
-      </figcaption>
+      {showReadout && (
+        <figcaption className="polygon-readout" aria-live="polite">
+          {active && activeIndex !== null && (
+            <Readout
+              key={active.key}
+              axis={active}
+              tone={toneOf(activeIndex)}
+              level={levelOf(active.value)}
+              valueLabel={valueLabel}
+              referenceLabel={referenceLabel}
+              noDataLabel={noDataLabel}
+            />
+          )}
+        </figcaption>
+      )}
 
       <table className="sr-only">
         <caption>Biểu đồ đa giác các nhóm tiêu chí</caption>

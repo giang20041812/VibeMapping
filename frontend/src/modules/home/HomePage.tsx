@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
-import { Alert, Button, LogoMark, Stage } from '../../components/common';
+import { Alert, Button, LogoMark } from '../../components/common';
 import { Globe360 } from '../../components/charts/Globe360/Globe360';
 import { PolygonChart } from '../../components/charts/PolygonChart/PolygonChart';
 import type { PolygonAxis } from '../../components/charts/PolygonChart/PolygonChart';
@@ -76,9 +76,9 @@ export const HomePage: React.FC = () => {
       <Feature
         id="feature-self"
         visual={
-          <Stage className="feature-stage">
-            <PolygonChart axes={POLYGON_AXES} levels={POLYGON_LEVELS} />
-          </Stage>
+          <div className="feature-stage">
+            <PolygonChart axes={POLYGON_AXES} levels={POLYGON_LEVELS} showReadout={false} />
+          </div>
         }
       >
         <h2 id="feature-self-title" className="feature-title">
@@ -98,9 +98,9 @@ export const HomePage: React.FC = () => {
         id="feature-360"
         flip
         visual={
-          <Stage className="feature-stage">
+          <div className="feature-stage">
             <Globe360 nodes={GLOBE_NODES} />
-          </Stage>
+          </div>
         }
       >
         <h2 id="feature-360-title" className="feature-title">

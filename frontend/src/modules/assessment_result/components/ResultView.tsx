@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Badge, Alert, Card, ProgressBar, Stage } from '../../../components/common';
+import { Badge, Alert, Card, ProgressBar } from '../../../components/common';
 import { PolygonChart } from '../../../components/charts/PolygonChart/PolygonChart';
 import type { PolygonAxis } from '../../../components/charts/PolygonChart/PolygonChart';
 import { useCountUp } from '../../../hooks/useCountUp';
@@ -105,9 +105,9 @@ export const ResultView: React.FC<{ result: AssessmentResultSummary; showDisclai
       )}
 
       <div className="result-grid">
-        <Stage className="result-chart">
+        <div className="result-chart">
           <PolygonChart axes={axes} levels={LEVELS} valueLabel="Tổng hợp 360°" referenceLabel="Tự đánh giá" noDataLabel={NO_DATA_LABEL} />
-        </Stage>
+        </div>
 
         <Card title="Điểm theo nhóm tiêu chí" className="result-groups-card">
           <ul className="group-list">

@@ -1,13 +1,46 @@
-/* Biểu đồ đa giác – thiết kế cho nền tối (khung .feature-stage / .result-stage).
+/* Biểu đồ đa giác – đen xám trên nền sáng, không khung, hòa vào nền trang; màu mỗi trục chỉ hiện nhẹ ở nút trục.
    Hoạt ảnh chỉ dùng transform và opacity (chạy trên GPU), không dùng filter hay đổi thuộc tính hình học. */
 .polygon-chart {
-  --axis-1: var(--accent-cyan);
-  --axis-2: var(--brand-sky);
-  --axis-3: var(--accent-violet);
-  --axis-4: var(--accent-magenta);
-  --axis-5: var(--accent-coral);
-  --axis-6: var(--brand-gold);
-  --axis-7: var(--accent-teal);
+  --axis-1: var(--soft-cyan);
+  --axis-2: var(--soft-sky);
+  --axis-3: var(--soft-violet);
+  --axis-4: var(--soft-magenta);
+  --axis-5: var(--soft-coral);
+  --axis-6: var(--soft-gold);
+  --axis-7: var(--soft-teal);
+  --axis-glow-1: var(--soft-glow-cyan);
+  --axis-glow-2: var(--soft-glow-sky);
+  --axis-glow-3: var(--soft-glow-violet);
+  --axis-glow-4: var(--soft-glow-magenta);
+  --axis-glow-5: var(--soft-glow-coral);
+  --axis-glow-6: var(--soft-glow-gold);
+  --axis-glow-7: var(--soft-glow-teal);
+
+  --chart-ink: var(--ink-900);
+  --chart-text: var(--ink-700);
+  --chart-text-strong: var(--ink-900);
+  --chart-text-muted: var(--ink-500);
+  --chart-line: var(--ink-300);
+  --chart-fill: var(--ink-wash);
+  --chart-core: var(--ink-500);
+  --chart-core-opacity: 0.12;
+  --chart-spoke-start: 0.1;
+  --chart-spoke-opacity: 0.4;
+  --chart-spoke-active: 1.8px;
+  --chart-frame-opacity: 0.55;
+  --chart-wedge: 0.1;
+  --chart-wedge-active: 0.2;
+  --chart-edge-width: 2.2px;
+  --chart-edge-glow: 0.1;
+  --chart-edge-glow-active: 0.22;
+  --chart-dot: var(--brand-white);
+  --chart-dot-empty: var(--ink-100);
+  --chart-badge: var(--surface-glass);
+  --chart-badge-ring: var(--ink-200);
+  --chart-badge-shadow: var(--shadow-ink);
+  --chart-name-shadow: 0 0 10px var(--color-bg-app);
+  --chart-pill: var(--surface-glass);
+  --chart-pill-line: var(--ink-200);
 
   display: flex;
   flex-direction: column;
@@ -15,27 +48,28 @@
   gap: var(--space-4);
   width: 100%;
   margin: 0;
-  color: var(--stage-text);
+  color: var(--chart-text);
 }
 
-.polygon-tone-1 { --tone: var(--axis-1); --tone-glow: var(--glow-cyan); }
-.polygon-tone-2 { --tone: var(--axis-2); --tone-glow: var(--glow-sky); }
-.polygon-tone-3 { --tone: var(--axis-3); --tone-glow: var(--glow-violet); }
-.polygon-tone-4 { --tone: var(--axis-4); --tone-glow: var(--glow-magenta); }
-.polygon-tone-5 { --tone: var(--axis-5); --tone-glow: var(--glow-coral); }
-.polygon-tone-6 { --tone: var(--axis-6); --tone-glow: var(--glow-gold); }
-.polygon-tone-7 { --tone: var(--axis-7); --tone-glow: var(--glow-teal); }
+.polygon-tone-1 { --tone: var(--axis-1); --tone-glow: var(--axis-glow-1); }
+.polygon-tone-2 { --tone: var(--axis-2); --tone-glow: var(--axis-glow-2); }
+.polygon-tone-3 { --tone: var(--axis-3); --tone-glow: var(--axis-glow-3); }
+.polygon-tone-4 { --tone: var(--axis-4); --tone-glow: var(--axis-glow-4); }
+.polygon-tone-5 { --tone: var(--axis-5); --tone-glow: var(--axis-glow-5); }
+.polygon-tone-6 { --tone: var(--axis-6); --tone-glow: var(--axis-glow-6); }
+.polygon-tone-7 { --tone: var(--axis-7); --tone-glow: var(--axis-glow-7); }
 
-.polygon-stop-1 { stop-color: var(--axis-1); }
-.polygon-stop-2 { stop-color: var(--axis-2); }
-.polygon-stop-3 { stop-color: var(--axis-3); }
-.polygon-stop-4 { stop-color: var(--axis-4); }
-.polygon-stop-5 { stop-color: var(--axis-5); }
-.polygon-stop-6 { stop-color: var(--axis-6); }
-.polygon-stop-7 { stop-color: var(--axis-7); }
-.polygon-stop-line { stop-color: var(--stage-text); stop-opacity: 0.22; }
-.polygon-stop-core { stop-color: var(--accent-violet); stop-opacity: 0.5; }
-.polygon-stop-clear { stop-color: var(--accent-violet); stop-opacity: 0; }
+/* Nét đa giác: một màu mực */
+.polygon-stop-1 { stop-color: var(--chart-ink); }
+.polygon-stop-2 { stop-color: var(--chart-ink); }
+.polygon-stop-3 { stop-color: var(--chart-ink); }
+.polygon-stop-4 { stop-color: var(--chart-ink); }
+.polygon-stop-5 { stop-color: var(--chart-ink); }
+.polygon-stop-6 { stop-color: var(--chart-ink); }
+.polygon-stop-7 { stop-color: var(--chart-ink); }
+.polygon-stop-line { stop-color: var(--chart-text); stop-opacity: var(--chart-spoke-start); }
+.polygon-stop-core { stop-color: var(--chart-core); stop-opacity: var(--chart-core-opacity); }
+.polygon-stop-clear { stop-color: var(--chart-core); stop-opacity: 0; }
 
 .polygon-stage {
   position: relative;
@@ -63,24 +97,25 @@
 /* Khung nền */
 .polygon-ring {
   fill: none;
-  stroke: var(--stage-line);
+  stroke: var(--chart-line);
   stroke-width: 1px;
   vector-effect: non-scaling-stroke;
 }
-.polygon-ring.is-tinted { fill: var(--stage-fill); }
+.polygon-ring.is-tinted { fill: var(--chart-fill); }
 
 .polygon-spoke {
   stroke-width: 1px;
   vector-effect: non-scaling-stroke;
-  opacity: 0.6;
+  opacity: var(--chart-spoke-opacity);
   transition: opacity var(--transition-normal), stroke-width var(--transition-normal);
 }
-.polygon-spoke.is-active { opacity: 1; stroke-width: 2.4px; }
+.polygon-spoke.is-active { opacity: 1; stroke-width: var(--chart-spoke-active); }
 
 .polygon-frame {
-  stroke-width: 2px;
+  stroke-width: 1.6px;
   stroke-linecap: round;
   vector-effect: non-scaling-stroke;
+  opacity: var(--chart-frame-opacity);
 }
 
 /* Đa giác dữ liệu */
@@ -88,14 +123,14 @@
 .polygon-chart.is-visible .polygon-svg-data { animation: polygon-grow 900ms var(--ease-out) 150ms both; }
 
 .polygon-wedge {
-  fill-opacity: 0.34;
+  fill-opacity: var(--chart-wedge);
   transition: fill-opacity var(--transition-normal);
 }
-.polygon-wedge.is-active { fill-opacity: 0.66; }
+.polygon-wedge.is-active { fill-opacity: var(--chart-wedge-active); }
 
 .polygon-reference {
   fill: none;
-  stroke: var(--stage-text);
+  stroke: var(--chart-text);
   stroke-width: 1.6px;
   stroke-dasharray: 6 5;
   stroke-linejoin: round;
@@ -109,12 +144,12 @@
   stroke-linecap: round;
   vector-effect: non-scaling-stroke;
 }
-.polygon-edge { stroke-width: 2.6px; }
-.polygon-edge-glow { stroke-width: 9px; opacity: 0.2; transition: opacity var(--transition-slow); }
-.polygon-chart.is-interacting .polygon-edge-glow { opacity: 0.4; }
+.polygon-edge { stroke-width: var(--chart-edge-width); }
+.polygon-edge-glow { stroke-width: 9px; opacity: var(--chart-edge-glow); transition: opacity var(--transition-slow); }
+.polygon-chart.is-interacting .polygon-edge-glow { opacity: var(--chart-edge-glow-active); }
 
 .polygon-dot {
-  fill: var(--brand-white);
+  fill: var(--chart-dot);
   stroke: var(--tone);
   stroke-width: 2px;
   vector-effect: non-scaling-stroke;
@@ -123,7 +158,7 @@
   transition: transform var(--transition-normal);
 }
 .polygon-dot.is-active { transform: scale(1.7); }
-.polygon-dot.is-empty { fill: var(--brand-navy); stroke-dasharray: 2 2; }
+.polygon-dot.is-empty { fill: var(--chart-dot-empty); stroke-dasharray: 2 2; }
 
 .polygon-hit {
   fill: transparent;
@@ -137,13 +172,13 @@
   width: 14%;
   height: 14%;
   margin: -7% 0 0 -7%;
-  background: radial-gradient(closest-side, var(--tone), transparent);
+  background: radial-gradient(closest-side, var(--tone-glow), transparent);
   border-radius: var(--radius-full);
   opacity: 0;
   animation: polygon-pulse 900ms ease-out both;
 }
 
-/* Nút trục */
+/* Nút trục: nền kính mờ, biểu tượng đen xám, viền màu trục chỉ hiện khi rê chuột hoặc chọn */
 .polygon-node {
   position: absolute;
   display: flex;
@@ -154,34 +189,34 @@
   font-size: var(--font-size-xs);
   font-weight: 700;
   line-height: 1.2;
-  color: var(--stage-text);
+  color: var(--chart-text);
   background: none;
   border-radius: var(--radius-lg);
   transform: translate(-50%, -50%);
   transition: transform var(--transition-normal), color var(--transition-fast);
 }
-.polygon-node:focus-visible { outline: 2px solid var(--brand-white); outline-offset: 4px; }
-.polygon-node.is-active { color: var(--brand-white); transform: translate(-50%, -50%) scale(1.1); }
+.polygon-node:focus-visible { outline: 2px solid var(--color-border-focus); outline-offset: 4px; }
+.polygon-node.is-active { color: var(--chart-text-strong); transform: translate(-50%, -50%) scale(1.1); }
 
 .polygon-node-badge {
   display: grid;
   place-items: center;
   width: var(--touch-target);
   height: var(--touch-target);
-  color: var(--tone);
-  background: var(--brand-navy);
+  color: var(--chart-text);
+  background: var(--chart-badge);
   border-radius: var(--radius-full);
-  box-shadow: inset 0 0 0 1.5px var(--stage-line);
+  box-shadow: inset 0 0 0 1.5px var(--chart-badge-ring), var(--chart-badge-shadow);
   transition: color var(--transition-normal), background-color var(--transition-normal), box-shadow var(--transition-normal);
 }
 .polygon-node:hover .polygon-node-badge,
 .polygon-node.is-active .polygon-node-badge {
-  color: var(--brand-navy);
-  background: var(--tone);
-  box-shadow: 0 0 22px var(--tone-glow);
+  color: var(--chart-text-strong);
+  background: var(--brand-white);
+  box-shadow: inset 0 0 0 1.5px var(--tone), 0 0 0 4px var(--tone-glow), var(--chart-badge-shadow);
 }
 
-.polygon-node-name { white-space: nowrap; text-shadow: 0 1px 8px var(--brand-navy); }
+.polygon-node-name { white-space: nowrap; text-shadow: var(--chart-name-shadow); }
 
 /* Số đọc */
 .polygon-readout {
@@ -198,8 +233,8 @@
   gap: var(--space-2) var(--space-3);
   max-width: 100%;
   padding: var(--space-2) var(--space-4);
-  background: var(--stage-fill);
-  border: 1px solid var(--stage-line);
+  background: var(--chart-pill);
+  border: 1px solid var(--chart-pill-line);
   border-radius: var(--radius-md);
   animation: polygon-fade 300ms var(--ease-out) both;
 }
@@ -209,27 +244,28 @@
   height: 10px;
   background: var(--tone);
   border-radius: var(--radius-full);
-  box-shadow: 0 0 12px var(--tone-glow);
+  box-shadow: 0 0 0 3px var(--tone-glow);
 }
-.polygon-readout-name { font-size: var(--font-size-md); color: var(--brand-white); }
-.polygon-readout-caption { font-size: var(--font-size-sm); color: var(--stage-text-muted); }
+.polygon-readout-name { font-size: var(--font-size-md); color: var(--chart-text-strong); }
+.polygon-readout-caption { font-size: var(--font-size-sm); color: var(--chart-text-muted); }
 .polygon-readout-value {
   min-width: 3ch;
   font-size: var(--font-size-xl);
   font-weight: 800;
   font-variant-numeric: tabular-nums;
-  color: var(--tone);
+  color: var(--chart-text-strong);
   text-align: right;
 }
 .polygon-readout-level {
   padding: 2px var(--space-3);
   font-size: var(--font-size-xs);
   font-weight: 700;
-  color: var(--brand-navy);
-  background: var(--tone);
+  color: var(--chart-text-strong);
+  background: var(--chart-fill);
   border-radius: var(--radius-sm);
+  box-shadow: inset 0 0 0 1px var(--tone);
 }
-.polygon-readout-reference { font-size: var(--font-size-sm); font-weight: 600; color: var(--stage-text-muted); }
+.polygon-readout-reference { font-size: var(--font-size-sm); font-weight: 600; color: var(--chart-text-muted); }
 
 @keyframes polygon-grow {
   from { opacity: 0; transform: scale(0.15) rotate(-24deg); }

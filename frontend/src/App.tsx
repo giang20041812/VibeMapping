@@ -3,7 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes, useParams } from 'react-router-
 import { AuthProvider } from './modules/auth/AuthContext';
 import { AuthLayout } from './components/layout/AuthLayout';
 import { AppLayout } from './components/layout/AppLayout';
-import { GuestOnly, RequireAuth, RequireCompleteProfile } from './components/layout/RouteGuards';
+import { GuestOnly, RequireAuth } from './components/layout/RouteGuards';
 import { LoginPage } from './modules/auth/pages/LoginPage';
 import { RegisterPage } from './modules/auth/pages/RegisterPage';
 import { ForgotPasswordPage } from './modules/auth/pages/ForgotPasswordPage';
@@ -37,14 +37,12 @@ export const App: React.FC = () => (
         </Route>
 
         <Route element={<RequireAuth />}>
-          <Route element={<RequireCompleteProfile />}>
-            <Route element={<AppLayout />}>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/ho-so" element={<ProfilePage />} />
-              <Route path="/danh-gia-ca-nhan" element={<PersonalAssessmentPage />} />
-              <Route path="/danh-gia-ca-nhan/:sessionId" element={<AssessmentRunPage />} />
-              <Route path="/danh-gia-360" element={<Assessment360Page />} />
-            </Route>
+          <Route element={<AppLayout />}>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/ho-so" element={<ProfilePage />} />
+            <Route path="/danh-gia-ca-nhan" element={<PersonalAssessmentPage />} />
+            <Route path="/danh-gia-ca-nhan/:sessionId" element={<AssessmentRunPage />} />
+            <Route path="/danh-gia-360" element={<Assessment360Page />} />
           </Route>
         </Route>
 

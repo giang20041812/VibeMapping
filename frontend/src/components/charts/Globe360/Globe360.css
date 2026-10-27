@@ -1,15 +1,45 @@
-/* Quả địa cầu 360° – thiết kế cho nền tối (khung .feature-stage). Màu của canvas lấy từ các biến này. */
+/* Quả địa cầu 360° – đen xám trên nền sáng, không khung, hòa vào nền trang.
+   Màu của canvas lấy từ các biến --globe-* này (xem readPalette trong globeScene.ts). */
 .globe360 {
-  --globe-land: var(--brand-mist);
-  --globe-sea: var(--brand-light);
-  --globe-body-lit: var(--brand-azure);
-  --globe-body-dark: var(--brand-navy);
-  --globe-atmosphere: var(--accent-cyan);
-  --globe-ink: var(--brand-white);
-  --globe-tone-gold: var(--brand-gold);
-  --globe-tone-cyan: var(--accent-cyan);
-  --globe-tone-violet: var(--accent-violet);
-  --globe-tone-magenta: var(--accent-magenta);
+  --globe-land-style: hatch;
+  --globe-node-style: outline;
+  --globe-land: var(--ink-900);
+  --globe-sea: var(--ink-300);
+  --globe-sea-alpha: 0.5;
+  --globe-body-lit: var(--brand-white);
+  --globe-body-dark: var(--ink-200);
+  --globe-body-alpha: 0.7;
+  --globe-halo: var(--ink-500);
+  --globe-halo-alpha: 0.36;
+  --globe-halo-shift: 0.1;
+  --globe-rim: var(--ink-500);
+  --globe-rim-fill: 0.06;
+  --globe-rim-line: 0.55;
+  --globe-grid: var(--ink-300);
+  --globe-grid-alpha: 0.6;
+  --globe-sweep: var(--ink-500);
+  --globe-sweep-alpha: 0.4;
+  --globe-ring: var(--ink-500);
+  --globe-tick: var(--ink-500);
+  --globe-shade: var(--ink-500);
+  --globe-shade-alpha: 0.2;
+  --globe-limb: var(--brand-white);
+  --globe-limb-alpha: 0.6;
+  --globe-ink: var(--ink-900);
+  --globe-face: var(--brand-white);
+  --globe-label-bg: var(--brand-white);
+  --globe-node-glow: 0.5;
+  --globe-tone-gold: var(--soft-gold);
+  --globe-tone-cyan: var(--soft-cyan);
+  --globe-tone-violet: var(--soft-violet);
+  --globe-tone-magenta: var(--soft-magenta);
+  --globe-glow-gold: var(--soft-glow-gold);
+  --globe-glow-cyan: var(--soft-glow-cyan);
+  --globe-glow-violet: var(--soft-glow-violet);
+  --globe-glow-magenta: var(--soft-glow-magenta);
+  --globe-chip-text: var(--ink-700);
+  --globe-chip-bg: var(--surface-glass);
+  --globe-chip-line: var(--ink-200);
 
   display: flex;
   flex-direction: column;
@@ -17,13 +47,13 @@
   gap: var(--space-4);
   width: 100%;
   margin: 0;
-  color: var(--stage-text);
+  color: var(--ink-700);
 }
 
-.globe360-tone-gold { --tone: var(--brand-gold); --tone-glow: var(--glow-gold); }
-.globe360-tone-cyan { --tone: var(--accent-cyan); --tone-glow: var(--glow-cyan); }
-.globe360-tone-violet { --tone: var(--accent-violet); --tone-glow: var(--glow-violet); }
-.globe360-tone-magenta { --tone: var(--accent-magenta); --tone-glow: var(--glow-magenta); }
+.globe360-tone-gold { --tone: var(--globe-tone-gold); --tone-glow: var(--globe-glow-gold); }
+.globe360-tone-cyan { --tone: var(--globe-tone-cyan); --tone-glow: var(--globe-glow-cyan); }
+.globe360-tone-violet { --tone: var(--globe-tone-violet); --tone-glow: var(--globe-glow-violet); }
+.globe360-tone-magenta { --tone: var(--globe-tone-magenta); --tone-glow: var(--globe-glow-magenta); }
 
 .globe360-stage {
   position: relative;
@@ -45,8 +75,8 @@
   transition: opacity var(--transition-slow), transform var(--transition-slow), filter var(--transition-slow);
 }
 .globe360.is-visible .globe360-canvas { opacity: 1; transform: scale(1); }
-/* Tắt: mất màu và tối đi; bật lại thì màu trở về dần */
-.globe360-canvas.is-off { filter: grayscale(1) brightness(0.72) contrast(0.9); }
+/* Tắt: mất màu và mờ đi; bật lại thì màu trở về dần */
+.globe360-canvas.is-off { filter: grayscale(1) opacity(0.55); }
 .globe360-canvas.is-pointer { cursor: pointer; }
 .globe360-canvas.is-grabbing { cursor: grabbing; }
 
@@ -66,14 +96,16 @@
   padding: 0 var(--space-4);
   font-size: var(--font-size-sm);
   font-weight: 700;
-  color: var(--stage-text);
-  background: var(--stage-fill);
-  border: 1px solid var(--stage-line);
+  color: var(--globe-chip-text);
+  background: var(--globe-chip-bg);
+  border: 1px solid var(--globe-chip-line);
   border-radius: var(--radius-md);
+  box-shadow: inset 0 -2px 0 var(--tone);
   transition:
     transform var(--transition-normal),
     color var(--transition-fast),
     background-color var(--transition-fast),
+    border-color var(--transition-fast),
     box-shadow var(--transition-normal);
 }
 .globe360-chip::before {
@@ -83,22 +115,17 @@
   height: 10px;
   background: var(--tone);
   border-radius: var(--radius-full);
-  box-shadow: 0 0 10px var(--tone-glow);
+  box-shadow: 0 0 8px var(--tone-glow);
   transition: background-color var(--transition-fast), box-shadow var(--transition-fast);
 }
-.globe360-chip:focus-visible { outline: 2px solid var(--brand-white); outline-offset: 3px; }
+.globe360-chip:focus-visible { outline: 2px solid var(--color-border-focus); outline-offset: 3px; }
 .globe360-chip:hover,
 .globe360-chip.is-active {
-  color: var(--brand-navy);
-  background: var(--tone);
-  border-color: transparent;
-  box-shadow: 0 0 24px var(--tone-glow);
+  color: var(--ink-900);
+  background: var(--brand-white);
+  border-color: var(--tone);
+  box-shadow: 0 0 0 3px var(--tone-glow), 0 8px 18px -8px var(--tone-glow);
   transform: translateY(-2px);
-}
-.globe360-chip:hover::before,
-.globe360-chip.is-active::before {
-  background: var(--brand-navy);
-  box-shadow: none;
 }
 
 /* Bản thu gọn làm nút gạt */
@@ -108,6 +135,4 @@
 
 /* Có biểu tượng thì không cần chấm màu */
 .globe360-chip.has-icon::before { display: none; }
-.globe360-chip svg { flex: none; color: var(--tone); transition: color var(--transition-fast); }
-.globe360-chip:hover svg,
-.globe360-chip.is-active svg { color: var(--brand-navy); }
+.globe360-chip svg { flex: none; color: var(--ink-700); transition: color var(--transition-fast); }

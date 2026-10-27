@@ -1,12 +1,17 @@
 /* Engine vẽ quả địa cầu 3D bằng canvas 2D (không phụ thuộc thư viện đồ họa).
-   Điểm trên mặt cầu xoay quanh trục nghiêng, một vành 360° có vạch chia độ và các nút
-   người đánh giá quay quanh quả cầu. Màu lấy từ biến CSS của phần tử canvas.
+   Bề mặt xoay quanh trục nghiêng với các lục địa thật (xem globeLand.ts), một vành 360° có vạch chia độ
+   và các nút người đánh giá quay quanh quả cầu. Màu lấy từ biến CSS của phần tử canvas.
+
+   Đất liền có hai kiểu: chấm vuông (nền tối) hoặc viền bờ biển cùng nét gạch chéo như bản khắc (nền sáng).
 
    Tối ưu hiệu năng:
    - lớp tĩnh (quầng sáng, thân cầu, viền) và quầng sáng của nút được vẽ sẵn vào sprite, mỗi khung chỉ drawImage;
-   - chỉ vẽ nửa điểm phía trước, gộp mọi điểm cùng độ sáng vào một đường path;
-   - kinh – vĩ tuyến, vành và vạch chia độ được tính sẵn, mỗi khung chỉ xoay và chiếu;
-   - ba mức chất lượng (số điểm, độ phân giải) để chủ động hạ khi khung hình chậm. */
+   - kiểu chấm: chỉ vẽ nửa điểm phía trước, gộp mọi điểm cùng độ sáng vào một đường path;
+   - kiểu gạch chéo: nét kẻ cố định trên màn hình, mỗi mẫu được đưa ngược về tọa độ quả cầu để tra mặt nạ lục địa;
+   - bờ biển, kinh – vĩ tuyến, vành và vạch chia độ được tính sẵn, mỗi khung chỉ xoay và chiếu;
+   - ba mức chất lượng (số điểm, độ phân giải, độ mịn nét) để chủ động hạ khi khung hình chậm. */
+
+import { getCoastlines, getLandMask, isLandAt } from './globeLand';
 
 export type GlobeTone = 'gold' | 'cyan' | 'violet' | 'magenta';
 
@@ -51,7 +56,6 @@ const ARC_COUNT = 5;
 const MERIDIANS = 12;
 const MERIDIAN_STEPS = 40;
 const PARALLEL_STEPS = 56;
-const LAND_THRESHOLD = 0.53;
 const AUTO_YAW = 0.2;
 const RING_SPEED = 0.42;
 const DRAG_YAW = 0.0075;
@@ -62,6 +66,14 @@ const BUCKET_COUNT = 5;
 const DOTS_PER_PX = [1.9, 1.3, 0.85];
 const MAX_DOTS = [1100, 760, 480];
 const MAX_DPR = [1.75, 1.35, 1];
+
+/* Gạch chéo đất liền (đơn vị theo cỡ canvas / 360): bước lấy mẫu dọc nét theo từng mức chất lượng, khoảng cách giữa các nét */
+const HATCH_STEP = [0.9, 1.3, 1.9];
+const HATCH_GAP = [2.5, 2.9, 3.6];
+const CROSS_GAP = 3.2;
+/* Hướng nhìn của ánh sáng (trái trên, hướng về người xem); phần có độ sáng dưới ngưỡng được kẻ thêm nét đan chéo */
+const LIGHT: [number, number, number] = [-0.38, 0.45, 0.81];
+const SHADE_LIMIT = 0.3;
 
 /* ---------- Màu ---------- */
 
@@ -87,22 +99,72 @@ interface Palette {
   sea: RGB;
   bodyLit: RGB;
   bodyDark: RGB;
-  atmosphere: RGB;
+  /** Quầng sáng quanh quả cầu */
+  halo: RGB;
+  /** Viền và rìa sáng của thân cầu */
+  rim: RGB;
+  /** Lưới kinh – vĩ tuyến */
+  grid: RGB;
+  /** Vĩ tuyến quét từ trên xuống */
+  sweep: RGB;
+  /** Vành quay và vạch chia độ */
+  ring: RGB;
+  tick: RGB;
+  /** Phần bóng ở cạnh tối của thân cầu */
+  shade: RGB;
+  /** Lớp phủ nhạt dần ở rìa quả cầu, làm các nét gần rìa mờ đi như bị sương che */
+  limb: RGB;
+  /** Mực: tia sáng chạy, chữ nhãn */
   ink: RGB;
+  /** Nền nút và nền nhãn (kiểu nút viền) */
+  face: RGB;
+  labelBg: RGB;
   tones: Record<GlobeTone, RGB>;
   font: string;
+  haloAlpha: number;
+  /** Dịch tâm quầng sáng xuống dưới, theo bán kính quả cầu: tạo bóng đổ nhẹ */
+  haloShift: number;
+  bodyAlpha: number;
+  shadeAlpha: number;
+  limbAlpha: number;
+  rimFill: number;
+  rimLine: number;
+  gridAlpha: number;
+  sweepAlpha: number;
+  seaAlpha: number;
+  nodeGlow: number;
+  /** Đất liền vẽ bằng nét gạch chéo như phác thảo; ngược lại là các chấm vuông */
+  hatch: boolean;
+  /** Nút trắng viền màu nhóm; ngược lại là nút đặc màu nhóm */
+  outline: boolean;
 }
 
+/* Giá trị dự phòng là bảng màu nền tối (khung Stage), khớp với CSS mặc định của khung đó */
 function readPalette(element: HTMLElement): Palette {
   const style = getComputedStyle(element);
   const get = (name: string, fallback: RGB) => parseColor(style.getPropertyValue(name), fallback);
+  const num = (name: string, fallback: number) => {
+    const value = parseFloat(style.getPropertyValue(name));
+    return Number.isFinite(value) ? value : fallback;
+  };
+  const is = (name: string, expected: string) => style.getPropertyValue(name).trim() === expected;
+  const atmosphere: RGB = [34, 211, 238];
   return {
     land: get('--globe-land', [199, 227, 254]),
     sea: get('--globe-sea', [102, 172, 224]),
     bodyLit: get('--globe-body-lit', [45, 116, 168]),
     bodyDark: get('--globe-body-dark', [3, 25, 100]),
-    atmosphere: get('--globe-atmosphere', [34, 211, 238]),
+    halo: get('--globe-halo', atmosphere),
+    rim: get('--globe-rim', atmosphere),
+    grid: get('--globe-grid', atmosphere),
+    sweep: get('--globe-sweep', atmosphere),
+    ring: get('--globe-ring', atmosphere),
+    tick: get('--globe-tick', [255, 255, 255]),
+    shade: get('--globe-shade', [3, 25, 100]),
+    limb: get('--globe-limb', [255, 255, 255]),
     ink: get('--globe-ink', [255, 255, 255]),
+    face: get('--globe-face', [255, 255, 255]),
+    labelBg: get('--globe-label-bg', [3, 25, 100]),
     tones: {
       gold: get('--globe-tone-gold', [246, 183, 60]),
       cyan: get('--globe-tone-cyan', [34, 211, 238]),
@@ -110,6 +172,19 @@ function readPalette(element: HTMLElement): Palette {
       magenta: get('--globe-tone-magenta', [240, 91, 208]),
     },
     font: style.getPropertyValue('--font-sans').trim() || 'sans-serif',
+    haloAlpha: num('--globe-halo-alpha', 1),
+    haloShift: num('--globe-halo-shift', 0),
+    bodyAlpha: num('--globe-body-alpha', 1),
+    shadeAlpha: num('--globe-shade-alpha', 0.62),
+    limbAlpha: num('--globe-limb-alpha', 0),
+    rimFill: num('--globe-rim-fill', 0.4),
+    rimLine: num('--globe-rim-line', 0.6),
+    gridAlpha: num('--globe-grid-alpha', 0.2),
+    sweepAlpha: num('--globe-sweep-alpha', 0.65),
+    seaAlpha: num('--globe-sea-alpha', 1),
+    nodeGlow: num('--globe-node-glow', 1),
+    hatch: is('--globe-land-style', 'hatch'),
+    outline: is('--globe-node-style', 'outline'),
   };
 }
 
@@ -119,34 +194,7 @@ function mixColor(a: RGB, b: RGB, t: number): RGB {
   return [Math.round(mix(a[0], b[0], t)), Math.round(mix(a[1], b[1], t)), Math.round(mix(a[2], b[2], t))];
 }
 
-/* ---------- Bề mặt: điểm Fibonacci + nhiễu để tạo "lục địa" cách điệu ---------- */
-
-const hash3 = (x: number, y: number, z: number) => {
-  let h = Math.imul(x, 374761393) ^ Math.imul(y, 668265263) ^ Math.imul(z, 1274126177);
-  h = Math.imul(h ^ (h >>> 13), 1103515245);
-  return ((h ^ (h >>> 16)) >>> 0) / 4294967295;
-};
-const smooth = (t: number) => t * t * (3 - 2 * t);
-
-function noise3(x: number, y: number, z: number) {
-  const xi = Math.floor(x);
-  const yi = Math.floor(y);
-  const zi = Math.floor(z);
-  const xf = smooth(x - xi);
-  const yf = smooth(y - yi);
-  const zf = smooth(z - zi);
-  const c = (dx: number, dy: number, dz: number) => hash3(xi + dx, yi + dy, zi + dz);
-  return mix(
-    mix(mix(c(0, 0, 0), c(1, 0, 0), xf), mix(c(0, 1, 0), c(1, 1, 0), xf), yf),
-    mix(mix(c(0, 0, 1), c(1, 0, 1), xf), mix(c(0, 1, 1), c(1, 1, 1), xf), yf),
-    zf,
-  );
-}
-
-const landValue = (x: number, y: number, z: number) =>
-  noise3(x * 1.9 + 11, y * 1.9 + 3, z * 1.9 + 7) * 0.62 +
-  noise3(x * 4.1 + 5, y * 4.1 + 9, z * 4.1 + 2) * 0.28 +
-  noise3(x * 8.7, y * 8.7 + 1, z * 8.7 + 4) * 0.1;
+/* ---------- Bề mặt: điểm Fibonacci, mỗi điểm biết mình nằm trên đất liền hay biển ---------- */
 
 interface Surface {
   count: number;
@@ -165,6 +213,7 @@ function buildSurface(count: number): Surface {
   const y = new Float32Array(count);
   const z = new Float32Array(count);
   const land = new Uint8Array(count);
+  const landMask = getLandMask();
   const golden = Math.PI * (3 - Math.sqrt(5));
   for (let i = 0; i < count; i++) {
     const yy = 1 - (2 * (i + 0.5)) / count;
@@ -173,7 +222,7 @@ function buildSurface(count: number): Surface {
     x[i] = Math.cos(phi) * r;
     y[i] = yy;
     z[i] = Math.sin(phi) * r;
-    land[i] = landValue(x[i], yy, z[i]) > LAND_THRESHOLD ? 1 : 0;
+    land[i] = isLandAt(landMask, x[i], yy, z[i]) ? 1 : 0;
   }
   const surface = { count, x, y, z, land };
   surfaceCache.set(count, surface);
@@ -352,7 +401,7 @@ export function createGlobeScene(canvas: HTMLCanvasElement, nodes: SceneNode[], 
   /* ----- Sprite tĩnh ----- */
   function buildSprites(scale: number) {
     const R = size * 0.285;
-    const { atmosphere, bodyLit, bodyDark, tones } = palette;
+    const { bodyLit, bodyDark, tones } = palette;
 
     const haloSize = R * 3.2;
     const halo = makeCanvas(haloSize * scale, haloSize * scale);
@@ -360,10 +409,11 @@ export function createGlobeScene(canvas: HTMLCanvasElement, nodes: SceneNode[], 
     if (haloCtx) {
       haloCtx.scale(scale, scale);
       const c = haloSize / 2;
-      const gradient = haloCtx.createRadialGradient(c, c, R * 0.9, c, c, R * 1.6);
-      gradient.addColorStop(0, rgba(atmosphere, 0.34));
-      gradient.addColorStop(0.35, rgba(atmosphere, 0.12));
-      gradient.addColorStop(1, rgba(atmosphere, 0));
+      const shift = R * palette.haloShift;
+      const gradient = haloCtx.createRadialGradient(c, c + shift, R * 0.9, c, c + shift, R * 1.6 - shift);
+      gradient.addColorStop(0, rgba(palette.halo, 0.34 * palette.haloAlpha));
+      gradient.addColorStop(0.35, rgba(palette.halo, 0.12 * palette.haloAlpha));
+      gradient.addColorStop(1, rgba(palette.halo, 0));
       haloCtx.fillStyle = gradient;
       haloCtx.fillRect(0, 0, haloSize, haloSize);
     }
@@ -374,9 +424,9 @@ export function createGlobeScene(canvas: HTMLCanvasElement, nodes: SceneNode[], 
     if (bodyCtx) {
       bodyCtx.scale(scale, scale);
       const gradient = bodyCtx.createRadialGradient(R - R * 0.38, R - R * 0.42, R * 0.05, R, R, R * 1.05);
-      gradient.addColorStop(0, rgba(bodyLit, 1));
-      gradient.addColorStop(0.55, rgba(mixColor(bodyLit, bodyDark, 0.6), 1));
-      gradient.addColorStop(1, rgba(bodyDark, 1));
+      gradient.addColorStop(0, rgba(bodyLit, palette.bodyAlpha));
+      gradient.addColorStop(0.55, rgba(mixColor(bodyLit, bodyDark, 0.6), palette.bodyAlpha));
+      gradient.addColorStop(1, rgba(bodyDark, palette.bodyAlpha));
       bodyCtx.fillStyle = gradient;
       bodyCtx.beginPath();
       bodyCtx.arc(R, R, R, 0, TAU);
@@ -389,21 +439,32 @@ export function createGlobeScene(canvas: HTMLCanvasElement, nodes: SceneNode[], 
       overlayCtx.scale(scale, scale);
       const c = R + 2;
       const shade = overlayCtx.createRadialGradient(c + R * 0.5, c + R * 0.55, R * 0.25, c + R * 0.3, c + R * 0.35, R * 1.25);
-      shade.addColorStop(0, rgba(bodyDark, 0));
-      shade.addColorStop(1, rgba(bodyDark, 0.62));
+      shade.addColorStop(0, rgba(palette.shade, 0));
+      shade.addColorStop(1, rgba(palette.shade, palette.shadeAlpha));
       overlayCtx.fillStyle = shade;
       overlayCtx.beginPath();
       overlayCtx.arc(c, c, R, 0, TAU);
       overlayCtx.fill();
 
+      if (palette.limbAlpha > 0) {
+        const limb = overlayCtx.createRadialGradient(c, c, R * 0.55, c, c, R);
+        limb.addColorStop(0, rgba(palette.limb, 0));
+        limb.addColorStop(0.7, rgba(palette.limb, palette.limbAlpha * 0.25));
+        limb.addColorStop(1, rgba(palette.limb, palette.limbAlpha));
+        overlayCtx.fillStyle = limb;
+        overlayCtx.beginPath();
+        overlayCtx.arc(c, c, R, 0, TAU);
+        overlayCtx.fill();
+      }
+
       const rim = overlayCtx.createRadialGradient(c, c, R * 0.76, c, c, R);
-      rim.addColorStop(0, rgba(atmosphere, 0));
-      rim.addColorStop(1, rgba(atmosphere, 0.4));
+      rim.addColorStop(0, rgba(palette.rim, 0));
+      rim.addColorStop(1, rgba(palette.rim, palette.rimFill));
       overlayCtx.fillStyle = rim;
       overlayCtx.beginPath();
       overlayCtx.arc(c, c, R, 0, TAU);
       overlayCtx.fill();
-      overlayCtx.strokeStyle = rgba(atmosphere, 0.6);
+      overlayCtx.strokeStyle = rgba(palette.rim, palette.rimLine);
       overlayCtx.lineWidth = 1.4 * (size / 360);
       overlayCtx.stroke();
     }
@@ -415,7 +476,7 @@ export function createGlobeScene(canvas: HTMLCanvasElement, nodes: SceneNode[], 
       if (g) {
         const half = GLOW_SPRITE / 2;
         const gradient = g.createRadialGradient(half, half, 0, half, half, half);
-        gradient.addColorStop(0, rgba(tones[tone], 0.85));
+        gradient.addColorStop(0, rgba(tones[tone], 0.85 * palette.nodeGlow));
         gradient.addColorStop(1, rgba(tones[tone], 0));
         g.fillStyle = gradient;
         g.fillRect(0, 0, GLOW_SPRITE, GLOW_SPRITE);
@@ -431,7 +492,8 @@ export function createGlobeScene(canvas: HTMLCanvasElement, nodes: SceneNode[], 
     canvas.width = Math.round(size * dpr);
     canvas.height = Math.round(size * dpr);
     context.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const count = Math.max(300, Math.min(MAX_DOTS[quality], Math.round(size * DOTS_PER_PX[quality])));
+    /* Kiểu gạch chéo tra thẳng mặt nạ lục địa nên các điểm chỉ còn dùng để chọn đầu mút cung nối */
+    const count = palette.hatch ? 400 : Math.max(300, Math.min(MAX_DOTS[quality], Math.round(size * DOTS_PER_PX[quality])));
     surface = buildSurface(count);
     arcs = buildArcs(surface, toneList);
     px = new Float32Array(count);
@@ -489,7 +551,7 @@ export function createGlobeScene(canvas: HTMLCanvasElement, nodes: SceneNode[], 
     const ringR = R * RING_RADIUS;
     const cp = Math.cos(pitch);
     const sp = Math.sin(pitch);
-    const { atmosphere, land, sea, ink, tones } = palette;
+    const { land, sea, ink, tones } = palette;
 
     context.clearRect(0, 0, size, size);
 
@@ -528,7 +590,7 @@ export function createGlobeScene(canvas: HTMLCanvasElement, nodes: SceneNode[], 
 
     const drawRing = (front: boolean) => {
       context.lineWidth = (front ? 1.6 : 1.1) * s;
-      context.strokeStyle = rgba(atmosphere, front ? 0.7 : 0.26);
+      context.strokeStyle = rgba(palette.ring, front ? 0.7 : 0.26);
       context.beginPath();
       let pen = false;
       for (let i = 0; i <= RING_STEPS; i++) {
@@ -544,7 +606,7 @@ export function createGlobeScene(canvas: HTMLCanvasElement, nodes: SceneNode[], 
       context.stroke();
 
       /* Vạch chia độ: vạch dài mỗi 90°, vừa mỗi 30°, ngắn còn lại */
-      context.strokeStyle = rgba(ink, front ? 0.75 : 0.22);
+      context.strokeStyle = rgba(palette.tick, front ? 0.75 : 0.22);
       for (let tier = 0; tier < 3; tier++) {
         context.lineWidth = (tier === 0 ? 2.2 : 1) * s;
         const len = (tier === 0 ? 10 : tier === 1 ? 6.5 : 3.4) * s;
@@ -583,13 +645,15 @@ export function createGlobeScene(canvas: HTMLCanvasElement, nodes: SceneNode[], 
       context.globalAlpha = dim;
       context.drawImage(art.glows[nodes[k].tone], st.x - glowR, st.y - glowR, glowR * 2, glowR * 2);
 
-      /* Nút tròn màu nhóm, viền sáng, biểu tượng nét tối ở giữa */
-      context.fillStyle = rgba(tone, 1);
+      /* Nút đặc màu nhóm, viền sáng, biểu tượng nét tối ở giữa; kiểu nút viền: nền trắng, viền và biểu tượng màu nhóm,
+         chỉ đặc màu khi đang chọn */
+      const solid = !palette.outline || active;
+      context.fillStyle = solid ? rgba(tone, 1) : rgba(palette.face, 0.94);
       context.beginPath();
       context.arc(st.x, st.y, radius, 0, TAU);
       context.fill();
-      context.strokeStyle = rgba(ink, 0.9);
-      context.lineWidth = Math.max(1, 1.3 * s);
+      context.strokeStyle = palette.outline ? rgba(tone, 1) : rgba(ink, 0.9);
+      context.lineWidth = Math.max(1, (palette.outline ? 1.5 : 1.3) * s);
       context.stroke();
 
       const iconPath = iconPaths[k];
@@ -598,14 +662,14 @@ export function createGlobeScene(canvas: HTMLCanvasElement, nodes: SceneNode[], 
         context.save();
         context.translate(st.x - 12 * scale, st.y - 12 * scale);
         context.scale(scale, scale);
-        context.strokeStyle = rgba(palette.bodyDark, 1);
+        context.strokeStyle = rgba(palette.outline ? ink : palette.bodyDark, 1);
         context.lineWidth = 2.2;
         context.lineCap = 'round';
         context.lineJoin = 'round';
         context.stroke(iconPath);
         context.restore();
       } else {
-        context.fillStyle = rgba(ink, 1);
+        context.fillStyle = palette.outline && !active ? rgba(tone, 1) : rgba(ink, 1);
         context.beginPath();
         context.arc(st.x, st.y, radius * 0.4, 0, TAU);
         context.fill();
@@ -646,52 +710,12 @@ export function createGlobeScene(canvas: HTMLCanvasElement, nodes: SceneNode[], 
     /* Thân quả cầu (sprite) */
     context.drawImage(art.body, cx - R, cy - R, R * 2, R * 2);
 
-    /* Điểm bề mặt: chỉ nửa trước, gộp theo độ sáng */
+    /* Phép xoay từ hệ quả cầu ra màn hình: quay quanh trục, nghiêng trục, rồi ngả theo góc nhìn */
     const cyw = Math.cos(yaw);
     const syw = Math.sin(yaw);
     const cosTilt = Math.cos(AXIAL_TILT);
     const sinTilt = Math.sin(AXIAL_TILT);
-    counts.fill(0);
-    for (let i = 0; i < surface.count; i++) {
-      const x0 = surface.x[i];
-      const y0 = surface.y[i];
-      const z0 = surface.z[i];
-      const x1 = x0 * cyw + z0 * syw;
-      const z1 = -x0 * syw + z0 * cyw;
-      const x2 = x1 * cosTilt - y0 * sinTilt;
-      const y2 = x1 * sinTilt + y0 * cosTilt;
-      const z3 = y2 * sp + z1 * cp;
-      if (z3 <= 0) continue;
-      px[i] = cx + x2 * R;
-      py[i] = cy - (y2 * cp - z1 * sp) * R;
-      let b: number;
-      if (surface.land[i]) b = z3 > 0.7 ? 4 : z3 > 0.35 ? 3 : 2;
-      else b = z3 > 0.4 ? 1 : 0;
-      buckets[b][counts[b]++] = i;
-    }
 
-    const bucketStyle: { color: RGB; alpha: number; radius: number }[] = [
-      { color: sea, alpha: 0.26, radius: 0.8 },
-      { color: sea, alpha: 0.46, radius: 0.95 },
-      { color: land, alpha: 0.5, radius: 1.25 },
-      { color: land, alpha: 0.8, radius: 1.55 },
-      { color: land, alpha: 1, radius: 1.8 },
-    ];
-    for (let b = 0; b < BUCKET_COUNT; b++) {
-      if (counts[b] === 0) continue;
-      const style = bucketStyle[b];
-      context.fillStyle = rgba(style.color, style.alpha);
-      const r = style.radius * s;
-      const d = r * 2;
-      context.beginPath();
-      for (let n = 0; n < counts[b]; n++) {
-        const i = buckets[b][n];
-        context.rect(px[i] - r, py[i] - r, d, d);
-      }
-      context.fill();
-    }
-
-    /* Lưới kinh – vĩ tuyến (chỉ nửa trước) và vĩ tuyến quét từ trên xuống */
     const surfacePoint = (x0: number, y0: number, z0: number) => {
       const x1 = x0 * cyw + z0 * syw;
       const z1 = -x0 * syw + z0 * cyw;
@@ -713,13 +737,118 @@ export function createGlobeScene(canvas: HTMLCanvasElement, nodes: SceneNode[], 
         } else pen = false;
       }
     };
-    context.strokeStyle = rgba(atmosphere, 0.2);
+
+    if (palette.hatch) {
+      /* Đất liền kiểu bản khắc: nét kẻ chéo cố định trên màn hình, chỉ vẽ đoạn nào đang rơi trên đất liền
+         (đưa điểm mẫu ngược về tọa độ quả cầu để tra mặt nạ), phía tối kẻ thêm nét đan chéo, bờ biển viền đậm */
+      const landMask = getLandMask();
+      const step = Math.max(0.9, HATCH_STEP[quality] * s) / R;
+      const hatch = (angle: number, gap: number, shadedOnly: boolean) => {
+        const dirX = Math.cos(angle);
+        const dirY = Math.sin(angle);
+        const gapN = gap / R;
+        context.beginPath();
+        for (let c = -1 + gapN / 2; c < 1; c += gapN) {
+          const half = Math.sqrt(1 - c * c);
+          let pen = false;
+          for (let t = -half; t <= half; t += step) {
+            const u = t * dirX - c * dirY;
+            const v = t * dirY + c * dirX;
+            const w2 = 1 - u * u - v * v;
+            if (w2 <= 0) {
+              pen = false;
+              continue;
+            }
+            const w = Math.sqrt(w2);
+            if (shadedOnly && u * LIGHT[0] + v * LIGHT[1] + w * LIGHT[2] > SHADE_LIMIT) {
+              pen = false;
+              continue;
+            }
+            const y = v * cp + w * sp;
+            const z = w * cp - v * sp;
+            const x1 = u * cosTilt + y * sinTilt;
+            const y0 = y * cosTilt - u * sinTilt;
+            if (isLandAt(landMask, x1 * cyw - z * syw, y0, x1 * syw + z * cyw)) {
+              if (pen) context.lineTo(cx + u * R, cy - v * R);
+              else {
+                context.moveTo(cx + u * R, cy - v * R);
+                pen = true;
+              }
+            } else pen = false;
+          }
+        }
+        context.stroke();
+      };
+
+      /* Nét và khoảng cách có mức tối thiểu để quả cầu nhỏ (công tắc) vẫn thấy rõ nét gạch */
+      context.strokeStyle = rgba(land, 0.5);
+      context.lineWidth = Math.max(0.7, 0.7 * s);
+      hatch(Math.PI / 4, Math.max(3.2, HATCH_GAP[quality] * s), false);
+      context.strokeStyle = rgba(land, 0.42);
+      context.lineWidth = Math.max(0.6, 0.6 * s);
+      hatch(-Math.PI / 4, Math.max(4.2, CROSS_GAP * s), true);
+
+      context.strokeStyle = rgba(land, 0.88);
+      context.lineWidth = Math.max(1, 1.1 * s);
+      context.lineCap = 'round';
+      context.lineJoin = 'round';
+      context.beginPath();
+      const coasts = getCoastlines();
+      for (let i = 0; i < coasts.length; i++) strokeLine(coasts[i]);
+      context.stroke();
+      context.lineCap = 'butt';
+      context.lineJoin = 'miter';
+    } else {
+      /* Điểm bề mặt: chỉ nửa trước, gộp theo độ sáng */
+      counts.fill(0);
+      for (let i = 0; i < surface.count; i++) {
+        const x0 = surface.x[i];
+        const y0 = surface.y[i];
+        const z0 = surface.z[i];
+        const x1 = x0 * cyw + z0 * syw;
+        const z1 = -x0 * syw + z0 * cyw;
+        const x2 = x1 * cosTilt - y0 * sinTilt;
+        const y2 = x1 * sinTilt + y0 * cosTilt;
+        const z3 = y2 * sp + z1 * cp;
+        if (z3 <= 0) continue;
+        px[i] = cx + x2 * R;
+        py[i] = cy - (y2 * cp - z1 * sp) * R;
+        let b: number;
+        if (surface.land[i]) b = z3 > 0.7 ? 4 : z3 > 0.35 ? 3 : 2;
+        else b = z3 > 0.4 ? 1 : 0;
+        buckets[b][counts[b]++] = i;
+      }
+
+      const bucketStyle: { color: RGB; alpha: number; radius: number }[] = [
+        { color: sea, alpha: 0.26 * palette.seaAlpha, radius: 0.8 },
+        { color: sea, alpha: 0.46 * palette.seaAlpha, radius: 0.95 },
+        { color: land, alpha: 0.5, radius: 1.25 },
+        { color: land, alpha: 0.8, radius: 1.55 },
+        { color: land, alpha: 1, radius: 1.8 },
+      ];
+      for (let b = 0; b < BUCKET_COUNT; b++) {
+        if (counts[b] === 0) continue;
+        const style = bucketStyle[b];
+        const r = style.radius * s;
+        context.fillStyle = rgba(style.color, style.alpha);
+        const d = r * 2;
+        context.beginPath();
+        for (let n = 0; n < counts[b]; n++) {
+          const i = buckets[b][n];
+          context.rect(px[i] - r, py[i] - r, d, d);
+        }
+        context.fill();
+      }
+    }
+
+    /* Lưới kinh – vĩ tuyến (chỉ nửa trước) và vĩ tuyến quét từ trên xuống */
+    context.strokeStyle = rgba(palette.grid, palette.gridAlpha);
     context.lineWidth = 0.8 * s;
     context.beginPath();
     for (let i = 0; i < GRATICULE.length; i++) strokeLine(GRATICULE[i]);
     context.stroke();
 
-    context.strokeStyle = rgba(atmosphere, 0.65);
+    context.strokeStyle = rgba(palette.sweep, palette.sweepAlpha);
     context.lineWidth = 1.6 * s;
     context.beginPath();
     strokeLine(parallel(Math.sin(time * 0.00045) * 1.2));
@@ -792,7 +921,7 @@ export function createGlobeScene(canvas: HTMLCanvasElement, nodes: SceneNode[], 
       const by = above ? stn.y - gap - boxH : stn.y + gap;
       const tone = tones[nodes[activeIndex].tone];
 
-      context.fillStyle = rgba(palette.bodyDark, 0.9);
+      context.fillStyle = rgba(palette.labelBg, 0.92);
       context.strokeStyle = rgba(tone, 0.95);
       context.lineWidth = 1.5 * s;
       const rr = Math.min(4 * s, boxH / 2);

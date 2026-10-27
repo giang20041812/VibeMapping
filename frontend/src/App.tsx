@@ -8,6 +8,8 @@ import { LoginPage } from './modules/auth/pages/LoginPage';
 import { RegisterPage } from './modules/auth/pages/RegisterPage';
 import { ForgotPasswordPage } from './modules/auth/pages/ForgotPasswordPage';
 import { AssessmentResultSamplePage } from './modules/assessment_result/pages/AssessmentResultSamplePage';
+import { NotFoundPage } from './modules/not_found/NotFoundPage';
+import { HomePage } from './modules/home/HomePage';
 import { ProfilePage } from './modules/profile/pages/ProfilePage';
 import { AssessmentRunPage } from './modules/assessment_session/pages/AssessmentRunPage';
 import { GuestLayout } from './components/layout/GuestLayout';
@@ -15,6 +17,13 @@ import { GuestAssessmentPage } from './modules/guest_assessment/pages/GuestAsses
 import { Assessment360Page } from './modules/assessment_360/pages/Assessment360Page';
 import { Assessment360SamplePage } from './modules/assessment_360/pages/Assessment360SamplePage';
 
+/** Quản trị hệ thống vào thẳng khu quản trị, giáo viên vào thẳng lớp học */
+const HomeRoute: React.FC = () => {
+  const { profile, isProfileLoading } = useAuth();
+  if (!isProfileLoading && profile?.role === 'system_admin') return <Navigate to="/quan-tri" replace />;
+  if (!isProfileLoading && profile?.role === 'teacher') return <Navigate to="/lop-hoc" replace />;
+  return <HomePage />;
+};
 
 /** Đường dẫn cũ của phiên làm bài */
 const LegacySessionRedirect: React.FC = () => {
@@ -39,6 +48,7 @@ export const App: React.FC = () => (
 
         {/* Thanh điều hướng ngang, không có thanh bên: giới thiệu, ngành nghề, khám phá trường, khách làm bài test và khai báo thông tin sau bài */}
         <Route element={<PublicLayout />}>
+          <Route path="/" element={<HomeRoute />} />
           <Route element={<RequireSession />}>
           </Route>
         </Route>
@@ -93,6 +103,7 @@ export const App: React.FC = () => (
           </Route>
         )}
 
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </AuthProvider>
   </BrowserRouter>

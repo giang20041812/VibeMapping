@@ -1,0 +1,39 @@
+/* Thông báo luôn nằm góc phải trên của form/khung chứa */
+.app-alert {
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  align-self: flex-end;
+  justify-self: end;
+  margin-left: auto;
+  box-sizing: border-box;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  line-height: 1.35;
+  text-align: left;
+  animation: alert-in 320ms var(--ease-out) both;
+}
+
+.alert-icon { flex: none; }
+.alert-content { min-width: 0; display: flex; flex-direction: column; gap: 0; }
+.alert-title { font-weight: 700; }
+
+.alert-info { background: var(--alert-info-bg); border-color: var(--alert-info-border); color: var(--color-info-text); }
+.alert-success { background: var(--alert-success-bg); border-color: var(--alert-success-border); color: var(--color-success-text); }
+.alert-warning { background: var(--alert-warning-bg); border-color: var(--alert-warning-border); color: var(--color-warning-text); }
+.alert-danger { background: var(--alert-danger-bg); border-color: var(--alert-danger-border); color: var(--color-danger-text); }
+
+.alert-info .alert-icon { color: var(--alert-info-icon); }
+.alert-success .alert-icon { color: var(--alert-success-icon); }
+.alert-warning .alert-icon { color: var(--alert-warning-icon); }
+.alert-danger .alert-icon { color: var(--alert-danger-icon); }
+
+@keyframes alert-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}

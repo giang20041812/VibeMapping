@@ -1,0 +1,164 @@
+.app-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  line-height: 1;
+  min-width: 0;
+}
+
+.logo-stacked {
+  flex-direction: column;
+  gap: var(--space-2);
+  text-align: center;
+}
+
+/* Kích thước */
+.logo-size-sm .logo-mark-box { width: 32px; height: 32px; }
+.logo-size-md .logo-mark-box { width: 40px; height: 40px; }
+.logo-size-lg .logo-mark-box { width: 56px; height: 56px; }
+.logo-size-xl .logo-mark-box { width: 96px; height: 96px; }
+.logo-size-hero .logo-mark-box { width: min(240px, 56vw); height: min(240px, 56vw); }
+
+.logo-size-sm .logo-wordmark { font-size: var(--font-size-lg); }
+.logo-size-md .logo-wordmark { font-size: var(--font-size-2xl); }
+.logo-size-lg .logo-wordmark { font-size: var(--font-size-3xl); }
+.logo-size-xl .logo-wordmark { font-size: var(--font-size-4xl); }
+.logo-size-hero .logo-wordmark { font-size: var(--font-size-5xl); }
+
+.logo-mark-box {
+  flex: none;
+  display: block;
+}
+
+.logo-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Chữ */
+.logo-wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.28em;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.logo-wordmark-vibe { color: var(--logo-b); }
+.logo-wordmark-mapping { color: var(--logo-a); }
+.logo-tone-inverse .logo-wordmark-vibe { color: var(--brand-cream); }
+.logo-tone-inverse .logo-wordmark-mapping { color: var(--brand-ice); }
+
+/* Hình khối: đúng ba màu của logo */
+.logo-stop-a { stop-color: var(--logo-a); }
+.logo-stop-b { stop-color: var(--logo-b); }
+.logo-cap { fill: var(--brand-cream); }
+.logo-dot,
+.logo-pin { fill: var(--brand-white); }
+
+/* Đảo màu để nổi trên nền navy (thanh bên, thanh ngang): đĩa kem, mũ navy, chấm và ghim xanh */
+.logo-on-dark .logo-disc { fill: var(--brand-cream); }
+.logo-on-dark .logo-cap { fill: var(--logo-b); }
+.logo-on-dark .logo-dot,
+.logo-on-dark .logo-pin { fill: var(--logo-b); }
+
+/* Hoạt ảnh: các chấm lộ trình hiện lần lượt từ dây mũ, ghim rơi xuống rồi nhún nhẹ liên tục */
+.logo-svg.is-animated .logo-dot {
+  animation: logo-dot-in 360ms var(--ease-out) both;
+}
+/* Trong nhóm hình, phần tử đầu là mũ; các chấm bắt đầu từ phần tử thứ 2 */
+.logo-svg.is-animated .logo-dot:nth-child(2) { animation-delay: 0ms; }
+.logo-svg.is-animated .logo-dot:nth-child(3) { animation-delay: 90ms; }
+.logo-svg.is-animated .logo-dot:nth-child(4) { animation-delay: 180ms; }
+.logo-svg.is-animated .logo-dot:nth-child(5) { animation-delay: 270ms; }
+.logo-svg.is-animated .logo-dot:nth-child(6) { animation-delay: 360ms; }
+.logo-svg.is-animated .logo-dot:nth-child(7) { animation-delay: 450ms; }
+.logo-svg.is-animated .logo-dot:nth-child(8) { animation-delay: 540ms; }
+.logo-svg.is-animated .logo-dot:nth-child(9) { animation-delay: 630ms; }
+.logo-svg.is-animated .logo-dot:nth-child(10) { animation-delay: 720ms; }
+
+.logo-svg.is-animated .logo-pin {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  animation:
+    logo-drop 640ms 820ms var(--ease-spring) both,
+    logo-bob 3.4s 1.6s ease-in-out infinite;
+}
+
+@keyframes logo-dot-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes logo-drop {
+  from { opacity: 0; transform: translateY(-40%) scale(0.86); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes logo-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6%); }
+}
+
+/* Vẽ logo: nét viền hình tròn rồi nét mũ chạy hết một vòng, màu tô dâng lên thay cho nét;
+   sau đó các chấm lộ trình hiện lần lượt và ghim rơi xuống */
+.logo-svg.is-drawing .logo-disc,
+.logo-svg.is-drawing .logo-cap {
+  stroke-dasharray: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.logo-svg.is-drawing .logo-disc {
+  stroke: var(--logo-b);
+  stroke-width: 28;
+  animation:
+    logo-trace 700ms 100ms var(--ease-standard) both,
+    logo-fill 420ms 620ms var(--ease-out) both;
+}
+.logo-svg.is-drawing .logo-cap {
+  stroke: var(--brand-cream);
+  stroke-width: 5;
+  animation:
+    logo-trace 650ms 450ms var(--ease-standard) both,
+    logo-fill 380ms 950ms var(--ease-out) both;
+}
+.logo-svg.is-drawing .logo-dot { animation: logo-dot-in 300ms var(--ease-out) both; }
+.logo-svg.is-drawing .logo-dot:nth-child(2) { animation-delay: 1100ms; }
+.logo-svg.is-drawing .logo-dot:nth-child(3) { animation-delay: 1170ms; }
+.logo-svg.is-drawing .logo-dot:nth-child(4) { animation-delay: 1240ms; }
+.logo-svg.is-drawing .logo-dot:nth-child(5) { animation-delay: 1310ms; }
+.logo-svg.is-drawing .logo-dot:nth-child(6) { animation-delay: 1380ms; }
+.logo-svg.is-drawing .logo-dot:nth-child(7) { animation-delay: 1450ms; }
+.logo-svg.is-drawing .logo-dot:nth-child(8) { animation-delay: 1520ms; }
+.logo-svg.is-drawing .logo-dot:nth-child(9) { animation-delay: 1590ms; }
+.logo-svg.is-drawing .logo-dot:nth-child(10) { animation-delay: 1660ms; }
+.logo-svg.is-drawing .logo-pin {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  animation: logo-drop 640ms 1450ms var(--ease-spring) both;
+}
+.logo-svg.is-drawing.is-animated .logo-pin {
+  animation:
+    logo-drop 640ms 1450ms var(--ease-spring) both,
+    logo-bob 3.4s 2.2s ease-in-out infinite;
+}
+
+@keyframes logo-trace {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes logo-fill {
+  from { fill-opacity: 0; stroke-opacity: 1; }
+  to { fill-opacity: 1; stroke-opacity: 0; }
+}
+
+/* Giảm chuyển động: hiện logo hoàn chỉnh ngay, không chờ */
+@media (prefers-reduced-motion: reduce) {
+  .logo-svg.is-drawing .logo-disc,
+  .logo-svg.is-drawing .logo-cap,
+  .logo-svg.is-drawing .logo-dot,
+  .logo-svg.is-drawing .logo-pin { animation: none; stroke: none; }
+}

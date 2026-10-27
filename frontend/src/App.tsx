@@ -10,6 +10,10 @@ import { ForgotPasswordPage } from './modules/auth/pages/ForgotPasswordPage';
 import { AssessmentResultSamplePage } from './modules/assessment_result/pages/AssessmentResultSamplePage';
 import { ProfilePage } from './modules/profile/pages/ProfilePage';
 import { AssessmentRunPage } from './modules/assessment_session/pages/AssessmentRunPage';
+import { GuestLayout } from './components/layout/GuestLayout';
+import { GuestAssessmentPage } from './modules/guest_assessment/pages/GuestAssessmentPage';
+import { Assessment360Page } from './modules/assessment_360/pages/Assessment360Page';
+import { Assessment360SamplePage } from './modules/assessment_360/pages/Assessment360SamplePage';
 
 
 /** Đường dẫn cũ của phiên làm bài */
@@ -52,6 +56,7 @@ export const App: React.FC = () => (
           <Route element={<AppLayout />}>
             <Route path="/ho-so" element={<ProfilePage />} />
             <Route element={<RequireCompleteProfile />}>
+              <Route path="/danh-gia-360" element={<Assessment360Page />} />
               <Route element={<RequireRole roles={['student', 'university_student']} />}>
               </Route>
               <Route element={<RequireRole roles={['parent']} />}>
@@ -78,11 +83,13 @@ export const App: React.FC = () => (
         <Route path="/bai-danh-gia" element={<Navigate to="/danh-gia-360" replace />} />
 
         <Route element={<GuestLayout />}>
+          <Route path="/moi/:token" element={<GuestAssessmentPage />} />
         </Route>
 
         {import.meta.env.DEV && (
           <Route element={<AppLayout />}>
             <Route path="/dev/ket-qua-mau" element={<AssessmentResultSamplePage />} />
+            <Route path="/dev/danh-gia-360-mau" element={<Assessment360SamplePage />} />
           </Route>
         )}
 

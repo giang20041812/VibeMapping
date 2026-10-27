@@ -1,0 +1,42 @@
+/* Thẻ: nền gradient pha màu theo trạng thái, viền cùng tông, chấm có vầng sáng và vệt bóng phía trên */
+.app-badge {
+  --dot: var(--color-text-muted);
+  --tone: var(--dot);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--color-text-main);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, #fff 55%, transparent) 0%, transparent 55%),
+    linear-gradient(135deg, color-mix(in srgb, var(--tone) 20%, var(--color-bg-surface)), color-mix(in srgb, var(--tone) 8%, var(--color-bg-surface)));
+  border: 1px solid color-mix(in srgb, var(--tone) 38%, transparent);
+  border-radius: var(--radius-full);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 80%, transparent),
+    0 1px 2px color-mix(in srgb, var(--tone) 18%, transparent),
+    0 4px 10px -4px color-mix(in srgb, var(--tone) 40%, transparent);
+  line-height: 1;
+  white-space: nowrap;
+}
+.app-badge::before {
+  content: '';
+  flex: none;
+  width: 8px;
+  height: 8px;
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, #fff 60%, var(--dot)), var(--dot) 65%);
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--dot) 24%, transparent), 0 0 8px color-mix(in srgb, var(--dot) 55%, transparent);
+}
+
+.badge-sm { padding: 5px 11px; font-size: var(--font-size-xs); }
+.badge-md { padding: 6px 13px; font-size: var(--font-size-xs); }
+
+.badge-success { --dot: var(--color-success); color: var(--color-success-text); }
+.badge-warning { --dot: var(--color-warning); color: var(--color-warning-text); }
+.badge-danger { --dot: var(--color-danger); color: var(--color-danger-text); }
+.badge-info { --dot: var(--brand-sky); color: var(--color-info-text); }
+.badge-default { --dot: var(--color-text-muted); color: var(--color-text-secondary); }

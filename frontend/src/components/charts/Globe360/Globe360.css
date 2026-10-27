@@ -1,0 +1,116 @@
+/* Quả địa cầu 360° kiểu hình dán: biển phẳng, đất liền xanh ngọc, viền mực dày, bóng đặc lệch xuống. Không phát sáng.
+   Màu của canvas lấy từ các biến --globe-* này (xem readPalette trong globeScene.ts). */
+.globe360 {
+  --globe-land: var(--soft-teal);
+  --globe-sea: var(--soft-sky);
+  --globe-grid: var(--brand-white);
+  --globe-grid-alpha: 0.5;
+  --globe-ring: var(--soft-violet);
+  --globe-shade: var(--cartoon-ink);
+  --globe-shade-alpha: 0.22;
+  --globe-ink: var(--cartoon-ink);
+  --globe-paper: var(--brand-white);
+  --globe-icon: var(--brand-white);
+  --globe-tone-gold: var(--soft-gold);
+  --globe-tone-cyan: var(--soft-cyan);
+  --globe-tone-violet: var(--soft-violet);
+  --globe-tone-magenta: var(--soft-magenta);
+  --globe-chip-text: var(--cartoon-ink);
+  --globe-chip-bg: var(--brand-white);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+  margin: 0;
+  color: var(--ink-700);
+}
+
+.globe360-tone-gold { --tone: var(--globe-tone-gold); }
+.globe360-tone-cyan { --tone: var(--globe-tone-cyan); }
+.globe360-tone-violet { --tone: var(--globe-tone-violet); }
+.globe360-tone-magenta { --tone: var(--globe-tone-magenta); }
+
+.globe360-stage {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  aspect-ratio: 1 / 1;
+}
+
+.globe360-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: pan-y;
+  opacity: 0;
+  transform: scale(0.88);
+  transition: opacity var(--transition-slow), transform var(--transition-slow), filter var(--transition-slow);
+}
+.globe360.is-visible .globe360-canvas { opacity: 1; transform: scale(1); }
+/* Tắt: mất màu và mờ đi; bật lại thì màu trở về dần */
+.globe360-canvas.is-off { filter: grayscale(1) opacity(0.55); }
+.globe360-canvas.is-pointer { cursor: pointer; }
+.globe360-canvas.is-grabbing { cursor: grabbing; }
+
+.globe360-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+  list-style: none;
+}
+
+.globe360-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target);
+  padding: 0 var(--space-4);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--globe-chip-text);
+  background: var(--globe-chip-bg);
+  border: var(--cartoon-stroke-thin) solid var(--cartoon-ink);
+  border-radius: var(--radius-full);
+  box-shadow: var(--cartoon-pop);
+  transition:
+    transform var(--transition-normal),
+    background-color var(--transition-fast),
+    box-shadow var(--transition-normal);
+}
+.globe360-chip::before {
+  content: '';
+  flex: none;
+  width: 12px;
+  height: 12px;
+  background: var(--tone);
+  border: var(--cartoon-stroke-thin) solid var(--cartoon-ink);
+  border-radius: var(--radius-full);
+}
+.globe360-chip:focus-visible { outline: 2px solid var(--color-border-focus); outline-offset: 3px; }
+.globe360-chip:hover,
+.globe360-chip.is-active {
+  background: color-mix(in srgb, var(--tone) 28%, var(--brand-white));
+  box-shadow: var(--cartoon-pop-hover);
+  transform: translateY(-2px);
+}
+.globe360-chip:active { box-shadow: var(--cartoon-pop-press); transform: translateY(3px); }
+
+/* Bản thu gọn làm nút gạt */
+.globe360.is-compact { gap: 0; }
+.globe360.is-compact .globe360-stage { max-width: none; }
+.globe360.is-compact .globe360-canvas { cursor: inherit; touch-action: auto; pointer-events: none; }
+
+/* Có biểu tượng thì không cần chấm màu */
+.globe360-chip.has-icon::before { display: none; }
+.globe360-chip svg { flex: none; color: var(--cartoon-ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  .globe360-canvas { transform: none; transition: none; }
+  .globe360-chip { transition: none; }
+}

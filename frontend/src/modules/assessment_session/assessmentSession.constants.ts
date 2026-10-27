@@ -15,8 +15,8 @@ export const PARTS: { number: PartNumber; name: string; short: string }[] = [
   { number: 4, name: 'Năng lực chuyên môn', short: 'Năng lực' },
 ];
 
-/** Thời gian chờ giữa hai lần làm bài (giờ) */
-export const RETAKE_INTERVAL_HOURS = 336;
+/** Thời gian chờ giữa hai lần làm bài (giờ). Tạm đặt 0 để làm lại liên tục; giá trị chuẩn là 336 (14 ngày) */
+export const RETAKE_INTERVAL_HOURS = 0;
 /** Thời gian giữ bản nháp (giờ) */
 export const DRAFT_RETENTION_HOURS = 168;
 

@@ -7,9 +7,16 @@ import { GuestOnly, RequireAuth, RequireCompleteProfile, RequireRole, RequireSes
 import { LoginPage } from './modules/auth/pages/LoginPage';
 import { RegisterPage } from './modules/auth/pages/RegisterPage';
 import { ForgotPasswordPage } from './modules/auth/pages/ForgotPasswordPage';
+import { AssessmentResultSamplePage } from './modules/assessment_result/pages/AssessmentResultSamplePage';
 import { ProfilePage } from './modules/profile/pages/ProfilePage';
+import { AssessmentRunPage } from './modules/assessment_session/pages/AssessmentRunPage';
 
 
+/** Đường dẫn cũ của phiên làm bài */
+const LegacySessionRedirect: React.FC = () => {
+  const { sessionId } = useParams();
+  return <Navigate to={`/danh-gia-ca-nhan/${sessionId}`} replace />;
+};
 
 export const App: React.FC = () => (
   <BrowserRouter>
@@ -36,6 +43,7 @@ export const App: React.FC = () => (
         <Route element={<RequireSession />}>
           <Route element={<ShellLayout />}>
             <Route element={<RequireCompleteProfile />}>
+              <Route path="/danh-gia-ca-nhan/:sessionId" element={<AssessmentRunPage />} />
             </Route>
           </Route>
         </Route>
@@ -62,12 +70,19 @@ export const App: React.FC = () => (
         </Route>
 
         {/* Đường dẫn cũ đã gộp trang */}
+        <Route path="/danh-gia" element={<Navigate to="/danh-gia-360" replace />} />
+        <Route path="/danh-gia-ca-nhan" element={<Navigate to="/danh-gia-360" replace />} />
+        <Route path="/danh-gia/:sessionId" element={<LegacySessionRedirect />} />
+        <Route path="/ket-qua" element={<Navigate to="/danh-gia-360" replace />} />
+        <Route path="/moi-danh-gia" element={<Navigate to="/danh-gia-360" replace />} />
+        <Route path="/bai-danh-gia" element={<Navigate to="/danh-gia-360" replace />} />
 
         <Route element={<GuestLayout />}>
         </Route>
 
         {import.meta.env.DEV && (
           <Route element={<AppLayout />}>
+            <Route path="/dev/ket-qua-mau" element={<AssessmentResultSamplePage />} />
           </Route>
         )}
 

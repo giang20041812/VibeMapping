@@ -33,6 +33,7 @@ const ADMIN_ROLES: UserRole[] = ['system_admin'];
 
 /** Mục điều hướng chính của thanh bên trái; hồ sơ, đổi mật khẩu, thông báo nằm trong menu avatar */
 export const NAV_ITEMS: NavItem[] = [
+  { to: '/', label: 'Trang chủ', icon: HomeIcon, roles: HOME_ROLES, end: true },
   { to: '/danh-gia-360', label: 'Đánh giá 360', icon: Globe360Icon, roles: ['student', 'university_student'] },
 ];
 

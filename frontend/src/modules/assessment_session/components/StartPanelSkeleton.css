@@ -1,0 +1,13 @@
+/* Thẻ gói khi đang tải: giữ khung và đệm như thẻ thật nhưng không phản hồi chuột */
+.package-card.is-skeleton { cursor: default; }
+.package-card.is-skeleton:hover { border-color: var(--color-border); transform: none; box-shadow: none; }
+.package-card .package-skeleton-count { height: calc(40 * var(--px)); padding-block: calc(6 * var(--px)); }
+
+.parts-skeleton-name { display: flex; align-items: center; gap: var(--space-3); }
+.parts-skeleton-name .parts-skeleton-number { flex: none; width: 26px; border-radius: var(--radius-sm); }
+.parts-skeleton-name .skeleton-text { flex: 1 1 auto; }
+.parts-count-col .parts-skeleton-count { margin-left: auto; }
+
+@media (max-width: 760px) {
+  .start-actions .skeleton-button-lg { width: 100%; }
+}

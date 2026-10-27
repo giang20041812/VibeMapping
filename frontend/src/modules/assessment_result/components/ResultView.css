@@ -1,0 +1,255 @@
+.result-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* Tiến độ bài đánh giá đã chấp nhận, nằm đầu thẻ điểm; lề khớp với các dòng nhóm bên dưới */
+.result-progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-2);
+}
+
+.result-progress-head {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+.result-progress-head strong {
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  color: var(--color-text-main);
+}
+.result-progress .app-progress { height: 10px; }
+
+/* Lưới nội dung: biểu đồ và điểm theo nhóm cùng phủ hết chiều ngang */
+.result-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: stretch;
+}
+/* Bìa khi chưa có kết quả: biểu đồ và bảng điểm mờ phía sau, nút ở giữa */
+.result-stage { position: relative; }
+.result-stage.has-cover .result-grid { filter: blur(3px) saturate(0.6); opacity: 0.55; pointer-events: none; user-select: none; }
+.result-cover {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+.result-chart { display: flex; flex-direction: column; justify-content: center; align-self: stretch; min-width: 0; }
+
+/* Thẻ không cắt nội dung để bảng tiêu chí con nổi ra ngoài khung */
+.result-groups-card { animation-delay: 100ms; overflow: visible; }
+
+.result-retake { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-5); }
+
+/* Nhãn cảnh báo nằm góc phải trên của thẻ điểm, cùng màu với hộp thông báo */
+.result-notes { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-2); padding: 0 var(--space-4); margin-bottom: var(--space-2); }
+.result-note {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-warning-text);
+  background: var(--alert-warning-bg);
+  border: 1px solid var(--alert-warning-border);
+  border-radius: var(--radius-full, 999px);
+}
+.result-note svg { color: var(--alert-warning-icon); }
+
+/* Danh sách điểm nhóm: tự chia cột theo bề rộng còn lại */
+.group-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
+  gap: var(--space-2) var(--space-5);
+  list-style: none;
+}
+
+/* Mỗi nhóm một màu nhấn dịu lấy từ bảng màu minh họa, để thanh điểm không đơn điệu một sắc xanh */
+.group-row {
+  --group-color: var(--soft-sky);
+  --group-track: var(--soft-glow-sky);
+}
+.group-row[data-group='G1'] { --group-color: var(--soft-cyan); --group-track: var(--soft-glow-cyan); }
+.group-row[data-group='G2'] { --group-color: var(--soft-gold); --group-track: var(--soft-glow-gold); }
+.group-row[data-group='G3'] { --group-color: var(--soft-teal); --group-track: var(--soft-glow-teal); }
+.group-row[data-group='G4'] { --group-color: var(--soft-violet); --group-track: var(--soft-glow-violet); }
+.group-row[data-group='G5'] { --group-color: var(--soft-coral); --group-track: var(--soft-glow-coral); }
+.group-row[data-group='G6'] { --group-color: var(--soft-magenta); --group-track: var(--soft-glow-magenta); }
+
+.group-row {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  transition: background var(--transition-fast);
+}
+.group-row:hover,
+.group-row:focus-within {
+  z-index: 3;
+  background: var(--ink-wash);
+}
+.group-row:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.group-row-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.group-row-name {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: var(--color-text-main);
+}
+.group-row-score {
+  flex: none;
+  font-size: var(--font-size-xl);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--brand-deep);
+}
+.group-row-score.is-empty {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+/* Thanh điểm có màu theo nhóm, điểm tựa tròn ở đúng giá trị */
+.group-meter { position: relative; display: flex; align-items: center; }
+.group-row .app-progress { height: 10px; background: var(--group-track); }
+.group-row .app-progress .progress-fill { background: var(--group-color); }
+.group-meter-thumb {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--progress, 0) * 100%);
+  width: 16px;
+  height: 16px;
+  background: var(--brand-white);
+  border: 3px solid var(--group-color);
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+  transform: translate(-50%, -50%);
+  animation: thumb-slide 900ms var(--ease-out) both;
+}
+
+/* Tiêu chí con và điểm thành phần: chỉ hiện khi rê chuột hoặc chạm vào nhóm */
+.group-detail {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-dropdown);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition:
+    opacity var(--transition-fast),
+    transform var(--transition-fast),
+    visibility var(--transition-fast);
+}
+/* Hai nhóm cuối mở lên trên để không tràn khỏi thẻ */
+.group-row:nth-last-child(-n + 2) .group-detail {
+  top: auto;
+  bottom: 100%;
+  transform: translateY(4px);
+}
+.group-row:hover .group-detail,
+.group-row:focus-within .group-detail {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+.criterion-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  list-style: none;
+}
+.criterion-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 5.5em 5.5em;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
+}
+.criterion-name {
+  min-width: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+.criterion-score {
+  text-align: right;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-main);
+}
+.group-row .criterion-bar { grid-column: 1 / -1; height: 4px; }
+.score-compare {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 5.5em 5.5em;
+  gap: var(--space-3);
+}
+.score-compare > span:not(:first-child) { text-align: right; }
+.score-compare-head {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+.group-detail-self {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+.criterion-list + .group-detail-self {
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border);
+}
+
+
+@keyframes result-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes thumb-slide {
+  from { left: 0; }
+}
+
+@media (max-width: 560px) {
+  .group-list { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 1100px) {
+  .result-grid { grid-template-columns: minmax(0, 1fr); }
+}

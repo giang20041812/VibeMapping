@@ -1,0 +1,104 @@
+.part-stepper {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-2);
+  list-style: none;
+}
+
+.part-step { --step: var(--brand-sky); --step-glow: var(--color-primary-ring); position: relative; min-width: 0; }
+.part-step-1 { --step: var(--part-1); --step-glow: var(--part-1-glow); }
+.part-step-2 { --step: var(--part-2); --step-glow: var(--part-2-glow); }
+.part-step-3 { --step: var(--part-3); --step-glow: var(--part-3-glow); }
+.part-step-4 { --step: var(--part-4); --step-glow: var(--part-4-glow); }
+
+/* Đường nối giữa các bước: phần đã xong tô màu của phần đó */
+.part-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 22px;
+  left: calc(50% + 24px);
+  right: calc(-50% + 24px);
+  height: 3px;
+  background: linear-gradient(var(--step), var(--step)) left / 0 100% no-repeat, var(--color-border);
+  border-radius: var(--radius-sm);
+  transition: background-size var(--transition-slow);
+}
+.part-step.is-done:not(:last-child)::after { background-size: 100% 100%, auto; }
+
+.part-step-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: var(--touch-target);
+  padding: var(--space-1) var(--space-1);
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-md);
+  transition: color var(--transition-fast), transform var(--transition-normal);
+}
+.part-step-button:not([aria-disabled='true']):hover { transform: translateY(-2px); }
+.part-step-button:focus-visible { outline: 3px solid var(--step-glow); outline-offset: 2px; }
+
+.part-step-marker {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  color: var(--color-text-muted);
+  background: var(--color-bg-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 50%;
+  transition:
+    background-color var(--transition-normal),
+    border-color var(--transition-normal),
+    color var(--transition-normal),
+    transform var(--transition-normal),
+    box-shadow var(--transition-normal);
+}
+
+.part-step.is-open .part-step-marker { color: var(--step); border-color: var(--step); }
+.part-step.is-done .part-step-marker { color: var(--color-text-inverse); background: var(--step); border-color: var(--step); }
+.part-step.is-current .part-step-marker {
+  color: var(--color-text-inverse);
+  background: var(--step);
+  border-color: var(--step);
+  transform: scale(1.12);
+  box-shadow: 0 0 0 4px var(--step-glow);
+}
+/* Vòng sáng lan ra quanh phần đang làm */
+.part-step.is-current .part-step-marker::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border: 2px solid var(--step);
+  border-radius: 50%;
+  animation: step-ring 1.8s var(--ease-out) infinite;
+}
+
+.part-step-name {
+  max-width: 100%;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.part-step.is-done .part-step-name,
+.part-step.is-current .part-step-name { color: var(--step); }
+.part-step.is-locked .part-step-button { cursor: not-allowed; opacity: 0.7; }
+
+@keyframes step-ring {
+  from { opacity: 0.8; transform: scale(1); }
+  to { opacity: 0; transform: scale(1.5); }
+}
+
+@media (max-width: 480px) {
+  .part-step-name { font-size: 11px; }
+  .part-step-marker { width: 38px; height: 38px; }
+  .part-step:not(:last-child)::after { top: 19px; left: calc(50% + 21px); right: calc(-50% + 21px); }
+}

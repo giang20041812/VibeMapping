@@ -159,6 +159,7 @@ const StaffClasses: React.FC<{ isSchoolAdmin: boolean }> = ({ isSchoolAdmin }) =
     };
   }, []);
 
+  const hasNoSchool = !isLoading && !error && schools.length === 0;
   const schoolName = useMemo(() => new Map(schools.map((school) => [school.id, school.school_name])), [schools]);
 
   const rows = useMemo(() => {
@@ -195,10 +196,11 @@ const StaffClasses: React.FC<{ isSchoolAdmin: boolean }> = ({ isSchoolAdmin }) =
           </Button>
         </div>
       </div>
-      {(error || notice) && (
+      {(error || notice || hasNoSchool) && (
         <div className="class-alert-slot">
           {error && <Alert variant="danger">{error}</Alert>}
           {notice && <Alert variant="success">{notice}</Alert>}
+          {hasNoSchool && <Alert variant="warning">Tài khoản chưa thuộc trường nào. Nhờ quản trị trường thêm bạn vào trường.</Alert>}
         </div>
       )}
       <div className="class-stack">

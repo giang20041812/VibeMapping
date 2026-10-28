@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Plus, UserPlus } from 'lucide-react';
-import { Alert, Button, DataTable, Card, Input, Modal } from '../../../components/common';
+import { Alert, Button, DataTable, Card, Input, Modal, Pagination } from '../../../components/common';
 import type { DataTableColumn } from '../../../components/common';
 import { FilterBar } from '../../../components/filters/FilterBar/FilterBar';
+import { ADMIN_PAGE_SIZE } from '../../admin/admin.constants';
 import { useAdminFilter } from '../../admin/useAdminFilter';
 import { STAFF_ERROR_TEXT } from '../class_management.constants';
 import { addSchoolStaff, getSchoolReport, listSchools } from '../class_management.service';
@@ -25,6 +26,7 @@ export const SchoolsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
+  const [page, setPage] = useState(1);
   const [isSchoolFormOpen, setIsSchoolFormOpen] = useState(false);
   const [staffSchool, setStaffSchool] = useState<School | null>(null);
   const [reportSchool, setReportSchool] = useState<School | null>(null);
@@ -65,11 +67,18 @@ export const SchoolsPage: React.FC = () => {
 
   const reload = useCallback(() => setReloadKey((value) => value + 1), []);
 
-  const rows = useMemo(() => {
+  const filteredSchools = useMemo(() => {
     const keyword = applied.keyword.trim().toLowerCase();
     if (!keyword) return schools;
     return schools.filter((school) => `${school.school_name} ${school.city ?? ''}`.toLowerCase().includes(keyword));
   }, [schools, applied.keyword]);
+
+  useEffect(() => setPage(1), [applied.keyword]);
+
+  const rows = useMemo(
+    () => filteredSchools.slice((page - 1) * ADMIN_PAGE_SIZE, page * ADMIN_PAGE_SIZE),
+    [filteredSchools, page],
+  );
 
   const columns = useMemo<DataTableColumn<School>[]>(
     () => [
@@ -113,7 +122,7 @@ export const SchoolsPage: React.FC = () => {
       )}
 
       <div className="class-stack">
-        <FilterBar onReset={reset} totalResults={rows.length}>
+        <FilterBar onReset={reset} totalResults={filteredSchools.length}>
           <Input
             aria-label="Tìm trường"
             placeholder="Tìm theo tên trường"
@@ -124,6 +133,7 @@ export const SchoolsPage: React.FC = () => {
         <Card noPadding>
           <DataTable columns={columns} rows={rows} rowKey={(row) => row.id} isLoading={isLoading} emptyText="Chưa có trường" caption="Danh sách trường" />
         </Card>
+        <Pagination page={page} pageSize={ADMIN_PAGE_SIZE} total={filteredSchools.length} onChange={setPage} disabled={isLoading} />
       </div>
 
       <SchoolFormModal

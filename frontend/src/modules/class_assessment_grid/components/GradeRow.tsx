@@ -49,6 +49,7 @@ export const GradeRow = React.memo<GradeRowProps>(function GradeRow({
         )}
         {member.student_code && <span className="grid-student-code">{member.student_code}</span>}
         <div className="admin-badge-list">
+          {member.has_result && <Badge variant="info" size="sm">Đã làm bài</Badge>}
           {student?.guardian_pending && <Badge variant="warning" size="sm">Chờ người giám hộ</Badge>}
           {isSubmitted && !isDirty && <Badge variant="success" size="sm">Đã gửi</Badge>}
           {isDirty && <Badge variant="warning" size="sm">Sửa chưa gửi lại</Badge>}

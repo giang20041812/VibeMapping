@@ -16,8 +16,10 @@
   gap: var(--space-3);
 }
 
-.grid-fill-bar .app-select-group {
+.grid-fill-bar .app-select-group,
+.grid-fill-bar .app-searchable-select {
   width: auto;
+  flex: 1 1 200px;
   min-width: 160px;
   max-width: 260px;
 }
@@ -73,7 +75,8 @@
 }
 
 @media (max-width: 768px) {
-  .grid-fill-bar .app-select-group {
+  .grid-fill-bar .app-select-group,
+  .grid-fill-bar .app-searchable-select {
     width: 100%;
     max-width: none;
   }

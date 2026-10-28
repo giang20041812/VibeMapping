@@ -57,6 +57,8 @@ interface GradeStudentModalProps {
   values: Map<string, CellValue>;
   /** Vị trí trong danh sách đang hiển thị */
   position: { index: number; total: number } | null;
+  /** Học sinh đã làm bài tự đánh giá */
+  hasResult: boolean;
   isDirty: boolean;
   isSubmitting: boolean;
   onChangeCell: (criteriaId: string, value: CellValue) => void;
@@ -73,6 +75,7 @@ export const GradeStudentModal: React.FC<GradeStudentModalProps> = ({
   criteria,
   values,
   position,
+  hasResult,
   isDirty,
   isSubmitting,
   onChangeCell,
@@ -145,8 +148,11 @@ export const GradeStudentModal: React.FC<GradeStudentModalProps> = ({
       {student.guardian_pending && (
         <Alert variant="warning">Học sinh dưới 16 tuổi chưa có xác nhận của người giám hộ nên chưa gửi được điểm.</Alert>
       )}
-      {isSubmitted && !isDirty && <Badge variant="success">Đã gửi</Badge>}
-      {isDirty && <Badge variant="warning">Sửa chưa gửi lại</Badge>}
+      <div className="admin-badge-list">
+        {hasResult && <Badge variant="info">Đã làm bài</Badge>}
+        {isSubmitted && !isDirty && <Badge variant="success">Đã gửi</Badge>}
+        {isDirty && <Badge variant="warning">Sửa chưa gửi lại</Badge>}
+      </div>
 
       <div>
         <ProgressBar value={criteria.length === 0 ? null : (filled / criteria.length) * 100} label="Tiến độ chấm" />

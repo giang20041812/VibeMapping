@@ -341,6 +341,7 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
           criteria={criteria}
           values={scores.get(openStudent.grid_student_id) ?? NO_SCORES}
           position={openIndex >= 0 ? { index: openIndex + 1, total: visibleGridStudents.length } : null}
+          hasResult={members.some((member) => member.user_id === openStudent.student_id && member.has_result)}
           isDirty={dirtyIds.has(openStudent.grid_student_id)}
           isSubmitting={submittingId === openStudent.grid_student_id}
           onChangeCell={(criteriaId, value) => handleChangeCell(openStudent.grid_student_id, criteriaId, value)}

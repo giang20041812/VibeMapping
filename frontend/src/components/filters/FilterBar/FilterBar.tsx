@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Filter, RotateCcw } from 'lucide-react';
 import { Button } from '../../common/Button/Button';
+import '../filterControls.css';
 import './FilterBar.css';
 
 export interface FilterBarProps {
@@ -28,7 +29,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   };
 
   return (
-    <form className="app-filter-bar" onSubmit={handleSubmit}>
+    <form className="app-filter-bar filter-controls" onSubmit={handleSubmit}>
       <div className="filter-bar-header-mobile">
         <div className="filter-summary">
           {totalResults !== undefined && (

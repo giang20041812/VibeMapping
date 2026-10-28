@@ -118,7 +118,9 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
               <X size={14} />
             </button>
           )}
-          <ChevronDown size={16} className={`chevron-icon ${isOpen ? 'rotate' : ''}`} />
+          <span className="select-chevron-cell">
+            <ChevronDown size={16} className={`chevron-icon ${isOpen ? 'rotate' : ''}`} />
+          </span>
         </div>
       </div>
 

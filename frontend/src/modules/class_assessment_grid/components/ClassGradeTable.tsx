@@ -18,6 +18,7 @@ import { CELL_OPTIONS, cellToDb, parsePaste, toScoreMap, type ScoreMap } from '.
 import { GradeRow } from './GradeRow';
 import { GradeStudentModal } from './GradeStudentModal';
 import { UnderstandingFields } from './UnderstandingFields';
+import '../../../components/filters/filterControls.css';
 import './ClassGradeTable.css';
 
 const NO_SCORES = new Map<string, CellValue>();
@@ -245,7 +246,7 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
         </p>
       </Card>
 
-      <div className="grid-fill-bar">
+      <div className="grid-fill-bar filter-controls">
         <SearchableSelect
           label="Điền cả cột"
           placeholder="Chọn tiêu chí"

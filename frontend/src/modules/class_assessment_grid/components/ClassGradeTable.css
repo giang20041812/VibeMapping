@@ -10,6 +10,8 @@
 }
 
 .grid-fill-bar {
+  position: relative;
+  z-index: calc(var(--z-dropdown) - 1);
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;

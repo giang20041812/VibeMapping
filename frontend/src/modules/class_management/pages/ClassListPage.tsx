@@ -9,14 +9,16 @@ import { useAuth } from '../../auth/AuthContext';
 import { JOIN_ERROR_TEXT, STAFF_ERROR_TEXT } from '../class_management.constants';
 import {
   addSchoolStaff,
+  confirmSchoolAdmin,
   findMyMemberId,
   joinClassByCode,
   leaveClass,
   listClasses,
   listJoinedClasses,
+  listMySchoolInvitations,
   listSchools,
 } from '../class_management.service';
-import type { ClassRow, JoinedClass, School } from '../class_management.types';
+import type { ClassRow, JoinedClass, School, SchoolInvitation } from '../class_management.types';
 import { ClassFormModal } from '../components/ClassFormModal';
 import { EmailRoleModal } from '../components/EmailRoleModal';
 import '../ClassManagement.css';
@@ -143,22 +145,41 @@ const StaffClasses: React.FC<{ isSchoolAdmin: boolean }> = ({ isSchoolAdmin }) =
   const [notice, setNotice] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isStaffOpen, setIsStaffOpen] = useState(false);
+  const [invitations, setInvitations] = useState<SchoolInvitation[]>([]);
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let active = true;
-    Promise.all([listClasses(), listSchools()])
-      .then(([classList, schoolList]) => {
+    Promise.all([listClasses(), listSchools(), listMySchoolInvitations()])
+      .then(([classList, schoolList, invitationList]) => {
         if (!active) return;
         setClasses(classList);
         setSchools(schoolList);
+        setInvitations(invitationList);
       })
       .catch(() => active && setError('Không tải được danh sách lớp.'))
       .finally(() => active && setIsLoading(false));
     return () => {
       active = false;
     };
-  }, []);
+  }, [reloadKey]);
 
+  const handleConfirm = async (invitation: SchoolInvitation) => {
+    setConfirmingId(invitation.school_id);
+    setError(null);
+    try {
+      await confirmSchoolAdmin(invitation.school_id);
+      setNotice(`Đã xác nhận quản trị ${invitation.school_name}.`);
+      setReloadKey((value) => value + 1);
+    } catch {
+      setError('Không xác nhận được. Thử lại sau.');
+    } finally {
+      setConfirmingId(null);
+    }
+  };
+
+  const hasNoSchool = !isLoading && !error && schools.length === 0 && invitations.length === 0;
   const schoolName = useMemo(() => new Map(schools.map((school) => [school.id, school.school_name])), [schools]);
 
   const rows = useMemo(() => {
@@ -195,10 +216,21 @@ const StaffClasses: React.FC<{ isSchoolAdmin: boolean }> = ({ isSchoolAdmin }) =
           </Button>
         </div>
       </div>
-      {(error || notice) && (
+      {(error || notice || hasNoSchool || invitations.length > 0) && (
         <div className="class-alert-slot">
           {error && <Alert variant="danger">{error}</Alert>}
           {notice && <Alert variant="success">{notice}</Alert>}
+          {invitations.map((invitation) => (
+            <Alert key={invitation.school_id} variant="info">
+              <span className="class-invitation">
+                <span>Bạn được mời làm quản trị {invitation.school_name}.</span>
+                <Button type="button" size="sm" isLoading={confirmingId === invitation.school_id} onClick={() => void handleConfirm(invitation)}>
+                  Xác nhận
+                </Button>
+              </span>
+            </Alert>
+          ))}
+          {hasNoSchool && <Alert variant="warning">Tài khoản chưa thuộc trường nào. Nhờ quản trị trường thêm bạn vào trường.</Alert>}
         </div>
       )}
       <div className="class-stack">

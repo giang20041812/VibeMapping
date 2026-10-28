@@ -1496,6 +1496,7 @@ export type Database = {
           staff_role: string;
           created_at: string;
           updated_at: string;
+          status: string;
         };
         Insert: {
           id?: string;
@@ -1504,6 +1505,7 @@ export type Database = {
           staff_role: string;
           created_at?: string;
           updated_at?: string;
+          status?: string;
         };
         Update: {
           id?: string;
@@ -1512,6 +1514,7 @@ export type Database = {
           staff_role?: string;
           created_at?: string;
           updated_at?: string;
+          status?: string;
         };
         Relationships: [
           {
@@ -1688,6 +1691,10 @@ export type Database = {
         Args: { p_session_id: string; p_invite_enabled?: boolean };
         Returns: string;
       };
+      confirm_school_admin: {
+        Args: { p_school_id: string };
+        Returns: undefined;
+      };
       create_class: {
         Args: { p_school_id: string; p_class_name: string; p_grade: number; p_school_year: string };
         Returns: string;
@@ -1730,6 +1737,10 @@ export type Database = {
       };
       get_invitation_public: {
         Args: { p_token: string };
+        Returns: Json;
+      };
+      get_my_school_invitations: {
+        Args: Record<PropertyKey, never>;
         Returns: Json;
       };
       get_parameter: {

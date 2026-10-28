@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Button, Input, Modal, Select } from '../../../components/common';
-import { GRADE_OPTIONS } from '../class_management.constants';
+import { SearchableSelect } from '../../../components/filters/SearchableSelect/SearchableSelect';
+import { CREATE_CLASS_ERROR_TEXT, GRADE_OPTIONS } from '../class_management.constants';
 import { createClass } from '../class_management.service';
 import type { School } from '../class_management.types';
 import '../ClassManagement.css';
@@ -59,8 +60,9 @@ export const ClassFormModal: React.FC<ClassFormModalProps> = ({ open, schools, o
         schoolYear: schoolYear.trim(),
       });
       onSaved(classId);
-    } catch {
-      setFormError('Không tạo được lớp. Thử lại sau.');
+    } catch (error) {
+      const reason = (error as { message?: string } | null)?.message ?? '';
+      setFormError(CREATE_CLASS_ERROR_TEXT[reason] ?? 'Không tạo được lớp. Thử lại sau.');
     } finally {
       setIsSaving(false);
     }
@@ -85,7 +87,7 @@ export const ClassFormModal: React.FC<ClassFormModalProps> = ({ open, schools, o
     >
       <form id="class-form" className="class-form" onSubmit={handleSubmit} noValidate>
         {formError && <Alert variant="danger">{formError}</Alert>}
-        {schools.length > 1 && <Select label="Trường" options={schoolOptions} value={schoolId} onChange={setSchoolId} />}
+        {schools.length > 1 && <SearchableSelect label="Trường" options={schoolOptions} value={schoolId} onChange={setSchoolId} />}
         <div className="class-form-grid">
           <Input label="Tên lớp" value={className} onChange={(event) => setClassName(event.target.value)} error={nameError} required />
           <Select label="Khối" emptyLabel="Không chọn" options={GRADE_OPTIONS} value={grade} onChange={setGrade} />

@@ -31,6 +31,12 @@ export const STAFF_ERROR_TEXT: Record<string, string> = {
   not_school_staff: 'Giáo viên này chưa thuộc trường của lớp.',
 };
 
+/** Mã lỗi RAISE EXCEPTION từ create_class */
+export const CREATE_CLASS_ERROR_TEXT: Record<string, string> = {
+  forbidden: 'Tài khoản chưa thuộc trường này nên không tạo được lớp.',
+  invalid_class: 'Nhập tên lớp và năm học.',
+};
+
 export const JOIN_ERROR_TEXT: Record<string, string> = {
   class_not_found: 'Không tìm thấy lớp với mã này.',
   removed: 'Bạn đã bị xóa khỏi lớp này.',

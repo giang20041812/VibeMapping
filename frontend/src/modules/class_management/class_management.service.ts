@@ -7,6 +7,7 @@ import type {
   RosterImportResult,
   RosterRow,
   School,
+  SchoolInvitation,
   SchoolStaffMember,
 } from './class_management.types';
 
@@ -52,6 +53,17 @@ export async function addSchoolStaff(
   });
   if (error) fail('Lỗi thêm nhân sự trường', error);
   return data as { ok: boolean; reason?: string };
+}
+
+export async function listMySchoolInvitations(): Promise<SchoolInvitation[]> {
+  const { data, error } = await supabase.rpc('get_my_school_invitations');
+  if (error) fail('Lỗi đọc lời mời làm quản trị trường', error);
+  return (data ?? []) as unknown as SchoolInvitation[];
+}
+
+export async function confirmSchoolAdmin(schoolId: string): Promise<void> {
+  const { error } = await supabase.rpc('confirm_school_admin', { p_school_id: schoolId });
+  if (error) fail('Lỗi xác nhận quản trị trường', error);
 }
 
 export async function listClasses(): Promise<ClassRow[]> {

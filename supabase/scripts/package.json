@@ -6,6 +6,8 @@
   "scripts": {
     "import:ba": "tsx import-ba-data.ts",
     "import:ba:dry": "tsx import-ba-data.ts --dry-run",
+    "import:schools": "tsx import-schools.ts",
+    "import:schools:dry": "tsx import-schools.ts --dry-run",
     "typecheck": "tsc --noEmit",
     "gen:types": "tsx gen-types.ts",
     "assign:packages": "tsx assign-default-packages.ts"

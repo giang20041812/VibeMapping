@@ -105,3 +105,16 @@
     flex: 1;
   }
 }
+
+.filter-search-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--touch-target);
+  height: 100%;
+  color: var(--color-text-muted);
+}
+
+.filter-search-clear:hover {
+  color: var(--color-text-main);
+}

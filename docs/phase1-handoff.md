@@ -68,7 +68,7 @@ Idempotent (chạy lại được). Đã xóa migration demo `init_schema` và m
 | `decide_submission(id, 'accepted'\|'rejected')` | HS/SV | duyệt bài, tự tính lại kết quả |
 | `complete_self_assessment(session_id, invite_enabled)` | HS/SV | hoàn thành tự đánh giá, tạo kết quả nhãn "Tự đánh giá" |
 | `finalize_my_result(result_id)` | HS/SV | chốt thủ công (cần ≥ 1 bài đã chấp nhận) |
-| `submit_class_grid(grid_id)` | giáo viên | nộp bảng lưới; thiếu ô → `{ok:false, reason:'empty_cells'}` |
+| `submit_class_grid_student(grid_student_id)` | giáo viên | nộp điểm một học sinh, sửa xong nộp lại được (ghi đè bài cũ); chặn: `empty_cells`, `missing_understanding`, `guardian_pending` |
 | `auto_finalize_results()` | cron | chốt tự động khi đủ bài hoặc hết hạn |
 
 Khách phải gửi header `x-forwarded-for` hợp lệ (Supabase tự thêm) thì chống trùng IP mới hoạt động.
@@ -202,7 +202,7 @@ Guard theo `user_profiles.role`; trang quản trị chỉ `system_admin`.
 
 **Lớp học và bảng lưới (cập nhật 2026-10-28, chưa áp lên Supabase thật, chưa thử trên trình duyệt)**
 - Migration `20261028000200_phase1_class_management.sql`: RPC `add_school_staff`, `create_class`, `assign_class_teacher`, `join_class_by_code`, `remove_class_member`, `import_class_roster`, `get_class_overview`, `get_class_grid`, `get_class_report`, `get_school_report`; `submit_class_grid` thay bản cũ (thêm chặn học sinh dưới 16 tuổi chưa có người giám hộ và chặn thiếu ba câu mức thấu hiểu). Đã chạy cả 13 migration trên PostgreSQL 18 cục bộ và thử luồng: thêm giáo viên → tạo lớp → nhập Excel (dòng trùng/thiếu) → học sinh vào lớp (nhận lại dòng Excel theo mã học sinh) → bảng lưới → các nhánh chặn → nộp. **Chưa thử** nhánh báo cáo khi đủ 5 học sinh có kết quả.
-- Giao diện: `/lop-hoc` (học sinh: tham gia bằng mã, rời lớp; giáo viên và quản trị trường: danh sách lớp, tạo lớp), `/lop-hoc/:classId` (thông tin lớp + QR, thành viên, gán giáo viên, nhập Excel theo mẫu, báo cáo lớp), `/lop-hoc/:classId/bang-luoi` (giáo viên chấm lưới: điền cả cột, dán từ Excel, mức thấu hiểu cả lớp và riêng từng em, nộp), `/quan-tri/truong` (quản trị hệ thống: trường, thêm nhân sự, báo cáo trường). Trang Tiêu chí có ô "Thuộc bộ câu hỏi rút gọn".
+- Giao diện: `/lop-hoc` (học sinh: tham gia bằng mã, rời lớp; giáo viên và quản trị trường: danh sách lớp, tạo lớp), `/lop-hoc/:classId` (thông tin lớp + QR, thành viên, gán giáo viên, nhập Excel theo mẫu, báo cáo lớp; giáo viên của lớp thấy bảng học sinh × tiêu chí thay cho danh sách thành viên: chọn điểm từng ô (tự lưu), điền cả cột, dán từ Excel, mức thấu hiểu cả lớp và riêng từng em; bấm tên học sinh mở hộp thoại điền điểm riêng (cũng có nút Gửi); "Tải tệp mẫu" tạo `mau-cham-diem.xlsx` (dán cả bảng vào "Dán từ Excel", ô trống giữ nguyên điểm cũ); cuối mỗi dòng có nút Gửi / Gửi lại và Xóa; gửi riêng từng em, sửa rồi gửi lại không bị khóa; người khác vẫn thấy danh sách thành viên), `/quan-tri/truong` (quản trị hệ thống: trường, thêm nhân sự, báo cáo trường). Trang Tiêu chí có ô "Thuộc bộ câu hỏi rút gọn".
 - Gói câu hỏi: script `npm run assign:packages` (đọc thử) / `-- --apply` (ghi) gán 31/46/71 câu vào ba gói theo đúng quy tắc của `selectQuestions.ts`. **Chưa chạy `--apply`**; bảng `question_package_assignments` trên Supabase thật đang trống.
 - `gen-types.ts` nhận biến `PG_NO_SSL=1` để sinh type từ PostgreSQL cục bộ.
 - Chưa làm: lọc học sinh theo nhóm tố chất Holland trong bảng lưới (cần mã Holland của từng em), phân bố nghề quan tâm trong báo cáo lớp (thuộc phase sau), xác nhận người giám hộ, học sinh chỉ có dòng Excel (chưa có tài khoản) chưa chấm được vì bảng lưới tham chiếu `user_profiles`.
@@ -259,7 +259,7 @@ Chưa thử bằng giao diện: nhánh trùng IP (`duplicate_ip`, chỉ xảy ra
 **Giai đoạn 5 – Lớp học và giáo viên**
 - Quản trị hệ thống tạo trường và quản trị trường; tạo lớp (tên, khối, năm học, mã lớp + QR); gán giáo viên; học sinh vào lớp bằng mã (kèm thông báo đồng ý).
 - Nhập danh sách từ Excel: kiểm tra lỗi/trùng, hiển thị dòng lỗi, chỉ nhập dòng hợp lệ.
-- Bảng lưới (học sinh × tiêu chí): nhập 1–5/"không đủ cơ sở", điền hàng loạt, dán từ Excel, lọc theo nhóm tố chất, gán cùng điểm cho nhóm, sửa lẻ, lưu nháp, nộp (`submit_class_grid`).
+- Chấm điểm học sinh: bảng lưới nằm ngay trang lớp (không còn trang riêng `/bang-luoi`), nút Gửi ở cuối mỗi dòng gọi `submit_class_grid_student`; sửa rồi gửi lại. Migration `20261028000400_phase1_grade_per_student.sql` (thêm `class_assessment_grid_students.submitted_at`, bỏ `submit_class_grid`, `class_assessment_grids.status` không còn dùng); **chưa áp lên Supabase thật**, đã chạy 15 migration trên PostgreSQL 18 cục bộ và thử: nộp từng em, các nhánh chặn, nộp lại không sinh bài trùng, người ngoài lớp bị chặn, xóa học sinh giữ dòng đã nộp. Chưa thử trên trình duyệt.
 - Báo cáo lớp/trường (chỉ khi ≥ 5 học sinh).
 - *Cần chốt trước:* mục 3 #2 (bộ rút gọn).
 

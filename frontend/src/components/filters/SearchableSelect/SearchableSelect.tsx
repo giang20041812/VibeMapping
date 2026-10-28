@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { ChevronDown, Search, X } from 'lucide-react';
+import { normalizeSearchText } from '../../../lib/searchText';
 import type { FilterOption } from '../../../types/filter';
 import './SearchableSelect.css';
 
@@ -40,11 +41,9 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
 
   // Filtered options based on search query
   const filteredOptions = useMemo(() => {
-    if (!searchQuery.trim()) return options;
-    const query = searchQuery.toLowerCase().trim();
-    return options.filter((opt) =>
-      opt.label.toLowerCase().includes(query)
-    );
+    const query = normalizeSearchText(searchQuery);
+    if (!query) return options;
+    return options.filter((opt) => normalizeSearchText(opt.label).includes(query));
   }, [options, searchQuery]);
 
   // Handle outside click & escape key
@@ -132,7 +131,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                 ref={searchInputRef}
                 type="text"
                 className="select-search-input"
-                placeholder="Tìm kiếm lựa chọn..."
+                placeholder="Tìm kiếm..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onClick={(e) => e.stopPropagation()}
@@ -142,6 +141,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                   type="button"
                   className="search-clear-btn"
                   onClick={() => setSearchQuery('')}
+                  aria-label="Xóa từ khóa"
                 >
                   <X size={12} />
                 </button>

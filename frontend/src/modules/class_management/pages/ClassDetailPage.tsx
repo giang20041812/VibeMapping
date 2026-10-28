@@ -267,6 +267,7 @@ export const ClassDetailPage: React.FC = () => {
           <ClassGradeTable
             key={gridKey}
             members={gradeRows}
+            allMembers={students}
             initialGrid={grid}
             criteria={criteria}
             groupCode={applied.groupCode}

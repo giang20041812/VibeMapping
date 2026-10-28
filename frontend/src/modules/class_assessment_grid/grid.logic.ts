@@ -1,4 +1,5 @@
-import type { CellValue, GridData, GridStudent, ShortCriteria } from './class_assessment_grid.types';
+import { normalizeSearchText } from '../../lib/searchText';
+import type { CellValue, GridData, ShortCriteria } from './class_assessment_grid.types';
 
 export const CELL_OPTIONS: { value: CellValue; label: string }[] = [
   { value: '', label: '—' },
@@ -31,7 +32,7 @@ export function cellToDb(value: CellValue): number | 'na' | null {
   return value === 'na' ? 'na' : Number(value);
 }
 
-/** Hai cột đầu của tệp mẫu chấm điểm; dán cả bảng thì bỏ dòng tiêu đề và hai cột này */
+/** Hai cột đầu của tệp mẫu chấm điểm */
 export const GRADE_SHEET_HEADERS = ['Mã học sinh', 'Họ và tên'] as const;
 
 const NA_PATTERN = /^(na|n\/a|x|không đủ cơ sở|khong du co so)$/i;
@@ -44,36 +45,73 @@ export function parseCellText(text: string): CellValue | null {
   return null;
 }
 
-export interface PasteResult {
-  changes: { gridStudentId: string; criteriaId: string; value: CellValue }[];
-  invalid: number;
+export interface GradeSheetStudent {
+  gridStudentId: string;
+  studentCode: string | null;
+  fullName: string;
 }
 
+export interface GradeSheetResult {
+  changes: { gridStudentId: string; criteriaId: string; value: CellValue }[];
+  /** Số học sinh có điểm được nhập */
+  studentCount: number;
+  /** Số ô sai giá trị, bị bỏ qua */
+  invalid: number;
+  /** Số dòng trong tệp không khớp học sinh nào */
+  unmatchedRows: number[];
+}
+
+export class GradeSheetError extends Error {}
+
 /**
- * Dữ liệu dán từ Excel: mỗi dòng là một học sinh theo thứ tự đang hiển thị, mỗi cột là một tiêu chí theo thứ tự đang hiển thị.
- * Ô lạ giá trị bị bỏ qua và được đếm vào `invalid`.
+ * Đọc bảng điểm từ tệp mẫu: dòng 1 là tiêu đề (Mã học sinh, Họ và tên, rồi mã từng tiêu chí),
+ * mỗi dòng sau là một học sinh. Dòng khớp học sinh theo mã học sinh, không có mã thì theo họ tên.
+ * Ô để trống giữ nguyên điểm đang có; ô sai giá trị bị bỏ qua và được đếm vào `invalid`.
  */
-export function parsePaste(text: string, students: GridStudent[], criteria: ShortCriteria[]): PasteResult {
-  let lines = text.replace(/\r/g, '').split('\n').filter((line, index, all) => line.trim() !== '' || index < all.length - 1);
-  // Dán cả bảng từ tệp mẫu: bỏ dòng tiêu đề và hai cột mã, tên
-  if ((lines[0]?.split('\t')[0] ?? '').trim() === GRADE_SHEET_HEADERS[0]) {
-    lines = lines.slice(1).map((line) => line.split('\t').slice(GRADE_SHEET_HEADERS.length).join('\t'));
+export function parseGradeRows(rows: string[][], students: GradeSheetStudent[], criteria: ShortCriteria[]): GradeSheetResult {
+  const header = rows[0] ?? [];
+  if (header[0] !== GRADE_SHEET_HEADERS[0] || header[1] !== GRADE_SHEET_HEADERS[1]) {
+    throw new GradeSheetError('Sai mẫu: dòng đầu phải bắt đầu bằng "Mã học sinh" và "Họ và tên".');
   }
-  const changes: PasteResult['changes'] = [];
+
+  const criteriaByCode = new Map(criteria.map((item) => [item.dimension_code.toLowerCase(), item]));
+  const columns = header
+    .map((code, index) => ({ index, item: criteriaByCode.get(code.trim().toLowerCase()) }))
+    .filter((column) => column.index >= GRADE_SHEET_HEADERS.length && column.item);
+  if (columns.length === 0) throw new GradeSheetError('Không có cột tiêu chí nào khớp với bộ câu hỏi rút gọn.');
+
+  const byCode = new Map(students.filter((student) => student.studentCode).map((student) => [student.studentCode!.trim().toLowerCase(), student]));
+  const byName = new Map<string, GradeSheetStudent[]>();
+  for (const student of students) {
+    const key = normalizeSearchText(student.fullName);
+    byName.set(key, [...(byName.get(key) ?? []), student]);
+  }
+
+  const changes: GradeSheetResult['changes'] = [];
+  const matched = new Set<string>();
+  const unmatchedRows: number[] = [];
   let invalid = 0;
-  lines.slice(0, students.length).forEach((line, rowIndex) => {
-    line
-      .split('\t')
-      .slice(0, criteria.length)
-      .forEach((raw, columnIndex) => {
-        const parsed = parseCellText(raw);
-        if (parsed === '') return; // ô để trống thì giữ nguyên điểm đang có
-        if (parsed === null) {
-          invalid += 1;
-          return;
-        }
-        changes.push({ gridStudentId: students[rowIndex].grid_student_id, criteriaId: criteria[columnIndex].id, value: parsed });
-      });
+
+  rows.slice(1).forEach((row, offset) => {
+    const code = (row[0] ?? '').trim().toLowerCase();
+    const name = normalizeSearchText(row[1] ?? '');
+    if (code === '' && name === '') return;
+    const candidates = byName.get(name) ?? [];
+    const student = (code && byCode.get(code)) || (candidates.length === 1 ? candidates[0] : undefined);
+    if (!student) {
+      unmatchedRows.push(offset + 2);
+      return;
+    }
+    for (const column of columns) {
+      const parsed = parseCellText(row[column.index] ?? '');
+      if (parsed === '') continue;
+      if (parsed === null) {
+        invalid += 1;
+        continue;
+      }
+      matched.add(student.gridStudentId);
+      changes.push({ gridStudentId: student.gridStudentId, criteriaId: column.item!.id, value: parsed });
+    }
   });
-  return { changes, invalid };
+  return { changes, studentCount: matched.size, invalid, unmatchedRows };
 }

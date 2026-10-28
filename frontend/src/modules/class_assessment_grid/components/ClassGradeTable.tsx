@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { ClipboardPaste, Download } from 'lucide-react';
-import { Button, Card, Modal, ProgressBar, Select, Textarea } from '../../../components/common';
+import { FileSpreadsheet } from 'lucide-react';
+import { Button, Card, ProgressBar, Select } from '../../../components/common';
 import { SearchableSelect } from '../../../components/filters/SearchableSelect/SearchableSelect';
 import { GRID_BLOCK_TEXT } from '../../class_management/class_management.constants';
 import type { ClassMember } from '../../class_management/class_management.types';
@@ -14,7 +14,8 @@ import {
 } from '../class_assessment_grid.service';
 import type { CellValue, GridData, GridStudent, ShortCriteria } from '../class_assessment_grid.types';
 import { downloadGradeTemplate } from '../grade_template';
-import { CELL_OPTIONS, cellToDb, parsePaste, toScoreMap, type ScoreMap } from '../grid.logic';
+import { CELL_OPTIONS, cellToDb, toScoreMap, type GradeSheetResult, type ScoreMap } from '../grid.logic';
+import { GradeImportModal } from './GradeImportModal';
 import { GradeRow } from './GradeRow';
 import { GradeStudentModal } from './GradeStudentModal';
 import { UnderstandingFields } from './UnderstandingFields';
@@ -26,6 +27,8 @@ const NO_SCORES = new Map<string, CellValue>();
 interface ClassGradeTableProps {
   /** Học sinh của lớp (đã lọc theo từ khóa), mỗi người một dòng */
   members: ClassMember[];
+  /** Toàn bộ học sinh của lớp, để khớp dòng trong tệp Excel */
+  allMembers: ClassMember[];
   /** Bảng điểm vừa tải; cha gắn `key` theo lần tải để tải lại là làm mới */
   initialGrid: GridData;
   /** Toàn bộ tiêu chí của bộ rút gọn */
@@ -41,6 +44,7 @@ interface ClassGradeTableProps {
 
 export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
   members,
+  allMembers,
   initialGrid,
   criteria,
   groupCode,
@@ -57,8 +61,7 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
   const [submittingId, setSubmittingId] = useState<string | null>(null);
   const [fillCriteria, setFillCriteria] = useState(criteria[0]?.id ?? '');
   const [fillValue, setFillValue] = useState<CellValue>('3');
-  const [isPasteOpen, setIsPasteOpen] = useState(false);
-  const [pasteText, setPasteText] = useState('');
+  const [isImportOpen, setIsImportOpen] = useState(false);
   /** Học sinh đang mở hộp thoại chấm điểm riêng */
   const [openId, setOpenId] = useState<string | null>(null);
 
@@ -139,13 +142,16 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
     void applyChanges(visibleGridStudents.map((student) => ({ gridStudentId: student.grid_student_id, criteriaId: fillCriteria, value: fillValue })));
   };
 
-  const handlePaste = () => {
-    const result = parsePaste(pasteText, visibleGridStudents, visibleCriteria);
-    void applyChanges(result.changes);
-    setIsPasteOpen(false);
-    setPasteText('');
-    onNotice(result.invalid > 0 ? `Đã dán ${result.changes.length} ô, bỏ qua ${result.invalid} ô sai giá trị.` : `Đã dán ${result.changes.length} ô.`);
-  };
+  const sheetStudents = useMemo(
+    () =>
+      allMembers.flatMap((member) => {
+        const student = member.user_id ? gridStudents.get(member.user_id) : undefined;
+        return student ? [{ gridStudentId: student.grid_student_id, studentCode: member.student_code, fullName: member.full_name }] : [];
+      }),
+    [allMembers, gridStudents],
+  );
+
+  const handleImportApply = (changes: GradeSheetResult['changes']) => applyChanges(changes);
 
   const handleDefaults = async (value: Understanding) => {
     setGrid((current) => ({
@@ -220,8 +226,8 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
 
   const handleDownloadTemplate = () => {
     void downloadGradeTemplate(
-      members.filter((member) => member.user_id && gridStudents.has(member.user_id)),
-      visibleCriteria,
+      allMembers.filter((member) => member.user_id && gridStudents.has(member.user_id)),
+      criteria,
     ).catch(() => onError('Không tạo được tệp mẫu. Thử lại sau.'));
   };
 
@@ -258,11 +264,8 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
         <Button type="button" variant="outline" onClick={handleFillColumn}>
           Điền cho học sinh đang hiển thị
         </Button>
-        <Button type="button" variant="outline" leftIcon={<ClipboardPaste size={16} />} onClick={() => setIsPasteOpen(true)}>
-          Dán từ Excel
-        </Button>
-        <Button type="button" variant="outline" leftIcon={<Download size={16} />} onClick={handleDownloadTemplate}>
-          Tải tệp mẫu
+        <Button type="button" variant="outline" leftIcon={<FileSpreadsheet size={16} />} onClick={() => setIsImportOpen(true)}>
+          Nhập điểm từ Excel
         </Button>
       </div>
 
@@ -313,28 +316,14 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
         </div>
       </Card>
 
-      <Modal
-        open={isPasteOpen}
-        title="Dán từ Excel"
-        onClose={() => setIsPasteOpen(false)}
-        actions={
-          <>
-            <Button type="button" variant="ghost" onClick={() => setIsPasteOpen(false)}>
-              Hủy
-            </Button>
-            <Button type="button" onClick={handlePaste} disabled={pasteText.trim() === ''}>
-              Dán
-            </Button>
-          </>
-        }
-      >
-        <Textarea
-          label="Điểm theo thứ tự học sinh đã tham gia và tiêu chí đang hiển thị"
-          rows={8}
-          value={pasteText}
-          onChange={(event) => setPasteText(event.target.value)}
-        />
-      </Modal>
+      <GradeImportModal
+        open={isImportOpen}
+        students={sheetStudents}
+        criteria={criteria}
+        onDownloadTemplate={handleDownloadTemplate}
+        onApply={handleImportApply}
+        onClose={() => setIsImportOpen(false)}
+      />
 
       {openStudent && (
         <GradeStudentModal

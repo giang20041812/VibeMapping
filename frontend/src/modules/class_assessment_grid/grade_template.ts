@@ -7,8 +7,8 @@ export interface TemplateStudent {
 }
 
 /**
- * Tải tệp mẫu chấm điểm: mỗi dòng một học sinh theo thứ tự đang hiển thị, mỗi cột một tiêu chí đang hiển thị.
- * Điền xong thì chọn cả bảng (kể cả dòng tiêu đề) và dán vào "Dán từ Excel".
+ * Tải tệp mẫu chấm điểm: mỗi dòng một học sinh, mỗi cột một tiêu chí.
+ * Điền xong thì chọn tệp trong "Nhập điểm từ Excel"; dòng khớp học sinh theo mã học sinh hoặc họ tên, cột khớp tiêu chí theo mã.
  */
 export async function downloadGradeTemplate(students: TemplateStudent[], criteria: ShortCriteria[]): Promise<void> {
   const { Workbook } = await import('exceljs');

@@ -6,7 +6,7 @@ const MAX_FILE_BYTES = 2 * 1024 * 1024;
 
 export class RosterFileError extends Error {}
 
-function cellText(value: unknown): string {
+export function cellText(value: unknown): string {
   if (value === null || value === undefined) return '';
   if (typeof value === 'object') {
     const rich = value as { text?: unknown; richText?: { text: string }[]; result?: unknown };

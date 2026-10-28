@@ -10,7 +10,8 @@
     "typecheck": "npm --prefix frontend run typecheck",
     "import:ba": "npm --prefix supabase/scripts run import:ba",
     "import:ba:dry": "npm --prefix supabase/scripts run import:ba:dry",
-    "supabase:types": "npm --prefix supabase/scripts run gen:types"
+    "supabase:types": "npm --prefix supabase/scripts run gen:types",
+    "assign:packages": "npm --prefix supabase/scripts run assign:packages --"
   },
   "keywords": [
     "typescript",

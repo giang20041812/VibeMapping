@@ -67,6 +67,13 @@ export const CriteriaPage: React.FC = () => {
         },
       },
       {
+        key: 'is_short_set',
+        header: 'Bộ rút gọn',
+        align: 'center',
+        nowrap: true,
+        render: (row) => (row.is_short_set ? <Badge variant="info">Có</Badge> : '—'),
+      },
+      {
         key: 'is_active',
         header: 'Trạng thái',
         nowrap: true,

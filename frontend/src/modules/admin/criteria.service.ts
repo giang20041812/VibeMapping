@@ -16,7 +16,7 @@ export async function listCriteriaGroups(): Promise<CriteriaGroup[]> {
 export async function listCriteria(): Promise<Criteria[]> {
   const { data, error } = await supabase
     .from('criteria')
-    .select('id, group_id, dimension_code, name, definition, behavior_indicator, reference_source, holland_code, sort_order, is_active')
+    .select('id, group_id, dimension_code, name, definition, behavior_indicator, reference_source, holland_code, sort_order, is_active, is_short_set')
     .order('sort_order')
     .limit(500);
   if (error) {
@@ -59,7 +59,7 @@ export async function updateCriteriaGroup(id: string, patch: CriteriaGroupPatch)
 
 export type CriteriaPatch = Pick<
   Criteria,
-  'name' | 'definition' | 'behavior_indicator' | 'reference_source' | 'holland_code' | 'sort_order' | 'is_active'
+  'name' | 'definition' | 'behavior_indicator' | 'reference_source' | 'holland_code' | 'sort_order' | 'is_active' | 'is_short_set'
 >;
 
 export async function updateCriteria(id: string, patch: CriteriaPatch): Promise<void> {

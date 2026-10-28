@@ -19,6 +19,7 @@ export interface Criteria {
   holland_code: string | null;
   sort_order: number;
   is_active: boolean;
+  is_short_set: boolean;
 }
 
 export interface CriteriaRaterVisibility {

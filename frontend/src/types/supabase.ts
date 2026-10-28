@@ -745,6 +745,7 @@ export type Database = {
           contact_frequency: number | null;
           observation_depth: number | null;
           understanding_score: number | null;
+          submitted_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -756,6 +757,7 @@ export type Database = {
           contact_frequency?: number | null;
           observation_depth?: number | null;
           understanding_score?: number | null;
+          submitted_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -767,6 +769,7 @@ export type Database = {
           contact_frequency?: number | null;
           observation_depth?: number | null;
           understanding_score?: number | null;
+          submitted_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -1823,8 +1826,8 @@ export type Database = {
         Args: { p_resume_token: string };
         Returns: Json;
       };
-      submit_class_grid: {
-        Args: { p_grid_id: string };
+      submit_class_grid_student: {
+        Args: { p_grid_student_id: string };
         Returns: Json;
       };
       write_audit_log: {

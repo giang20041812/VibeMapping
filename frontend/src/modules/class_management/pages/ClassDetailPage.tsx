@@ -1,12 +1,17 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { Copy, Table2, Trash2, Upload, UserPlus } from 'lucide-react';
-import { Alert, Badge, Button, Card, DataTable, Input } from '../../../components/common';
+import { useParams } from 'react-router-dom';
+import { Copy, Trash2, Upload, UserPlus } from 'lucide-react';
+import { Alert, Badge, Button, Card, DataTable } from '../../../components/common';
 import type { DataTableColumn } from '../../../components/common';
 import { FilterBar } from '../../../components/filters/FilterBar/FilterBar';
+import { FilterSearch } from '../../../components/filters/FilterSearch/FilterSearch';
+import { SearchableSelect } from '../../../components/filters/SearchableSelect/SearchableSelect';
 import { useAdminFilter } from '../../admin/useAdminFilter';
 import { useAuth } from '../../auth/AuthContext';
 import { qrDataUrl } from '../../invitation_link/invitation.service';
+import { ClassGradeTable } from '../../class_assessment_grid/components/ClassGradeTable';
+import { getClassGrid, listShortSetCriteria } from '../../class_assessment_grid/class_assessment_grid.service';
+import type { GridData, ShortCriteria } from '../../class_assessment_grid/class_assessment_grid.types';
 import { MEMBER_ROLE_LABEL, STAFF_ERROR_TEXT } from '../class_management.constants';
 import {
   assignClassTeacher,
@@ -21,7 +26,7 @@ import { EmailRoleModal } from '../components/EmailRoleModal';
 import { RosterImportModal } from '../components/RosterImportModal';
 import '../ClassManagement.css';
 
-const EMPTY_FILTER = { keyword: '' };
+const EMPTY_FILTER = { keyword: '', groupCode: '' };
 const TEACHER_ROLE_OPTIONS = [
   { value: 'homeroom_teacher', label: 'Giáo viên chủ nhiệm' },
   { value: 'subject_teacher', label: 'Giáo viên bộ môn' },
@@ -34,7 +39,7 @@ function joinLink(classCode: string): string {
 export const ClassDetailPage: React.FC = () => {
   const { classId = '' } = useParams();
   const { profile } = useAuth();
-  const { draft, applied, patch, reset } = useAdminFilter(EMPTY_FILTER);
+  const { draft, applied, patch, apply, reset } = useAdminFilter(EMPTY_FILTER);
   const [classRow, setClassRow] = useState<ClassRow | null>(null);
   const [members, setMembers] = useState<ClassMember[]>([]);
   const [report, setReport] = useState<ClassReport | null>(null);
@@ -47,6 +52,9 @@ export const ClassDetailPage: React.FC = () => {
   const [reloadKey, setReloadKey] = useState(0);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isTeacherOpen, setIsTeacherOpen] = useState(false);
+  const [grid, setGrid] = useState<GridData | null>(null);
+  const [gridKey, setGridKey] = useState(0);
+  const [criteria, setCriteria] = useState<ShortCriteria[]>([]);
 
   const isTeacher = profile?.role === 'teacher';
 
@@ -78,6 +86,26 @@ export const ClassDetailPage: React.FC = () => {
       active = false;
     };
   }, [classId, reloadKey]);
+
+  // Chỉ giáo viên của lớp mở được bảng điểm; không mở được thì giữ danh sách thành viên
+  useEffect(() => {
+    if (!isTeacher) {
+      setGrid(null);
+      return;
+    }
+    let active = true;
+    Promise.all([getClassGrid(classId), listShortSetCriteria()])
+      .then(([gridData, criteriaList]) => {
+        if (!active) return;
+        setGrid(gridData);
+        setCriteria(criteriaList);
+        setGridKey((value) => value + 1);
+      })
+      .catch(() => active && setGrid(null));
+    return () => {
+      active = false;
+    };
+  }, [classId, isTeacher, reloadKey]);
 
   useEffect(() => {
     if (!classRow) return;
@@ -159,6 +187,13 @@ export const ClassDetailPage: React.FC = () => {
   );
 
   const students = members.filter((member) => member.member_role === 'student');
+  const gradeRows = useMemo(() => rows.filter((member) => member.member_role === 'student'), [rows]);
+  const groupOptions = useMemo(() => {
+    const seen = new Map<string, string>();
+    for (const item of criteria) seen.set(item.group_code, `${item.group_code} · ${item.group_name}`);
+    return [...seen].map(([value, label]) => ({ value, label }));
+  }, [criteria]);
+  const showGrid = !isLoading && grid !== null && criteria.length > 0;
 
   return (
     <>
@@ -171,13 +206,6 @@ export const ClassDetailPage: React.FC = () => {
           <Button type="button" variant="outline" leftIcon={<Upload size={16} />} onClick={() => setIsImportOpen(true)}>
             Nhập danh sách
           </Button>
-          {isTeacher && (
-            <Link to={`/lop-hoc/${classId}/bang-luoi`}>
-              <Button type="button" leftIcon={<Table2 size={16} />}>
-                Bảng lưới chấm điểm
-              </Button>
-            </Link>
-          )}
         </div>
       </div>
 
@@ -220,17 +248,40 @@ export const ClassDetailPage: React.FC = () => {
           </Card>
         )}
 
-        <FilterBar onReset={reset} totalResults={rows.length}>
-          <Input
-            aria-label="Tìm thành viên"
-            placeholder="Tìm theo tên hoặc mã học sinh"
-            value={draft.keyword}
-            onChange={(event) => patch({ keyword: event.target.value })}
-          />
+        <FilterBar onReset={reset} onSubmit={apply} totalResults={rows.length}>
+          <FilterSearch placeholder="Họ tên hoặc mã học sinh" value={draft.keyword} onChange={(keyword) => patch({ keyword })} />
+          {showGrid && (
+            <SearchableSelect
+              label="Nhóm tiêu chí"
+              placeholder="Tất cả"
+              options={groupOptions}
+              value={draft.groupCode}
+              onChange={(value) => patch({ groupCode: value })}
+            />
+          )}
         </FilterBar>
-        <Card noPadding title="Thành viên">
-          <DataTable columns={columns} rows={rows} rowKey={(row) => row.member_id} isLoading={isLoading} emptyText="Lớp chưa có thành viên" caption="Thành viên lớp" />
-        </Card>
+        {!isLoading && grid !== null && criteria.length === 0 && (
+          <Alert variant="warning">Chưa có tiêu chí nào thuộc bộ câu hỏi rút gọn. Quản trị hệ thống cần đánh dấu tiêu chí trước khi chấm.</Alert>
+        )}
+        {showGrid ? (
+          <ClassGradeTable
+            key={gridKey}
+            members={gradeRows}
+            initialGrid={grid}
+            criteria={criteria}
+            groupCode={applied.groupCode}
+            onRemove={(member) => void handleRemove(member)}
+            onSubmitted={(studentId) =>
+              setMembers((current) => current.map((member) => (member.user_id === studentId ? { ...member, is_graded: true } : member)))
+            }
+            onError={setError}
+            onNotice={setNotice}
+          />
+        ) : (
+          <Card noPadding title="Thành viên">
+            <DataTable columns={columns} rows={rows} rowKey={(row) => row.member_id} isLoading={isLoading} emptyText="Lớp chưa có thành viên" caption="Thành viên lớp" />
+          </Card>
+        )}
 
         <ClassReportCard title="Báo cáo lớp" report={report} isLoading={isReportLoading} error={reportError} />
       </div>

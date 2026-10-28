@@ -7,8 +7,6 @@
   overflow: hidden;
   border: 1px solid transparent;
   border-radius: var(--radius-full);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
   font-weight: 600;
   letter-spacing: 0.005em;
   white-space: nowrap;

@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Plus, UserPlus } from 'lucide-react';
-import { Alert, Button, DataTable, Card, Input, Modal, Pagination } from '../../../components/common';
+import { Alert, Button, DataTable, Card, Modal, Pagination } from '../../../components/common';
 import type { DataTableColumn } from '../../../components/common';
 import { FilterBar } from '../../../components/filters/FilterBar/FilterBar';
+import { FilterSearch } from '../../../components/filters/FilterSearch/FilterSearch';
 import { ADMIN_PAGE_SIZE } from '../../admin/admin.constants';
 import { useAdminFilter } from '../../admin/useAdminFilter';
 import { STAFF_ERROR_TEXT } from '../class_management.constants';
@@ -20,7 +21,7 @@ const STAFF_ROLE_OPTIONS = [
 ];
 
 export const SchoolsPage: React.FC = () => {
-  const { draft, applied, patch, reset } = useAdminFilter(EMPTY_FILTER);
+  const { draft, applied, patch, apply, reset } = useAdminFilter(EMPTY_FILTER);
   const [schools, setSchools] = useState<School[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -122,13 +123,8 @@ export const SchoolsPage: React.FC = () => {
       )}
 
       <div className="class-stack">
-        <FilterBar onReset={reset} totalResults={filteredSchools.length}>
-          <Input
-            aria-label="Tìm trường"
-            placeholder="Tìm theo tên trường"
-            value={draft.keyword}
-            onChange={(event) => patch({ keyword: event.target.value })}
-          />
+        <FilterBar onReset={reset} onSubmit={apply} totalResults={filteredSchools.length}>
+          <FilterSearch placeholder="Tên trường" value={draft.keyword} onChange={(keyword) => patch({ keyword })} />
         </FilterBar>
         <Card noPadding>
           <DataTable columns={columns} rows={rows} rowKey={(row) => row.id} isLoading={isLoading} emptyText="Chưa có trường" caption="Danh sách trường" />

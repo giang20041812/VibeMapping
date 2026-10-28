@@ -138,9 +138,9 @@
   color: var(--color-text-muted);
 }
 
-/* Options List (Max-height 240px with scroll) */
+/* Options List (Max-height 280px with scroll) */
 .select-options-list {
-  max-height: 240px;
+  max-height: 280px;
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: var(--space-1) 0;
@@ -186,4 +186,16 @@
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
   text-align: center;
+}
+
+/* Mobile: chạm tối thiểu 44px, ô tìm kiếm 16px để không bị tự phóng to */
+@media (max-width: 768px) {
+  .select-option-item {
+    min-height: var(--touch-target);
+  }
+
+  .select-search-input {
+    height: var(--touch-target);
+    font-size: 16px;
+  }
 }

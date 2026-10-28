@@ -4,6 +4,7 @@ import { LogOut, Plus, UserPlus } from 'lucide-react';
 import { Alert, Button, Card, DataTable, Input } from '../../../components/common';
 import type { DataTableColumn } from '../../../components/common';
 import { FilterBar } from '../../../components/filters/FilterBar/FilterBar';
+import { FilterSearch } from '../../../components/filters/FilterSearch/FilterSearch';
 import { useAdminFilter } from '../../admin/useAdminFilter';
 import { useAuth } from '../../auth/AuthContext';
 import { JOIN_ERROR_TEXT, STAFF_ERROR_TEXT } from '../class_management.constants';
@@ -137,7 +138,7 @@ const StudentClasses: React.FC<{ userId: string }> = ({ userId }) => {
 
 const StaffClasses: React.FC<{ isSchoolAdmin: boolean }> = ({ isSchoolAdmin }) => {
   const navigate = useNavigate();
-  const { draft, applied, patch, reset } = useAdminFilter(EMPTY_FILTER);
+  const { draft, applied, patch, apply, reset } = useAdminFilter(EMPTY_FILTER);
   const [classes, setClasses] = useState<ClassRow[]>([]);
   const [schools, setSchools] = useState<School[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -234,13 +235,8 @@ const StaffClasses: React.FC<{ isSchoolAdmin: boolean }> = ({ isSchoolAdmin }) =
         </div>
       )}
       <div className="class-stack">
-        <FilterBar onReset={reset} totalResults={rows.length}>
-          <Input
-            aria-label="Tìm lớp"
-            placeholder="Tìm theo tên lớp"
-            value={draft.keyword}
-            onChange={(event) => patch({ keyword: event.target.value })}
-          />
+        <FilterBar onReset={reset} onSubmit={apply} totalResults={rows.length}>
+          <FilterSearch placeholder="Tên lớp" value={draft.keyword} onChange={(keyword) => patch({ keyword })} />
         </FilterBar>
         <Card noPadding>
           <DataTable

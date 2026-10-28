@@ -25,7 +25,6 @@ import { Assessment360SamplePage } from './modules/assessment_360/pages/Assessme
 import { SchoolsPage } from './modules/class_management/pages/SchoolsPage';
 import { ClassListPage } from './modules/class_management/pages/ClassListPage';
 import { ClassDetailPage } from './modules/class_management/pages/ClassDetailPage';
-import { ClassGridPage } from './modules/class_assessment_grid/pages/ClassGridPage';
 import { SkeletonSamplePage } from './modules/dev/SkeletonSamplePage';
 
 /** Quản trị hệ thống không dùng trang chủ của học sinh: vào thẳng khu quản trị */
@@ -68,7 +67,6 @@ export const App: React.FC = () => (
               <Route path="/lop-hoc/:classId" element={<ClassDetailPage />} />
             </Route>
             <Route element={<RequireRole roles={['teacher']} />}>
-              <Route path="/lop-hoc/:classId/bang-luoi" element={<ClassGridPage />} />
             </Route>
 
             <Route element={<RequireRole roles={['system_admin']} />}>

@@ -7,7 +7,8 @@
     "import:ba": "tsx import-ba-data.ts",
     "import:ba:dry": "tsx import-ba-data.ts --dry-run",
     "typecheck": "tsc --noEmit",
-    "gen:types": "tsx gen-types.ts"
+    "gen:types": "tsx gen-types.ts",
+    "assign:packages": "tsx assign-default-packages.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",

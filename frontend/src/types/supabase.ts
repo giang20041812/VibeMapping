@@ -1664,9 +1664,21 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      add_school_staff: {
+        Args: { p_school_id: string; p_email: string; p_staff_role: string };
+        Returns: Json;
+      };
+      assign_class_teacher: {
+        Args: { p_class_id: string; p_email: string; p_member_role: string };
+        Returns: Json;
+      };
       auto_finalize_results: {
         Args: Record<PropertyKey, never>;
         Returns: number;
+      };
+      build_group_report: {
+        Args: { p_student_ids: string[] };
+        Returns: Json;
       };
       can_view_result_of: {
         Args: { p_owner: string };
@@ -1676,6 +1688,10 @@ export type Database = {
         Args: { p_session_id: string; p_invite_enabled?: boolean };
         Returns: string;
       };
+      create_class: {
+        Args: { p_school_id: string; p_class_name: string; p_grade: number; p_school_year: string };
+        Returns: string;
+      };
       current_user_role: {
         Args: Record<PropertyKey, never>;
         Returns: Database["public"]["Enums"]["user_role"];
@@ -1683,10 +1699,6 @@ export type Database = {
       decide_submission: {
         Args: { p_submission_id: string; p_decision: string };
         Returns: undefined;
-      };
-      set_package_assignments: {
-        Args: { p_question_ids: string[]; p_package_size: number; p_assigned: boolean };
-        Returns: number;
       };
       finalize_my_result: {
         Args: { p_result_id: string };
@@ -1704,12 +1716,32 @@ export type Database = {
         Args: { p_resume_token: string };
         Returns: Json;
       };
+      get_class_grid: {
+        Args: { p_class_id: string };
+        Returns: Json;
+      };
+      get_class_overview: {
+        Args: { p_class_id: string };
+        Returns: Json;
+      };
+      get_class_report: {
+        Args: { p_class_id: string };
+        Returns: Json;
+      };
       get_invitation_public: {
         Args: { p_token: string };
         Returns: Json;
       };
       get_parameter: {
         Args: { p_code: string };
+        Returns: Json;
+      };
+      get_school_report: {
+        Args: { p_school_id: string };
+        Returns: Json;
+      };
+      import_class_roster: {
+        Args: { p_class_id: string; p_rows: Json };
         Returns: Json;
       };
       is_class_member: {
@@ -1736,6 +1768,10 @@ export type Database = {
         Args: { p_dob: string };
         Returns: boolean;
       };
+      join_class_by_code: {
+        Args: { p_class_code: string; p_student_code?: string };
+        Returns: Json;
+      };
       param_num: {
         Args: { p_code: string; p_default: number };
         Returns: number;
@@ -1752,6 +1788,10 @@ export type Database = {
         Args: { p_result_id: string; p_finalizing?: boolean };
         Returns: undefined;
       };
+      remove_class_member: {
+        Args: { p_member_id: string };
+        Returns: undefined;
+      };
       request_ip: {
         Args: Record<PropertyKey, never>;
         Returns: string;
@@ -1759,6 +1799,10 @@ export type Database = {
       save_360_answers: {
         Args: { p_resume_token: string; p_answers: Json };
         Returns: undefined;
+      };
+      set_package_assignments: {
+        Args: { p_question_ids: string[]; p_package_size: number; p_assigned: boolean };
+        Returns: number;
       };
       start_360_submission: {
         Args: { p_token: string; p_nickname: string; p_relationship: string; p_acquaintance_duration: number; p_contact_frequency: number; p_observation_depth: number };

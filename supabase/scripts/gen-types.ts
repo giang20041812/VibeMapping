@@ -67,7 +67,7 @@ const quote = (name: string) => (/^[A-Za-z_][A-Za-z0-9_]*$/.test(name) ? name : 
 async function main() {
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) throw new Error('Thiếu DATABASE_URL trong .env');
-  const client = new pg.Client({ ...parseDatabaseUrl(databaseUrl), ssl: { rejectUnauthorized: false } });
+  const client = new pg.Client({ ...parseDatabaseUrl(databaseUrl), ssl: process.env.PG_NO_SSL ? false : { rejectUnauthorized: false } });
   await client.connect();
 
   try {

@@ -44,6 +44,7 @@ export const CriteriaFormModal: React.FC<CriteriaFormModalProps> = ({
   const [hollandCode, setHollandCode] = useState('');
   const [sortOrder, setSortOrder] = useState('0');
   const [isActive, setIsActive] = useState(true);
+  const [isShortSet, setIsShortSet] = useState(false);
   const [visibilityMap, setVisibilityMap] = useState<VisibilityMap>(() => toVisibilityMap([]));
   const [nameError, setNameError] = useState<string | undefined>();
   const [sortError, setSortError] = useState<string | undefined>();
@@ -59,6 +60,7 @@ export const CriteriaFormModal: React.FC<CriteriaFormModalProps> = ({
     setHollandCode(criteria.holland_code ?? '');
     setSortOrder(String(criteria.sort_order));
     setIsActive(criteria.is_active);
+    setIsShortSet(criteria.is_short_set);
     setVisibilityMap(toVisibilityMap(visibility.filter((item) => item.criteria_id === criteria.id)));
     setNameError(undefined);
     setSortError(undefined);
@@ -89,6 +91,7 @@ export const CriteriaFormModal: React.FC<CriteriaFormModalProps> = ({
         holland_code: hollandCode || null,
         sort_order: order,
         is_active: isActive,
+        is_short_set: isShortSet,
       });
       await saveCriteriaRaterVisibility(
         criteria.id,
@@ -173,6 +176,7 @@ export const CriteriaFormModal: React.FC<CriteriaFormModalProps> = ({
         ))}
 
         <Checkbox label="Đang dùng" checked={isActive} onChange={setIsActive} />
+        <Checkbox label="Thuộc bộ câu hỏi rút gọn" checked={isShortSet} onChange={setIsShortSet} />
       </form>
     </Modal>
   );

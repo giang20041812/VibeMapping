@@ -1,0 +1,141 @@
+.class-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.class-page-header .page-title {
+  margin-bottom: 0;
+}
+
+.class-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.class-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.class-alert-slot {
+  margin-bottom: var(--space-4);
+}
+
+.class-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.class-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: var(--space-4);
+}
+
+.class-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: var(--space-3);
+}
+
+.class-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.class-meta-label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.class-meta-value {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-text-main);
+  overflow-wrap: anywhere;
+}
+
+.class-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: 0.08em;
+}
+
+.class-qr {
+  display: block;
+  width: calc(160 * var(--px));
+  height: calc(160 * var(--px));
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg-surface);
+}
+
+.class-qr-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.class-row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.class-join-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
+.class-join-form .app-input-group {
+  width: auto;
+  min-width: 160px;
+  max-width: 260px;
+}
+
+.class-import-errors {
+  max-height: 280px;
+  overflow: auto;
+  margin: 0;
+  padding-left: var(--space-5);
+  color: var(--color-text-main);
+}
+
+.class-report-bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.class-report-bar-label {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-1);
+  font-weight: 600;
+}
+
+.class-skeleton-title {
+  width: calc(200 * var(--px));
+}
+
+@media (max-width: 768px) {
+  .class-join-form .app-input-group {
+    width: 100%;
+    max-width: none;
+  }
+}

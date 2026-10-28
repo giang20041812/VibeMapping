@@ -1,4 +1,7 @@
 .app-filter-bar {
+  /* Danh sách thả xuống phải nằm trên phần nội dung bên dưới thanh lọc */
+  position: relative;
+  z-index: var(--z-dropdown);
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);

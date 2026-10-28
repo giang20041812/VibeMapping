@@ -1,0 +1,195 @@
+/*
+ * Kiểu chung cho ô tìm kiếm và ô chọn trong thanh lọc (bọc bằng .filter-controls).
+ * Mặt kính trắng, viền xanh nhạt, "ngăn" biểu tượng màu băng ở đầu ô tìm kiếm và cuối ô chọn,
+ * góc bo theo --radius-md; ô đang có giá trị lọc được tô băng để nhìn là biết bộ lọc nào đang bật.
+ */
+.filter-controls {
+  --filter-control-height: var(--control-height-md);
+  --filter-control-edge: color-mix(in srgb, var(--brand-soft) 60%, white);
+}
+
+@media (max-width: 768px) {
+  .filter-controls {
+    --filter-control-height: var(--touch-target);
+  }
+}
+
+.filter-controls .input-label,
+.filter-controls .select-label,
+.filter-controls .select-field-label {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--color-text-secondary);
+}
+
+/* Khung chung */
+.filter-controls .app-input-field,
+.filter-controls .app-select-field,
+.filter-controls .select-trigger {
+  height: var(--filter-control-height);
+  color: var(--color-text-main);
+  background-color: rgba(255, 255, 255, 0.78);
+  background-image: var(--glass-bg-strong);
+  border: 1px solid var(--filter-control-edge);
+  border-radius: var(--radius-md);
+  box-shadow: var(--glass-edge), 0 1px 2px rgba(3, 25, 100, 0.06);
+}
+
+.filter-controls .app-input-field:hover,
+.filter-controls .app-select-field:hover,
+.filter-controls .select-trigger:hover {
+  background-color: var(--color-bg-surface);
+  border-color: var(--brand-soft);
+}
+
+.filter-controls .app-input-field:focus,
+.filter-controls .app-select-field:focus,
+.filter-controls .select-trigger.is-open {
+  background-color: var(--color-bg-surface);
+  border-color: var(--brand-sky);
+  box-shadow: 0 0 0 3px var(--color-primary-ring);
+}
+
+@media (max-width: 768px) {
+  .filter-controls .app-input-field,
+  .filter-controls .app-select-field {
+    font-size: 16px;
+  }
+}
+
+/* Ô tìm kiếm: ngăn kính lúp ở đầu ô */
+.filter-controls .input-icon-left {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: var(--filter-control-height);
+  color: var(--brand-deep);
+  background: var(--brand-ice);
+  border-right: 1px solid var(--filter-control-edge);
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+}
+
+.filter-controls .input-control-wrapper:focus-within .input-icon-left {
+  color: var(--brand-deep);
+  background: var(--brand-mist);
+}
+
+.filter-controls .app-input-field.with-left-icon {
+  padding-left: calc(var(--filter-control-height) + var(--space-3));
+}
+
+.filter-controls .app-input-field:not(.with-left-icon) {
+  padding-left: var(--space-3);
+}
+
+/* Ô chọn có tìm kiếm */
+.filter-controls .select-trigger {
+  padding: 0 0 0 var(--space-3);
+  overflow: hidden;
+}
+
+.filter-controls .select-trigger.has-value {
+  font-weight: 600;
+  color: var(--color-text-brand);
+  background-color: var(--brand-ice);
+  border-color: var(--brand-soft);
+}
+
+.filter-controls .select-icons {
+  align-self: stretch;
+  gap: 0;
+}
+
+.filter-controls .select-clear-btn {
+  align-self: center;
+  padding: var(--space-1);
+  margin-right: var(--space-1);
+}
+
+.filter-controls .select-chevron-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  width: var(--filter-control-height);
+  color: var(--brand-deep);
+  background: var(--brand-ice);
+  border-left: 1px solid var(--filter-control-edge);
+}
+
+.filter-controls .select-trigger.has-value .select-chevron-cell {
+  background: var(--brand-mist);
+}
+
+/* Ô chọn thường: ngăn mũi tên ở cuối ô */
+.filter-controls .app-select-field {
+  padding-right: calc(var(--filter-control-height) + var(--space-2));
+  padding-left: var(--space-3);
+}
+
+.filter-controls .select-field-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: var(--filter-control-height);
+  background: var(--brand-ice);
+  border-left: 1px solid var(--filter-control-edge);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  pointer-events: none;
+}
+
+.filter-controls .select-field-chevron {
+  right: calc((var(--filter-control-height) - 16px) / 2);
+  color: var(--brand-deep);
+}
+
+/* Danh sách thả xuống */
+.filter-controls .select-dropdown-menu {
+  top: calc(100% + 6px);
+  min-width: 240px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--filter-control-edge);
+  border-top: 2px solid var(--brand-sky);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-dropdown);
+}
+
+.filter-controls .select-search-header {
+  background: var(--brand-ice);
+  border-bottom: 1px solid var(--filter-control-edge);
+}
+
+.filter-controls .select-search-header .search-icon {
+  color: var(--brand-sky);
+}
+
+.filter-controls .select-options-list {
+  padding: var(--space-1);
+}
+
+.filter-controls .select-option-item {
+  border-radius: var(--radius-sm);
+}
+
+.filter-controls .select-option-item.is-selected {
+  font-weight: 600;
+  color: var(--color-text-brand);
+  background-color: var(--brand-ice);
+  box-shadow: inset 3px 0 0 var(--brand-sky);
+}
+
+/* Nút xóa nhanh từ khóa */
+.filter-controls .filter-search-clear {
+  width: calc(var(--filter-control-height) - var(--space-3));
+  height: calc(var(--filter-control-height) - var(--space-3));
+  margin-right: var(--space-1);
+  border-radius: var(--radius-sm);
+}
+
+.filter-controls .filter-search-clear:hover {
+  color: var(--color-text-brand);
+  background: var(--brand-ice);
+}

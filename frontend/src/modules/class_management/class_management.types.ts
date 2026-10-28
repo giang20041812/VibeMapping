@@ -12,6 +12,11 @@ export interface SchoolStaffMember {
   staff_role: 'school_admin' | 'teacher';
 }
 
+export interface SchoolInvitation {
+  school_id: string;
+  school_name: string;
+}
+
 export interface ClassRow {
   id: string;
   school_id: string;

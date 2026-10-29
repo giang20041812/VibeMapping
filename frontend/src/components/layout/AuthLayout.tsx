@@ -1,20 +1,14 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { Outlet } from 'react-router-dom';
-import { useParallax } from '../../hooks/useParallax';
 import { Logo } from '../common';
-import { AuthHeroScene } from './AuthHeroScene';
 import './AuthLayout.css';
 
 export const AuthLayout: React.FC = () => {
-  const heroRef = useRef<HTMLElement>(null);
-  useParallax(heroRef);
-
   return (
     <div className="auth-shell">
-      <aside className="auth-hero" ref={heroRef}>
-        <AuthHeroScene />
+      <aside className="auth-hero">
         <div className="auth-hero-content">
-          <Logo variant="stacked" size="hero" animated className="auth-hero-logo" />
+          <Logo variant="stacked" size="hero" tone="inverse" className="auth-hero-logo logo-on-dark" />
           <p className="auth-hero-slogan">Biết mình là ai, vững bước tương lai.</p>
           <p className="auth-hero-slogan-sub">Vẽ bản đồ chất, để tương lai phất.</p>
         </div>

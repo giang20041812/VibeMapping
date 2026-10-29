@@ -191,9 +191,7 @@
   --transition-normal: 220ms var(--ease-out);
   --transition-slow: 420ms var(--ease-out);
   --duration-reveal: 560ms;
-  --ease-fly: cubic-bezier(0.25, 0.5, 0.3, 1);
-  --ease-bloom: cubic-bezier(0.55, 0, 0.25, 1);
-  --duration-fly: 1900ms;
+  --duration-fly: 2400ms;
 
   /* Heights */
   --control-height-sm: calc(34 * var(--px));

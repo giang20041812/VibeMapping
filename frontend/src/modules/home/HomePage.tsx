@@ -13,7 +13,7 @@ import { GLOBE_NODES } from '../assessment_360/assessment360.constants';
 import { useAuth } from '../auth/AuthContext';
 import { isLearnerRole } from '../profile/profile.logic';
 import { useInView } from '../../hooks/useInView';
-import { StarComet } from './StarComet';
+import { useStarFlight } from './useStarFlight';
 import './HomePage.css';
 
 interface RouteState {
@@ -50,25 +50,23 @@ interface FeatureProps {
 }
 
 /** Một hàng giới thiệu: chữ một bên, hình minh họa một bên; hàng sau đổi bên so với hàng trước.
- *  Hình bay vào như ngôi sao, ngang qua chữ; sao bay tới đâu chữ hiện ra tới đó. */
+ *  Hình bay vào như một ngôi sao theo đường cong, kéo theo đuôi vũ trụ; sao đi qua rồi chữ mới hiện ra dần. */
 const Feature: React.FC<FeatureProps> = ({ id, flip = false, visual, children }) => {
   /* Chờ hàng hiện rõ hơn mới bắt đầu bay để người xem kịp thấy cả chặng bay */
   const { ref, seen } = useInView<HTMLElement>(0.3);
-  /* Bay xong thì bỏ lớp che chữ */
-  const [landed, setLanded] = useState(false);
+  const { copyRef, visualRef, canvasRef, landed } = useStarFlight(ref, seen, flip);
   return (
-    <section ref={ref} className={`feature ${flip ? 'feature-flip' : ''} ${seen ? 'is-visible' : ''}`} aria-labelledby={`${id}-title`}>
-      <div
-        className={`feature-copy ${landed ? 'is-landed' : ''}`}
-        onAnimationEnd={(event) => {
-          if (event.animationName === 'wipe-progress') setLanded(true);
-        }}
-      >
+    <section
+      ref={ref}
+      className={`feature ${flip ? 'feature-flip' : ''} ${seen ? 'is-visible' : ''} ${landed ? 'is-landed' : ''}`}
+      aria-labelledby={`${id}-title`}
+    >
+      <div ref={copyRef} className="feature-copy">
         {children}
       </div>
-      <div className="feature-visual">
+      <canvas ref={canvasRef} className="feature-trail" aria-hidden="true" />
+      <div ref={visualRef} className="feature-visual">
         {visual}
-        <StarComet />
       </div>
     </section>
   );

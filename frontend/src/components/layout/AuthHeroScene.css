@@ -1,0 +1,195 @@
+/* Cảnh nền của khối thương hiệu: mảng màu trôi, lộ trình chấm chấm, nét vẽ tay và biểu tượng nổi.
+   Các lớp xê dịch nhẹ theo con trỏ (--parallax-x / --parallax-y do useParallax ghi vào khối cha). */
+.auth-scene {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.auth-scene-layer {
+  position: absolute;
+  inset: 0;
+  transition: translate 500ms var(--ease-out);
+}
+.auth-scene-blobs { translate: calc(var(--parallax-x, 0) * -8px) calc(var(--parallax-y, 0) * -8px); }
+.auth-route { width: 100%; height: 100%; translate: calc(var(--parallax-x, 0) * 6px) calc(var(--parallax-y, 0) * 6px); }
+.auth-doodles { translate: calc(var(--parallax-x, 0) * 14px) calc(var(--parallax-y, 0) * 14px); }
+.auth-chips { translate: calc(var(--parallax-x, 0) * 26px) calc(var(--parallax-y, 0) * 26px); }
+
+/* Mảng màu phẳng trôi chậm */
+.auth-blob {
+  position: absolute;
+  aspect-ratio: 1;
+  border-radius: 50%;
+}
+.auth-blob-a {
+  top: -14%;
+  left: -16%;
+  width: 62%;
+  background: var(--brand-mist);
+  opacity: 0.6;
+  animation: auth-scene-drift-a 16s ease-in-out infinite alternate;
+}
+.auth-blob-b {
+  right: -18%;
+  bottom: -12%;
+  width: 56%;
+  background: var(--brand-pale);
+  opacity: 0.5;
+  animation: auth-scene-drift-b 20s ease-in-out infinite alternate;
+}
+.auth-blob-c {
+  top: 52%;
+  left: 4%;
+  width: 20%;
+  background: var(--soft-violet);
+  opacity: 0.16;
+  animation: auth-scene-drift-b 12s ease-in-out infinite alternate-reverse;
+}
+
+/* Lộ trình */
+.auth-route-line {
+  fill: none;
+  stroke: var(--brand-sky);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-dasharray: 1 16;
+  opacity: 0.55;
+  animation: auth-scene-flow 2.4s linear infinite;
+}
+.auth-route-dot { fill: var(--brand-sky); }
+.auth-route-pulse {
+  fill: var(--brand-sky);
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: auth-scene-ping 2.8s var(--ease-out) infinite;
+}
+.auth-route-node-2 .auth-route-pulse { animation-delay: 0.9s; }
+.auth-route-node-3 .auth-route-pulse { animation-delay: 1.8s; }
+.auth-route-node-4 .auth-route-pulse { animation-delay: 2.4s; }
+.auth-route-pin {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  animation:
+    auth-scene-pin-drop 760ms 900ms var(--ease-spring) backwards,
+    auth-scene-bob 3.2s 1.7s ease-in-out infinite;
+}
+.auth-route-pin-body { fill: var(--brand-navy); }
+.auth-route-pin-hole { fill: var(--brand-cream); }
+
+/* Nét vẽ tay */
+.auth-doodle {
+  position: absolute;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  color: var(--brand-light);
+  opacity: 0.7;
+  animation: auth-scene-float 7s ease-in-out infinite alternate;
+}
+.auth-doodle-plus { animation-name: auth-scene-spin; animation-duration: 18s; animation-timing-function: linear; animation-direction: normal; }
+.auth-doodle-ring { color: var(--soft-violet); opacity: 0.5; }
+.auth-doodle-triangle { color: var(--brand-soft); }
+
+.auth-doodle-1 { top: 9%; left: 30%; width: calc(112 * var(--px)); animation-delay: -1s; }
+.auth-doodle-2 { top: 33%; left: 5%; width: calc(52 * var(--px)); animation-delay: -3s; }
+.auth-doodle-3 { top: 20%; right: 7%; width: calc(34 * var(--px)); }
+.auth-doodle-4 { top: 46%; right: 5%; width: calc(48 * var(--px)); animation-delay: -4s; }
+.auth-doodle-5 { bottom: 31%; left: 16%; width: calc(30 * var(--px)); animation-delay: -6s; }
+.auth-doodle-6 { bottom: 8%; left: 30%; width: calc(120 * var(--px)); animation-delay: -2s; }
+.auth-doodle-7 { bottom: 17%; right: 26%; width: calc(40 * var(--px)); animation-delay: -5s; }
+.auth-doodle-8 { bottom: 7%; left: 7%; width: calc(44 * var(--px)); animation-delay: -1.5s; }
+.auth-doodle-9 { top: 5%; left: 9%; width: calc(28 * var(--px)); animation-delay: -9s; }
+.auth-doodle-10 { bottom: 29%; right: 6%; width: calc(34 * var(--px)); animation-delay: -3.5s; }
+
+/* Biểu tượng nổi: lớp ngoài xuất hiện lần lượt, lớp trong nhấp nhô liên tục */
+.auth-chip {
+  position: absolute;
+  animation: auth-scene-chip-in 560ms var(--ease-spring) backwards;
+}
+.auth-chip-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(50 * var(--px));
+  height: calc(50 * var(--px));
+  color: var(--chip-color, var(--soft-sky));
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  box-shadow: var(--shadow-md);
+  animation: auth-scene-bob 5s ease-in-out infinite;
+}
+.auth-chip-cap { top: 13%; left: 11%; --chip-color: var(--soft-sky); animation-delay: 300ms; }
+.auth-chip-compass { top: 29%; right: 9%; --chip-color: var(--soft-violet); animation-delay: 420ms; }
+.auth-chip-spark { top: 7%; right: 36%; --chip-color: var(--soft-gold); animation-delay: 540ms; }
+.auth-chip-place { top: 55%; left: 6%; --chip-color: var(--soft-coral); animation-delay: 660ms; }
+.auth-chip-target { bottom: 22%; left: 13%; --chip-color: var(--soft-teal); animation-delay: 780ms; }
+.auth-chip-book { bottom: 13%; right: 15%; --chip-color: var(--soft-magenta); animation-delay: 900ms; }
+
+.auth-chip-compass .auth-chip-body { animation-duration: 6.2s; animation-delay: -1s; }
+.auth-chip-spark .auth-chip-body { animation-duration: 4.4s; animation-delay: -2s; }
+.auth-chip-place .auth-chip-body { animation-duration: 5.6s; animation-delay: -3s; }
+.auth-chip-target .auth-chip-body { animation-duration: 6.8s; animation-delay: -1.5s; }
+.auth-chip-book .auth-chip-body { animation-duration: 5.2s; animation-delay: -4s; }
+
+/* Máy yếu: giữ hình tĩnh, bỏ mọi chuyển động lặp */
+.auth-scene.is-calm *,
+.auth-scene.is-calm .auth-chip-body {
+  animation: none;
+}
+
+@keyframes auth-scene-drift-a {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(7%, 9%) scale(1.1); }
+}
+@keyframes auth-scene-drift-b {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(-8%, -7%) scale(1.12); }
+}
+@keyframes auth-scene-flow {
+  to { stroke-dashoffset: -17; }
+}
+@keyframes auth-scene-ping {
+  0% { opacity: 0.45; transform: scale(0.6); }
+  100% { opacity: 0; transform: scale(2.6); }
+}
+@keyframes auth-scene-pin-drop {
+  from { opacity: 0; transform: translateY(-60px) scale(0.8); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes auth-scene-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes auth-scene-float {
+  from { transform: translateY(0) rotate(-4deg); }
+  to { transform: translateY(-14px) rotate(6deg); }
+}
+@keyframes auth-scene-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes auth-scene-chip-in {
+  from { opacity: 0; transform: scale(0.3); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Điện thoại và máy tính bảng dọc: khối thương hiệu chỉ còn là dải đầu trang */
+@media (max-width: 900px) {
+  .auth-route,
+  .auth-chips { display: none; }
+  .auth-doodle:nth-child(n + 5) { display: none; }
+  .auth-doodle-1 { top: 12%; left: 26%; width: calc(84 * var(--px)); }
+  .auth-doodle-2 { top: 40%; left: 7%; }
+  .auth-doodle-3 { top: 18%; right: 9%; }
+  .auth-doodle-4 { top: 52%; right: 8%; }
+}
+
+@media (max-width: 1100px) {
+  .auth-chip-place { display: none; }
+}

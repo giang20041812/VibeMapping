@@ -1,4 +1,7 @@
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import { parseVietnameseDate, validateDisplayName } from '../profile/profile.logic';
+import type { LearnerInfo, LearnerInfoErrors } from './auth.types';
+
+const EMAIL_PATTERN =/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const PASSWORD_RULES = [
   { key: 'length', label: '8 ký tự', test: (v: string) => v.length >= 8 },
@@ -22,4 +25,14 @@ export function validatePassword(value: string): string | undefined {
 export function validateFullName(value: string): string | undefined {
   if (!value.trim()) return 'Nhập họ và tên';
   return undefined;
+}
+
+export function validateLearnerInfo(values: LearnerInfo): LearnerInfoErrors {
+  const dateOfBirth = values.date_of_birth.trim();
+  return {
+    date_of_birth: !dateOfBirth ? 'Nhập ngày sinh' : parseVietnameseDate(dateOfBirth) ? undefined : 'Ngày sinh không hợp lệ',
+    display_name: validateDisplayName(values.display_name),
+    school_name: values.school_name.trim() ? undefined : 'Nhập trường',
+    grade_or_major: values.grade_or_major ? undefined : 'Chọn khối lớp hoặc ngành học',
+  };
 }

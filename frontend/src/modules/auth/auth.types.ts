@@ -21,11 +21,22 @@ export interface UserProfile {
   guardian_consent_confirmed: boolean;
 }
 
+/** Thông tin cá nhân của học sinh / sinh viên; date_of_birth là dd/mm/yyyy khi nhập, yyyy-mm-dd khi gửi lên */
+export interface LearnerInfo {
+  date_of_birth: string;
+  display_name: string;
+  school_name: string;
+  grade_or_major: string;
+}
+
+export type LearnerInfoErrors = Partial<Record<keyof LearnerInfo, string>>;
+
 export interface RegisterInput {
   fullName: string;
   email: string;
   password: string;
   role: RegisterableRole;
+  learnerInfo?: LearnerInfo;
 }
 
 export interface LoginInput {

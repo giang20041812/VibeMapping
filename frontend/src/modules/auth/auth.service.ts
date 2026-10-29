@@ -10,7 +10,8 @@ export async function registerWithEmail(input: RegisterInput) {
     email: input.email,
     password: input.password,
     options: {
-      data: { role: input.role, full_name: input.fullName },
+      // Trigger tạo user_profiles đọc các khóa này từ raw_user_meta_data, nên hồ sơ đầy đủ ngay cả khi chưa có phiên
+      data: { role: input.role, full_name: input.fullName, ...input.learnerInfo },
       emailRedirectTo: `${window.location.origin}/dang-nhap`,
     },
   });

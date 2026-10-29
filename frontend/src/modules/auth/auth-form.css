@@ -2,8 +2,32 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
-  animation: auth-form-in 560ms var(--ease-out) both;
 }
+
+/* Các khối trong trang vào lần lượt từ trên xuống (backwards: xong thì bỏ transform, không giữ ngữ cảnh xếp lớp) */
+.auth-form-card > *,
+.auth-form > * {
+  animation: auth-form-in 520ms var(--ease-out) backwards;
+}
+.auth-form-card > :nth-child(1) { animation-delay: 40ms; }
+.auth-form-card > :nth-child(2) { animation-delay: 110ms; }
+.auth-form-card > :nth-child(3) { animation-delay: 180ms; }
+.auth-form-card > :nth-child(4) { animation-delay: 250ms; }
+.auth-form-card > :nth-child(5) { animation-delay: 320ms; }
+.auth-form > :nth-child(1) { animation-delay: 120ms; }
+.auth-form > :nth-child(2) { animation-delay: 190ms; }
+.auth-form > :nth-child(3) { animation-delay: 260ms; }
+.auth-form > :nth-child(4) { animation-delay: 330ms; }
+.auth-form > :nth-child(5) { animation-delay: 400ms; }
+.auth-form > :nth-child(n + 6) { animation-delay: 470ms; }
+
+/* Lưới trường nhập: tự chia cột theo bề rộng thẻ */
+.auth-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: var(--space-4);
+}
+.auth-grid-full { grid-column: 1 / -1; }
 
 .auth-form-title {
   font-size: var(--font-size-4xl);
@@ -11,6 +35,18 @@
   line-height: var(--line-tight);
   letter-spacing: -0.02em;
   color: var(--color-text-main);
+}
+/* Gạch chân kéo dài ra khi vào trang */
+.auth-form-title::after {
+  content: '';
+  display: block;
+  width: 44px;
+  height: 4px;
+  margin-top: var(--space-2);
+  background: var(--brand-sky);
+  border-radius: var(--radius-xs);
+  transform-origin: left;
+  animation: auth-underline 700ms 320ms var(--ease-out) backwards;
 }
 
 .auth-form {
@@ -25,6 +61,28 @@
   justify-content: space-between;
   gap: var(--space-3);
 }
+
+/* Biểu tượng trong ô nhập nảy lên khi ô được chọn; nút chính có vệt sáng quét qua khi rê chuột */
+.auth-form .input-icon-left { transition: color var(--transition-fast), transform var(--transition-normal); }
+.auth-form .input-control-wrapper:focus-within .input-icon-left { transform: scale(1.18); }
+.auth-form .app-button.btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 40%;
+  background: var(--brand-white);
+  opacity: 0.18;
+  transform: translateX(-160%) skewX(-20deg);
+  pointer-events: none;
+}
+.auth-form .app-button.btn-primary:hover:not(:disabled)::after {
+  transform: translateX(380%) skewX(-20deg);
+  transition: transform 700ms var(--ease-out);
+}
+.auth-form .app-button.btn-primary:hover:not(:disabled) { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.auth-form .app-button.btn-primary:active:not(:disabled) { transform: scale(0.97); }
 
 .auth-link {
   display: inline-flex;
@@ -93,6 +151,7 @@
 }
 
 .auth-success-badge {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -103,6 +162,18 @@
   border-radius: 50%;
   animation: auth-pop 620ms var(--ease-spring) both;
 }
+/* Hai vòng tỏa ra từ biểu tượng thành công */
+.auth-success-badge::before,
+.auth-success-badge::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--brand-light);
+  border-radius: 50%;
+  opacity: 0;
+  animation: auth-ripple 2.4s 700ms var(--ease-out) infinite;
+}
+.auth-success-badge::after { animation-delay: 1.5s; }
 
 .auth-success-title {
   font-size: var(--font-size-3xl);
@@ -120,6 +191,14 @@
 @keyframes auth-form-in {
   from { opacity: 0; transform: translateY(18px); }
   to { opacity: 1; transform: translateY(0); }
+}
+@keyframes auth-underline {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes auth-ripple {
+  0% { opacity: 0.7; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.9); }
 }
 @keyframes auth-pop {
   from { opacity: 0; transform: scale(0.4) rotate(-12deg); }

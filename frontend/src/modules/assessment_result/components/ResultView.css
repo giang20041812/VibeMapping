@@ -210,8 +210,8 @@
   to { opacity: 1; transform: translateY(0); }
 }
 @keyframes result-pulse {
-  0% { box-shadow: 0 0 0 0 rgba(30, 158, 219, 0.55); }
-  100% { box-shadow: 0 0 0 10px rgba(30, 158, 219, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(53, 96, 194, 0.55); }
+  100% { box-shadow: 0 0 0 10px rgba(53, 96, 194, 0); }
 }
 
 @media (max-width: 1100px) {

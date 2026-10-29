@@ -24,7 +24,8 @@
 }
 .sidebar-brand {
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
+  gap: var(--space-2);
   white-space: nowrap;
   text-decoration: none;
   font-size: var(--font-size-xl);
@@ -34,14 +35,11 @@
   border-radius: var(--radius-md);
 }
 .sidebar-brand:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
-/* Biểu tượng thay cho chữ V; đáy chữ V nằm trên đường chân chữ */
 .sidebar-brand-mark {
   flex: none;
   display: block;
-  width: 34px;
-  height: 34px;
-  margin-right: -0.1em;
-  transform: translateY(0.3em);
+  width: 36px;
+  height: 36px;
 }
 .sidebar-brand-mark .logo-svg { display: block; }
 .sidebar-brand-text { display: inline-flex; align-items: baseline; gap: 0.28em; }

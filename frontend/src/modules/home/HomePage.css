@@ -34,13 +34,11 @@
   line-height: 1;
   letter-spacing: -0.03em;
 }
-.home-brand-word { display: inline-flex; align-items: baseline; }
+.home-brand-word { display: inline-flex; align-items: center; gap: 0.28em; }
 .home-brand-mark {
   flex: none;
-  width: 1.6em;
-  height: 1.6em;
-  margin-right: -0.1em;
-  transform: translateY(0.12em);
+  width: 1.1em;
+  height: 1.1em;
 }
 .home-brand-mark .logo-svg { display: block; }
 .home-brand-vibe { color: var(--color-text-main); }

@@ -1,33 +1,33 @@
 /* ====================================================================
    DESIGN SYSTEM TOKENS
-   Bảng màu xanh – trắng lấy từ tài liệu đặt tên hệ thống:
-   navy #031964 · xanh nhạt #C7E3FE · kem #FFFCF0 · các dải xanh dương.
+   Bảng màu lấy từ logo: navy #031964 · xanh nhạt #C7E3FE · kem #FFFCF0,
+   các sắc độ ở giữa nội suy cùng tông giữa navy và xanh nhạt.
    Mọi stylesheet chỉ dùng biến ở đây, không dùng mã màu tự do.
    ==================================================================== */
 
 :root {
   /* Thang màu thương hiệu */
   --brand-navy: #031964;
-  --brand-deep: #154b95;
-  --brand-azure: #2d74a8;
-  --brand-blue: #338dcc;
-  --brand-sky: #1e9edb;
-  --brand-light: #66ace0;
-  --brand-soft: #8dc3e9;
-  --brand-pale: #b9dbf4;
+  --brand-deep: #0b2a84;
+  --brand-azure: #1d43a3;
+  --brand-blue: #3560c2;
+  --brand-sky: #4a78d6;
+  --brand-light: #7fa6e8;
+  --brand-soft: #a5c6f5;
+  --brand-pale: #b8d6fa;
   --brand-mist: #c7e3fe;
-  --brand-ice: #e1f2fa;
+  --brand-ice: #eaf4ff;
   --brand-cream: #fffcf0;
   --brand-gold: #f6b73c;
   --brand-white: #ffffff;
 
   /* Primary */
-  --color-primary: var(--brand-deep);
-  --color-primary-hover: #0f3d80;
-  --color-primary-active: var(--brand-navy);
+  --color-primary: var(--brand-navy);
+  --color-primary-hover: var(--brand-deep);
+  --color-primary-active: #02114a;
   --color-primary-light: var(--brand-ice);
-  --color-primary-ring: rgba(30, 158, 219, 0.28);
-  --color-accent: var(--brand-sky);
+  --color-primary-ring: rgba(53, 96, 194, 0.28);
+  --color-accent: var(--brand-blue);
   --color-accent-gold: var(--brand-gold);
 
   /* Surface & Background */
@@ -43,14 +43,14 @@
   /* Borders & Dividers */
   --color-border: #d8e2f4;
   --color-border-hover: #b8cbea;
-  --color-border-focus: var(--brand-sky);
+  --color-border-focus: var(--brand-blue);
 
   /* Typography / Text hierarchy */
   --color-text-main: var(--brand-navy);
   --color-text-secondary: #41588c;
   --color-text-muted: #6a7ca3;
   --color-text-inverse: #ffffff;
-  --color-text-brand: var(--brand-deep);
+  --color-text-brand: var(--brand-navy);
 
   /* Status Colors (luôn đi kèm chữ mô tả, không chỉ dựa vào màu) */
   --color-success: #12a56f;
@@ -70,8 +70,8 @@
 
   --color-info: var(--brand-blue);
   --color-info-bg: var(--brand-ice);
-  --color-info-border: var(--brand-pale);
-  --color-info-text: var(--brand-deep);
+  --color-info-border: var(--brand-mist);
+  --color-info-text: var(--brand-navy);
 
   /* Màu nhấn cho trực quan hóa (biểu đồ ngũ giác, quả địa cầu, nền trang chủ).
      Chỉ dùng cho hình minh họa, không dùng cho nút bấm, chữ hay trạng thái. */

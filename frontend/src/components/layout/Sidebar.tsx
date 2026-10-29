@@ -45,7 +45,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onToggle, onClose }) => 
               <LogoMark />
             </span>
             <span className="sidebar-brand-text" aria-hidden="true">
-              <span className="sidebar-brand-vibe">ibe</span>
+              <span className="sidebar-brand-vibe">Vibe</span>
               <span className="sidebar-brand-mapping">Mapping</span>
             </span>
           </Link>

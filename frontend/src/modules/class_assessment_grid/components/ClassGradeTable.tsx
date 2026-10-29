@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { FileSpreadsheet, Send } from 'lucide-react';
 import { Alert, Badge, Button, Card, Modal, ProgressBar, Select } from '../../../components/common';
 import { PACKAGES } from '../../assessment_session/assessmentSession.constants';
@@ -71,6 +72,8 @@ interface ClassGradeTableProps {
   allMembers: ClassMember[];
   /** Bảng điểm vừa tải; cha gắn `key` theo lần tải để tải lại là làm mới */
   initialGrid: GridData;
+  /** Ô tìm học sinh, đặt ở góc trên trái của bảng */
+  search: React.ReactNode;
   onRemove: (member: ClassMember) => void;
   /** Gọi sau khi nộp tất cả xong; cha tải lại lớp */
   onSubmitted: () => void;
@@ -84,6 +87,7 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
   members,
   allMembers,
   initialGrid,
+  search,
   onRemove,
   onSubmitted,
   onPackageChanged,
@@ -302,8 +306,11 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
     setIsPaletteOpen(!isLocked && !cell.classList.contains('is-locked'));
   };
 
+  /** Gõ trong ô tìm kiếm ở góc bảng không được coi là nhập điểm */
+  const isTyping = (event: React.SyntheticEvent) => (event.target as HTMLElement).tagName === 'INPUT';
+
   const handleSheetKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (!active || event.ctrlKey || event.metaKey || event.altKey) return;
+    if (isTyping(event) || !active || event.ctrlKey || event.metaKey || event.altKey) return;
     const arrows: Record<string, [number, number]> = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1], Tab: [0, 1], Enter: [1, 0] };
     const step = arrows[event.key];
     if (step) {
@@ -320,7 +327,7 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
   /** Chép giá trị ô đang chọn để dán sang ô khác hoặc sang Excel */
   const handleCopy = (event: React.ClipboardEvent<HTMLDivElement>) => {
     const target = active && cellTarget(active);
-    if (!target) return;
+    if (!target || isTyping(event)) return;
     const value = scoresRef.current.get(target.student.grid_student_id)?.get(target.item.question_id) ?? '';
     event.clipboardData.setData('text/plain', value === 'na' ? 'na' : value);
     event.preventDefault();
@@ -396,7 +403,7 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
 
   /** Dán từ bảng tính: bắt đầu từ ô đang chọn, đi sang phải theo câu hỏi và xuống dưới theo học sinh */
   const handlePaste = (event: React.ClipboardEvent<HTMLDivElement>) => {
-    if (isLocked || !active) return;
+    if (isLocked || !active || isTyping(event)) return;
     const matrix = parsePastedText(event.clipboardData.getData('text'));
     if (matrix.length === 0) return;
     event.preventDefault();
@@ -641,6 +648,8 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
   return (
     <>
       <Card
+        noPadding
+        className="grid-card"
         title="Bảng chấm điểm"
         action={
           isLocked || (grid.students.length > 0 && pendingCount === 0) ? (
@@ -665,20 +674,22 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
           )
         }
       >
-        {packageSelect}
-        <UnderstandingFields value={defaults} emptyLabel="Chưa chọn" disabled={isLocked} onChange={(value) => void handleDefaults(value)} />
-        <ProgressBar value={totalCells === 0 ? null : (filledCells / totalCells) * 100} label="Tiến độ chấm" />
-        <p className="grid-progress-text">
-          {gradedStudents}/{grid.students.length} học sinh đã chấm đủ · {submittedIds.size}/{grid.students.length} đã nộp ·{' '}
-          {filledCells}/{totalCells} ô
-        </p>
-      </Card>
+        <div className="grid-settings">
+          {packageSelect}
+          <UnderstandingFields value={defaults} emptyLabel="Chưa chọn" disabled={isLocked} onChange={(value) => void handleDefaults(value)} />
+        </div>
+        <div className="grid-progress">
+          <ProgressBar value={totalCells === 0 ? null : (filledCells / totalCells) * 100} label="Tiến độ chấm" />
+          <p className="grid-progress-text">
+            {gradedStudents}/{grid.students.length} học sinh đã chấm đủ · {submittedIds.size}/{grid.students.length} đã nộp ·{' '}
+            {filledCells}/{totalCells} ô
+          </p>
+        </div>
 
-      <Card noPadding title="Học sinh">
         <div
           ref={sheetRef}
           className="grid-sheet"
-          tabIndex={0}
+          tabIndex={-1}
           onClick={handleSheetClick}
           onKeyDown={handleSheetKeyDown}
           onCopy={handleCopy}
@@ -688,24 +699,26 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
           onPointerUp={(event) => endFill(event, true)}
           onPointerCancel={(event) => endFill(event, false)}
         >
-          <table className="app-table grid-table">
+          <table className="grid-table">
             <caption className="app-table-caption">Đáp án của học sinh theo câu hỏi</caption>
             <thead>
               <tr>
-                <th scope="col" className="grid-sticky grid-corner">Học sinh</th>
+                <th scope="col" className="grid-sticky grid-corner">
+                  {search}
+                </th>
                 {questions.map((item) => (
                   <th key={item.question_id} scope="col" className="grid-question-col">
                     <span className="grid-head-name">{item.content}</span>
                   </th>
                 ))}
-                <th scope="col" className="align-center">Thấu hiểu</th>
-                <th scope="col" />
+                <th scope="col" className="grid-extra-col">Thấu hiểu</th>
+                <th scope="col" className="grid-extra-col" />
               </tr>
             </thead>
             <tbody>
               {members.length === 0 && (
                 <tr>
-                  <td className="app-table-empty" colSpan={questions.length + 3}>Lớp chưa có học sinh</td>
+                  <td className="grid-empty" colSpan={questions.length + 3}>Không có học sinh</td>
                 </tr>
               )}
               {members.map((member, rowIndex) => {
@@ -734,39 +747,45 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
         </div>
       </Card>
 
-      {isPaletteOpen && palette && active && cellTarget(active) && (
-        <div
-          ref={paletteRef}
-          className="grid-palette"
-          role="listbox"
-          aria-label="Chọn đáp án"
-          style={{ left: palette.left, top: palette.top, bottom: palette.bottom }}
-          onMouseDown={(event) => event.preventDefault()}
-        >
-          {PALETTE_VALUES.map((value) => {
-            const target = cellTarget(active)!;
-            const label = answers.get(target.item.question_id)?.find((option) => option.value === value)?.label ?? '';
-            const current = scores.get(target.student.grid_student_id)?.get(target.item.question_id) === value;
-            return (
-              <button
-                key={value}
-                type="button"
-                role="option"
-                aria-selected={current}
-                className={`grid-palette-option${current ? ' is-current' : ''}`}
-                onClick={() => setActiveValue(value, true)}
-              >
-                <span className={`grid-palette-chip is-${value}`}>{CELL_TEXT[value]}</span>
-                <span className="grid-palette-label">{label}</span>
-              </button>
-            );
-          })}
-          <button type="button" className="grid-palette-option is-clear" onClick={() => setActiveValue('', false)}>
-            <span className="grid-palette-chip is-empty" />
-            <span className="grid-palette-label">Xóa đáp án</span>
-          </button>
-        </div>
-      )}
+      {/* Gắn thẳng vào body: khung kính mờ của trang làm lệch vị trí cố định nếu để bên trong */}
+      {isPaletteOpen &&
+        palette &&
+        active &&
+        cellTarget(active) &&
+        createPortal(
+          <div
+            ref={paletteRef}
+            className="grid-palette"
+            role="listbox"
+            aria-label="Chọn đáp án"
+            style={{ left: palette.left, top: palette.top, bottom: palette.bottom }}
+            onMouseDown={(event) => event.preventDefault()}
+          >
+            {PALETTE_VALUES.map((value) => {
+              const target = cellTarget(active)!;
+              const label = answers.get(target.item.question_id)?.find((option) => option.value === value)?.label ?? '';
+              const current = scores.get(target.student.grid_student_id)?.get(target.item.question_id) === value;
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  role="option"
+                  aria-selected={current}
+                  className={`grid-palette-option${current ? ' is-current' : ''}`}
+                  onClick={() => setActiveValue(value, true)}
+                >
+                  <span className={`grid-palette-chip is-${value}`}>{CELL_TEXT[value]}</span>
+                  <span className="grid-palette-label">{label}</span>
+                </button>
+              );
+            })}
+            <button type="button" className="grid-palette-option" onClick={() => setActiveValue('', false)}>
+              <span className="grid-palette-chip is-empty" />
+              <span className="grid-palette-label">Xóa đáp án</span>
+            </button>
+          </div>,
+          document.body,
+        )}
 
       <GradeImportModal
         open={isImportOpen}

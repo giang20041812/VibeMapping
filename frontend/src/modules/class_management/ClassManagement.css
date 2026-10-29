@@ -152,46 +152,46 @@
   }
 }
 
-/* Nút thao tác và ô tìm kiếm bên trái, thông tin lớp gọn bên phải */
-.class-toolbar {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: start;
+/* Thông tin lớp trong hộp thoại: mã QR bên trái, các mục bên phải */
+.class-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-5);
 }
 
-.class-toolbar-main {
-  display: flex;
-  flex-direction: column;
+.class-info .class-meta {
+  flex: 1 1 220px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-4);
-  min-width: 0;
 }
 
-.class-toolbar-search {
-  min-width: 160px;
-  max-width: 260px;
+.class-info .class-meta-item:first-child {
+  grid-column: 1 / -1;
 }
 
-.class-info-card .class-qr {
-  width: calc(96 * var(--px));
-  height: calc(96 * var(--px));
+.class-code-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
 }
 
-.class-info-card .class-meta {
-  grid-template-columns: repeat(2, minmax(calc(90 * var(--px)), 1fr));
-  gap: var(--space-2) var(--space-4);
+.class-info .class-code {
+  font-size: var(--font-size-xl);
 }
 
-.class-info-card .class-meta-value {
-  font-size: var(--font-size-md);
+.class-card-search {
+  width: 260px;
+  max-width: 100%;
 }
 
-@media (max-width: 900px) {
-  .class-toolbar {
-    grid-template-columns: minmax(0, 1fr);
+@media (max-width: 560px) {
+  .class-info {
+    justify-content: center;
   }
 
-  .class-toolbar-search {
-    max-width: none;
+  .class-card-search {
+    width: 100%;
   }
 }

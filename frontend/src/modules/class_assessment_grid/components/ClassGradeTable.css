@@ -1,21 +1,35 @@
-.grid-package-select {
-  max-width: 260px;
-}
-
 .grid-understanding {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
   gap: var(--space-4);
 }
 
+/* Gói câu hỏi và ba mức thấu hiểu của lớp nằm chung một hàng */
+.grid-settings {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: var(--space-3) var(--space-4);
+  padding: var(--space-4) var(--space-5) 0;
+}
+
+.grid-settings .grid-understanding {
+  display: contents;
+}
+
+.grid-progress {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+}
+
 .grid-progress-text {
   margin-top: var(--space-2);
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
 
 /* Vùng cuộn của bảng: tiêu đề câu hỏi và cột học sinh luôn nằm yên khi cuộn */
 .grid-sheet {
-  max-height: 72vh;
+  max-height: 74vh;
   overflow: auto;
   outline: none;
   overscroll-behavior: contain;
@@ -27,47 +41,89 @@
   user-select: none;
 }
 
+.grid-table {
+  min-width: 100%;
+  font-size: var(--font-size-base);
+  color: var(--color-text-main);
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
 .grid-table th,
 .grid-table td {
+  padding: 0;
+  text-align: left;
+  vertical-align: middle;
   white-space: nowrap;
+  background-color: var(--color-bg-surface);
+  border-right: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .grid-table thead th {
   position: sticky;
   top: 0;
   z-index: 2;
-  background-color: var(--color-bg-surface);
-  box-shadow: inset 0 -1px 0 var(--color-border);
+  padding: var(--space-3);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  vertical-align: top;
+  border-bottom: 2px solid var(--color-border-hover);
 }
 
-.grid-sticky {
+.grid-table tbody tr:hover > * {
+  background-color: var(--color-primary-light);
+}
+
+/* Cột học sinh dính bên trái */
+.grid-table .grid-sticky {
   position: sticky;
   left: 0;
   z-index: 1;
-  min-width: calc(200 * var(--px));
-  text-align: left;
-  background-color: var(--color-bg-surface);
-  box-shadow: 1px 0 0 var(--color-border);
+  min-width: calc(220 * var(--px));
+  max-width: calc(260 * var(--px));
+  padding: var(--space-2) var(--space-4);
+  white-space: normal;
+  border-right: 2px solid var(--color-border-hover);
 }
 
 .grid-table thead th.grid-corner {
   z-index: 4;
+  vertical-align: bottom;
 }
 
-/* Cột câu hỏi: hiện đủ nội dung câu, xuống dòng thoải mái */
+.grid-corner .app-input-group {
+  width: 100%;
+}
+
+/* Cột câu hỏi: hiện đủ nội dung câu, chữ bám mép trên */
 .grid-table th.grid-question-col {
   min-width: calc(150 * var(--px));
   max-width: calc(180 * var(--px));
   white-space: normal;
-  text-align: left;
-  vertical-align: bottom;
 }
 
 .grid-head-name {
   display: block;
-  font-weight: 600;
-  line-height: 1.35;
+  line-height: 1.4;
   overflow-wrap: anywhere;
+}
+
+.grid-table .grid-extra-col {
+  text-align: center;
+  vertical-align: bottom;
+}
+
+.grid-table td.grid-extra,
+.grid-table td.grid-actions {
+  padding: 0 var(--space-3);
+}
+
+.grid-empty {
+  padding: var(--space-10) var(--space-4) !important;
+  text-align: center !important;
+  color: var(--color-text-muted);
 }
 
 .grid-student {
@@ -75,120 +131,162 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0 var(--space-2);
+  min-width: 0;
 }
 
 .grid-student-name {
   font-weight: 600;
 }
 
-/* Ô đáp án: một khối màu đậm theo điểm, không phải ô chọn */
-.grid-cell {
+.grid-student-code {
+  font-size: var(--font-size-xs);
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+.grid-student-link {
+  display: inline;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--color-text-main);
+  text-align: left;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.grid-student-link:hover {
+  color: var(--color-primary-hover);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.grid-student-link:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.grid-sticky .admin-badge-list:not(:empty) {
+  margin-top: var(--space-1);
+}
+
+/* Ô đáp án: ô trắng kẻ lưới, đáp án là một khối màu đậm bên trong */
+.grid-table td.grid-cell {
   position: relative;
   min-width: calc(150 * var(--px));
   height: 48px;
-  padding: 0;
+  padding: 4px;
   text-align: center;
   cursor: cell;
   user-select: none;
-  background-clip: padding-box;
-  border: 2px solid var(--color-bg-surface);
-  transition:
-    background-color var(--transition-fast),
-    box-shadow var(--transition-fast),
-    outline-color var(--transition-fast);
-  scroll-margin-left: calc(210 * var(--px));
-  scroll-margin-top: 90px;
+  scroll-margin-left: calc(230 * var(--px));
+  scroll-margin-top: 120px;
 }
 
-.grid-cell.is-locked {
+.grid-table td.grid-cell.is-locked {
   cursor: default;
-  opacity: 0.7;
+}
+
+.grid-cell.is-locked .grid-cell-value {
+  opacity: 0.6;
 }
 
 .grid-cell-value {
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 38px;
   font-size: var(--font-size-lg);
   font-weight: 800;
   line-height: 1;
-  animation: grid-cell-pop 240ms var(--ease-spring);
+  border-radius: var(--radius-md);
+  transition:
+    background-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+  animation: grid-cell-pop 260ms var(--ease-spring);
 }
 
-:is(.grid-cell, .grid-palette-chip).is-5 {
+.grid-cell.is-empty .grid-cell-value {
+  animation: none;
+}
+
+.grid-cell:not(.is-locked):hover .grid-cell-value {
+  box-shadow: inset 0 0 0 2px var(--color-border-focus);
+}
+
+.grid-cell.is-5 .grid-cell-value,
+.grid-palette-chip.is-5 {
   color: var(--color-text-inverse);
   background-color: var(--color-success);
 }
 
-:is(.grid-cell, .grid-palette-chip).is-4 {
+.grid-cell.is-4 .grid-cell-value,
+.grid-palette-chip.is-4 {
   color: var(--color-success-text);
   background-color: var(--color-success-border);
 }
 
-:is(.grid-cell, .grid-palette-chip).is-3 {
+.grid-cell.is-3 .grid-cell-value,
+.grid-palette-chip.is-3 {
   color: var(--color-text-inverse);
   background-color: var(--brand-sky);
 }
 
-:is(.grid-cell, .grid-palette-chip).is-2 {
+.grid-cell.is-2 .grid-cell-value,
+.grid-palette-chip.is-2 {
   color: var(--color-text-inverse);
   background-color: var(--color-warning);
 }
 
-:is(.grid-cell, .grid-palette-chip).is-1 {
+.grid-cell.is-1 .grid-cell-value,
+.grid-palette-chip.is-1 {
   color: var(--color-text-inverse);
   background-color: var(--color-danger);
 }
 
-:is(.grid-cell, .grid-palette-chip).is-na {
+.grid-cell.is-na .grid-cell-value,
+.grid-palette-chip.is-na {
   color: var(--color-text-inverse);
   background-color: var(--color-text-muted);
 }
 
-/* Chưa điền: nền trắng viền đứt, khác hẳn các ô đã có màu */
-:is(.grid-cell, .grid-palette-chip).is-empty {
+.grid-palette-chip.is-empty {
   background-color: var(--color-bg-surface);
-  background-image: repeating-linear-gradient(
-    135deg,
-    transparent 0 6px,
-    var(--color-bg-subtle) 6px 8px
-  );
   box-shadow: inset 0 0 0 1px var(--color-border-hover);
 }
 
-.grid-cell.is-missing {
+.grid-cell.is-missing .grid-cell-value {
   background-color: var(--color-danger-bg);
   box-shadow: inset 0 0 0 2px var(--color-danger);
   animation: grid-cell-blink 700ms var(--ease-standard) 2;
 }
 
-.grid-cell:not(.is-locked):hover {
-  box-shadow: inset 0 0 0 2px var(--color-primary-ring);
-}
-
-.grid-cell.is-active {
+/* Ô đang chọn: viền đậm màu chủ đạo */
+.grid-table td.grid-cell.is-active {
   z-index: 1;
-  outline: 3px solid var(--color-primary);
-  outline-offset: -3px;
-  box-shadow: 0 0 0 3px var(--color-primary-ring);
+  box-shadow: inset 0 0 0 2px var(--color-primary);
 }
 
-/* Ô đang được kéo qua: viền đứt và phủ màu chủ đạo */
-.grid-cell.is-fill-target {
-  outline: 2px dashed var(--color-primary);
-  outline-offset: -3px;
-  box-shadow: inset 0 0 0 100px var(--color-primary-ring);
+/* Ô đang được kéo qua */
+.grid-cell.is-fill-target .grid-cell-value {
+  background-color: var(--color-primary-ring);
+  box-shadow: inset 0 0 0 2px var(--color-primary);
+  animation: none;
 }
 
 /* Núm kéo ở góc dưới phải ô đang chọn */
 .grid-fill-handle {
   position: absolute;
-  right: -7px;
-  bottom: -7px;
+  right: -5px;
+  bottom: -5px;
   z-index: 3;
-  width: 14px;
-  height: 14px;
+  width: 11px;
+  height: 11px;
   background-color: var(--color-primary);
   border: 2px solid var(--color-bg-surface);
-  border-radius: var(--radius-xs);
   cursor: crosshair;
   touch-action: none;
   animation: grid-cell-pop 200ms var(--ease-spring);
@@ -200,7 +298,7 @@
   content: '';
 }
 
-/* Bảng chọn đáp án nổi dưới ô đang chọn */
+/* Bảng chọn đáp án nổi ngay dưới ô đang chọn */
 .grid-palette {
   position: fixed;
   z-index: var(--z-dropdown);
@@ -264,7 +362,7 @@
     opacity: 0;
   }
   60% {
-    transform: scale(1.25);
+    transform: scale(1.12);
     opacity: 1;
   }
   100% {
@@ -289,48 +387,32 @@
   .grid-cell-value,
   .grid-fill-handle,
   .grid-palette,
-  .grid-cell.is-missing {
+  .grid-cell.is-missing .grid-cell-value {
     animation: none;
   }
 }
 
 @media (max-width: 768px) {
+  .grid-settings,
+  .grid-progress {
+    padding-inline: var(--space-4);
+  }
+
   .grid-sheet {
     max-height: 65vh;
   }
 
-  .grid-sticky {
-    min-width: calc(150 * var(--px));
+  .grid-table .grid-sticky {
+    min-width: calc(160 * var(--px));
+  }
+
+  .grid-corner .app-input-field {
+    font-size: 16px;
   }
 
   .grid-palette {
     width: min(260px, calc(100vw - 16px));
   }
-}
-
-.grid-student-code {
-  font-size: var(--font-size-xs);
-  font-weight: 400;
-  color: var(--color-text-muted);
-}
-
-.grid-student-link {
-  display: inline;
-  padding: 0;
-  font: inherit;
-  font-weight: 600;
-  color: var(--color-primary);
-  text-align: left;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  background: none;
-  border: 0;
-  cursor: pointer;
-}
-
-.grid-student-link:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
 }
 
 .grade-group {

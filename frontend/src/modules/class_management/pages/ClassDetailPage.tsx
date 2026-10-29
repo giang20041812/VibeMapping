@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Copy, Download, Trash2, Upload, UserPlus } from 'lucide-react';
-import { Alert, Badge, Button, Card, DataTable } from '../../../components/common';
+import { Copy, Download, QrCode, Trash2, Upload, UserPlus } from 'lucide-react';
+import { Alert, Badge, Button, Card, DataTable, Modal } from '../../../components/common';
 import type { DataTableColumn } from '../../../components/common';
 import { FilterSearch } from '../../../components/filters/FilterSearch/FilterSearch';
 import { useDebounce } from '../../../hooks/useDebounce';
@@ -52,6 +52,7 @@ export const ClassDetailPage: React.FC = () => {
   const [reloadKey, setReloadKey] = useState(0);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isTeacherOpen, setIsTeacherOpen] = useState(false);
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [grid, setGrid] = useState<GridData | null>(null);
   const [gridKey, setGridKey] = useState(0);
   /** Tải lại riêng bảng điểm (sau khi đổi gói câu hỏi) */
@@ -190,10 +191,31 @@ export const ClassDetailPage: React.FC = () => {
   const gradeRows = useMemo(() => rows.filter((member) => member.member_role === 'student'), [rows]);
   const showGrid = !isLoading && grid !== null;
 
+  const search = <FilterSearch placeholder="Họ tên hoặc mã học sinh" value={keyword} onChange={setKeyword} />;
+
   return (
     <>
       <div className="class-page-header">
         <h1 className="page-title">{classRow ? `Lớp ${classRow.class_name}` : 'Lớp học'}</h1>
+        <div className="class-header-actions">
+          <Button type="button" variant="outline" leftIcon={<QrCode size={16} />} disabled={!classRow} onClick={() => setIsInfoOpen(true)}>
+            Thông tin lớp
+          </Button>
+          <Button type="button" variant="outline" leftIcon={<UserPlus size={16} />} onClick={() => setIsTeacherOpen(true)}>
+            Gán giáo viên
+          </Button>
+          <Button type="button" variant="outline" leftIcon={<Upload size={16} />} onClick={() => setIsImportOpen(true)}>
+            Nhập danh sách
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            leftIcon={<Download size={16} />}
+            onClick={() => void downloadClassReport(classRow?.class_name ?? 'lop', members, report, 'all').catch(() => setError('Không xuất được báo cáo. Thử lại sau.'))}
+          >
+            Xuất báo cáo
+          </Button>
+        </div>
       </div>
 
       {(error || notice) && (
@@ -204,67 +226,13 @@ export const ClassDetailPage: React.FC = () => {
       )}
 
       <div className="class-stack">
-        <div className="class-toolbar">
-          <div className="class-toolbar-main">
-            <div className="class-header-actions">
-              <Button type="button" variant="outline" leftIcon={<UserPlus size={16} />} onClick={() => setIsTeacherOpen(true)}>
-                Gán giáo viên
-              </Button>
-              <Button type="button" variant="outline" leftIcon={<Upload size={16} />} onClick={() => setIsImportOpen(true)}>
-                Nhập danh sách
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                leftIcon={<Download size={16} />}
-                onClick={() => void downloadClassReport(classRow?.class_name ?? 'lop', members, report, 'all').catch(() => setError('Không xuất được báo cáo. Thử lại sau.'))}
-              >
-                Xuất báo cáo
-              </Button>
-            </div>
-            <div className="class-toolbar-search">
-              <FilterSearch placeholder="Họ tên hoặc mã học sinh" value={keyword} onChange={setKeyword} />
-            </div>
-          </div>
-
-          {classRow && (
-            <Card className="class-info-card" title="Thông tin lớp">
-              <div className="class-qr-row">
-                {qrUrl && <img className="class-qr" src={qrUrl} alt="Mã QR tham gia lớp" />}
-                <div className="class-meta">
-                  <div className="class-meta-item">
-                    <span className="class-meta-label">Mã lớp</span>
-                    <span className="class-meta-value class-code">{classRow.class_code}</span>
-                  </div>
-                  <div className="class-meta-item">
-                    <span className="class-meta-label">Khối</span>
-                    <span className="class-meta-value">{classRow.grade ?? '—'}</span>
-                  </div>
-                  <div className="class-meta-item">
-                    <span className="class-meta-label">Năm học</span>
-                    <span className="class-meta-value">{classRow.school_year}</span>
-                  </div>
-                  <div className="class-meta-item">
-                    <span className="class-meta-label">Học sinh</span>
-                    <span className="class-meta-value">
-                      {students.filter((student) => student.status === 'joined').length}/{students.length}
-                    </span>
-                  </div>
-                </div>
-                <Button type="button" variant="outline" leftIcon={<Copy size={16} />} onClick={() => void handleCopy()}>
-                  Sao chép mã
-                </Button>
-              </div>
-            </Card>
-          )}
-        </div>
-
         {showGrid ? (
           <ClassGradeTable
             key={gridKey}
             members={gradeRows}
             allMembers={students}
             initialGrid={grid}
+            search={search}
             onRemove={(member) => void handleRemove(member)}
             onSubmitted={reload}
             onPackageChanged={() => setGridReloadKey((value) => value + 1)}
@@ -272,7 +240,7 @@ export const ClassDetailPage: React.FC = () => {
             onNotice={setNotice}
           />
         ) : (
-          <Card noPadding title="Thành viên">
+          <Card noPadding title="Thành viên" action={<div className="class-card-search">{search}</div>}>
             <DataTable columns={columns} rows={rows} rowKey={(row) => row.member_id} isLoading={isLoading} emptyText="Lớp chưa có thành viên" caption="Thành viên lớp" />
           </Card>
         )}
@@ -280,6 +248,38 @@ export const ClassDetailPage: React.FC = () => {
         <ClassReportCard title="Báo cáo lớp" report={report} isLoading={isReportLoading} error={reportError} />
       </div>
 
+      <Modal open={isInfoOpen && classRow !== null} title="Thông tin lớp" onClose={() => setIsInfoOpen(false)}>
+        {classRow && (
+          <div className="class-info">
+            {qrUrl && <img className="class-qr" src={qrUrl} alt="Mã QR tham gia lớp" />}
+            <div className="class-meta">
+              <div className="class-meta-item">
+                <span className="class-meta-label">Mã lớp</span>
+                <span className="class-code-row">
+                  <span className="class-meta-value class-code">{classRow.class_code}</span>
+                  <Button type="button" size="sm" variant="outline" leftIcon={<Copy size={14} />} onClick={() => void handleCopy()}>
+                    Sao chép
+                  </Button>
+                </span>
+              </div>
+              <div className="class-meta-item">
+                <span className="class-meta-label">Khối</span>
+                <span className="class-meta-value">{classRow.grade ?? '—'}</span>
+              </div>
+              <div className="class-meta-item">
+                <span className="class-meta-label">Năm học</span>
+                <span className="class-meta-value">{classRow.school_year}</span>
+              </div>
+              <div className="class-meta-item">
+                <span className="class-meta-label">Học sinh đã tham gia</span>
+                <span className="class-meta-value">
+                  {students.filter((student) => student.status === 'joined').length}/{students.length}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+      </Modal>
       <RosterImportModal
         open={isImportOpen}
         classId={classId}

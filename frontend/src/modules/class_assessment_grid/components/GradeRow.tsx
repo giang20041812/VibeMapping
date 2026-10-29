@@ -87,16 +87,16 @@ export const GradeRow = React.memo<GradeRowProps>(function GradeRow({
           );
         })
       ) : (
-        <td colSpan={questions.length} className="align-center">—</td>
+        <td colSpan={questions.length + 1} className="grid-empty">—</td>
       )}
       {student && (
-        <td className="align-center">
+        <td className="grid-extra">
           <Button type="button" size="sm" variant="ghost" onClick={() => onOpen(student.grid_student_id)}>
             {student.acquaintance_duration || student.contact_frequency || student.observation_depth ? 'Riêng' : 'Theo lớp'}
           </Button>
         </td>
       )}
-      <td className="align-right">
+      <td className="grid-actions">
         <div className="class-row-actions">
           {student && !readOnly && (
             <Button

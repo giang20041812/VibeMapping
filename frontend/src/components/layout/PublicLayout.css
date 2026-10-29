@@ -10,6 +10,8 @@
   z-index: 1;
   flex: 1 0 auto;
   min-width: 0;
+  /* Hình bay vào từ ngoài mép màn hình không làm xuất hiện thanh cuộn ngang */
+  overflow-x: clip;
   padding-top: var(--space-6);
   padding-bottom: calc(var(--space-10) + var(--safe-bottom));
 }

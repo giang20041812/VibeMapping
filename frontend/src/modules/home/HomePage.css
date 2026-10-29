@@ -3,7 +3,6 @@
   --home-width: calc(1120 * var(--px));
   position: relative;
   z-index: 1;
-  overflow-x: clip;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -50,21 +49,44 @@
   color: var(--color-text-secondary);
 }
 
+/* Tiến độ của chuyến bay (0 → 1), chạy cùng đường cong với đường bay của ngôi sao nên chữ hiện ra đúng chỗ sao vừa bay qua */
+@property --p {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+
 /* Hàng giới thiệu so le hai bên: hai cột bằng nhau, chữ và hình cùng cỡ.
-   Hình bay vào như ngôi sao từ mép trang (--fly-x, --fly-y là điểm xuất phát, tính theo cỡ của hình,
-   --tail-angle là hướng đuôi sao băng, quay ngược về điểm xuất phát); bay tới nơi rồi chữ mới hiện. */
+   Hình bay vào như ngôi sao từ mép phía có chữ, ngang qua chữ; sao bay tới đâu chữ hiện ra tới đó.
+   Mọi khoảng cách tính theo bề rộng của hàng (cqw) để đường bay và vệt hiện chữ luôn khớp nhau:
+   --star-x1 là tâm hình khi đã tới nơi, --fly-x và --fly-y là quãng sao phải bay, --tail-angle là hướng đuôi. */
 .feature {
-  --fly-x: 110%;
-  --fly-y: -50%;
-  --tail-angle: -24deg;
-  /* Thời điểm hình coi như đã tới nơi, chữ bắt đầu hiện từ đây */
-  --arrive: calc(var(--duration-fly) * 0.6);
+  container-type: inline-size;
+  --gap: var(--space-16);
+  --travel: calc(105cqw + var(--gap) / 4);
+  --star-x1: calc(75cqw + var(--gap) / 4);
+  --copy-left: 0px;
+  --fly-x: calc(var(--travel) * -1);
+  --fly-y: calc(var(--travel) * -0.268);
+  --tail-angle: 15deg;
+  /* Vệt hiện chữ: mép vệt đi theo tâm sao từ lúc xuất phát tới lúc tới nơi, mờ dần trong bề rộng --soft */
+  --soft: 10cqw;
+  --wipe-from: calc(var(--star-x1) + var(--fly-x) - var(--copy-left));
+  --wipe-to: calc(var(--star-x1) - var(--copy-left));
+  /* Thời điểm hình đã gần tới nơi, đa giác dữ liệu bắt đầu nở ra từ đây */
+  --arrive: calc(var(--duration-fly) * 0.62);
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: center;
-  gap: var(--space-16);
+  gap: var(--gap);
 }
-.feature-flip { --fly-x: -110%; --tail-angle: -156deg; }
+/* Hình ở bên trái, chữ bên phải: sao bay từ phải sang trái, quét ngược qua chữ */
+.feature-flip {
+  --star-x1: calc(25cqw - var(--gap) / 4);
+  --copy-left: calc(50cqw + var(--gap) / 2);
+  --fly-x: var(--travel);
+  --tail-angle: 165deg;
+}
 .feature-flip .feature-visual { order: -1; }
 
 .feature-visual {
@@ -76,45 +98,51 @@
 }
 .feature.is-visible .feature-visual { animation: star-fly var(--duration-fly) var(--ease-fly) both; }
 
-/* Hình thu nhỏ như một đốm sáng ở xa rồi phóng to dần khi lại gần */
+/* Hình thu nhỏ như một đốm sáng khi còn đang bay, nở ra thành hình thật khi sao tới gần */
 .feature-stage { width: 100%; max-width: calc(520 * var(--px)); }
-.feature.is-visible .feature-stage { animation: star-grow var(--duration-fly) var(--ease-fly) both; }
+.feature.is-visible .feature-stage {
+  animation:
+    star-grow var(--duration-fly) var(--ease-bloom) both,
+    star-appear calc(var(--duration-fly) * 0.35) var(--ease-out) calc(var(--duration-fly) * 0.35) both;
+}
 
-/* Đuôi sao băng kéo theo hình, thu ngắn và tan dần khi hình tới nơi */
-.feature-visual::before {
-  content: '';
+/* Ngôi sao: đuôi rộng kéo dài phía sau, đầu sao sáng có bốn tia */
+.star-tail,
+.star-head {
   position: absolute;
   z-index: 1;
   top: 50%;
-  left: 50%;
-  width: 90%;
-  height: calc(10 * var(--px));
-  margin-top: calc(-5 * var(--px));
-  background: linear-gradient(to right, var(--color-accent-gold), var(--color-accent) 35%, transparent);
-  clip-path: polygon(0 0, 100% 50%, 0 100%);
-  transform-origin: 0 50%;
-  transform: rotate(var(--tail-angle));
   opacity: 0;
   pointer-events: none;
 }
-.feature.is-visible .feature-visual::before { animation: star-tail var(--duration-fly) var(--ease-fly) both; }
-
-/* Đầu sao sáng lên lúc bay và tắt đi khi tới nơi */
-.feature-visual::after {
-  content: '';
-  position: absolute;
-  z-index: 1;
-  top: 50%;
+.star-tail {
+  right: 50%;
+  width: 190%;
+  max-width: none;
+  aspect-ratio: 720 / 200;
+  transform-origin: 100% 50%;
+  transform: translateY(-50%) rotate(var(--tail-angle));
+}
+.star-head {
   left: 50%;
-  width: 14%;
+  width: 38%;
   aspect-ratio: 1;
-  border-radius: var(--radius-full);
-  background: radial-gradient(circle, var(--color-accent-gold) 0 16%, var(--soft-glow-gold) 17% 40%, transparent 70%);
   transform: translate(-50%, -50%);
-  opacity: 0;
-  pointer-events: none;
 }
-.feature.is-visible .feature-visual::after { animation: star-head var(--duration-fly) var(--ease-fly) both; }
+.feature.is-visible .star-tail { animation: star-tail-run var(--duration-fly) linear both; }
+.feature.is-visible .star-head { animation: star-head-run var(--duration-fly) var(--ease-out) both; }
+
+.star-stop-gold { stop-color: var(--color-accent-gold); stop-opacity: 0.95; }
+.star-stop-blue { stop-color: var(--color-accent); stop-opacity: 0.7; }
+.star-stop-mist { stop-color: var(--color-accent); stop-opacity: 0.28; }
+.star-stop-clear { stop-color: var(--color-accent); stop-opacity: 0; }
+.star-stop-hot { stop-color: var(--brand-white); stop-opacity: 1; }
+.star-stop-halo { stop-color: var(--soft-gold); stop-opacity: 0.55; }
+.star-spark-gold { fill: var(--color-accent-gold); }
+.star-spark-blue { fill: var(--color-accent); }
+.star-ray { fill: var(--color-accent-gold); }
+.star-ray-small { fill: var(--color-accent-gold); opacity: 0.7; }
+.star-core { fill: var(--brand-white); stroke: var(--color-accent-gold); stroke-width: 5; }
 
 /* Hai hình tự có hiệu ứng hiện riêng; ở đây hiệu ứng bay thay cho phần hiện dần đó,
    riêng đa giác dữ liệu nở ra sau khi hình đã tới nơi */
@@ -124,13 +152,25 @@
   animation: polygon-grow 900ms var(--ease-out) var(--arrive) both;
 }
 
-.feature-copy { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-5); min-width: 0; }
-.feature-copy > * { opacity: 0; }
-.feature.is-visible .feature-copy > * { animation: home-rise var(--duration-reveal) var(--ease-out) both; }
-.feature.is-visible .feature-copy > :nth-child(1) { animation-delay: calc(var(--arrive) + 0ms); }
-.feature.is-visible .feature-copy > :nth-child(2) { animation-delay: calc(var(--arrive) + 100ms); }
-.feature.is-visible .feature-copy > :nth-child(3) { animation-delay: calc(var(--arrive) + 200ms); }
-.feature.is-visible .feature-copy > :nth-child(4) { animation-delay: calc(var(--arrive) + 300ms); }
+/* Chữ nằm sau một lớp che; lớp che mở dần theo --p nên chữ hiện ra theo đường sao bay
+   (lớp che chỉ dùng độ trong suốt, màu của nó không hiện ra). Bay xong thì bỏ hẳn lớp che. */
+.feature-copy {
+  --p: 0;
+  --edge: calc(var(--wipe-from) + (var(--wipe-to) - var(--wipe-from)) * var(--p));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-5);
+  min-width: 0;
+  -webkit-mask-image: linear-gradient(to right, var(--color-text-main) calc(var(--edge) - var(--soft)), transparent var(--edge));
+  mask-image: linear-gradient(to right, var(--color-text-main) calc(var(--edge) - var(--soft)), transparent var(--edge));
+}
+.feature-flip .feature-copy {
+  -webkit-mask-image: linear-gradient(to right, transparent var(--edge), var(--color-text-main) calc(var(--edge) + var(--soft)));
+  mask-image: linear-gradient(to right, transparent var(--edge), var(--color-text-main) calc(var(--edge) + var(--soft)));
+}
+.feature.is-visible .feature-copy { animation: wipe-progress var(--duration-fly) var(--ease-fly) both; }
+.feature .feature-copy.is-landed { -webkit-mask-image: none; mask-image: none; }
 
 .feature-title { font-size: var(--font-size-4xl); font-weight: 800; line-height: var(--line-tight); letter-spacing: -0.02em; color: var(--color-text-main); }
 .feature-lead { max-width: calc(480 * var(--px)); font-size: var(--font-size-xl); line-height: 1.5; color: var(--color-text-secondary); }
@@ -138,33 +178,60 @@
 
 @keyframes home-rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 
-/* Đường bay giảm tốc (--ease-fly): lao vào nhanh rồi thắng dần cho tới khi đứng yên */
+/* Đường bay giảm tốc (--ease-fly): lao vào rồi thắng dần cho tới khi đứng yên */
 @keyframes star-fly {
   0% { opacity: 0; transform: translate(var(--fly-x), var(--fly-y)); }
-  10% { opacity: 1; }
+  8% { opacity: 1; }
   100% { opacity: 1; transform: none; }
 }
+@keyframes wipe-progress {
+  from { --p: 0; }
+  to { --p: 1; }
+}
 @keyframes star-grow {
-  0% { transform: scale(0.08) rotate(-160deg); }
-  100% { transform: none; }
+  from { transform: scale(0.12) rotate(-140deg); }
+  to { transform: none; }
 }
-@keyframes star-tail {
-  0% { opacity: 0; transform: rotate(var(--tail-angle)) scaleX(1.3); }
-  10% { opacity: 0.95; }
-  45% { opacity: 0.7; }
-  100% { opacity: 0; transform: rotate(var(--tail-angle)) scaleX(0.1); }
+@keyframes star-appear {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
-@keyframes star-head {
-  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
-  10% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
-  100% { opacity: 0; transform: translate(-50%, -50%) scale(2.4); }
+/* Đuôi thu ngắn về phía đầu sao và tan dần khi sao tới nơi */
+@keyframes star-tail-run {
+  0% { opacity: 0; transform: translateY(-50%) rotate(var(--tail-angle)) scaleX(1); }
+  10% { opacity: 1; }
+  40% { opacity: 1; transform: translateY(-50%) rotate(var(--tail-angle)) scaleX(0.92); }
+  75% { opacity: 0; transform: translateY(-50%) rotate(var(--tail-angle)) scaleX(0.5); }
+  100% { opacity: 0; transform: translateY(-50%) rotate(var(--tail-angle)) scaleX(0.3); }
+}
+/* Đầu sao xoay và sáng lên lúc bay, loé lên rồi tắt khi hình thật nở ra */
+@keyframes star-head-run {
+  0% { opacity: 0; transform: translate(-50%, -50%) rotate(0deg) scale(0.5); }
+  8% { opacity: 1; transform: translate(-50%, -50%) rotate(45deg) scale(1); }
+  40% { opacity: 1; transform: translate(-50%, -50%) rotate(220deg) scale(1.1); }
+  75% { opacity: 0; transform: translate(-50%, -50%) rotate(400deg) scale(2.4); }
+  100% { opacity: 0; transform: translate(-50%, -50%) rotate(480deg) scale(2.4); }
 }
 
 @media (max-width: 900px) {
   .home { gap: var(--space-12); }
-  .feature { grid-template-columns: minmax(0, 1fr); gap: var(--space-8); --fly-x: 100%; --fly-y: -30%; --tail-angle: -17deg; }
-  .feature-flip { --fly-x: -100%; --tail-angle: -163deg; }
+  /* Một cột: chữ ở trên, hình ở dưới; vệt hiện chữ quét hết bề ngang của chữ */
+  .feature {
+    grid-template-columns: minmax(0, 1fr);
+    --gap: var(--space-8);
+    --travel: 80cqw;
+    --star-x1: 50cqw;
+    --copy-left: 0px;
+    --soft: 15cqw;
+    --wipe-from: calc(var(--soft) * -1);
+    --wipe-to: calc(100cqw + var(--soft));
+  }
+  .feature-flip {
+    --star-x1: 50cqw;
+    --copy-left: 0px;
+    --wipe-from: 100cqw;
+    --wipe-to: calc(var(--soft) * -1);
+  }
   .feature-flip .feature-visual { order: 0; }
   .feature-title { font-size: var(--font-size-3xl); }
 }

@@ -48,9 +48,11 @@ interface FeatureProps {
   children: React.ReactNode;
 }
 
-/** Một hàng giới thiệu: chữ một bên, hình minh họa một bên; hàng sau đổi bên so với hàng trước */
+/** Một hàng giới thiệu: chữ một bên, hình minh họa một bên; hàng sau đổi bên so với hàng trước.
+ *  Hình bay vào như ngôi sao trước, bay tới nơi rồi chữ mới hiện ra. */
 const Feature: React.FC<FeatureProps> = ({ id, flip = false, visual, children }) => {
-  const { ref, seen } = useInView<HTMLElement>(0.15);
+  /* Chờ hàng hiện rõ hơn mới bắt đầu bay để người xem kịp thấy cả chặng bay */
+  const { ref, seen } = useInView<HTMLElement>(0.3);
   return (
     <section ref={ref} className={`feature ${flip ? 'feature-flip' : ''} ${seen ? 'is-visible' : ''}`} aria-labelledby={`${id}-title`}>
       <div className="feature-copy">{children}</div>

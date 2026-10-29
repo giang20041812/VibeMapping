@@ -189,6 +189,8 @@
   --transition-normal: 220ms var(--ease-out);
   --transition-slow: 420ms var(--ease-out);
   --duration-reveal: 560ms;
+  --ease-fly: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --duration-fly: 1400ms;
 
   /* Heights */
   --control-height-sm: calc(34 * var(--px));
@@ -217,6 +219,7 @@
     --transition-normal: 0ms;
     --transition-slow: 0ms;
     --duration-reveal: 0ms;
+    --duration-fly: 0ms;
   }
 
   *,

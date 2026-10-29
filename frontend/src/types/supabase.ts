@@ -1823,6 +1823,10 @@ export type Database = {
         Args: { p_resume_token: string; p_answers: Json };
         Returns: undefined;
       };
+      set_my_learner_role: {
+        Args: { p_role: Database["public"]["Enums"]["user_role"] };
+        Returns: undefined;
+      };
       set_package_assignments: {
         Args: { p_question_ids: string[]; p_package_size: number; p_assigned: boolean };
         Returns: number;

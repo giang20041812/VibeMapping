@@ -1,0 +1,67 @@
+.complete-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.complete-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: var(--space-4) var(--space-6);
+}
+.complete-grid > * { min-width: 0; }
+.complete-grid-full { grid-column: 1 / -1; }
+
+.complete-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.complete-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 640px) {
+  .complete-actions .app-button { width: 100%; }
+}
+
+/* Trạng thái chờ xác nhận email */
+.complete-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-10) 0;
+  text-align: center;
+}
+.complete-success-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 84px;
+  height: 84px;
+  color: var(--brand-sky);
+  background: var(--brand-ice);
+  border-radius: 50%;
+}
+.complete-success-title {
+  font-size: var(--font-size-3xl);
+  font-weight: 800;
+  color: var(--color-text-main);
+}
+.complete-success-email {
+  max-width: 100%;
+  font-weight: 700;
+  color: var(--color-text-brand);
+  overflow-wrap: anywhere;
+}
+.complete-success-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-target);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-brand);
+}

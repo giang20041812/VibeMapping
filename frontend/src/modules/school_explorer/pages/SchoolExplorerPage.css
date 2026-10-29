@@ -1,0 +1,11 @@
+.school-explorer-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-16) var(--space-4);
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-align: center;
+}

@@ -145,6 +145,8 @@
   /* Khung ứng dụng: thanh điều hướng bên trái; --top-space chừa chỗ cho thông báo và avatar ở góc phải trên */
   --sidebar-width: 240px;
   --top-space: calc(var(--space-3) * 2 + 44px);
+  /* Thanh điều hướng ngang ở trang giới thiệu, khám phá trường và khi khách làm bài */
+  --topbar-height: calc(60 * var(--px));
 
   /* Lề ngang của khung trang: rộng dần theo màn hình, không đặt trần chiều rộng */
   --page-gutter: clamp(16px, 2.6vw, 64px);

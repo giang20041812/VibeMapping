@@ -6,6 +6,8 @@ import type { UserProfile } from './auth.types';
 
 interface AuthState {
   session: Session | null;
+  /** Chưa đăng nhập, hoặc đang là tài khoản ẩn danh của khách làm bài test (chưa gắn email) */
+  isGuest: boolean;
   profile: UserProfile | null;
   isLoading: boolean;
   /** Đang đọc hồ sơ sau khi đăng nhập */
@@ -79,9 +81,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setProfile(await getProfile(userId));
   }, [userId]);
 
+  /* Tài khoản ẩn danh đã gắn email thì là tài khoản thật, kể cả khi cờ ẩn danh chưa kịp cập nhật */
+  const isGuest = !session || (session.user.is_anonymous === true && !session.user.email);
+
   const value = useMemo(
-    () => ({ session, profile, isLoading, isProfileLoading, signOut, refreshProfile }),
-    [session, profile, isLoading, isProfileLoading, signOut, refreshProfile],
+    () => ({ session, isGuest, profile, isLoading, isProfileLoading, signOut, refreshProfile }),
+    [session, isGuest, profile, isLoading, isProfileLoading, signOut, refreshProfile],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

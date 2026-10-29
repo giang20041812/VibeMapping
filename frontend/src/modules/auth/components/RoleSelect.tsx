@@ -14,13 +14,16 @@ const ROLES: { value: RegisterableRole; label: string; icon: React.ReactNode }[]
 export interface RoleSelectProps {
   value: RegisterableRole;
   onChange: (role: RegisterableRole) => void;
+  /** Chỉ hiện các vai trò này; bỏ trống là hiện đủ */
+  roles?: RegisterableRole[];
+  legend?: string;
 }
 
-export const RoleSelect: React.FC<RoleSelectProps> = ({ value, onChange }) => (
+export const RoleSelect: React.FC<RoleSelectProps> = ({ value, onChange, roles, legend = 'Vai trò' }) => (
   <fieldset className="role-select">
-    <legend className="role-select-legend">Vai trò</legend>
+    <legend className="role-select-legend">{legend}</legend>
     <div className="role-select-grid">
-      {ROLES.map((role) => (
+      {ROLES.filter((role) => !roles || roles.includes(role.value)).map((role) => (
         <label key={role.value} className={`role-option ${value === role.value ? 'is-selected' : ''}`}>
           <input
             type="radio"

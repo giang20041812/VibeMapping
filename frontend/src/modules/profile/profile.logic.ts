@@ -25,6 +25,11 @@ export function isProfileComplete(profile: UserProfile | null): boolean {
   );
 }
 
+/** Nơi đến sau khi làm xong bài: khách và hồ sơ còn thiếu phải khai báo nốt, đủ rồi thì xem kết quả */
+export function pathAfterTest(isGuest: boolean, profile: UserProfile | null): string {
+  return isGuest || !isProfileComplete(profile) ? '/hoan-tat-ho-so' : '/danh-gia-ca-nhan';
+}
+
 export function ageOf(dateOfBirth: string | null, today = new Date()): number | null {
   if (!dateOfBirth) return null;
   const dob = new Date(dateOfBirth);

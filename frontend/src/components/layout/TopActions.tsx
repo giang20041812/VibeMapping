@@ -7,16 +7,18 @@ import { NotificationMenu } from './NotificationMenu';
 import './TopActions.css';
 
 /**
- * Góc phải trên cùng, không có thanh nền nên không che nội dung trang.
  * Đã đăng nhập: thông báo và avatar. Chưa đăng nhập: nút đăng nhập và đăng ký.
+ * Mặc định nổi ở góc phải trên cùng (không có thanh nền nên không che nội dung trang);
+ * `inline` đặt vào trong thanh điều hướng trên cùng.
  */
-export const TopActions: React.FC = () => {
-  const { session, isLoading } = useAuth();
+export const TopActions: React.FC<{ inline?: boolean }> = ({ inline = false }) => {
+  const { isGuest, isLoading } = useAuth();
   if (isLoading) return null;
+  const className = `top-actions ${inline ? 'is-inline' : ''}`;
 
-  if (!session) {
+  if (isGuest) {
     return (
-      <div className="top-actions">
+      <div className={className}>
         <Link to="/dang-nhap">
           <Button variant="outline">Đăng nhập</Button>
         </Link>
@@ -28,7 +30,7 @@ export const TopActions: React.FC = () => {
   }
 
   return (
-    <div className="top-actions">
+    <div className={className}>
       <NotificationMenu />
       <AccountMenu />
     </div>

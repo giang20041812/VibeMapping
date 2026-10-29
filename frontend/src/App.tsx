@@ -3,7 +3,9 @@ import { BrowserRouter, Navigate, Route, Routes, useParams } from 'react-router-
 import { AuthProvider, useAuth } from './modules/auth/AuthContext';
 import { AuthLayout } from './components/layout/AuthLayout';
 import { AppLayout } from './components/layout/AppLayout';
-import { GuestOnly, RequireAuth, RequireRole } from './components/layout/RouteGuards';
+import { PublicLayout } from './components/layout/PublicLayout';
+import { ShellLayout } from './components/layout/ShellLayout';
+import { GuestOnly, RequireAuth, RequireRole, RequireSession } from './components/layout/RouteGuards';
 import { PackageAssignmentsPage } from './modules/admin/pages/PackageAssignmentsPage';
 import { QuestionBankPage } from './modules/admin/pages/QuestionBankPage';
 import { CriteriaPage } from './modules/admin/pages/CriteriaPage';
@@ -16,7 +18,10 @@ import { AssessmentResultSamplePage } from './modules/assessment_result/pages/As
 import { NotFoundPage } from './modules/not_found/NotFoundPage';
 import { HomePage } from './modules/home/HomePage';
 import { ProfilePage } from './modules/profile/pages/ProfilePage';
+import { CompleteProfilePage } from './modules/profile/pages/CompleteProfilePage';
 import { PersonalAssessmentPage } from './modules/personal_assessment/pages/PersonalAssessmentPage';
+import { GuestTestPage } from './modules/personal_assessment/pages/GuestTestPage';
+import { SchoolExplorerPage } from './modules/school_explorer/pages/SchoolExplorerPage';
 import { AssessmentRunPage } from './modules/assessment_session/pages/AssessmentRunPage';
 import { GuestLayout } from './components/layout/GuestLayout';
 import { GuestAssessmentPage } from './modules/guest_assessment/pages/GuestAssessmentPage';
@@ -52,15 +57,27 @@ export const App: React.FC = () => (
           </Route>
         </Route>
 
-        <Route element={<AppLayout />}>
+        {/* Thanh điều hướng ngang, không có thanh bên: giới thiệu, khám phá trường, khách làm bài test và khai báo thông tin sau bài */}
+        <Route element={<PublicLayout />}>
           <Route path="/" element={<HomeRoute />} />
+          <Route path="/kham-pha-truong" element={<SchoolExplorerPage />} />
+          <Route path="/lam-bai" element={<GuestTestPage />} />
+          <Route element={<RequireSession />}>
+            <Route path="/hoan-tat-ho-so" element={<CompleteProfilePage />} />
+          </Route>
+        </Route>
+
+        {/* Làm bài: khách (tài khoản ẩn danh) thấy thanh ngang, người có tài khoản thấy thanh bên */}
+        <Route element={<RequireSession />}>
+          <Route element={<ShellLayout />}>
+            <Route path="/danh-gia-ca-nhan/:sessionId" element={<AssessmentRunPage />} />
+          </Route>
         </Route>
 
         <Route element={<RequireAuth />}>
           <Route element={<AppLayout />}>
             <Route path="/ho-so" element={<ProfilePage />} />
             <Route path="/danh-gia-ca-nhan" element={<PersonalAssessmentPage />} />
-            <Route path="/danh-gia-ca-nhan/:sessionId" element={<AssessmentRunPage />} />
             <Route path="/danh-gia-360" element={<Assessment360Page />} />
 
             <Route element={<RequireRole roles={['student', 'university_student', 'teacher', 'school_admin']} />}>

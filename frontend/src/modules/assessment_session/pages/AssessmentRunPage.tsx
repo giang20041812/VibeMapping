@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Check, Save } from 'lucide-react';
 import { Alert, Button, Card, ProgressBar } from '../../../components/common';
 import { useAuth } from '../../auth/AuthContext';
+import { pathAfterTest } from '../../profile/profile.logic';
 import { INSUFFICIENT_WARNING_RATIO, PARTS } from '../assessmentSession.constants';
 import {
   completeSession,
@@ -51,8 +52,11 @@ const EMPTY_EVIDENCE: EvidenceValues = { gradePointAverage: '', certificates: ''
 
 export const AssessmentRunPage: React.FC = () => {
   const { sessionId } = useParams();
-  const { session: authSession } = useAuth();
+  const { session: authSession, profile, isGuest } = useAuth();
   const navigate = useNavigate();
+  /* Đọc qua ref để vòng tải dữ liệu không chạy lại mỗi khi hồ sơ được nạp xong */
+  const afterTestPath = useRef('/danh-gia-ca-nhan');
+  afterTestPath.current = pathAfterTest(isGuest, profile);
 
   const [session, setSession] = useState<AssessmentSession | null>(null);
   const [questions, setQuestions] = useState<BankQuestion[]>([]);
@@ -108,7 +112,7 @@ export const AssessmentRunPage: React.FC = () => {
         const current = await getSession(sessionId);
         if (!current) throw new Error('not_found');
         if (current.status === 'completed') {
-          navigate('/danh-gia-ca-nhan', { replace: true });
+          navigate(afterTestPath.current, { replace: true });
           return;
         }
         const [bank, assigned, answerMap, values, selected, savedEvidence] = await Promise.all([
@@ -304,7 +308,7 @@ export const AssessmentRunPage: React.FC = () => {
     try {
       await saveEvidence(session.id, evidence);
       await completeSession(session.id, false);
-      navigate('/danh-gia-ca-nhan', { replace: true, state: { justCompleted: true } });
+      navigate(afterTestPath.current, { replace: true, state: { justCompleted: true } });
     } catch {
       setFinishError('Không hoàn thành được bài đánh giá, vui lòng thử lại');
       setIsFinishing(false);

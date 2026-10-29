@@ -62,19 +62,20 @@ const Feature: React.FC<FeatureProps> = ({ id, flip = false, visual, children })
 };
 
 export const HomePage: React.FC = () => {
-  const { profile, session, isProfileLoading } = useAuth();
+  const { profile, session, isGuest, isProfileLoading } = useAuth();
   const location = useLocation();
   const draftSaved = (location.state as RouteState | null)?.draftSaved;
-  const isGuest = !session;
   const learner = isLearnerRole(profile?.role);
   /* Khách thấy nút khám phá; bấm vào sẽ được đưa tới đăng nhập rồi quay lại đúng trang */
   const canExplore = isGuest || learner;
+  /* Khách làm bài test ngay không cần đăng nhập; người có tài khoản làm trong trang tổng quan */
+  const testPath = isGuest ? '/lam-bai' : '/danh-gia-ca-nhan';
   const userId = session?.user.id;
   const [result, setResult] = useState<AssessmentResultSummary | null>(null);
   const [isResultLoading, setIsResultLoading] = useState(true);
 
   useEffect(() => {
-    if (!userId || !learner) {
+    if (!userId || !learner || isGuest) {
       setResult(null);
       setIsResultLoading(false);
       return;
@@ -94,11 +95,11 @@ export const HomePage: React.FC = () => {
     return () => {
       active = false;
     };
-  }, [userId, learner]);
+  }, [userId, learner, isGuest]);
 
   const axes = useMemo(() => (result ? resultToAxes(result) : SAMPLE_AXES), [result]);
   /* Chờ biết người dùng có kết quả hay chưa, tránh biểu đồ mẫu nháy lên rồi đổi sang biểu đồ thật */
-  const isChartLoading = isProfileLoading || (learner && isResultLoading);
+  const isChartLoading = isProfileLoading || (learner && !isGuest && isResultLoading);
 
   return (
     <div className="home">
@@ -137,9 +138,9 @@ export const HomePage: React.FC = () => {
         </h2>
         <p className="feature-lead">Trả lời từng câu hỏi ngắn, xem tố chất của bạn hiện lên thành một biểu đồ.</p>
         {canExplore && (
-          <Link to="/danh-gia-ca-nhan" className="feature-link">
+          <Link to={testPath} className="feature-link">
             <Button size="lg" rightIcon={<ArrowRight size={18} />}>
-              Khám phá
+              Làm bài test
             </Button>
           </Link>
         )}

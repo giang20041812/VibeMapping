@@ -107,3 +107,11 @@ Sinh lại kiểu TypeScript từ cơ sở dữ liệu thực tế:
 ```bash
 npm run supabase:types
 ```
+
+### 5. Khách làm bài test không cần đăng nhập
+Khách vào `/lam-bai` được tạo tài khoản **ẩn danh** của Supabase Auth để lưu bài; làm xong thì điền thông tin ở `/hoan-tat-ho-so` và email, mật khẩu được gắn vào chính tài khoản đó nên kết quả không mất.
+
+- **Local**: đã bật sẵn bằng `enable_anonymous_sign_ins = true` trong `supabase/config.toml`.
+- **Supabase đã deploy (cloud hoặc tự host)**: bật tay **Authentication → Sign In / Providers → Allow anonymous sign-ins**, chạy migration `20261029000400_phase1_guest_test_account.sql`. Nên bật CAPTCHA cho đăng nhập ẩn danh để chống tạo hàng loạt.
+- Nếu dự án bật **Confirm email**, khách bấm liên kết trong email mới thành tài khoản thật; kết quả vẫn nằm sẵn trong tài khoản đó.
+- Tài khoản ẩn danh bỏ dở (không bao giờ gắn email) nằm lại trong `auth.users`; nên dọn định kỳ những tài khoản `is_anonymous` quá cũ.

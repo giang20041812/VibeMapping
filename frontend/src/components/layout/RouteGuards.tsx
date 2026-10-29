@@ -14,8 +14,17 @@ const FullPageLoader: React.FC = () => (
   </div>
 );
 
-/** Chỉ cho người đã đăng nhập; chưa đăng nhập thì chuyển về trang đăng nhập */
+/** Chỉ cho người đã có tài khoản; khách (chưa đăng nhập hoặc tài khoản ẩn danh) thì chuyển về trang đăng nhập */
 export const RequireAuth: React.FC = () => {
+  const { isGuest, isLoading } = useAuth();
+  const location = useLocation();
+  if (isLoading) return <FullPageLoader />;
+  if (isGuest) return <Navigate to="/dang-nhap" replace state={{ from: location.pathname }} />;
+  return <Outlet />;
+};
+
+/** Cho mọi phiên đang có, kể cả tài khoản ẩn danh của khách đang làm bài test; chưa có phiên thì chuyển về trang đăng nhập */
+export const RequireSession: React.FC = () => {
   const { session, isLoading } = useAuth();
   const location = useLocation();
   if (isLoading) return <FullPageLoader />;
@@ -31,10 +40,10 @@ export const RequireRole: React.FC<{ roles: UserRole[] }> = ({ roles }) => {
   return <Outlet />;
 };
 
-/** Trang dành cho khách (đăng nhập, đăng ký): đã đăng nhập thì chuyển vào ứng dụng */
+/** Trang dành cho khách (đăng nhập, đăng ký): đã có tài khoản thì chuyển vào ứng dụng */
 export const GuestOnly: React.FC = () => {
-  const { session, isLoading } = useAuth();
+  const { isGuest, isLoading } = useAuth();
   if (isLoading) return <FullPageLoader />;
-  if (session) return <Navigate to="/" replace />;
+  if (!isGuest) return <Navigate to="/" replace />;
   return <Outlet />;
 };

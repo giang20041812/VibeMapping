@@ -30,6 +30,19 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/quan-tri/nhat-ky', label: 'Nhật ký', icon: History, roles: ADMIN_ROLES },
 ];
 
+export interface TopbarItem {
+  to: string;
+  label: string;
+  end?: boolean;
+}
+
+/** Mục điều hướng của thanh trên cùng: trang giới thiệu, khám phá trường và khi khách làm bài test */
+export const TOPBAR_ITEMS: TopbarItem[] = [
+  { to: '/danh-gia-ca-nhan', label: 'Tổng quan' },
+  { to: '/', label: 'Giới thiệu', end: true },
+  { to: '/kham-pha-truong', label: 'Khám phá trường' },
+];
+
 /** Chưa đăng nhập chỉ thấy trang chủ */
 const GUEST_PATHS = ['/'];
 

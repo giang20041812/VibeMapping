@@ -1,32 +1,16 @@
 import React, { useMemo } from 'react';
 import { ArrowRight, RotateCcw } from 'lucide-react';
-import { Badge, Alert, Button, Card, ProgressBar } from '../../../components/common';
+import { Alert, Button, Card, ProgressBar } from '../../../components/common';
 import { PolygonChart } from '../../../components/charts/PolygonChart/PolygonChart';
 import type { PolygonAxis } from '../../../components/charts/PolygonChart/PolygonChart';
 import { useCountUp } from '../../../hooks/useCountUp';
-import {
-  COMPETENCY_LEVELS,
-  GROUP_ICONS,
-  GROUP_SHORT_LABELS,
-  NO_DATA_LABEL,
-  competencyOf,
-} from '../assessmentResult.constants';
-import type { AssessmentResultSummary, CompetencyLevel, GroupScore } from '../assessmentResult.types';
+import { GROUP_ICONS, GROUP_SHORT_LABELS, NO_DATA_LABEL } from '../assessmentResult.constants';
+import type { AssessmentResultSummary, GroupScore } from '../assessmentResult.types';
 import './ResultView.css';
-
-const LEVEL_BADGE: Record<CompetencyLevel, 'success' | 'info' | 'default' | 'warning'> = {
-  very_high: 'success',
-  high: 'info',
-  medium: 'default',
-  low: 'warning',
-};
-
-const LEVELS = COMPETENCY_LEVELS.map(({ min, label }) => ({ min, label }));
 
 const GroupRow: React.FC<{ group: GroupScore; index: number }> = ({ group, index }) => {
   const headline = group.combined ?? group.self;
   const animated = useCountUp(headline, 900, 200 + index * 70);
-  const level = competencyOf(headline);
 
   return (
     <li className="group-row">
@@ -40,12 +24,23 @@ const GroupRow: React.FC<{ group: GroupScore; index: number }> = ({ group, index
           <ProgressBar value={group.self} label={`${group.name} – tự đánh giá`} tone="secondary" className="group-row-self" />
         )}
       </div>
-      <div className="group-row-foot">
-        {level ? <Badge variant={LEVEL_BADGE[level.key]}>{level.label}</Badge> : <Badge>{NO_DATA_LABEL}</Badge>}
-        {group.combined !== null && group.self !== null && (
-          <span className="group-row-self-text">Tự đánh giá {Math.round(group.self)}%</span>
-        )}
-      </div>
+      {group.combined !== null && group.self !== null && (
+        <span className="group-row-self-text">Tự đánh giá {Math.round(group.self)}%</span>
+      )}
+      {group.criteria.length > 0 && (
+        <ul className="criterion-list" aria-label={`Tiêu chí – ${group.name}`}>
+          {group.criteria.map((criterion) => {
+            const value = criterion.combined ?? criterion.self;
+            return (
+              <li key={criterion.dimensionCode} className="criterion-row">
+                <span className="criterion-name">{criterion.name}</span>
+                <span className="criterion-score">{value === null ? '–' : `${Math.round(value)}%`}</span>
+                <ProgressBar value={value} label={criterion.name} tone="secondary" className="criterion-bar" />
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </li>
   );
 };
@@ -107,7 +102,6 @@ export const ResultView: React.FC<ResultViewProps> = ({ result, onRetake, onCont
         <div className="result-chart">
           <PolygonChart
             axes={axes}
-            levels={LEVELS}
             valueLabel="Tổng hợp 360°"
             referenceLabel="Tự đánh giá"
             noDataLabel={NO_DATA_LABEL}

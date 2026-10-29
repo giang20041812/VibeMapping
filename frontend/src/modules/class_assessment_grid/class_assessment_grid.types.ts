@@ -14,6 +14,8 @@ export interface GridStudent {
   contact_frequency: number | null;
   observation_depth: number | null;
   guardian_pending: boolean;
+  /** Đã nộp thì dòng của em này khóa, không sửa được nữa */
+  submitted_at: string | null;
   cells: GridCell[];
 }
 
@@ -33,7 +35,7 @@ export interface GridQuestion {
 
 export interface GridData {
   grid_id: string;
-  /** Bảng đã nộp thì khóa, không sửa được nữa */
+  /** Bảng đã khóa cả bảng (nộp cả bảng trước đây) thì không sửa được nữa */
   status: 'draft' | 'submitted';
   submitted_at: string | null;
   /** Gói câu hỏi; chưa chọn thì chưa chấm được */
@@ -48,11 +50,17 @@ export interface GridData {
 /** Giá trị một ô: '' là chưa trả lời, '1'–'5' là điểm của đáp án, 'na' là không đủ cơ sở */
 export type CellValue = '' | '1' | '2' | '3' | '4' | '5' | 'na';
 
+export type StudentBlockReason =
+  | 'empty_cells'
+  | 'guardian_pending'
+  | 'missing_understanding'
+  | 'already_submitted'
+  | 'package_not_selected';
+
+/** Kết quả nộp một học sinh */
+export type StudentSubmitResult = { ok: true } | { ok: false; reason: StudentBlockReason; empty_count?: number };
+
+/** Kết quả nộp tất cả: các em đủ điều kiện được nộp, các em còn lại bị bỏ qua kèm lý do */
 export type GridSubmitResult =
-  | { ok: true }
-  | { ok: false; reason: 'empty_cells'; empty_count: number; student_ids: string[] }
-  | { ok: false; reason: 'guardian_pending'; student_ids: string[] }
-  | { ok: false; reason: 'missing_understanding'; student_ids: string[] }
-  | { ok: false; reason: 'no_students' }
-  | { ok: false; reason: 'already_submitted' }
-  | { ok: false; reason: 'package_not_selected' };
+  | { ok: true; submitted_count: number; skipped: { student_id: string; reason: StudentBlockReason; empty_count?: number }[] }
+  | { ok: false; reason: 'no_students' | 'already_submitted' | 'package_not_selected' };

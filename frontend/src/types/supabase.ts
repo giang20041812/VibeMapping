@@ -1839,6 +1839,10 @@ export type Database = {
         Args: { p_grid_id: string };
         Returns: Json;
       };
+      submit_class_grid_student: {
+        Args: { p_grid_student_id: string };
+        Returns: Json;
+      };
       set_grid_package: {
         Args: { p_grid_id: string; p_package_size: number; p_question_ids: string[] };
         Returns: undefined;

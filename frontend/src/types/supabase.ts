@@ -1758,7 +1758,7 @@ export type Database = {
         Returns: Json;
       };
       import_class_roster: {
-        Args: { p_class_id: string; p_rows: Json };
+        Args: { p_class_id: string; p_rows: Json; p_dry_run?: boolean };
         Returns: Json;
       };
       is_class_member: {

@@ -130,8 +130,13 @@ export async function removeClassMember(memberId: string): Promise<void> {
   if (error) fail('Lỗi xóa thành viên lớp', error);
 }
 
-export async function importClassRoster(classId: string, rows: RosterRow[]): Promise<RosterImportResult> {
-  const { data, error } = await supabase.rpc('import_class_roster', { p_class_id: classId, p_rows: rows.map((item) => ({ ...item })) });
+/** dryRun = true chỉ kiểm tra từng dòng, không ghi vào lớp */
+export async function importClassRoster(classId: string, rows: RosterRow[], dryRun = false): Promise<RosterImportResult> {
+  const { data, error } = await supabase.rpc('import_class_roster', {
+    p_class_id: classId,
+    p_rows: rows.map((item) => ({ ...item })),
+    p_dry_run: dryRun,
+  });
   if (error) fail('Lỗi nhập danh sách học sinh', error);
   return data as unknown as RosterImportResult;
 }

@@ -115,3 +115,32 @@ export function parseGradeRows(rows: string[][], students: GradeSheetStudent[], 
   });
   return { changes, studentCount: matched.size, invalid, unmatchedRows };
 }
+
+/**
+ * Tách văn bản dán từ bảng tính (dòng cách nhau bằng xuống dòng, ô cách nhau bằng tab).
+ * Bỏ dòng trống ở cuối do trình soạn bảng tính thêm vào.
+ */
+export function parsePastedText(text: string): string[][] {
+  const rows = text.replace(/\r/g, '').split('\n').map((line) => line.split('\t'));
+  while (rows.length > 0 && rows[rows.length - 1].every((cell) => cell.trim() === '')) rows.pop();
+  return rows;
+}
+
+/**
+ * Điền xuống: đi từ trên xuống, ô trống nhận giá trị của ô có điểm gần nhất phía trên.
+ * Ô trống ở trên cùng (chưa có giá trị nào phía trên) giữ nguyên.
+ */
+export function fillDownChanges(
+  studentIds: string[],
+  criteriaId: string,
+  scores: ScoreMap,
+): { gridStudentId: string; criteriaId: string; value: CellValue }[] {
+  const changes: { gridStudentId: string; criteriaId: string; value: CellValue }[] = [];
+  let last: CellValue = '';
+  for (const id of studentIds) {
+    const current = scores.get(id)?.get(criteriaId) ?? '';
+    if (current !== '') last = current;
+    else if (last !== '') changes.push({ gridStudentId: id, criteriaId, value: last });
+  }
+  return changes;
+}

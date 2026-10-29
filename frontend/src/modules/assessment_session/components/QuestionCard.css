@@ -14,7 +14,6 @@
   font-weight: 700;
   color: var(--part-color, var(--brand-deep));
   background: var(--part-bg, var(--brand-ice));
-  border-left: 3px solid var(--part-color, var(--brand-sky));
   border-radius: var(--radius-sm);
 }
 
@@ -62,9 +61,7 @@
 .question-option:not(.is-disabled):hover {
   border-color: var(--opt);
   transform: translateX(3px);
-  box-shadow: 0 10px 22px -14px var(--opt);
 }
-.question-option:not(.is-disabled):hover .question-option-score { transform: scale(1.08) rotate(-4deg); }
 .question-option:active { transform: scale(0.985); }
 
 .question-option-input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
@@ -100,13 +97,12 @@
 .question-option.is-selected {
   background: var(--opt-bg);
   border-color: var(--opt);
-  box-shadow: 0 0 0 3px var(--opt-glow), 0 14px 28px -14px var(--opt);
+  box-shadow: 0 0 0 3px var(--opt-glow);
 }
 .question-option.is-selected .question-option-score {
   color: var(--color-text-inverse);
   background: var(--opt);
-  transform: scale(1.12);
-  box-shadow: 0 6px 14px -4px var(--opt);
+  transform: scale(1.08);
   animation: score-pop 460ms var(--ease-spring);
 }
 /* Vòng sóng lan ra khi vừa chọn */
@@ -180,9 +176,9 @@
   to { opacity: 1; transform: translateX(0); }
 }
 @keyframes score-pop {
-  0% { transform: scale(0.7); }
-  55% { transform: scale(1.28) rotate(-6deg); }
-  100% { transform: scale(1.12); }
+  0% { transform: scale(0.85); }
+  55% { transform: scale(1.18); }
+  100% { transform: scale(1.08); }
 }
 @keyframes option-ripple {
   from { opacity: 0.9; transform: scale(1); }

@@ -5,7 +5,7 @@ export interface ProgressBarProps {
   /** 0–100; null là chưa có dữ liệu */
   value: number | null;
   label: string;
-  tone?: 'primary' | 'secondary' | 'vivid';
+  tone?: 'primary' | 'secondary' | 'accent';
   className?: string;
 }
 

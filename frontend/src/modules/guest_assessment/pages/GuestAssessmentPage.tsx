@@ -443,7 +443,7 @@ export const GuestAssessmentPage: React.FC = () => {
               <span className="guest-progress-text">
                 Câu {index + 1}/{questions.length}
               </span>
-              <ProgressBar tone="vivid" value={(answeredCount / questions.length) * 100} label="Tiến độ" />
+              <ProgressBar tone="accent" value={(answeredCount / questions.length) * 100} label="Tiến độ" />
             </div>
 
             <QuestionCard

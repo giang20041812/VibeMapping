@@ -124,52 +124,67 @@
   --accent-teal: #1fd1a5;
   --accent-coral: #ff8a5c;
 
-  /* Màn làm bài: mỗi gói, mỗi phần và mỗi mức trả lời một sắc riêng; chữ trắng đặt được trên màu đậm */
-  --gradient-aurora: linear-gradient(90deg, var(--accent-cyan), var(--accent-violet) 40%, var(--accent-magenta) 75%, var(--brand-gold));
-  --gradient-aurora-loop: linear-gradient(90deg, var(--accent-cyan), var(--accent-violet), var(--accent-magenta), var(--brand-gold), var(--accent-magenta), var(--accent-violet), var(--accent-cyan));
-  --glow-aurora: rgba(139, 108, 255, 0.45);
+  /* Màn làm bài và báo cáo: bảng màu phẳng, dịu. Mỗi sắc có nền nhạt (-bg) và quầng mờ (-glow).
+     Vàng quá sáng cho chữ trắng nên chỉ dùng làm nền thanh, chữ và nền nhạt, không làm nền khối chữ trắng. */
+  --tone-purple: #88619a;
+  --tone-purple-bg: #f2ecf5;
+  --tone-purple-glow: rgba(136, 97, 154, 0.22);
+  --tone-green: #2f9a6b;
+  --tone-green-bg: #e6f4ed;
+  --tone-green-glow: rgba(47, 154, 107, 0.22);
+  --tone-blue: #3a8bab;
+  --tone-blue-bg: #e6f2f6;
+  --tone-blue-glow: rgba(58, 139, 171, 0.22);
+  --tone-yellow: #e4ae3a;
+  --tone-yellow-text: #a87914;
+  --tone-yellow-bg: #fcf4e2;
+  --tone-yellow-glow: rgba(228, 174, 58, 0.26);
+  --tone-red: #e0575b;
+  --tone-red-bg: #fceced;
+  --tone-red-glow: rgba(224, 87, 91, 0.22);
+  --tone-slate: #5f6e8e;
+  --tone-slate-bg: #edf0f5;
+  --tone-slate-glow: rgba(95, 110, 142, 0.22);
 
-  --pack-35: #0fa5c2;
-  --pack-35-bg: #e6f8fb;
-  --pack-35-glow: rgba(15, 165, 194, 0.26);
-  --pack-35-gradient: linear-gradient(90deg, var(--accent-cyan), var(--accent-teal));
-  --pack-50: #6d4fe8;
-  --pack-50-bg: #f1edff;
-  --pack-50-glow: rgba(109, 79, 232, 0.26);
-  --pack-50-gradient: linear-gradient(90deg, var(--accent-violet), var(--accent-magenta));
-  --pack-75: #d9449f;
-  --pack-75-bg: #fdecf6;
-  --pack-75-glow: rgba(217, 68, 159, 0.26);
-  --pack-75-gradient: linear-gradient(90deg, var(--accent-magenta), var(--brand-gold));
+  --pack-35: var(--tone-blue);
+  --pack-35-bg: var(--tone-blue-bg);
+  --pack-35-glow: var(--tone-blue-glow);
+  --pack-50: var(--tone-green);
+  --pack-50-bg: var(--tone-green-bg);
+  --pack-50-glow: var(--tone-green-glow);
+  --pack-75: var(--tone-purple);
+  --pack-75-bg: var(--tone-purple-bg);
+  --pack-75-glow: var(--tone-purple-glow);
 
-  --part-1: #6d4fe8;
-  --part-1-bg: #f1edff;
-  --part-1-glow: rgba(109, 79, 232, 0.3);
-  --part-2: #d9449f;
-  --part-2-bg: #fdecf6;
-  --part-2-glow: rgba(217, 68, 159, 0.3);
-  --part-3: #e8672f;
-  --part-3-bg: #fff0e8;
-  --part-3-glow: rgba(232, 103, 47, 0.3);
-  --part-4: #0e9fa8;
-  --part-4-bg: #e3f7f8;
-  --part-4-glow: rgba(14, 159, 168, 0.3);
+  --part-1: var(--tone-purple);
+  --part-1-bg: var(--tone-purple-bg);
+  --part-1-glow: var(--tone-purple-glow);
+  --part-2: var(--tone-green);
+  --part-2-bg: var(--tone-green-bg);
+  --part-2-glow: var(--tone-green-glow);
+  --part-3: var(--tone-blue);
+  --part-3-bg: var(--tone-blue-bg);
+  --part-3-glow: var(--tone-blue-glow);
+  --part-4: var(--tone-red);
+  --part-4-bg: var(--tone-red-bg);
+  --part-4-glow: var(--tone-red-glow);
 
-  --scale-1: #e8572a;
-  --scale-1-bg: #fff0ea;
-  --scale-1-glow: rgba(232, 87, 42, 0.28);
-  --scale-2: #d68200;
-  --scale-2-bg: #fff5e0;
-  --scale-2-glow: rgba(214, 130, 0, 0.28);
-  --scale-3: #1b8fcf;
-  --scale-3-bg: #e6f5fd;
-  --scale-3-glow: rgba(27, 143, 207, 0.28);
-  --scale-4: #6d4fe8;
-  --scale-4-bg: #f1edff;
-  --scale-4-glow: rgba(109, 79, 232, 0.28);
-  --scale-5: #0e9f73;
-  --scale-5-bg: #e4f7f0;
-  --scale-5-glow: rgba(14, 159, 115, 0.28);
+  /* Năm mức trả lời: tím (thấp) qua xám trung tính tới xanh lá (cao) */
+  --scale-1: #7a4f8f;
+  --scale-1-bg: var(--tone-purple-bg);
+  --scale-1-glow: var(--tone-purple-glow);
+  --scale-2: #9475a5;
+  --scale-2-bg: #f5f1f7;
+  --scale-2-glow: rgba(148, 117, 165, 0.22);
+  --scale-3: #7d879b;
+  --scale-3-bg: var(--tone-slate-bg);
+  --scale-3-glow: var(--tone-slate-glow);
+  --scale-4: #45a37a;
+  --scale-4-bg: #eef7f2;
+  --scale-4-glow: rgba(69, 163, 122, 0.22);
+  --scale-5: #2a8a5f;
+  --scale-5-bg: var(--tone-green-bg);
+  --scale-5-glow: var(--tone-green-glow);
 
   /* Hình minh họa hòa vào nền sáng: nét đen xám, màu nhấn dịu chỉ dùng cho biểu tượng và điểm nhấn */
   --ink-900: #232833;

@@ -23,12 +23,12 @@ export const PersonalityReport: React.FC<ReportProps> = ({ questions, answers, o
     <Card title="Báo cáo tính cách" className="part-report">
       <ul className="trait-list">
         {rows.map((row, index) => (
-          <li key={row.criteriaId} className="trait-row">
+          <li key={row.criteriaId} className={`trait-row trait-row-${(index % 5) + 1}`}>
             <div className="trait-head">
               <span className="trait-name">{row.name}</span>
               <span className="trait-value">{row.percent === null ? NO_DATA_LABEL : `${Math.round(row.percent)}%`}</span>
             </div>
-            <ProgressBar value={row.percent} label={row.name} className={`trait-bar trait-bar-${index + 1}`} />
+            <ProgressBar tone="accent" value={row.percent} label={row.name} className="trait-bar" />
           </li>
         ))}
       </ul>
@@ -60,7 +60,10 @@ export const HollandReport: React.FC<ReportProps> = ({ questions, answers, onCon
       ) : (
         <ul className="holland-list">
           {top.map((row, index) => (
-            <li key={row.criteriaId} className={`holland-card holland-card-${index + 1}`}>
+            <li
+              key={row.criteriaId}
+              className={`holland-card holland-card-${index + 1} holland-${(row.hollandCode ?? '').toLowerCase()}`}
+            >
               <span className="holland-letter">{row.hollandCode}</span>
               <span className="holland-name">{row.name}</span>
               <span className="holland-value">{Math.round(row.percent as number)}%</span>

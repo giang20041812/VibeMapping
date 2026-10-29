@@ -379,7 +379,7 @@ export const AssessmentRunPage: React.FC = () => {
             <span className="run-progress-text">
               Phần {stage.part}/4 – <span className="run-progress-count">Câu {partIndexLabel}/{partQuestions.length}</span>
             </span>
-            <ProgressBar tone="vivid" value={partPercent + 100 / Math.max(partQuestions.length, 1)} label="Tiến độ phần" />
+            <ProgressBar tone="accent" value={partPercent + 100 / Math.max(partQuestions.length, 1)} label="Tiến độ phần" />
           </div>
 
           <QuestionCard

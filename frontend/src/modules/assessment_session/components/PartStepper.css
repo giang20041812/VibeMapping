@@ -5,13 +5,13 @@
   list-style: none;
 }
 
-.part-step { --step: var(--brand-sky); --step-next: var(--brand-sky); --step-glow: var(--color-primary-ring); position: relative; min-width: 0; }
-.part-step-1 { --step: var(--part-1); --step-next: var(--part-2); --step-glow: var(--part-1-glow); }
-.part-step-2 { --step: var(--part-2); --step-next: var(--part-3); --step-glow: var(--part-2-glow); }
-.part-step-3 { --step: var(--part-3); --step-next: var(--part-4); --step-glow: var(--part-3-glow); }
-.part-step-4 { --step: var(--part-4); --step-next: var(--part-4); --step-glow: var(--part-4-glow); }
+.part-step { --step: var(--brand-sky); --step-glow: var(--color-primary-ring); position: relative; min-width: 0; }
+.part-step-1 { --step: var(--part-1); --step-glow: var(--part-1-glow); }
+.part-step-2 { --step: var(--part-2); --step-glow: var(--part-2-glow); }
+.part-step-3 { --step: var(--part-3); --step-glow: var(--part-3-glow); }
+.part-step-4 { --step: var(--part-4); --step-glow: var(--part-4-glow); }
 
-/* Đường nối giữa các bước: phần đã xong tô chuyển màu sang phần kế */
+/* Đường nối giữa các bước: phần đã xong tô màu của phần đó */
 .part-step:not(:last-child)::after {
   content: '';
   position: absolute;
@@ -19,7 +19,7 @@
   left: calc(50% + 24px);
   right: calc(-50% + 24px);
   height: 3px;
-  background: linear-gradient(90deg, var(--step), var(--step-next)) left / 0 100% no-repeat, var(--color-border);
+  background: linear-gradient(var(--step), var(--step)) left / 0 100% no-repeat, var(--color-border);
   border-radius: var(--radius-sm);
   transition: background-size var(--transition-slow);
 }
@@ -70,7 +70,7 @@
   background: var(--step);
   border-color: var(--step);
   transform: scale(1.12);
-  box-shadow: 0 0 0 4px var(--step-glow), 0 8px 20px -6px var(--step);
+  box-shadow: 0 0 0 4px var(--step-glow);
 }
 /* Vòng sáng lan ra quanh phần đang làm */
 .part-step.is-current .part-step-marker::after {

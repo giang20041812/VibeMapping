@@ -35,6 +35,8 @@ const ADMIN_ROLES: UserRole[] = ['system_admin'];
 export const NAV_ITEMS: NavItem[] = [
   { to: '/', label: 'Trang chủ', icon: HomeIcon, roles: HOME_ROLES, end: true },
   { to: '/danh-gia-360', label: 'Đánh giá 360', icon: Globe360Icon, roles: ['student', 'university_student'] },
+  { to: '/lop-hoc', label: 'Lớp học', icon: GraduationCap, roles: ['teacher', 'school_admin'] },
+  { to: '/quan-tri/truong', label: 'Trường học', icon: School, roles: ADMIN_ROLES },
   { to: '/quan-tri/goi-cau-hoi', label: 'Gán câu hỏi vào gói', icon: Layers, roles: ADMIN_ROLES },
   { to: '/quan-tri/cau-hoi', label: 'Ngân hàng câu hỏi', icon: Library, roles: ADMIN_ROLES },
   { to: '/quan-tri/tieu-chi', label: 'Tiêu chí', icon: ClipboardList, roles: ADMIN_ROLES },

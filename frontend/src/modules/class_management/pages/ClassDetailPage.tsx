@@ -1,13 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Copy, Download, Trash2, Upload, UserPlus } from 'lucide-react';
-import { Alert, Badge, Button, Card, DataTable, Select } from '../../../components/common';
+import { Alert, Badge, Button, Card, DataTable } from '../../../components/common';
 import type { DataTableColumn } from '../../../components/common';
-import { FilterBar } from '../../../components/filters/FilterBar/FilterBar';
 import { FilterSearch } from '../../../components/filters/FilterSearch/FilterSearch';
-import { SearchableSelect } from '../../../components/filters/SearchableSelect/SearchableSelect';
-import { useAdminFilter } from '../../admin/useAdminFilter';
-import { EMPTY_RESULT } from '../../assessment_result/assessmentResult.constants';
+import { useDebounce } from '../../../hooks/useDebounce';
 import { useAuth } from '../../auth/AuthContext';
 import { qrDataUrl } from '../../invitation_link/invitation.service';
 import { ClassGradeTable } from '../../class_assessment_grid/components/ClassGradeTable';
@@ -17,7 +14,6 @@ import { MEMBER_ROLE_LABEL, STAFF_ERROR_TEXT } from '../class_management.constan
 import {
   assignClassTeacher,
   getClass,
-  getClassDominantGroups,
   getClassOverview,
   getClassReport,
   removeClassMember,
@@ -26,11 +22,10 @@ import type { ClassMember, ClassReport, ClassRow } from '../class_management.typ
 import { ClassReportCard } from '../components/ClassReportCard';
 import { EmailRoleModal } from '../components/EmailRoleModal';
 import { RosterImportModal } from '../components/RosterImportModal';
-import { downloadClassReport, type ReportScope } from '../roster.logic';
+import { downloadClassReport } from '../roster.logic';
+import '../../../components/filters/filterControls.css';
 import '../ClassManagement.css';
 
-const EMPTY_FILTER = { keyword: '', groupCode: '', dominantGroup: '' };
-const DOMINANT_OPTIONS = EMPTY_RESULT.groups.map((group) => ({ value: group.groupCode, label: `${group.groupCode} · ${group.name}` }));
 const TEACHER_ROLE_OPTIONS = [
   { value: 'homeroom_teacher', label: 'Giáo viên chủ nhiệm' },
   { value: 'subject_teacher', label: 'Giáo viên bộ môn' },
@@ -43,7 +38,8 @@ function joinLink(classCode: string): string {
 export const ClassDetailPage: React.FC = () => {
   const { classId = '' } = useParams();
   const { profile } = useAuth();
-  const { draft, applied, patch, apply, reset } = useAdminFilter(EMPTY_FILTER);
+  const [keyword, setKeyword] = useState('');
+  const appliedKeyword = useDebounce(keyword, 300);
   const [classRow, setClassRow] = useState<ClassRow | null>(null);
   const [members, setMembers] = useState<ClassMember[]>([]);
   const [report, setReport] = useState<ClassReport | null>(null);
@@ -60,9 +56,6 @@ export const ClassDetailPage: React.FC = () => {
   const [gridKey, setGridKey] = useState(0);
   /** Tải lại riêng bảng điểm (sau khi đổi gói câu hỏi) */
   const [gridReloadKey, setGridReloadKey] = useState(0);
-  /** Nhóm G nổi trội của từng học sinh đã có kết quả (theo mã học sinh trong hệ thống) */
-  const [dominantGroups, setDominantGroups] = useState<Map<string, string>>(new Map());
-  const [exportScope, setExportScope] = useState<ReportScope>('all');
 
   const isTeacher = profile?.role === 'teacher';
 
@@ -115,20 +108,6 @@ export const ClassDetailPage: React.FC = () => {
   }, [classId, isTeacher, reloadKey, gridReloadKey]);
 
   useEffect(() => {
-    if (!isTeacher) {
-      setDominantGroups(new Map());
-      return;
-    }
-    let active = true;
-    getClassDominantGroups(classId)
-      .then((value) => active && setDominantGroups(value))
-      .catch(() => active && setDominantGroups(new Map()));
-    return () => {
-      active = false;
-    };
-  }, [classId, isTeacher, reloadKey]);
-
-  useEffect(() => {
     if (!classRow) return;
     let active = true;
     qrDataUrl(joinLink(classRow.class_code))
@@ -165,14 +144,10 @@ export const ClassDetailPage: React.FC = () => {
   };
 
   const rows = useMemo(() => {
-    const keyword = applied.keyword.trim().toLowerCase();
-    return members.filter((member) => {
-      if (keyword && !`${member.full_name} ${member.student_code ?? ''}`.toLowerCase().includes(keyword)) return false;
-      // Lọc theo nhóm nổi trội: học sinh chưa có kết quả không hiện trong kết quả lọc
-      if (applied.dominantGroup && (!member.user_id || dominantGroups.get(member.user_id) !== applied.dominantGroup)) return false;
-      return true;
-    });
-  }, [members, applied.keyword, applied.dominantGroup, dominantGroups]);
+    const text = appliedKeyword.trim().toLowerCase();
+    if (!text) return members;
+    return members.filter((member) => `${member.full_name} ${member.student_code ?? ''}`.toLowerCase().includes(text));
+  }, [members, appliedKeyword]);
 
   const columns = useMemo<DataTableColumn<ClassMember>[]>(
     () => [
@@ -213,42 +188,12 @@ export const ClassDetailPage: React.FC = () => {
 
   const students = members.filter((member) => member.member_role === 'student');
   const gradeRows = useMemo(() => rows.filter((member) => member.member_role === 'student'), [rows]);
-  const groupOptions = useMemo(() => {
-    const seen = new Map<string, string>();
-    for (const item of grid?.questions ?? []) seen.set(item.group_code, `${item.group_code} · ${item.group_name}`);
-    return [...seen].map(([value, label]) => ({ value, label }));
-  }, [grid]);
   const showGrid = !isLoading && grid !== null;
 
   return (
     <>
       <div className="class-page-header">
         <h1 className="page-title">{classRow ? `Lớp ${classRow.class_name}` : 'Lớp học'}</h1>
-        <div className="class-header-actions">
-          <Button type="button" variant="outline" leftIcon={<UserPlus size={16} />} onClick={() => setIsTeacherOpen(true)}>
-            Gán giáo viên
-          </Button>
-          <Button type="button" variant="outline" leftIcon={<Upload size={16} />} onClick={() => setIsImportOpen(true)}>
-            Nhập danh sách
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            leftIcon={<Download size={16} />}
-            onClick={() => void downloadClassReport(classRow?.class_name ?? 'lop', members, report, exportScope).catch(() => setError('Không xuất được báo cáo. Thử lại sau.'))}
-          >
-            Xuất báo cáo
-          </Button>
-          <Select
-            aria-label="Phạm vi xuất báo cáo"
-            options={[
-              { value: 'all', label: 'Toàn bộ danh sách lớp' },
-              { value: 'completed', label: 'Chỉ học sinh đã làm bài' },
-            ]}
-            value={exportScope}
-            onChange={(value) => setExportScope(value as ReportScope)}
-          />
-        </div>
       </div>
 
       {(error || notice) && (
@@ -259,65 +204,67 @@ export const ClassDetailPage: React.FC = () => {
       )}
 
       <div className="class-stack">
-        {classRow && (
-          <Card title="Thông tin lớp">
-            <div className="class-qr-row">
-              {qrUrl && <img className="class-qr" src={qrUrl} alt="Mã QR tham gia lớp" />}
-              <div className="class-meta">
-                <div className="class-meta-item">
-                  <span className="class-meta-label">Mã lớp</span>
-                  <span className="class-meta-value class-code">{classRow.class_code}</span>
-                </div>
-                <div className="class-meta-item">
-                  <span className="class-meta-label">Khối</span>
-                  <span className="class-meta-value">{classRow.grade ?? '—'}</span>
-                </div>
-                <div className="class-meta-item">
-                  <span className="class-meta-label">Năm học</span>
-                  <span className="class-meta-value">{classRow.school_year}</span>
-                </div>
-                <div className="class-meta-item">
-                  <span className="class-meta-label">Học sinh</span>
-                  <span className="class-meta-value">
-                    {students.filter((student) => student.status === 'joined').length}/{students.length}
-                  </span>
-                </div>
-              </div>
-              <Button type="button" variant="outline" leftIcon={<Copy size={16} />} onClick={() => void handleCopy()}>
-                Sao chép mã
+        <div className="class-toolbar">
+          <div className="class-toolbar-main">
+            <div className="class-header-actions">
+              <Button type="button" variant="outline" leftIcon={<UserPlus size={16} />} onClick={() => setIsTeacherOpen(true)}>
+                Gán giáo viên
+              </Button>
+              <Button type="button" variant="outline" leftIcon={<Upload size={16} />} onClick={() => setIsImportOpen(true)}>
+                Nhập danh sách
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                leftIcon={<Download size={16} />}
+                onClick={() => void downloadClassReport(classRow?.class_name ?? 'lop', members, report, 'all').catch(() => setError('Không xuất được báo cáo. Thử lại sau.'))}
+              >
+                Xuất báo cáo
               </Button>
             </div>
-          </Card>
-        )}
+            <div className="class-toolbar-search">
+              <FilterSearch placeholder="Họ tên hoặc mã học sinh" value={keyword} onChange={setKeyword} />
+            </div>
+          </div>
 
-        <FilterBar onReset={reset} onSubmit={apply} totalResults={rows.length}>
-          <FilterSearch placeholder="Họ tên hoặc mã học sinh" value={draft.keyword} onChange={(keyword) => patch({ keyword })} />
-          {isTeacher && (
-            <SearchableSelect
-              label="Nhóm nổi trội"
-              placeholder="Tất cả"
-              options={DOMINANT_OPTIONS}
-              value={draft.dominantGroup}
-              onChange={(value) => patch({ dominantGroup: value })}
-            />
+          {classRow && (
+            <Card className="class-info-card" title="Thông tin lớp">
+              <div className="class-qr-row">
+                {qrUrl && <img className="class-qr" src={qrUrl} alt="Mã QR tham gia lớp" />}
+                <div className="class-meta">
+                  <div className="class-meta-item">
+                    <span className="class-meta-label">Mã lớp</span>
+                    <span className="class-meta-value class-code">{classRow.class_code}</span>
+                  </div>
+                  <div className="class-meta-item">
+                    <span className="class-meta-label">Khối</span>
+                    <span className="class-meta-value">{classRow.grade ?? '—'}</span>
+                  </div>
+                  <div className="class-meta-item">
+                    <span className="class-meta-label">Năm học</span>
+                    <span className="class-meta-value">{classRow.school_year}</span>
+                  </div>
+                  <div className="class-meta-item">
+                    <span className="class-meta-label">Học sinh</span>
+                    <span className="class-meta-value">
+                      {students.filter((student) => student.status === 'joined').length}/{students.length}
+                    </span>
+                  </div>
+                </div>
+                <Button type="button" variant="outline" leftIcon={<Copy size={16} />} onClick={() => void handleCopy()}>
+                  Sao chép mã
+                </Button>
+              </div>
+            </Card>
           )}
-          {showGrid && groupOptions.length > 0 && (
-            <SearchableSelect
-              label="Nhóm tiêu chí"
-              placeholder="Tất cả"
-              options={groupOptions}
-              value={draft.groupCode}
-              onChange={(value) => patch({ groupCode: value })}
-            />
-          )}
-        </FilterBar>
+        </div>
+
         {showGrid ? (
           <ClassGradeTable
             key={gridKey}
             members={gradeRows}
             allMembers={students}
             initialGrid={grid}
-            groupCode={applied.groupCode}
             onRemove={(member) => void handleRemove(member)}
             onSubmitted={reload}
             onPackageChanged={() => setGridReloadKey((value) => value + 1)}

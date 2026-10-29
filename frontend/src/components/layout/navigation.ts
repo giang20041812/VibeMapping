@@ -12,8 +12,8 @@ export interface NavItem {
   end?: boolean;
 }
 
-/** Mọi vai trò dùng trang chủ, trừ quản trị hệ thống (vào thẳng khu quản trị) */
-const HOME_ROLES: UserRole[] = ['student', 'university_student', 'parent', 'teacher', 'mentor', 'school_admin'];
+/** Giáo viên vào thẳng lớp học, quản trị hệ thống vào thẳng khu quản trị: cả hai không dùng trang chủ */
+const HOME_ROLES: UserRole[] = ['student', 'university_student', 'parent', 'mentor', 'school_admin'];
 const ADMIN_ROLES: UserRole[] = ['system_admin'];
 
 /** Mục điều hướng chính của thanh bên trái; hồ sơ, đổi mật khẩu, thông báo nằm trong menu avatar */

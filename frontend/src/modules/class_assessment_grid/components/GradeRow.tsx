@@ -1,13 +1,18 @@
 import React from 'react';
 import { Send, Trash2 } from 'lucide-react';
-import { Badge, Button, Checkbox } from '../../../components/common';
+import { Badge, Button } from '../../../components/common';
 import type { ClassMember } from '../../class_management/class_management.types';
 import type { CellValue, GridQuestion, GridStudent } from '../class_assessment_grid.types';
 import type { AnswerOption } from '../grid.logic';
 import './ClassGradeTable.css';
 
+/** Chữ hiện trong ô: điểm 1–5, "Không đủ cơ sở" viết gọn */
+export const CELL_TEXT: Record<string, string> = { '1': '1', '2': '2', '3': '3', '4': '4', '5': '5', na: 'KĐ' };
+
 interface GradeRowProps {
   member: ClassMember;
+  /** Vị trí dòng trong bảng, để kéo điền biết ô nào nằm giữa */
+  rowIndex: number;
   /** Không có khi học sinh chưa có tài khoản trong lớp */
   student: GridStudent | undefined;
   scores: Map<string, CellValue> | undefined;
@@ -16,56 +21,46 @@ interface GradeRowProps {
   answers: Map<string, AnswerOption[]>;
   /** Bảng đã khóa cả bảng hoặc em này đã nộp: không sửa được */
   readOnly: boolean;
-  /** Dòng đang được chọn để gán điểm cho nhóm */
-  selected: boolean;
+  /** Cột của ô đang chọn trong dòng này; -1 là dòng không có ô nào được chọn */
+  activeColumn: number;
   /** Tô đỏ các ô còn trống sau khi nộp em này bị chặn */
   highlightMissing: boolean;
   /** Đang nộp điểm em này */
   submitting: boolean;
-  onToggle: (gridStudentId: string) => void;
   onSubmit: (gridStudentId: string) => void;
   onOpen: (gridStudentId: string) => void;
-  onChangeCell: (gridStudentId: string, questionId: string, value: CellValue) => void;
   onRemove: (member: ClassMember) => void;
 }
 
 /** Một dòng học sinh; memo để chọn điểm một em không vẽ lại cả bảng */
 export const GradeRow = React.memo<GradeRowProps>(function GradeRow({
   member,
+  rowIndex,
   student,
   scores,
   questions,
   answers,
   readOnly,
-  selected,
+  activeColumn,
   highlightMissing,
   submitting,
-  onToggle,
   onSubmit,
   onOpen,
-  onChangeCell,
   onRemove,
 }) {
   return (
     <tr>
-      <td className="grid-select-col">
-        {student && !readOnly && (
-          <Checkbox
-            aria-label={`Chọn ${member.full_name || 'học sinh'}`}
-            checked={selected}
-            onChange={() => onToggle(student.grid_student_id)}
-          />
-        )}
-      </td>
       <th scope="row" className="grid-sticky">
-        {student ? (
-          <button type="button" className="grid-student-link" onClick={() => onOpen(student.grid_student_id)}>
-            {member.full_name || '—'}
-          </button>
-        ) : (
-          member.full_name || '—'
-        )}
-        {member.student_code && <span className="grid-student-code">{member.student_code}</span>}
+        <div className="grid-student">
+          {student ? (
+            <button type="button" className="grid-student-link" onClick={() => onOpen(student.grid_student_id)}>
+              {member.full_name || '—'}
+            </button>
+          ) : (
+            <span className="grid-student-name">{member.full_name || '—'}</span>
+          )}
+          {member.student_code && <span className="grid-student-code">{member.student_code}</span>}
+        </div>
         <div className="admin-badge-list">
           {student?.submitted_at && <Badge variant="success" size="sm">Đã nộp</Badge>}
           {member.has_result && <Badge variant="info" size="sm">Đã làm bài</Badge>}
@@ -74,31 +69,25 @@ export const GradeRow = React.memo<GradeRowProps>(function GradeRow({
         </div>
       </th>
       {student ? (
-        questions.map((item) => {
+        questions.map((item, columnIndex) => {
           const value = scores?.get(item.question_id) ?? '';
+          const label = answers.get(item.question_id)?.find((option) => option.value === value)?.label;
+          const state = value === '' ? (highlightMissing ? 'is-missing' : 'is-empty') : `is-${value}`;
           return (
-            <td key={item.question_id} className="align-center">
-              <select
-                className={`grid-cell-select ${value === '' ? (highlightMissing ? 'is-missing' : 'is-empty') : ''}`}
-                data-student={student.grid_student_id}
-                data-question={item.question_id}
-                aria-label={`${student.full_name} – ${item.content}`}
-                value={value}
-                disabled={readOnly}
-                onChange={(event) => onChangeCell(student.grid_student_id, item.question_id, event.target.value as CellValue)}
-              >
-                <option value="">—</option>
-                {(answers.get(item.question_id) ?? []).map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+            <td
+              key={item.question_id}
+              className={`grid-cell ${state}${readOnly ? ' is-locked' : ''}${columnIndex === activeColumn ? ' is-active' : ''}`}
+              data-ri={rowIndex}
+              data-ci={columnIndex}
+              title={label}
+            >
+              <span key={value} className="grid-cell-value">{value === '' ? '' : CELL_TEXT[value]}</span>
+              {columnIndex === activeColumn && !readOnly && <span className="grid-fill-handle" data-handle="" />}
             </td>
           );
         })
       ) : (
-        <td colSpan={questions.length + 1} className="align-center">—</td>
+        <td colSpan={questions.length} className="align-center">—</td>
       )}
       {student && (
         <td className="align-center">

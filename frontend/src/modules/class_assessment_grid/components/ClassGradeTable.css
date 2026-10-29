@@ -13,21 +13,18 @@
   color: var(--color-text-secondary);
 }
 
-.grid-fill-bar {
-  position: relative;
-  z-index: calc(var(--z-dropdown) - 1);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: var(--space-3);
+/* Vùng cuộn của bảng: tiêu đề câu hỏi và cột học sinh luôn nằm yên khi cuộn */
+.grid-sheet {
+  max-height: 72vh;
+  overflow: auto;
+  outline: none;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
-.grid-fill-bar .app-select-group,
-.grid-fill-bar .app-searchable-select {
-  width: auto;
-  flex: 1 1 200px;
-  min-width: 160px;
-  max-width: 260px;
+.grid-sheet.is-filling {
+  cursor: crosshair;
+  user-select: none;
 }
 
 .grid-table th,
@@ -35,73 +32,283 @@
   white-space: nowrap;
 }
 
+.grid-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: var(--color-bg-surface);
+  box-shadow: inset 0 -1px 0 var(--color-border);
+}
+
 .grid-sticky {
   position: sticky;
   left: 0;
   z-index: 1;
-  min-width: calc(180 * var(--px));
+  min-width: calc(200 * var(--px));
   text-align: left;
   background-color: var(--color-bg-surface);
+  box-shadow: 1px 0 0 var(--color-border);
 }
 
-/* Cột câu hỏi: nội dung câu xuống dòng, tối đa 3 dòng; di chuột xem đủ câu */
+.grid-table thead th.grid-corner {
+  z-index: 4;
+}
+
+/* Cột câu hỏi: hiện đủ nội dung câu, xuống dòng thoải mái */
 .grid-table th.grid-question-col {
-  min-width: calc(200 * var(--px));
-  max-width: calc(240 * var(--px));
+  min-width: calc(150 * var(--px));
+  max-width: calc(180 * var(--px));
   white-space: normal;
   text-align: left;
   vertical-align: bottom;
 }
 
 .grid-head-name {
-  display: -webkit-box;
-  overflow: hidden;
-  font-weight: 500;
-  line-height: 1.3;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
-  -webkit-box-orient: vertical;
+  display: block;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
-.grid-cell-select {
-  width: 100%;
-  min-width: calc(200 * var(--px));
-  max-width: calc(240 * var(--px));
-  text-overflow: ellipsis;
+.grid-student {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--space-2);
+}
+
+.grid-student-name {
+  font-weight: 600;
+}
+
+/* Ô đáp án: một khối màu đậm theo điểm, không phải ô chọn */
+.grid-cell {
+  position: relative;
+  min-width: calc(150 * var(--px));
+  height: 48px;
+  padding: 0;
+  text-align: center;
+  cursor: cell;
+  user-select: none;
+  background-clip: padding-box;
+  border: 2px solid var(--color-bg-surface);
+  transition:
+    background-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    outline-color var(--transition-fast);
+  scroll-margin-left: calc(210 * var(--px));
+  scroll-margin-top: 90px;
+}
+
+.grid-cell.is-locked {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.grid-cell-value {
+  display: inline-block;
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  line-height: 1;
+  animation: grid-cell-pop 240ms var(--ease-spring);
+}
+
+:is(.grid-cell, .grid-palette-chip).is-5 {
+  color: var(--color-text-inverse);
+  background-color: var(--color-success);
+}
+
+:is(.grid-cell, .grid-palette-chip).is-4 {
+  color: var(--color-success-text);
+  background-color: var(--color-success-border);
+}
+
+:is(.grid-cell, .grid-palette-chip).is-3 {
+  color: var(--color-text-inverse);
+  background-color: var(--brand-sky);
+}
+
+:is(.grid-cell, .grid-palette-chip).is-2 {
+  color: var(--color-text-inverse);
+  background-color: var(--color-warning);
+}
+
+:is(.grid-cell, .grid-palette-chip).is-1 {
+  color: var(--color-text-inverse);
+  background-color: var(--color-danger);
+}
+
+:is(.grid-cell, .grid-palette-chip).is-na {
+  color: var(--color-text-inverse);
+  background-color: var(--color-text-muted);
+}
+
+/* Chưa điền: nền trắng viền đứt, khác hẳn các ô đã có màu */
+:is(.grid-cell, .grid-palette-chip).is-empty {
+  background-color: var(--color-bg-surface);
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent 0 6px,
+    var(--color-bg-subtle) 6px 8px
+  );
+  box-shadow: inset 0 0 0 1px var(--color-border-hover);
+}
+
+.grid-cell.is-missing {
+  background-color: var(--color-danger-bg);
+  box-shadow: inset 0 0 0 2px var(--color-danger);
+  animation: grid-cell-blink 700ms var(--ease-standard) 2;
+}
+
+.grid-cell:not(.is-locked):hover {
+  box-shadow: inset 0 0 0 2px var(--color-primary-ring);
+}
+
+.grid-cell.is-active {
+  z-index: 1;
+  outline: 3px solid var(--color-primary);
+  outline-offset: -3px;
+  box-shadow: 0 0 0 3px var(--color-primary-ring);
+}
+
+/* Ô đang được kéo qua: viền đứt và phủ màu chủ đạo */
+.grid-cell.is-fill-target {
+  outline: 2px dashed var(--color-primary);
+  outline-offset: -3px;
+  box-shadow: inset 0 0 0 100px var(--color-primary-ring);
+}
+
+/* Núm kéo ở góc dưới phải ô đang chọn */
+.grid-fill-handle {
+  position: absolute;
+  right: -7px;
+  bottom: -7px;
+  z-index: 3;
+  width: 14px;
+  height: 14px;
+  background-color: var(--color-primary);
+  border: 2px solid var(--color-bg-surface);
+  border-radius: var(--radius-xs);
+  cursor: crosshair;
+  touch-action: none;
+  animation: grid-cell-pop 200ms var(--ease-spring);
+}
+
+.grid-fill-handle::after {
+  position: absolute;
+  inset: -12px;
+  content: '';
+}
+
+/* Bảng chọn đáp án nổi dưới ô đang chọn */
+.grid-palette {
+  position: fixed;
+  z-index: var(--z-dropdown);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 260px;
+  padding: var(--space-1);
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-dropdown);
+  animation: grid-palette-in 160ms var(--ease-out);
+}
+
+.grid-palette-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
   min-height: 44px;
   padding: 0 var(--space-2);
   font: inherit;
   color: var(--color-text-main);
-  background-color: var(--color-bg-surface);
-  border: 1px solid var(--color-border);
+  text-align: left;
+  background: none;
+  border: 0;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.grid-palette-option:hover,
+.grid-palette-option:focus-visible {
+  background-color: var(--color-bg-subtle);
+}
+
+.grid-palette-option.is-current {
+  font-weight: 700;
+  background-color: var(--color-primary-light);
+}
+
+.grid-palette-chip {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  font-weight: 800;
   border-radius: var(--radius-md);
 }
 
-.grid-cell-select.is-empty {
-  color: var(--color-text-muted);
-  background-color: var(--color-bg-subtle);
-  border-style: dashed;
+.grid-palette-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
-.grid-cell-select:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 1px;
+@keyframes grid-cell-pop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.25);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes grid-cell-blink {
+  50% {
+    background-color: var(--color-danger-border);
+  }
+}
+
+@keyframes grid-palette-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.97);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grid-cell-value,
+  .grid-fill-handle,
+  .grid-palette,
+  .grid-cell.is-missing {
+    animation: none;
+  }
 }
 
 @media (max-width: 768px) {
-  .grid-fill-bar .app-select-group,
-  .grid-fill-bar .app-searchable-select {
-    width: 100%;
-    max-width: none;
+  .grid-sheet {
+    max-height: 65vh;
   }
 
-  .grid-cell-select {
-    font-size: 16px;
+  .grid-sticky {
+    min-width: calc(150 * var(--px));
+  }
+
+  .grid-palette {
+    width: min(260px, calc(100vw - 16px));
   }
 }
 
 .grid-student-code {
-  margin-left: var(--space-2);
   font-size: var(--font-size-xs);
   font-weight: 400;
   color: var(--color-text-muted);
@@ -188,22 +395,4 @@
     flex: 1;
     width: auto;
   }
-}
-
-.grid-select-col {
-  width: 44px;
-  text-align: center;
-}
-
-.grid-cell-select.is-missing {
-  color: var(--color-danger-text);
-  background-color: var(--color-danger-bg);
-  border: 1px solid var(--color-danger);
-}
-
-.grid-selection-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-3);
 }

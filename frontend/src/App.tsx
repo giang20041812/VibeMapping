@@ -33,10 +33,11 @@ import { ClassListPage } from './modules/class_management/pages/ClassListPage';
 import { ClassDetailPage } from './modules/class_management/pages/ClassDetailPage';
 import { SkeletonSamplePage } from './modules/dev/SkeletonSamplePage';
 
-/** Quản trị hệ thống không dùng trang chủ của học sinh: vào thẳng khu quản trị */
+/** Quản trị hệ thống vào thẳng khu quản trị, giáo viên vào thẳng lớp học */
 const HomeRoute: React.FC = () => {
   const { profile, isProfileLoading } = useAuth();
   if (!isProfileLoading && profile?.role === 'system_admin') return <Navigate to="/quan-tri" replace />;
+  if (!isProfileLoading && profile?.role === 'teacher') return <Navigate to="/lop-hoc" replace />;
   return <HomePage />;
 };
 

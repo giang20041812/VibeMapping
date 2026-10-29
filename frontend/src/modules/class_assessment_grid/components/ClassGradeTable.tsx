@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FileSpreadsheet, Send } from 'lucide-react';
-import { Alert, Badge, Button, Card, Checkbox, Modal, ProgressBar, Select } from '../../../components/common';
-import { SearchableSelect } from '../../../components/filters/SearchableSelect/SearchableSelect';
+import { Alert, Badge, Button, Card, Modal, ProgressBar, Select } from '../../../components/common';
 import { PACKAGES } from '../../assessment_session/assessmentSession.constants';
 import type { PackageSize } from '../../assessment_session/assessmentSession.types';
 import { GRID_BLOCK_TEXT } from '../../class_management/class_management.constants';
@@ -21,7 +20,6 @@ import { downloadGradeTemplate } from '../grade_template';
 import {
   answerOptions,
   cellToDb,
-  fillDownChanges,
   parseCellText,
   parsePastedText,
   toScoreMap,
@@ -31,14 +29,36 @@ import {
 } from '../grid.logic';
 import { addPending, isNetworkFailure, loadPending, removePending, clearPending } from '../grid_offline';
 import { GradeImportModal } from './GradeImportModal';
-import { GradeRow } from './GradeRow';
-import { GroupAssignModal } from './GroupAssignModal';
+import { CELL_TEXT, GradeRow } from './GradeRow';
 import { GradeStudentModal } from './GradeStudentModal';
 import { UnderstandingFields } from './UnderstandingFields';
-import '../../../components/filters/filterControls.css';
 import './ClassGradeTable.css';
 
 const NO_SCORES = new Map<string, CellValue>();
+const PALETTE_HEIGHT = 300;
+const PALETTE_WIDTH = 260;
+const EDGE_SCROLL_ZONE = 48;
+/** Phím tắt nhập nhanh: số 1–5, X/N/K là "Không đủ cơ sở", Delete xóa ô */
+const KEY_VALUES: Record<string, CellValue> = { '1': '1', '2': '2', '3': '3', '4': '4', '5': '5', x: 'na', n: 'na', k: 'na', Delete: '', Backspace: '' };
+const PALETTE_VALUES: CellValue[] = ['5', '4', '3', '2', '1', 'na'];
+
+interface ActiveCell {
+  row: number;
+  col: number;
+}
+
+interface PalettePosition {
+  left: number;
+  top?: number;
+  bottom?: number;
+}
+
+interface FillDrag {
+  source: ActiveCell;
+  value: CellValue;
+  targets: ActiveCell[];
+  marked: HTMLElement[];
+}
 
 const toPayload = (changes: GridChange[]): CellChange[] =>
   changes.map((change) => ({ gridStudentId: change.gridStudentId, questionId: change.questionId, value: cellToDb(change.value) }));
@@ -51,8 +71,6 @@ interface ClassGradeTableProps {
   allMembers: ClassMember[];
   /** Bảng điểm vừa tải; cha gắn `key` theo lần tải để tải lại là làm mới */
   initialGrid: GridData;
-  /** Chỉ hiện câu hỏi thuộc nhóm tiêu chí này; rỗng là hiện hết */
-  groupCode: string;
   onRemove: (member: ClassMember) => void;
   /** Gọi sau khi nộp tất cả xong; cha tải lại lớp */
   onSubmitted: () => void;
@@ -66,7 +84,6 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
   members,
   allMembers,
   initialGrid,
-  groupCode,
   onRemove,
   onSubmitted,
   onPackageChanged,
@@ -81,14 +98,16 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   /** Lý do chưa nộp được, hiện trong hộp thoại xác nhận */
   const [blockedReasons, setBlockedReasons] = useState<string[]>([]);
-  const [fillQuestion, setFillQuestion] = useState(initialGrid.questions[0]?.question_id ?? '');
-  const [fillValue, setFillValue] = useState<CellValue>('3');
   const [isImportOpen, setIsImportOpen] = useState(false);
   /** Học sinh đang mở hộp thoại chấm điểm riêng */
   const [openId, setOpenId] = useState<string | null>(null);
-  /** Học sinh được chọn để gán cùng một bộ điểm */
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [isAssignOpen, setIsAssignOpen] = useState(false);
+  /** Ô đang chọn (dòng × cột) và bảng chọn đáp án nổi bên dưới ô đó */
+  const [active, setActive] = useState<ActiveCell | null>(null);
+  const [palette, setPalette] = useState<PalettePosition | null>(null);
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const paletteRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<FillDrag | null>(null);
   /** Học sinh có ô còn trống được tô đỏ sau khi nộp bị chặn vì thiếu điểm */
   const [highlightIds, setHighlightIds] = useState<Set<string>>(new Set());
   /** Gói đang chờ xác nhận đổi (bảng đã có đáp án) */
@@ -120,15 +139,12 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
   const gridStudents = useMemo(() => new Map(grid.students.map((student) => [student.student_id, student])), [grid]);
   const gridStudentsById = useMemo(() => new Map(grid.students.map((student) => [student.grid_student_id, student])), [grid]);
 
-  const visibleQuestions = useMemo(
-    () => (groupCode ? questions.filter((item) => item.group_code === groupCode) : questions),
-    [questions, groupCode],
-  );
-
-  const visibleGridStudents = useMemo(
-    () => members.flatMap((member) => (member.user_id && gridStudents.get(member.user_id) ? [gridStudents.get(member.user_id)!] : [])),
+  /** Học sinh của từng dòng theo đúng thứ tự dòng; học sinh chưa tham gia không có bảng điểm */
+  const rowStudents = useMemo(
+    () => members.map((member) => (member.user_id ? gridStudents.get(member.user_id) : undefined)),
     [members, gridStudents],
   );
+  const visibleGridStudents = useMemo(() => rowStudents.flatMap((student) => (student ? [student] : [])), [rowStudents]);
 
   let totalCells = 0;
   let filledCells = 0;
@@ -221,17 +237,6 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
     [applyChanges],
   );
 
-  const handleFillColumn = () => {
-    if (!fillQuestion) return;
-    void applyChanges(visibleGridStudents.map((student) => ({ gridStudentId: student.grid_student_id, questionId: fillQuestion, value: fillValue })));
-  };
-
-  /** Điền xuống: ô trống nhận đáp án của ô đã trả lời gần nhất phía trên, theo câu hỏi đang chọn */
-  const handleFillDown = () => {
-    if (!fillQuestion) return;
-    void applyChanges(fillDownChanges(visibleGridStudents.map((student) => student.grid_student_id), fillQuestion, scoresRef.current));
-  };
-
   /** Đổi gói: đồng bộ đáp án lưu tạm trước, rồi thay danh sách câu hỏi; cha tải lại bảng */
   const changePackage = async (size: PackageSize) => {
     setIsChangingPackage(true);
@@ -256,26 +261,154 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
     else void changePackage(size);
   };
 
+  /** Ô (dòng × cột) → học sinh và câu hỏi tương ứng; trống khi dòng chưa có bảng điểm */
+  const cellTarget = (cell: ActiveCell) => {
+    const student = rowStudents[cell.row];
+    const item = questions[cell.col];
+    return student && item ? { student, item } : null;
+  };
+
+  /** Dòng gần nhất theo hướng `step` (từ vị trí `from`) có bảng điểm; không có thì giữ nguyên */
+  const nearestRow = (from: number, step: 1 | -1) => {
+    for (let row = from + step; row >= 0 && row < rowStudents.length; row += step) if (rowStudents[row]) return row;
+    return from;
+  };
+
+  const moveActive = (rowStep: number, columnStep: number) =>
+    setActive((current) => {
+      if (!current) return current;
+      const row = rowStep === 0 ? current.row : nearestRow(current.row, rowStep > 0 ? 1 : -1);
+      const col = Math.min(Math.max(current.col + columnStep, 0), questions.length - 1);
+      return { row, col };
+    });
+
+  const setActiveValue = (value: CellValue, advance: boolean) => {
+    const target = active && cellTarget(active);
+    if (!target || target.student.submitted_at || isLocked) return;
+    void applyChanges([{ gridStudentId: target.student.grid_student_id, questionId: target.item.question_id, value }]);
+    if (advance) moveActive(1, 0);
+  };
+
+  const closeSelection = () => {
+    setActive(null);
+    setIsPaletteOpen(false);
+  };
+
+  /** Bấm một ô: chọn ô và mở bảng đáp án ngay bên dưới */
+  const handleSheetClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    const cell = (event.target as HTMLElement).closest<HTMLElement>('td[data-ri]');
+    if (!cell) return;
+    setActive({ row: Number(cell.dataset.ri), col: Number(cell.dataset.ci) });
+    setIsPaletteOpen(!isLocked && !cell.classList.contains('is-locked'));
+  };
+
+  const handleSheetKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!active || event.ctrlKey || event.metaKey || event.altKey) return;
+    const arrows: Record<string, [number, number]> = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1], Tab: [0, 1], Enter: [1, 0] };
+    const step = arrows[event.key];
+    if (step) {
+      event.preventDefault();
+      moveActive(event.shiftKey ? -step[0] : step[0], event.shiftKey ? -step[1] : step[1]);
+    } else if (event.key === 'Escape') {
+      closeSelection();
+    } else if (event.key.toLowerCase() in KEY_VALUES || event.key in KEY_VALUES) {
+      event.preventDefault();
+      setActiveValue(KEY_VALUES[event.key] ?? KEY_VALUES[event.key.toLowerCase()], true);
+    }
+  };
+
+  /** Chép giá trị ô đang chọn để dán sang ô khác hoặc sang Excel */
+  const handleCopy = (event: React.ClipboardEvent<HTMLDivElement>) => {
+    const target = active && cellTarget(active);
+    if (!target) return;
+    const value = scoresRef.current.get(target.student.grid_student_id)?.get(target.item.question_id) ?? '';
+    event.clipboardData.setData('text/plain', value === 'na' ? 'na' : value);
+    event.preventDefault();
+  };
+
+  const clearFillMarks = () => {
+    dragRef.current?.marked.forEach((cell) => cell.classList.remove('is-fill-target'));
+    if (dragRef.current) dragRef.current.marked = [];
+  };
+
+  /** Kéo núm ở góc ô: sao chép giá trị ô nguồn ra các ô kéo qua, theo hàng dọc hoặc ngang */
+  const handleSheetPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!(event.target as HTMLElement).closest('[data-handle]') || !active || isLocked) return;
+    const target = cellTarget(active);
+    if (!target) return;
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    const value = scoresRef.current.get(target.student.grid_student_id)?.get(target.item.question_id) ?? '';
+    dragRef.current = { source: active, value, targets: [], marked: [] };
+    setIsPaletteOpen(false);
+    event.currentTarget.classList.add('is-filling');
+  };
+
+  const handleSheetPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    const drag = dragRef.current;
+    if (!drag) return;
+    const sheet = event.currentTarget;
+    const bounds = sheet.getBoundingClientRect();
+    if (event.clientY > bounds.bottom - EDGE_SCROLL_ZONE) sheet.scrollTop += 16;
+    else if (event.clientY < bounds.top + EDGE_SCROLL_ZONE) sheet.scrollTop -= 16;
+    if (event.clientX > bounds.right - EDGE_SCROLL_ZONE) sheet.scrollLeft += 16;
+    else if (event.clientX < bounds.left + EDGE_SCROLL_ZONE) sheet.scrollLeft -= 16;
+
+    const cell = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>('td[data-ri]');
+    if (!cell) return;
+    const row = Number(cell.dataset.ri);
+    const col = Number(cell.dataset.ci);
+    const { source } = drag;
+    const vertical = Math.abs(row - source.row) >= Math.abs(col - source.col);
+    const targets: ActiveCell[] = [];
+    if (vertical) {
+      const step = row >= source.row ? 1 : -1;
+      for (let current = source.row + step; step > 0 ? current <= row : current >= row; current += step) targets.push({ row: current, col: source.col });
+    } else {
+      const step = col >= source.col ? 1 : -1;
+      for (let current = source.col + step; step > 0 ? current <= col : current >= col; current += step) targets.push({ row: source.row, col: current });
+    }
+    clearFillMarks();
+    drag.targets = targets.filter((item) => {
+      const found = cellTarget(item);
+      return found && !found.student.submitted_at;
+    });
+    drag.marked = drag.targets.flatMap((item) => {
+      const found = sheet.querySelector<HTMLElement>(`td[data-ri="${item.row}"][data-ci="${item.col}"]`);
+      return found ? [found] : [];
+    });
+    drag.marked.forEach((found) => found.classList.add('is-fill-target'));
+  };
+
+  const endFill = (event: React.PointerEvent<HTMLDivElement>, apply: boolean) => {
+    const drag = dragRef.current;
+    if (!drag) return;
+    clearFillMarks();
+    dragRef.current = null;
+    event.currentTarget.classList.remove('is-filling');
+    if (!apply) return;
+    const changes = drag.targets.flatMap((item) => {
+      const found = cellTarget(item);
+      return found ? [{ gridStudentId: found.student.grid_student_id, questionId: found.item.question_id, value: drag.value }] : [];
+    });
+    void applyChanges(changes);
+  };
+
   /** Dán từ bảng tính: bắt đầu từ ô đang chọn, đi sang phải theo câu hỏi và xuống dưới theo học sinh */
   const handlePaste = (event: React.ClipboardEvent<HTMLDivElement>) => {
-    if (isLocked) return;
-    const target = event.target as HTMLElement;
-    const startStudent = target.getAttribute?.('data-student');
-    const startQuestion = target.getAttribute?.('data-question');
-    if (!startStudent || !startQuestion) return;
+    if (isLocked || !active) return;
     const matrix = parsePastedText(event.clipboardData.getData('text'));
     if (matrix.length === 0) return;
     event.preventDefault();
 
-    const rowStart = visibleGridStudents.findIndex((student) => student.grid_student_id === startStudent);
-    const columnStart = visibleQuestions.findIndex((item) => item.question_id === startQuestion);
     const changes: GridChange[] = [];
     let invalid = 0;
     matrix.forEach((line, rowOffset) =>
       line.forEach((text, columnOffset) => {
-        const student = visibleGridStudents[rowStart + rowOffset];
-        const item = visibleQuestions[columnStart + columnOffset];
-        if (!student || !item) return;
+        const found = cellTarget({ row: active.row + rowOffset, col: active.col + columnOffset });
+        if (!found) return;
+        const { student, item } = found;
+        if (student.submitted_at) return;
         const parsed = parseCellText(text);
         if (parsed === null) invalid += 1;
         else if (parsed !== '') changes.push({ gridStudentId: student.grid_student_id, questionId: item.question_id, value: parsed });
@@ -285,28 +418,52 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
     onNotice(`Đã dán ${changes.length} ô${invalid > 0 ? `, bỏ qua ${invalid} ô sai giá trị` : ''}.`);
   };
 
-  const handleToggle = useCallback((gridStudentId: string) => {
-    setSelectedIds((current) => {
-      const next = new Set(current);
-      if (next.has(gridStudentId)) next.delete(gridStudentId);
-      else next.add(gridStudentId);
-      return next;
-    });
-  }, []);
+  // Lọc lại danh sách đổi vị trí các dòng: bỏ chọn để khỏi trỏ nhầm học sinh
+  useEffect(() => {
+    setActive(null);
+    setIsPaletteOpen(false);
+  }, [members]);
 
-  const selectableStudents = visibleGridStudents.filter((student) => !student.submitted_at);
-  const allVisibleSelected = selectableStudents.length > 0 && selectableStudents.every((student) => selectedIds.has(student.grid_student_id));
-  const handleToggleAll = (checked: boolean) =>
-    setSelectedIds(checked ? new Set(selectableStudents.map((student) => student.grid_student_id)) : new Set());
+  const findActiveCell = () =>
+    active ? sheetRef.current?.querySelector<HTMLElement>(`td[data-ri="${active.row}"][data-ci="${active.col}"]`) ?? null : null;
 
-  const handleAssignGroup = (values: Map<string, CellValue>) => {
-    const changes = [...selectedIds].flatMap((gridStudentId) =>
-      [...values].filter(([, value]) => value !== '').map(([questionId, value]) => ({ gridStudentId, questionId, value })),
-    );
-    void applyChanges(changes);
-    setIsAssignOpen(false);
-    onNotice(`Đã gán đáp án cho ${selectedIds.size} học sinh.`);
-  };
+  /** Đặt bảng đáp án ngay dưới ô đang chọn (lật lên trên khi sát đáy màn hình), đi theo khi cuộn */
+  const placePalette = useCallback(() => {
+    const cell = findActiveCell();
+    if (!cell) return setPalette(null);
+    const rect = cell.getBoundingClientRect();
+    const left = Math.max(8, Math.min(rect.left, window.innerWidth - PALETTE_WIDTH - 8));
+    const flip = rect.bottom + PALETTE_HEIGHT > window.innerHeight && rect.top > PALETTE_HEIGHT;
+    setPalette(flip ? { left, bottom: window.innerHeight - rect.top + 4 } : { left, top: rect.bottom + 4 });
+  }, [active]);
+
+  // Ô đang chọn luôn nằm trong vùng nhìn thấy khi di chuyển bằng bàn phím
+  useEffect(() => {
+    findActiveCell()?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    if (!isPaletteOpen) return;
+    placePalette();
+    const sheet = sheetRef.current;
+    sheet?.addEventListener('scroll', placePalette, { passive: true });
+    window.addEventListener('scroll', placePalette, { passive: true });
+    window.addEventListener('resize', placePalette);
+    return () => {
+      sheet?.removeEventListener('scroll', placePalette);
+      window.removeEventListener('scroll', placePalette);
+      window.removeEventListener('resize', placePalette);
+    };
+  }, [active, isPaletteOpen, placePalette]);
+
+  // Bấm ra ngoài bảng thì bỏ chọn ô
+  useEffect(() => {
+    if (!active) return;
+    const handleOutside = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (sheetRef.current?.contains(target) || paletteRef.current?.contains(target)) return;
+      closeSelection();
+    };
+    document.addEventListener('pointerdown', handleOutside);
+    return () => document.removeEventListener('pointerdown', handleOutside);
+  }, [active]);
 
   const sheetStudents = useMemo(
     () =>
@@ -352,7 +509,7 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
   const showMissing = (gridStudentIds: string[]) => {
     setHighlightIds(new Set(gridStudentIds));
     window.requestAnimationFrame(() =>
-      document.querySelector('.grid-cell-select.is-missing')?.scrollIntoView({ block: 'center', inline: 'center' }),
+      document.querySelector('.grid-cell.is-missing')?.scrollIntoView({ block: 'center', inline: 'center' }),
     );
   };
 
@@ -372,7 +529,6 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
             item.grid_student_id === student.grid_student_id ? { ...item, submitted_at: new Date().toISOString() } : item,
           ),
         }));
-        setSelectedIds((current) => new Set([...current].filter((id) => id !== student.grid_student_id)));
         setHighlightIds((current) => new Set([...current].filter((id) => id !== student.grid_student_id)));
         onNotice(`Đã nộp điểm của ${name}.`);
         return;
@@ -490,17 +646,22 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
           isLocked || (grid.students.length > 0 && pendingCount === 0) ? (
             <Badge variant="success">Đã nộp</Badge>
           ) : (
-            <Button
-              type="button"
-              leftIcon={<Send size={16} />}
-              disabled={!hasQuestions || submittingId !== null}
-              onClick={() => {
-                setBlockedReasons([]);
-                setConfirmTarget('all');
-              }}
-            >
-              Nộp tất cả
-            </Button>
+            <div className="class-header-actions">
+              <Button type="button" variant="outline" leftIcon={<FileSpreadsheet size={16} />} disabled={!hasQuestions} onClick={() => setIsImportOpen(true)}>
+                Nhập điểm từ Excel
+              </Button>
+              <Button
+                type="button"
+                leftIcon={<Send size={16} />}
+                disabled={!hasQuestions || submittingId !== null}
+                onClick={() => {
+                  setBlockedReasons([]);
+                  setConfirmTarget('all');
+                }}
+              >
+                Nộp tất cả
+              </Button>
+            </div>
           )
         }
       >
@@ -513,50 +674,27 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
         </p>
       </Card>
 
-      {!isLocked && hasQuestions && (
-      <div className="grid-fill-bar filter-controls">
-        <SearchableSelect
-          label="Điền cả cột"
-          placeholder="Chọn câu hỏi"
-          options={visibleQuestions.map((item) => ({ value: item.question_id, label: item.content }))}
-          value={fillQuestion}
-          onChange={setFillQuestion}
-        />
-        <Select label="Đáp án" options={answers.get(fillQuestion) ?? []} value={fillValue} onChange={(value) => setFillValue(value as CellValue)} />
-        <Button type="button" variant="outline" onClick={handleFillColumn}>
-          Điền cho học sinh đang hiển thị
-        </Button>
-        <Button type="button" variant="outline" onClick={handleFillDown}>
-          Điền xuống
-        </Button>
-        <Button type="button" variant="outline" disabled={selectedIds.size === 0} onClick={() => setIsAssignOpen(true)}>
-          Gán đáp án cho học sinh đã chọn{selectedIds.size > 0 ? ` (${selectedIds.size})` : ''}
-        </Button>
-        <Button type="button" variant="outline" leftIcon={<FileSpreadsheet size={16} />} onClick={() => setIsImportOpen(true)}>
-          Nhập điểm từ Excel
-        </Button>
-      </div>
-      )}
-
       <Card noPadding title="Học sinh">
-        <div className="app-table-scroll" onPaste={handlePaste}>
+        <div
+          ref={sheetRef}
+          className="grid-sheet"
+          tabIndex={0}
+          onClick={handleSheetClick}
+          onKeyDown={handleSheetKeyDown}
+          onCopy={handleCopy}
+          onPaste={handlePaste}
+          onPointerDown={handleSheetPointerDown}
+          onPointerMove={handleSheetPointerMove}
+          onPointerUp={(event) => endFill(event, true)}
+          onPointerCancel={(event) => endFill(event, false)}
+        >
           <table className="app-table grid-table">
             <caption className="app-table-caption">Đáp án của học sinh theo câu hỏi</caption>
             <thead>
               <tr>
-                <th scope="col" className="grid-select-col">
-                  {!isLocked && (
-                    <Checkbox
-                      aria-label="Chọn tất cả học sinh đang hiển thị"
-                      checked={allVisibleSelected}
-                      indeterminate={selectedIds.size > 0}
-                      onChange={handleToggleAll}
-                    />
-                  )}
-                </th>
-                <th scope="col" className="grid-sticky">Học sinh</th>
-                {visibleQuestions.map((item) => (
-                  <th key={item.question_id} scope="col" className="grid-question-col" title={item.content}>
+                <th scope="col" className="grid-sticky grid-corner">Học sinh</th>
+                {questions.map((item) => (
+                  <th key={item.question_id} scope="col" className="grid-question-col">
                     <span className="grid-head-name">{item.content}</span>
                   </th>
                 ))}
@@ -567,27 +705,26 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
             <tbody>
               {members.length === 0 && (
                 <tr>
-                  <td className="app-table-empty" colSpan={visibleQuestions.length + 4}>Lớp chưa có học sinh</td>
+                  <td className="app-table-empty" colSpan={questions.length + 3}>Lớp chưa có học sinh</td>
                 </tr>
               )}
-              {members.map((member) => {
-                const student = member.user_id ? gridStudents.get(member.user_id) : undefined;
+              {members.map((member, rowIndex) => {
+                const student = rowStudents[rowIndex];
                 return (
                   <GradeRow
                     key={member.member_id}
                     member={member}
+                    rowIndex={rowIndex}
                     student={student}
                     scores={student ? (scores.get(student.grid_student_id) ?? NO_SCORES) : undefined}
-                    questions={visibleQuestions}
+                    questions={questions}
                     answers={answers}
                     readOnly={isLocked || Boolean(student?.submitted_at)}
-                    selected={student ? selectedIds.has(student.grid_student_id) : false}
+                    activeColumn={active?.row === rowIndex ? active.col : -1}
                     highlightMissing={student ? highlightIds.has(student.grid_student_id) : false}
                     submitting={student ? submittingId === student.grid_student_id : false}
-                    onToggle={handleToggle}
                     onSubmit={handleRequestSubmit}
                     onOpen={setOpenId}
-                    onChangeCell={handleChangeCell}
                     onRemove={handleRemove}
                   />
                 );
@@ -596,6 +733,40 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
           </table>
         </div>
       </Card>
+
+      {isPaletteOpen && palette && active && cellTarget(active) && (
+        <div
+          ref={paletteRef}
+          className="grid-palette"
+          role="listbox"
+          aria-label="Chọn đáp án"
+          style={{ left: palette.left, top: palette.top, bottom: palette.bottom }}
+          onMouseDown={(event) => event.preventDefault()}
+        >
+          {PALETTE_VALUES.map((value) => {
+            const target = cellTarget(active)!;
+            const label = answers.get(target.item.question_id)?.find((option) => option.value === value)?.label ?? '';
+            const current = scores.get(target.student.grid_student_id)?.get(target.item.question_id) === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                role="option"
+                aria-selected={current}
+                className={`grid-palette-option${current ? ' is-current' : ''}`}
+                onClick={() => setActiveValue(value, true)}
+              >
+                <span className={`grid-palette-chip is-${value}`}>{CELL_TEXT[value]}</span>
+                <span className="grid-palette-label">{label}</span>
+              </button>
+            );
+          })}
+          <button type="button" className="grid-palette-option is-clear" onClick={() => setActiveValue('', false)}>
+            <span className="grid-palette-chip is-empty" />
+            <span className="grid-palette-label">Xóa đáp án</span>
+          </button>
+        </div>
+      )}
 
       <GradeImportModal
         open={isImportOpen}
@@ -636,15 +807,6 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
         )}
         <Alert variant="warning">Sau khi nộp, không sửa được điểm của học sinh đã nộp.</Alert>
       </Modal>
-
-      <GroupAssignModal
-        open={isAssignOpen}
-        count={selectedIds.size}
-        questions={questions}
-        answers={answers}
-        onApply={handleAssignGroup}
-        onClose={() => setIsAssignOpen(false)}
-      />
 
       {openStudent && (
         <GradeStudentModal

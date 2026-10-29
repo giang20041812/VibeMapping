@@ -21,6 +21,9 @@ import { GuestLayout } from './components/layout/GuestLayout';
 import { GuestAssessmentPage } from './modules/guest_assessment/pages/GuestAssessmentPage';
 import { Assessment360Page } from './modules/assessment_360/pages/Assessment360Page';
 import { Assessment360SamplePage } from './modules/assessment_360/pages/Assessment360SamplePage';
+import { SchoolsPage } from './modules/class_management/pages/SchoolsPage';
+import { ClassListPage } from './modules/class_management/pages/ClassListPage';
+import { ClassDetailPage } from './modules/class_management/pages/ClassDetailPage';
 import { SkeletonSamplePage } from './modules/dev/SkeletonSamplePage';
 
 /** Quản trị hệ thống vào thẳng khu quản trị, giáo viên vào thẳng lớp học */
@@ -80,12 +83,15 @@ export const App: React.FC = () => (
               <Route element={<RequireRole roles={['university_student']} />}>
               </Route>
               <Route element={<RequireRole roles={['student', 'university_student', 'teacher', 'school_admin']} />}>
+                <Route path="/lop-hoc" element={<ClassListPage />} />
               </Route>
             </Route>
             <Route element={<RequireRole roles={['teacher', 'school_admin', 'system_admin']} />}>
+              <Route path="/lop-hoc/:classId" element={<ClassDetailPage />} />
             </Route>
 
             <Route element={<RequireRole roles={['system_admin']} />}>
+              <Route path="/quan-tri/truong" element={<SchoolsPage />} />
               <Route path="/quan-tri" element={<Navigate to="/quan-tri/goi-cau-hoi" replace />} />
               <Route path="/quan-tri/goi-cau-hoi" element={<PackageAssignmentsPage />} />
               <Route path="/quan-tri/cau-hoi" element={<QuestionBankPage />} />

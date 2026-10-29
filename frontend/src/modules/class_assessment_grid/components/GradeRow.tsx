@@ -1,6 +1,6 @@
 import React from 'react';
 import { Trash2 } from 'lucide-react';
-import { Badge, Button } from '../../../components/common';
+import { Badge, Button, Checkbox } from '../../../components/common';
 import type { ClassMember } from '../../class_management/class_management.types';
 import type { CellValue, GridStudent, ShortCriteria } from '../class_assessment_grid.types';
 import { CELL_OPTIONS } from '../grid.logic';
@@ -14,6 +14,11 @@ interface GradeRowProps {
   criteria: ShortCriteria[];
   /** Bảng điểm đã nộp: không sửa được */
   readOnly: boolean;
+  /** Dòng đang được chọn để gán điểm cho nhóm */
+  selected: boolean;
+  /** Tô đỏ các ô còn trống sau khi nộp bị chặn */
+  highlightMissing: boolean;
+  onToggle: (gridStudentId: string) => void;
   onOpen: (gridStudentId: string) => void;
   onChangeCell: (gridStudentId: string, criteriaId: string, value: CellValue) => void;
   onRemove: (member: ClassMember) => void;
@@ -26,12 +31,24 @@ export const GradeRow = React.memo<GradeRowProps>(function GradeRow({
   scores,
   criteria,
   readOnly,
+  selected,
+  highlightMissing,
+  onToggle,
   onOpen,
   onChangeCell,
   onRemove,
 }) {
   return (
     <tr>
+      <td className="grid-select-col">
+        {student && !readOnly && (
+          <Checkbox
+            aria-label={`Chọn ${member.full_name || 'học sinh'}`}
+            checked={selected}
+            onChange={() => onToggle(student.grid_student_id)}
+          />
+        )}
+      </td>
       <th scope="row" className="grid-sticky">
         {student ? (
           <button type="button" className="grid-student-link" onClick={() => onOpen(student.grid_student_id)}>
@@ -53,7 +70,9 @@ export const GradeRow = React.memo<GradeRowProps>(function GradeRow({
           return (
             <td key={item.id} className="align-center">
               <select
-                className={`grid-cell-select ${value === '' ? 'is-empty' : ''}`}
+                className={`grid-cell-select ${value === '' ? (highlightMissing ? 'is-missing' : 'is-empty') : ''}`}
+                data-student={student.grid_student_id}
+                data-criteria={item.id}
                 aria-label={`${student.full_name} – ${item.name}`}
                 value={value}
                 disabled={readOnly}

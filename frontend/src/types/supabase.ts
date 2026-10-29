@@ -1758,7 +1758,7 @@ export type Database = {
         Returns: Json;
       };
       import_class_roster: {
-        Args: { p_class_id: string; p_rows: Json };
+        Args: { p_class_id: string; p_rows: Json; p_dry_run?: boolean };
         Returns: Json;
       };
       is_class_member: {
@@ -1831,6 +1831,10 @@ export type Database = {
       };
       submit_class_grid: {
         Args: { p_grid_id: string };
+        Returns: Json;
+      };
+      get_class_dominant_groups: {
+        Args: { p_class_id: string };
         Returns: Json;
       };
       list_roster_pending: {

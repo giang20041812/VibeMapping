@@ -1,6 +1,5 @@
 import React from 'react';
 import { Alert, Card, ProgressBar, Skeleton } from '../../../components/common';
-import { REPORT_MIN_STUDENTS } from '../class_management.constants';
 import type { ClassReport } from '../class_management.types';
 import '../ClassManagement.css';
 
@@ -16,9 +15,15 @@ export const ClassReportCard: React.FC<ClassReportCardProps> = ({ title, report,
     {error && <Alert variant="danger">{error}</Alert>}
     {isLoading && !report && <Skeleton shape="heading" />}
     {report && !report.ok && (
-      <Alert variant="info">
-        Cần từ {REPORT_MIN_STUDENTS} học sinh đã có kết quả để hiển thị báo cáo (hiện có {report.student_count}).
-      </Alert>
+      <div className="class-stack">
+        <ProgressBar
+          value={report.member_count === 0 ? null : (report.joined_count / report.member_count) * 100}
+          label="Tiến độ tham gia"
+        />
+        <p className="class-meta-label">
+          {report.joined_count}/{report.member_count} học sinh đã tham gia
+        </p>
+      </div>
     )}
     {report?.ok && (
       <div className="class-stack">

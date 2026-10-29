@@ -130,10 +130,23 @@ export async function removeClassMember(memberId: string): Promise<void> {
   if (error) fail('Lỗi xóa thành viên lớp', error);
 }
 
-export async function importClassRoster(classId: string, rows: RosterRow[]): Promise<RosterImportResult> {
-  const { data, error } = await supabase.rpc('import_class_roster', { p_class_id: classId, p_rows: rows.map((item) => ({ ...item })) });
+/** dryRun = true chỉ kiểm tra từng dòng, không ghi vào lớp */
+export async function importClassRoster(classId: string, rows: RosterRow[], dryRun = false): Promise<RosterImportResult> {
+  const { data, error } = await supabase.rpc('import_class_roster', {
+    p_class_id: classId,
+    p_rows: rows.map((item) => ({ ...item })),
+    p_dry_run: dryRun,
+  });
   if (error) fail('Lỗi nhập danh sách học sinh', error);
   return data as unknown as RosterImportResult;
+}
+
+/** Nhóm G có điểm cao nhất của từng học sinh trong lớp; học sinh chưa có kết quả không có trong danh sách */
+export async function getClassDominantGroups(classId: string): Promise<Map<string, string>> {
+  const { data, error } = await supabase.rpc('get_class_dominant_groups', { p_class_id: classId });
+  if (error) fail('Lỗi đọc nhóm nổi trội của học sinh', error);
+  const rows = (data ?? []) as unknown as { student_id: string; group_code: string }[];
+  return new Map(rows.map((row) => [row.student_id, row.group_code]));
 }
 
 /** Tạo tài khoản cho các dòng Excel chưa có tài khoản (Edge Function); mật khẩu tạm chỉ trả về lần này */

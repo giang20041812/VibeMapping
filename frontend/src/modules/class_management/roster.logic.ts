@@ -1,5 +1,5 @@
 import { ACCOUNT_ERROR_TEXT, ROSTER_TEMPLATE_HEADERS } from './class_management.constants';
-import type { RosterAccount, RosterRow } from './class_management.types';
+import type { ClassMember, ClassReport, RosterAccount, RosterRow } from './class_management.types';
 
 const MAX_ROWS = 1000;
 const MAX_FILE_BYTES = 2 * 1024 * 1024;
@@ -83,6 +83,56 @@ export async function downloadRosterTemplate(): Promise<void> {
   const link = document.createElement('a');
   link.href = url;
   link.download = 'mau-danh-sach-hoc-sinh.xlsx';
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+export type ReportScope = 'all' | 'completed';
+
+/**
+ * Xuất báo cáo lớp ra Excel: trang Danh sách học sinh (theo phạm vi) và, khi đủ ngưỡng, trang điểm trung bình G1–G7.
+ * Phạm vi 'completed' chỉ gồm học sinh đã làm bài.
+ */
+export async function downloadClassReport(
+  className: string,
+  members: ClassMember[],
+  report: ClassReport | null,
+  scope: ReportScope,
+): Promise<void> {
+  const { Workbook } = await import('exceljs');
+  const workbook = new Workbook();
+
+  const list = workbook.addWorksheet('Danh sách học sinh');
+  list.addRow(['STT', 'Mã học sinh', 'Họ và tên', 'Trạng thái tham gia', 'Trạng thái bài làm', 'Đã được chấm']);
+  list.getRow(1).font = { bold: true };
+  const students = members.filter((member) => member.member_role === 'student' && (scope === 'all' || member.has_result));
+  students.forEach((member, index) => {
+    list.addRow([
+      index + 1,
+      member.student_code ?? '',
+      member.full_name,
+      member.status === 'joined' ? 'Đã tham gia' : 'Chưa tham gia',
+      member.has_result ? 'Đã làm bài' : 'Chưa làm bài',
+      member.is_graded ? 'Đã được chấm' : 'Chưa được chấm',
+    ]);
+  });
+  list.columns = [{ width: 8 }, { width: 16 }, { width: 32 }, { width: 22 }, { width: 22 }, { width: 18 }];
+
+  if (report?.ok) {
+    const scores = workbook.addWorksheet('Điểm trung bình');
+    scores.addRow(['Nhóm', 'Tên nhóm', 'Điểm trung bình (%)']);
+    scores.getRow(1).font = { bold: true };
+    for (const group of report.groups) scores.addRow([group.group_code, group.name, group.average_percent ?? '']);
+    scores.columns = [{ width: 10 }, { width: 40 }, { width: 22 }];
+  }
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  const url = URL.createObjectURL(
+    new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }),
+  );
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `bao-cao-lop-${className.replace(/[^\w-]+/g, '-')}.xlsx`;
   link.click();
   URL.revokeObjectURL(url);
 }

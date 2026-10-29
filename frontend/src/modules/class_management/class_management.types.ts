@@ -80,8 +80,8 @@ export interface ReportGroup {
 }
 
 export type ClassReport =
-  | { ok: true; student_count: number; joined_count: number; graded_count?: number; groups: ReportGroup[] }
-  | { ok: false; reason: 'below_threshold'; student_count: number; joined_count: number; graded_count?: number };
+  | { ok: true; student_count: number; joined_count: number; member_count: number; graded_count?: number; groups: ReportGroup[] }
+  | { ok: false; reason: 'below_threshold'; student_count: number; joined_count: number; member_count: number; graded_count?: number };
 
 export interface JoinedClass extends ClassRow {
   school_name: string | null;

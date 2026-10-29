@@ -120,6 +120,7 @@ const StudentClasses: React.FC<{ userId: string }> = ({ userId }) => {
       )}
       <div className="class-stack">
         <Card title="Tham gia lớp">
+          <Alert variant="info">Giáo viên của lớp sẽ đánh giá hướng nghiệp của bạn. Tham gia lớp được coi là đồng ý.</Alert>
           <form className="class-join-form" onSubmit={handleJoin}>
             <Input label="Mã lớp" value={classCode} onChange={(event) => setClassCode(event.target.value)} required />
             <Input label="Mã học sinh" value={studentCode} onChange={(event) => setStudentCode(event.target.value)} />

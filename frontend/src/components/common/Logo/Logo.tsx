@@ -10,17 +10,18 @@ export interface LogoProps {
   className?: string;
 }
 
-/** Hình tròn navy: mũ cử nhân, dây mũ nối các chấm lộ trình tới ghim định vị. */
-export const LogoMark: React.FC<{ animated?: boolean }> = ({ animated = false }) => (
+/** Hình tròn navy: mũ cử nhân, dây mũ nối các chấm lộ trình tới ghim định vị.
+ *  `draw`: vẽ nét viền hình tròn và mũ trước rồi mới tô màu, sau đó các chấm và ghim hiện ra. */
+export const LogoMark: React.FC<{ animated?: boolean; draw?: boolean }> = ({ animated = false, draw = false }) => (
   <svg
-    className={`logo-svg ${animated ? 'is-animated' : ''}`}
+    className={`logo-svg ${animated ? 'is-animated' : ''} ${draw ? 'is-drawing' : ''}`}
     viewBox="0 0 1600 1600"
     role="img"
     aria-label="Vibe Mapping"
   >
-    <circle className="logo-disc" cx="800" cy="800" r="800" />
+    <circle className="logo-disc" cx="800" cy="800" r="800" pathLength={1} />
     <g transform="translate(800 800) scale(1.9)">
-      <path className="logo-cap" d={LOGO_CAP} />
+      <path className="logo-cap" d={LOGO_CAP} pathLength={1} />
       {LOGO_DOTS.map((d, i) => (
         <path key={i} className="logo-dot" d={d} />
       ))}

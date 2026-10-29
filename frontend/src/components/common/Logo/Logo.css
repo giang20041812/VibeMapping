@@ -94,3 +94,64 @@
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-6%); }
 }
+
+/* Vẽ logo: nét viền hình tròn rồi nét mũ chạy hết một vòng, màu tô dâng lên thay cho nét;
+   sau đó các chấm lộ trình hiện lần lượt và ghim rơi xuống */
+.logo-svg.is-drawing .logo-disc,
+.logo-svg.is-drawing .logo-cap {
+  stroke-dasharray: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.logo-svg.is-drawing .logo-disc {
+  stroke: var(--brand-navy);
+  stroke-width: 28;
+  animation:
+    logo-trace 700ms 100ms var(--ease-standard) both,
+    logo-fill 420ms 620ms var(--ease-out) both;
+}
+.logo-svg.is-drawing .logo-cap {
+  stroke: var(--brand-cream);
+  stroke-width: 5;
+  animation:
+    logo-trace 650ms 450ms var(--ease-standard) both,
+    logo-fill 380ms 950ms var(--ease-out) both;
+}
+.logo-svg.is-drawing .logo-dot { animation: logo-dot-in 300ms var(--ease-out) both; }
+.logo-svg.is-drawing .logo-dot:nth-child(2) { animation-delay: 1100ms; }
+.logo-svg.is-drawing .logo-dot:nth-child(3) { animation-delay: 1170ms; }
+.logo-svg.is-drawing .logo-dot:nth-child(4) { animation-delay: 1240ms; }
+.logo-svg.is-drawing .logo-dot:nth-child(5) { animation-delay: 1310ms; }
+.logo-svg.is-drawing .logo-dot:nth-child(6) { animation-delay: 1380ms; }
+.logo-svg.is-drawing .logo-dot:nth-child(7) { animation-delay: 1450ms; }
+.logo-svg.is-drawing .logo-dot:nth-child(8) { animation-delay: 1520ms; }
+.logo-svg.is-drawing .logo-dot:nth-child(9) { animation-delay: 1590ms; }
+.logo-svg.is-drawing .logo-dot:nth-child(10) { animation-delay: 1660ms; }
+.logo-svg.is-drawing .logo-pin {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  animation: logo-drop 640ms 1450ms var(--ease-spring) both;
+}
+.logo-svg.is-drawing.is-animated .logo-pin {
+  animation:
+    logo-drop 640ms 1450ms var(--ease-spring) both,
+    logo-bob 3.4s 2.2s ease-in-out infinite;
+}
+
+@keyframes logo-trace {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes logo-fill {
+  from { fill-opacity: 0; stroke-opacity: 1; }
+  to { fill-opacity: 1; stroke-opacity: 0; }
+}
+
+/* Giảm chuyển động: hiện logo hoàn chỉnh ngay, không chờ */
+@media (prefers-reduced-motion: reduce) {
+  .logo-svg.is-drawing .logo-disc,
+  .logo-svg.is-drawing .logo-cap,
+  .logo-svg.is-drawing .logo-dot,
+  .logo-svg.is-drawing .logo-pin { animation: none; stroke: none; }
+}

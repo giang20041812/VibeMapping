@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { Alert, Badge, Button, LogoMark } from '../../components/common';
@@ -76,7 +76,35 @@ const Feature: React.FC<FeatureProps> = ({ id, flip = false, ready = true, visua
   );
 };
 
+/** Khoảng cách từ biểu tượng tới giữa tiêu đề: biểu tượng bắt đầu ở giữa rồi trượt về chỗ của nó.
+ *  Đo lại khi phông chữ tải xong vì độ rộng chữ đổi vị trí biểu tượng. */
+function useCenterShift() {
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const markRef = useRef<HTMLSpanElement>(null);
+
+  useLayoutEffect(() => {
+    const measure = () => {
+      const title = titleRef.current;
+      const mark = markRef.current;
+      if (!title || !mark) return;
+      /* Tiêu đề là khung định vị của biểu tượng; offsetLeft đo theo bố cục, bỏ qua transform đang chạy */
+      title.style.setProperty('--brand-shift', `${title.clientWidth / 2 - (mark.offsetLeft + mark.offsetWidth / 2)}px`);
+    };
+    measure();
+    let active = true;
+    document.fonts?.ready.then(() => {
+      if (active) measure();
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  return { titleRef, markRef };
+}
+
 export const HomePage: React.FC = () => {
+  const { titleRef, markRef } = useCenterShift();
   const { profile, session, isGuest, isProfileLoading } = useAuth();
   const location = useLocation();
   const draftSaved = (location.state as RouteState | null)?.draftSaved;
@@ -121,10 +149,10 @@ export const HomePage: React.FC = () => {
       {draftSaved && <Alert variant="success">Đã lưu tạm. Bạn có thể quay lại làm tiếp trong 7 ngày.</Alert>}
 
       <header className="home-brand">
-        <h1 className="home-brand-title" aria-label="Vibe Mapping">
+        <h1 ref={titleRef} className="home-brand-title" aria-label="Vibe Mapping">
           <span className="home-brand-word">
-            <span className="home-brand-mark" aria-hidden="true">
-              <LogoMark animated />
+            <span ref={markRef} className="home-brand-mark" aria-hidden="true">
+              <LogoMark animated draw />
             </span>
             <span className="home-brand-vibe">Vibe</span>
           </span>
@@ -140,6 +168,7 @@ export const HomePage: React.FC = () => {
         ready={!isChartLoading}
         visual={
           <div className="feature-stage">
+            {result && <span className="feature-badge"><Badge variant="success">Đánh giá của bạn</Badge></span>}
             {isChartLoading ? (
               <PolygonChartSkeleton />
             ) : (
@@ -148,7 +177,6 @@ export const HomePage: React.FC = () => {
           </div>
         }
       >
-        {result && <Badge variant="success">Đánh giá của bạn</Badge>}
         <h2 id="feature-self-title" className="feature-title">
           Tự đánh giá qua biểu đồ <span className="text-spectrum">{axes.length} nhóm tiêu chí</span>
         </h2>

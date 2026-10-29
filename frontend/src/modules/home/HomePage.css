@@ -23,6 +23,11 @@
   animation: home-rise var(--duration-reveal) var(--ease-out) both;
 }
 .home-brand-title {
+  /* Mở đầu: biểu tượng được vẽ ở giữa tiêu đề, trượt về bên trái rồi chữ hiện ra sau nó.
+     --brand-shift do trang chủ đo; --brand-slide là lúc logo vẽ xong và bắt đầu trượt */
+  --brand-shift: 0px;
+  --brand-slide: 1750ms;
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
@@ -33,17 +38,25 @@
   line-height: 1;
   letter-spacing: -0.03em;
 }
-.home-brand-word { display: inline-flex; align-items: center; gap: 0.28em; }
+/* Cùng đường cơ sở với chữ Mapping; biểu tượng ngồi trên đường cơ sở và hạ xuống một chút cho cân với chữ */
+.home-brand-word { display: inline-flex; align-items: baseline; gap: 0.28em; }
 .home-brand-mark {
+  position: relative;
+  z-index: 1;
   flex: none;
   width: 1.1em;
   height: 1.1em;
+  margin-bottom: -0.2em;
+  animation: home-brand-slide 850ms var(--brand-slide) var(--ease-out) both;
 }
 .home-brand-mark .logo-svg { display: block; }
-.home-brand-vibe { color: var(--color-text-main); }
-.home-brand-mapping { color: var(--color-accent); }
+.home-brand-vibe,
+.home-brand-mapping { animation: home-brand-reveal 700ms var(--ease-out) both; }
+.home-brand-vibe { color: var(--color-text-main); animation-delay: calc(var(--brand-slide) + 200ms); }
+.home-brand-mapping { color: var(--color-accent); animation-delay: calc(var(--brand-slide) + 380ms); }
 .home-brand-lead {
   max-width: calc(560 * var(--px));
+  animation: home-rise var(--duration-reveal) 2350ms var(--ease-out) both;
   font-size: var(--font-size-2xl);
   line-height: 1.4;
   color: var(--color-text-secondary);
@@ -71,7 +84,8 @@
   opacity: 0;
 }
 .feature.is-landed .feature-visual { opacity: 1; }
-.feature-stage { width: 100%; max-width: calc(520 * var(--px)); }
+.feature-stage { position: relative; width: 100%; max-width: calc(520 * var(--px)); }
+.feature-badge { position: absolute; top: 0; right: 0; z-index: 1; }
 
 /* Đuôi sao vẽ trên canvas phủ bề ngang màn hình; nằm dưới chữ và dưới hình */
 .feature-trail {
@@ -110,6 +124,20 @@
 .feature-link { margin-top: var(--space-2); text-decoration: none; border-radius: var(--radius-md); }
 
 @keyframes home-rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes home-brand-slide { from { transform: translateX(var(--brand-shift)); } to { transform: none; } }
+/* Chữ lộ dần từ trái sang như được kéo ra từ sau biểu tượng; chừa phần dưới cho nét chữ thòng xuống */
+@keyframes home-brand-reveal {
+  from { opacity: 0; transform: translateX(-0.25em); clip-path: inset(-0.3em 100% -0.3em 0); }
+  to { opacity: 1; transform: none; clip-path: inset(-0.3em -0.2em -0.3em 0); }
+}
+
+/* Giảm chuyển động: tiêu đề hiện đầy đủ ngay */
+@media (prefers-reduced-motion: reduce) {
+  .home-brand-mark,
+  .home-brand-vibe,
+  .home-brand-mapping,
+  .home-brand-lead { animation: none; }
+}
 
 @media (max-width: 900px) {
   .home { gap: var(--space-12); }

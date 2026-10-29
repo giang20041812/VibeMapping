@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Copy, Trash2, Upload, UserPlus } from 'lucide-react';
-import { Alert, Badge, Button, Card, DataTable } from '../../../components/common';
+import { Copy, Download, Trash2, Upload, UserPlus } from 'lucide-react';
+import { Alert, Badge, Button, Card, DataTable, Select } from '../../../components/common';
 import type { DataTableColumn } from '../../../components/common';
 import { FilterBar } from '../../../components/filters/FilterBar/FilterBar';
 import { FilterSearch } from '../../../components/filters/FilterSearch/FilterSearch';
 import { SearchableSelect } from '../../../components/filters/SearchableSelect/SearchableSelect';
 import { useAdminFilter } from '../../admin/useAdminFilter';
+import { EMPTY_RESULT } from '../../assessment_result/assessmentResult.constants';
 import { useAuth } from '../../auth/AuthContext';
 import { qrDataUrl } from '../../invitation_link/invitation.service';
 import { ClassGradeTable } from '../../class_assessment_grid/components/ClassGradeTable';
@@ -16,6 +17,7 @@ import { MEMBER_ROLE_LABEL, STAFF_ERROR_TEXT } from '../class_management.constan
 import {
   assignClassTeacher,
   getClass,
+  getClassDominantGroups,
   getClassOverview,
   getClassReport,
   removeClassMember,
@@ -24,9 +26,11 @@ import type { ClassMember, ClassReport, ClassRow } from '../class_management.typ
 import { ClassReportCard } from '../components/ClassReportCard';
 import { EmailRoleModal } from '../components/EmailRoleModal';
 import { RosterImportModal } from '../components/RosterImportModal';
+import { downloadClassReport, type ReportScope } from '../roster.logic';
 import '../ClassManagement.css';
 
-const EMPTY_FILTER = { keyword: '', groupCode: '' };
+const EMPTY_FILTER = { keyword: '', groupCode: '', dominantGroup: '' };
+const DOMINANT_OPTIONS = EMPTY_RESULT.groups.map((group) => ({ value: group.groupCode, label: `${group.groupCode} · ${group.name}` }));
 const TEACHER_ROLE_OPTIONS = [
   { value: 'homeroom_teacher', label: 'Giáo viên chủ nhiệm' },
   { value: 'subject_teacher', label: 'Giáo viên bộ môn' },
@@ -55,6 +59,9 @@ export const ClassDetailPage: React.FC = () => {
   const [grid, setGrid] = useState<GridData | null>(null);
   const [gridKey, setGridKey] = useState(0);
   const [criteria, setCriteria] = useState<ShortCriteria[]>([]);
+  /** Nhóm G nổi trội của từng học sinh đã có kết quả (theo mã học sinh trong hệ thống) */
+  const [dominantGroups, setDominantGroups] = useState<Map<string, string>>(new Map());
+  const [exportScope, setExportScope] = useState<ReportScope>('all');
 
   const isTeacher = profile?.role === 'teacher';
 
@@ -108,6 +115,20 @@ export const ClassDetailPage: React.FC = () => {
   }, [classId, isTeacher, reloadKey]);
 
   useEffect(() => {
+    if (!isTeacher) {
+      setDominantGroups(new Map());
+      return;
+    }
+    let active = true;
+    getClassDominantGroups(classId)
+      .then((value) => active && setDominantGroups(value))
+      .catch(() => active && setDominantGroups(new Map()));
+    return () => {
+      active = false;
+    };
+  }, [classId, isTeacher, reloadKey]);
+
+  useEffect(() => {
     if (!classRow) return;
     let active = true;
     qrDataUrl(joinLink(classRow.class_code))
@@ -145,9 +166,13 @@ export const ClassDetailPage: React.FC = () => {
 
   const rows = useMemo(() => {
     const keyword = applied.keyword.trim().toLowerCase();
-    if (!keyword) return members;
-    return members.filter((member) => `${member.full_name} ${member.student_code ?? ''}`.toLowerCase().includes(keyword));
-  }, [members, applied.keyword]);
+    return members.filter((member) => {
+      if (keyword && !`${member.full_name} ${member.student_code ?? ''}`.toLowerCase().includes(keyword)) return false;
+      // Lọc theo nhóm nổi trội: học sinh chưa có kết quả không hiện trong kết quả lọc
+      if (applied.dominantGroup && (!member.user_id || dominantGroups.get(member.user_id) !== applied.dominantGroup)) return false;
+      return true;
+    });
+  }, [members, applied.keyword, applied.dominantGroup, dominantGroups]);
 
   const columns = useMemo<DataTableColumn<ClassMember>[]>(
     () => [
@@ -206,6 +231,23 @@ export const ClassDetailPage: React.FC = () => {
           <Button type="button" variant="outline" leftIcon={<Upload size={16} />} onClick={() => setIsImportOpen(true)}>
             Nhập danh sách
           </Button>
+          <Button
+            type="button"
+            variant="outline"
+            leftIcon={<Download size={16} />}
+            onClick={() => void downloadClassReport(classRow?.class_name ?? 'lop', members, report, exportScope).catch(() => setError('Không xuất được báo cáo. Thử lại sau.'))}
+          >
+            Xuất báo cáo
+          </Button>
+          <Select
+            aria-label="Phạm vi xuất báo cáo"
+            options={[
+              { value: 'all', label: 'Toàn bộ danh sách lớp' },
+              { value: 'completed', label: 'Chỉ học sinh đã làm bài' },
+            ]}
+            value={exportScope}
+            onChange={(value) => setExportScope(value as ReportScope)}
+          />
         </div>
       </div>
 
@@ -250,6 +292,15 @@ export const ClassDetailPage: React.FC = () => {
 
         <FilterBar onReset={reset} onSubmit={apply} totalResults={rows.length}>
           <FilterSearch placeholder="Họ tên hoặc mã học sinh" value={draft.keyword} onChange={(keyword) => patch({ keyword })} />
+          {isTeacher && (
+            <SearchableSelect
+              label="Nhóm nổi trội"
+              placeholder="Tất cả"
+              options={DOMINANT_OPTIONS}
+              value={draft.dominantGroup}
+              onChange={(value) => patch({ dominantGroup: value })}
+            />
+          )}
           {showGrid && (
             <SearchableSelect
               label="Nhóm tiêu chí"

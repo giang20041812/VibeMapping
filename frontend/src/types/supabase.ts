@@ -1833,6 +1833,10 @@ export type Database = {
         Args: { p_grid_id: string };
         Returns: Json;
       };
+      get_class_dominant_groups: {
+        Args: { p_class_id: string };
+        Returns: Json;
+      };
       list_roster_pending: {
         Args: { p_class_id: string };
         Returns: Json;

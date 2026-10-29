@@ -141,6 +141,14 @@ export async function importClassRoster(classId: string, rows: RosterRow[], dryR
   return data as unknown as RosterImportResult;
 }
 
+/** Nhóm G có điểm cao nhất của từng học sinh trong lớp; học sinh chưa có kết quả không có trong danh sách */
+export async function getClassDominantGroups(classId: string): Promise<Map<string, string>> {
+  const { data, error } = await supabase.rpc('get_class_dominant_groups', { p_class_id: classId });
+  if (error) fail('Lỗi đọc nhóm nổi trội của học sinh', error);
+  const rows = (data ?? []) as unknown as { student_id: string; group_code: string }[];
+  return new Map(rows.map((row) => [row.student_id, row.group_code]));
+}
+
 /** Tạo tài khoản cho các dòng Excel chưa có tài khoản (Edge Function); mật khẩu tạm chỉ trả về lần này */
 export async function createRosterAccounts(classId: string): Promise<RosterAccount[]> {
   const { data, error } = await supabase.functions.invoke('create-roster-accounts', { body: { class_id: classId } });

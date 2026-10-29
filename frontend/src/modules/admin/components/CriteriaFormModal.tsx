@@ -83,27 +83,42 @@ export const CriteriaFormModal: React.FC<CriteriaFormModalProps> = ({
     setIsSaving(true);
     setFormError(null);
     try {
-      await updateCriteria(criteria.id, {
-        name: name.trim(),
-        definition: definition.trim() || null,
-        behavior_indicator: behaviorIndicator.trim() || null,
-        reference_source: referenceSource.trim() || null,
-        holland_code: hollandCode || null,
-        sort_order: order,
-        is_active: isActive,
-        is_short_set: isShortSet,
-      });
-      await saveCriteriaRaterVisibility(
-        criteria.id,
-        RATER_GROUPS.map((group) => ({
-          raterGroup: group.value,
-          isVisible: visibilityMap[group.value].isVisible,
-          scaleMethod: visibilityMap[group.value].scaleMethod.trim() || null,
-        })),
-      );
+      const saveCriteria = () =>
+        updateCriteria(criteria.id, {
+          name: name.trim(),
+          definition: definition.trim() || null,
+          behavior_indicator: behaviorIndicator.trim() || null,
+          reference_source: referenceSource.trim() || null,
+          holland_code: hollandCode || null,
+          sort_order: order,
+          is_active: isActive,
+          is_short_set: isShortSet,
+        });
+      const saveVisibility = () =>
+        saveCriteriaRaterVisibility(
+          criteria.id,
+          RATER_GROUPS.map((group) => ({
+            raterGroup: group.value,
+            isVisible: visibilityMap[group.value].isVisible,
+            scaleMethod: visibilityMap[group.value].scaleMethod.trim() || null,
+          })),
+        );
+      // Bộ rút gọn chỉ gồm tiêu chí hiển thị với giáo viên: bật rút gọn thì lưu hiển thị trước, tắt thì lưu sau
+      if (isShortSet) {
+        await saveVisibility();
+        await saveCriteria();
+      } else {
+        await saveCriteria();
+        await saveVisibility();
+      }
       onSaved();
-    } catch {
-      setFormError('Không lưu được tiêu chí. Thử lại sau.');
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : typeof cause === 'object' && cause && 'message' in cause ? String((cause as { message: unknown }).message) : '';
+      setFormError(
+        message.includes('short_set_not_visible_to_teacher')
+          ? 'Tiêu chí thuộc bộ câu hỏi rút gọn phải hiển thị với giáo viên.'
+          : 'Không lưu được tiêu chí. Thử lại sau.',
+      );
     } finally {
       setIsSaving(false);
     }

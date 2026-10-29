@@ -52,9 +52,12 @@ export const App: React.FC = () => (
           </Route>
         </Route>
 
+        <Route element={<AppLayout />}>
+          <Route path="/" element={<HomeRoute />} />
+        </Route>
+
         <Route element={<RequireAuth />}>
           <Route element={<AppLayout />}>
-            <Route path="/" element={<HomeRoute />} />
             <Route path="/ho-so" element={<ProfilePage />} />
             <Route path="/danh-gia-ca-nhan" element={<PersonalAssessmentPage />} />
             <Route path="/danh-gia-ca-nhan/:sessionId" element={<AssessmentRunPage />} />

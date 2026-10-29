@@ -30,6 +30,10 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/quan-tri/nhat-ky', label: 'Nhật ký', icon: History, roles: ADMIN_ROLES },
 ];
 
+/** Chưa đăng nhập chỉ thấy trang chủ */
+const GUEST_PATHS = ['/'];
+
 export function navItemsFor(role: UserRole | undefined): NavItem[] {
-  return NAV_ITEMS.filter((item) => !item.roles || (role !== undefined && item.roles.includes(role)));
+  if (role === undefined) return NAV_ITEMS.filter((item) => GUEST_PATHS.includes(item.to));
+  return NAV_ITEMS.filter((item) => !item.roles || item.roles.includes(role));
 }

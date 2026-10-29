@@ -41,7 +41,7 @@ export const AccountMenu: React.FC = () => {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/dang-nhap', { replace: true });
+    navigate('/', { replace: true });
   };
 
   return (

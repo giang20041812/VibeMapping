@@ -63,7 +63,10 @@ export const HomePage: React.FC = () => {
   const { profile, session, isProfileLoading } = useAuth();
   const location = useLocation();
   const draftSaved = (location.state as RouteState | null)?.draftSaved;
+  const isGuest = !session;
   const learner = isLearnerRole(profile?.role);
+  /* Khách thấy nút khám phá; bấm vào sẽ được đưa tới đăng nhập rồi quay lại đúng trang */
+  const canExplore = isGuest || learner;
   const userId = session?.user.id;
   const [result, setResult] = useState<AssessmentResultSummary | null>(null);
   const [isResultLoading, setIsResultLoading] = useState(true);
@@ -112,7 +115,7 @@ export const HomePage: React.FC = () => {
         <p className="home-brand-lead">Biết mình là ai, vững bước tương lai.</p>
       </header>
 
-      {!learner && <Alert variant="info">Tài khoản của bạn chưa có chức năng nào trong giai đoạn này.</Alert>}
+      {!isGuest && !isProfileLoading && !learner && <Alert variant="info">Tài khoản của bạn chưa có chức năng nào trong giai đoạn này.</Alert>}
 
       <Feature
         id="feature-self"
@@ -131,7 +134,7 @@ export const HomePage: React.FC = () => {
           Tự đánh giá qua biểu đồ <span className="text-spectrum">{axes.length} nhóm tiêu chí</span>
         </h2>
         <p className="feature-lead">Trả lời từng câu hỏi ngắn, xem tố chất của bạn hiện lên thành một biểu đồ.</p>
-        {learner && (
+        {canExplore && (
           <Link to="/danh-gia-ca-nhan" className="feature-link">
             <Button size="lg" rightIcon={<ArrowRight size={18} />}>
               Khám phá
@@ -155,7 +158,7 @@ export const HomePage: React.FC = () => {
         <p className="feature-lead">
           Phụ huynh, bạn bè, giáo viên và người hướng dẫn cùng góp góc nhìn để kết quả không chỉ là cảm nhận của riêng bạn.
         </p>
-        {learner && (
+        {canExplore && (
           <Link to="/danh-gia-360" className="feature-link">
             <Button size="lg" rightIcon={<ArrowRight size={18} />}>
               Khám phá

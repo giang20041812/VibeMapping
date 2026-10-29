@@ -14,9 +14,8 @@
 }
 
 .app-card.is-interactive:hover {
-  border-color: var(--brand-soft);
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-3px);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
 }
 
 .card-header {

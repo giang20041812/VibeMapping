@@ -13,8 +13,8 @@
   justify-content: center;
   padding: var(--space-12) var(--space-8);
   overflow: hidden;
-  color: var(--color-text-inverse);
-  background: var(--gradient-brand-deep);
+  color: var(--color-text-main);
+  background: var(--brand-ice);
 }
 
 .auth-hero-content {
@@ -43,33 +43,9 @@
 .auth-hero-slogan-sub {
   font-size: var(--font-size-lg);
   font-weight: 500;
-  color: var(--brand-pale);
+  color: var(--color-text-secondary);
   animation: auth-rise 720ms 340ms var(--ease-out) both;
 }
-
-.auth-hero-contours {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  fill: none;
-  stroke: var(--brand-white);
-  stroke-width: 1.4;
-  opacity: 0.14;
-  animation: auth-drift 18s ease-in-out infinite alternate;
-}
-
-.auth-hero-orb {
-  position: absolute;
-  border-radius: 50%;
-  background: var(--brand-sky);
-  filter: blur(2px);
-  opacity: 0.35;
-  animation: auth-float 9s ease-in-out infinite;
-}
-.auth-hero-orb-1 { top: -90px; right: -70px; width: 280px; height: 280px; }
-.auth-hero-orb-2 { bottom: -120px; left: -80px; width: 340px; height: 340px; background: var(--brand-blue); animation-delay: -3s; }
-.auth-hero-orb-3 { top: 52%; right: 12%; width: 90px; height: 90px; background: var(--brand-gold); opacity: 0.22; animation-delay: -6s; }
 
 /* Khối form */
 .auth-panel {
@@ -90,10 +66,8 @@
   width: 100%;
   max-width: 440px;
   padding: var(--space-8);
-  background: var(--glass-bg-strong);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-sm);
   display: flex;
@@ -104,14 +78,6 @@
 @keyframes auth-rise {
   from { opacity: 0; transform: translateY(22px); }
   to { opacity: 1; transform: translateY(0); }
-}
-@keyframes auth-float {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(14px, -18px) scale(1.06); }
-}
-@keyframes auth-drift {
-  from { transform: translateX(-14px) scale(1.02); }
-  to { transform: translateX(14px) scale(1.06); }
 }
 
 /* Điện thoại và máy tính bảng dọc: thu khối thương hiệu thành dải đầu trang */
@@ -124,8 +90,7 @@
   }
   .auth-hero-content { gap: var(--space-2); }
   .auth-hero-slogan { font-size: var(--font-size-xl); }
-  .auth-hero-slogan-sub,
-  .auth-hero-orb-3 { display: none; }
+  .auth-hero-slogan-sub { display: none; }
   .auth-hero .logo-size-hero .logo-mark-box { width: 120px; height: 120px; }
   .auth-hero .logo-size-hero .logo-wordmark { font-size: var(--font-size-3xl); }
   .auth-panel { align-items: flex-start; }

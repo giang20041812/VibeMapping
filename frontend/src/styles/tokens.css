@@ -31,11 +31,14 @@
   --color-accent-gold: var(--brand-gold);
 
   /* Surface & Background */
-  --color-bg-app: #f2f5fc;
+  --color-bg-app: #ffffff;
   --color-bg-surface: #ffffff;
   --color-bg-subtle: #e9eefa;
   --color-bg-hover: #dde6f7;
   --color-bg-cream: var(--brand-cream);
+
+  /* Họa tiết nền: các mảng xám nhạt vát cạnh và nét vẽ mờ, tĩnh, lặp theo chiều dọc */
+  --pattern-bands: url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%201440%201700%22%20preserveAspectRatio=%22xMidYMin%20slice%22%3E%3Cg%20fill=%22%23f4f5f8%22%3E%3Cpolygon%20points=%220,150%20520,70%201440,170%201440,800%20560,900%200,760%22/%3E%3Cpolygon%20points=%220,1180%20900,1120%201440,1220%201440,1640%200,1600%22/%3E%3C/g%3E%3Cg%20fill=%22none%22%20stroke-width=%224%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20opacity=%220.75%22%3E%3Cpath%20stroke=%22%23c7e3fe%22%20d=%22M1060%20330q40-56%2080%200t80%200t80%200t80%200%22/%3E%3Ccircle%20stroke=%22%23d9cdf2%22%20cx=%22210%22%20cy=%22340%22%20r=%2248%22/%3E%3Cpath%20stroke=%22%23c7e3fe%22%20d=%22M1260%20560v44M1238%20582h44%22/%3E%3Cpath%20stroke=%22%23d9cdf2%22%20d=%22M150%20960v44M128%20982h44%22/%3E%3Cpath%20stroke=%22%23c7e3fe%22%20d=%22M1160%201000l44-76%2044%2076z%22/%3E%3Ccircle%20stroke=%22%23c7e3fe%22%20cx=%22320%22%20cy=%221400%22%20r=%2230%22/%3E%3Cpath%20stroke=%22%23d9cdf2%22%20d=%22M880%201420q40-56%2080%200t80%200t80%200%22/%3E%3Cpath%20stroke=%22%23d9cdf2%22%20d=%22M70%20520q60-40%2030-90t30-90%22/%3E%3Cpath%20stroke=%22%23c7e3fe%22%20d=%22M1330%201330q-60%2040-30%2090t-30%2090%22/%3E%3C/g%3E%3C/svg%3E");
 
   /* Borders & Dividers */
   --color-border: #d8e2f4;
@@ -102,32 +105,25 @@
   --soft-glow-teal: rgba(67, 182, 152, 0.3);
   --soft-glow-coral: rgba(228, 140, 102, 0.3);
 
-  /* Ánh sáng nền trang chủ */
-  --glow-cyan: rgba(34, 211, 238, 0.55);
-  --glow-violet: rgba(139, 108, 255, 0.55);
-  --glow-magenta: rgba(240, 91, 208, 0.5);
-  --glow-teal: rgba(31, 209, 165, 0.5);
-  --glow-gold: rgba(246, 183, 60, 0.55);
-  --glow-sky: rgba(30, 158, 219, 0.55);
-  --glow-coral: rgba(255, 138, 92, 0.5);
-  --surface-glass: rgba(255, 255, 255, 0.82);
-  --glass-bg: linear-gradient(125deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.14) 38%, rgba(255, 255, 255, 0.1) 62%, rgba(255, 255, 255, 0.34) 100%);
-  --glass-bg-strong: linear-gradient(125deg, rgba(255, 255, 255, 0.66) 0%, rgba(255, 255, 255, 0.3) 40%, rgba(255, 255, 255, 0.24) 62%, rgba(255, 255, 255, 0.5) 100%);
-  --glass-border: rgba(255, 255, 255, 0.85);
-  --glass-blur: blur(10px) saturate(1.4);
-  --chip-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.46));
-  --chip-border: rgba(255, 255, 255, 0.9);
-  --chip-shadow: inset 0 1px 0 rgba(255, 255, 255, 1), 0 1px 2px rgba(3, 25, 100, 0.12), 0 4px 10px -4px rgba(3, 25, 100, 0.18);
-  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 0 rgba(255, 255, 255, 0.5), inset 1px 0 0 rgba(255, 255, 255, 0.6), inset -1px 0 0 rgba(255, 255, 255, 0.35);
-  --glass-shadow: var(--glass-edge), 0 10px 28px -14px rgba(3, 25, 100, 0.28);
+  /* Bề mặt phẳng: nền trắng, viền mảnh, không kính mờ hay ánh sáng */
+  --surface-glass: var(--color-bg-surface);
+  --glass-bg: var(--color-bg-surface);
+  --glass-bg-strong: var(--color-bg-surface);
+  --glass-border: var(--color-border);
+  --glass-blur: none;
+  --chip-bg: var(--color-bg-surface);
+  --chip-border: var(--color-border);
+  --chip-shadow: 0 0 0 0 transparent;
+  --glass-edge: 0 0 0 0 transparent;
+  --glass-shadow: var(--shadow-xs);
   --scrim: rgba(3, 25, 100, 0.5);
 
-  /* Gradient */
-  --gradient-brand: linear-gradient(135deg, var(--brand-deep) 0%, var(--brand-sky) 100%);
-  --gradient-spectrum: linear-gradient(110deg, var(--accent-cyan) 0%, var(--accent-violet) 52%, var(--accent-magenta) 100%);
-  --gradient-brand-deep: linear-gradient(160deg, var(--brand-navy) 0%, var(--brand-deep) 55%, var(--brand-azure) 100%);
-  --gradient-soft: linear-gradient(180deg, var(--brand-ice) 0%, var(--color-bg-app) 100%);
-  --gradient-shine: linear-gradient(110deg, transparent 20%, rgba(255, 255, 255, 0.55) 50%, transparent 80%);
+  /* Màu phẳng thay cho gradient */
+  --gradient-brand: var(--color-primary);
+  --gradient-spectrum: var(--color-primary);
+  --gradient-brand-deep: var(--brand-ice);
+  --gradient-soft: var(--color-bg-app);
+  --gradient-shine: transparent;
 
   /* Đơn vị co giãn: 1 px thiết kế = 1/14 rem. Gốc html tăng dần trên màn hình rộng
      (xem reset.css) nên chữ, khoảng cách và ô điều khiển lớn theo, không bị bé tí trên 2K/4K. */
@@ -146,10 +142,8 @@
   --space-12: calc(48 * var(--px));
   --space-16: calc(64 * var(--px));
 
-  /* Khung ứng dụng: cột biểu tượng bên trái (thu gọn) và khi mở rộng; --top-space chừa chỗ cho hai icon nổi góc phải trên */
-  --rail-width: 56px;
-  --sidebar-width: 240px;
-  --top-space: calc(var(--space-3) * 2 + 36px);
+  /* Khung ứng dụng: thanh điều hướng ngang dính ở đầu trang */
+  --navbar-height: 64px;
 
   /* Lề ngang của khung trang: rộng dần theo màn hình, không đặt trần chiều rộng */
   --page-gutter: clamp(16px, 2.6vw, 64px);
@@ -168,7 +162,7 @@
   --shadow-sm: 0 1px 3px rgba(3, 25, 100, 0.08), 0 1px 2px rgba(3, 25, 100, 0.04);
   --shadow-md: 0 6px 14px -4px rgba(3, 25, 100, 0.12), 0 2px 6px -2px rgba(3, 25, 100, 0.06);
   --shadow-lg: 0 18px 32px -10px rgba(3, 25, 100, 0.18), 0 6px 12px -6px rgba(3, 25, 100, 0.08);
-  --shadow-glow: 0 10px 28px -8px rgba(30, 158, 219, 0.55);
+  --shadow-glow: var(--shadow-md);
   --shadow-dropdown: 0 14px 30px rgba(3, 25, 100, 0.16), 0 4px 10px rgba(3, 25, 100, 0.08);
   --shadow-sticky: 0 -6px 16px rgba(3, 25, 100, 0.08);
 

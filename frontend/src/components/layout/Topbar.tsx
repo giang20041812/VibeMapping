@@ -35,7 +35,7 @@ export const Topbar: React.FC<TopbarProps> = ({ open, onToggle, onClose }) => {
       <header className={`topbar ${open ? 'is-open' : ''}`}>
         <div className="topbar-inner">
           <Link to="/" className="topbar-brand" aria-label="Vibe Mapping" onClick={onClose}>
-            <span className="topbar-brand-mark logo-on-dark">
+            <span className="topbar-brand-mark">
               <LogoMark />
             </span>
             <span className="topbar-brand-text" aria-hidden="true">

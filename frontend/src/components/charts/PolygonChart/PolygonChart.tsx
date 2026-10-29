@@ -1,7 +1,8 @@
-import React, { memo, useCallback, useId, useMemo, useState } from 'react';
+import React, { memo, useCallback, useEffect, useId, useMemo, useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { useCountUp } from '../../../hooks/useCountUp';
 import { useInView } from '../../../hooks/useInView';
+import { useReducedMotion } from '../../../hooks/useReducedMotion';
 import './PolygonChart.css';
 
 export interface PolygonAxis {
@@ -33,6 +34,8 @@ export interface PolygonChartProps {
   showReadout?: boolean;
   /** Hiện điểm % ngay dưới tên mỗi nhóm; mặc định tắt */
   showNodeValues?: boolean;
+  /** Tự làm nổi lần lượt từng trục sau mỗi khoảng này (ms) khi không ai rê chuột hay chọn; 0 để tắt */
+  autoCycleMs?: number;
   className?: string;
 }
 
@@ -257,7 +260,7 @@ const Readout: React.FC<ReadoutProps> = ({ axis, tone, level, valueLabel, refere
 };
 
 /**
- * Biểu đồ đa giác cho nền tối: mỗi trục một màu. Đứng yên, chỉ làm nổi trục khi rê chuột, tab vào hoặc chạm chọn.
+ * Biểu đồ đa giác cho nền tối: mỗi trục một màu. Tự làm nổi lần lượt từng trục; rê chuột, tab vào hoặc chạm chọn thì dừng ở trục đó.
  * Tối ưu: lớp tĩnh và lớp dữ liệu được ghi nhớ, hoạt ảnh chỉ dùng transform/opacity, không dùng bộ lọc.
  */
 export const PolygonChart: React.FC<PolygonChartProps> = ({
@@ -268,6 +271,7 @@ export const PolygonChart: React.FC<PolygonChartProps> = ({
   noDataLabel = 'Chưa đủ dữ liệu',
   showReadout = true,
   showNodeValues = false,
+  autoCycleMs = 1000,
   className = '',
 }) => {
   const uid = useId().replace(/[^a-zA-Z0-9_-]/g, '');
@@ -275,10 +279,19 @@ export const PolygonChart: React.FC<PolygonChartProps> = ({
 
   const [hoverKey, setHoverKey] = useState<string | null>(null);
   const [pinnedKey, setPinnedKey] = useState<string | null>(null);
+  const [cycleIndex, setCycleIndex] = useState(0);
+  const reducedMotion = useReducedMotion();
 
   const count = axes.length;
   const valid = count >= 3;
   const interacting = hoverKey !== null || pinnedKey !== null;
+  const cycling = valid && seen && !interacting && !reducedMotion && autoCycleMs > 0;
+
+  useEffect(() => {
+    if (!cycling) return;
+    const id = window.setInterval(() => setCycleIndex((i) => (i + 1) % count), autoCycleMs);
+    return () => window.clearInterval(id);
+  }, [cycling, count, autoCycleMs]);
 
   const geometry = useMemo(() => (valid ? buildGeometry(axes) : null), [axes, valid]);
   const keys = useMemo(() => axes.map((a) => a.key), [axes]);
@@ -297,14 +310,14 @@ export const PolygonChart: React.FC<PolygonChartProps> = ({
 
   if (!valid || !geometry) return null;
 
-  const activeKey = hoverKey ?? pinnedKey;
+  const activeKey = hoverKey ?? pinnedKey ?? (cycling ? axes[cycleIndex % count].key : null);
   const foundIndex = activeKey === null ? -1 : axes.findIndex((a) => a.key === activeKey);
   const activeIndex = foundIndex >= 0 ? foundIndex : null;
   const active = activeIndex === null ? null : axes[activeIndex];
   const hasReference = geometry.reference !== null;
 
   return (
-    <figure ref={figureRef} className={`polygon-chart ${seen ? 'is-visible' : ''} ${interacting ? 'is-interacting' : ''} ${className}`}>
+    <figure ref={figureRef} className={`polygon-chart ${seen ? 'is-visible' : ''} ${interacting || cycling ? 'is-interacting' : ''} ${className}`}>
       <div className="polygon-stage">
         <div className="polygon-layer">
           <BasePlate geometry={geometry} uid={uid} activeIndex={activeIndex} />
@@ -348,7 +361,7 @@ export const PolygonChart: React.FC<PolygonChartProps> = ({
       </div>
 
       {showReadout && (
-        <figcaption className="polygon-readout" aria-live="polite">
+        <figcaption className="polygon-readout" aria-live={cycling ? 'off' : 'polite'}>
           {active && activeIndex !== null && (
             <Readout
               key={active.key}

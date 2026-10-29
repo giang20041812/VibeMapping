@@ -1,4 +1,4 @@
-/* Thanh điều hướng ngang dính ở đầu trang: kính navy cùng tông thanh bên, mép dưới là một nét cực quang */
+/* Thanh điều hướng ngang dính ở đầu trang: kính trắng, mép dưới là một nét cực quang */
 .topbar {
   position: sticky;
   top: 0;
@@ -43,12 +43,12 @@
   letter-spacing: -0.02em;
   border-radius: var(--radius-md);
 }
-.topbar-brand:focus-visible { outline: 2px solid var(--brand-mist); outline-offset: 2px; }
-.topbar-brand-mark { flex: none; display: block; width: 36px; height: 36px; border-radius: 50%; box-shadow: var(--sidebar-logo-glow); }
+.topbar-brand:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.topbar-brand-mark { flex: none; display: block; width: 36px; height: 36px; }
 .topbar-brand-mark .logo-svg { display: block; }
 .topbar-brand-text { display: inline-flex; align-items: baseline; gap: 0.28em; }
-.topbar-brand-vibe { color: var(--brand-cream); }
-.topbar-brand-mapping { color: var(--brand-mist); }
+.topbar-brand-vibe { color: var(--color-text-main); }
+.topbar-brand-mapping { color: var(--color-accent); }
 
 /* Các mục: chữ, gạch chân ở mục đang chọn */
 .topbar-links {
@@ -73,11 +73,11 @@
   font-weight: 600;
   white-space: nowrap;
   text-decoration: none;
-  color: var(--sidebar-text);
+  color: var(--color-text-secondary);
   transition: color var(--transition-fast);
 }
-.topbar-link:hover { color: var(--sidebar-text-strong); }
-.topbar-link:focus-visible { outline: 2px solid var(--brand-mist); outline-offset: -2px; }
+.topbar-link:hover { color: var(--color-text-main); }
+.topbar-link:focus-visible { outline: 2px solid var(--color-primary); outline-offset: -2px; }
 .topbar-link::after {
   content: '';
   position: absolute;
@@ -90,20 +90,8 @@
   transform: scaleX(0);
   transition: transform var(--transition-normal);
 }
-.topbar-link.is-active { color: var(--sidebar-text-strong); }
+.topbar-link.is-active { color: var(--color-text-main); }
 .topbar-link.is-active::after { transform: scaleX(1); }
-
-/* Nút và avatar trên nền kính navy */
-.topbar .btn-outline { color: var(--brand-cream); background: transparent; border-color: var(--sidebar-ring); }
-.topbar .btn-outline:hover:not(:disabled) { background: var(--sidebar-hover-bg); border-color: var(--brand-mist); }
-.topbar .btn-primary { color: var(--brand-navy); background: var(--brand-cream); }
-.topbar .btn-primary:hover:not(:disabled) { background: var(--brand-mist); }
-.topbar .top-icon-button { color: var(--brand-cream); }
-.topbar .top-icon-button:hover,
-.topbar .top-icon-button[aria-expanded='true'] { background: var(--sidebar-hover-bg); }
-.topbar .top-avatar { color: var(--brand-navy); background: var(--brand-cream); }
-.topbar .top-avatar:hover,
-.topbar .top-avatar[aria-expanded='true'] { box-shadow: 0 0 0 3px var(--sidebar-ring); }
 
 .topbar-end {
   justify-self: end;
@@ -139,9 +127,9 @@
   .topbar.is-open .topbar-links { visibility: visible; opacity: 1; transform: none; }
 
   .topbar-link { min-height: var(--touch-target); padding: 0 var(--space-3); border-radius: var(--radius-md); }
-  .topbar-link:hover { background: var(--sidebar-hover-bg); }
+  .topbar-link:hover { background: var(--color-bg-subtle); }
   .topbar-link::after { display: none; }
-  .topbar-link.is-active { color: var(--sidebar-text-strong); background: var(--sidebar-active-bg); }
+  .topbar-link.is-active { color: var(--color-text-brand); background: var(--brand-ice); }
 
   .topbar-toggle {
     display: inline-flex;
@@ -149,10 +137,10 @@
     justify-content: center;
     width: var(--touch-target);
     height: var(--touch-target);
-    color: var(--brand-cream);
+    color: var(--color-text-main);
     border-radius: var(--radius-md);
   }
-  .topbar-toggle:hover { background: var(--sidebar-hover-bg); }
+  .topbar-toggle:hover { background: var(--color-bg-subtle); }
   .topbar-toggle:focus-visible { outline: 3px solid var(--color-primary-ring); outline-offset: 2px; }
 
   .topbar-scrim {

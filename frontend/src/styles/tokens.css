@@ -63,11 +63,11 @@
   --sidebar-logo-glow: 0 0 0 3px rgba(199, 227, 254, 0.14), 0 0 18px 2px rgba(139, 108, 255, 0.55);
   --sidebar-star-glow: 0 0 8px 1px rgba(246, 183, 60, 0.75);
 
-  /* Thanh ngang: kính navy cùng tông thanh bên, viền dưới là một nét cực quang */
-  --topbar-bg: linear-gradient(100deg, rgba(3, 25, 100, 0.9) 0%, rgba(11, 42, 132, 0.84) 60%, rgba(43, 42, 143, 0.82) 100%);
-  --topbar-menu-bg: rgba(3, 25, 100, 0.94);
-  --topbar-blur: blur(16px) saturate(1.5);
-  --topbar-shadow: 0 10px 30px -12px rgba(3, 25, 100, 0.45);
+  /* Thanh ngang: kính trắng, viền dưới là một nét cực quang */
+  --topbar-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.6));
+  --topbar-menu-bg: rgba(255, 255, 255, 0.96);
+  --topbar-blur: blur(18px) saturate(1.6);
+  --topbar-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 10px 30px -14px rgba(3, 25, 100, 0.22);
   --aurora-line: linear-gradient(90deg, rgba(34, 211, 238, 0.9), rgba(139, 108, 255, 0.9) 45%, rgba(240, 91, 208, 0.85) 80%, rgba(246, 183, 60, 0.85));
 
   /* Borders & Dividers */

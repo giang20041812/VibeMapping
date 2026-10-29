@@ -22,11 +22,8 @@ export const ResultSkeleton: React.FC = () => (
                 <Skeleton shape="text" width={55} />
                 <Skeleton shape="heading" width={15} />
               </div>
-              <div className="group-row-bars">
+              <div className="group-meter">
                 <Skeleton shape="bar" />
-              </div>
-              <div className="group-row-foot">
-                <Skeleton shape="chip" />
               </div>
             </li>
           ))}

@@ -63,9 +63,12 @@
   --sidebar-logo-glow: 0 0 0 3px rgba(199, 227, 254, 0.14), 0 0 18px 2px rgba(139, 108, 255, 0.55);
   --sidebar-star-glow: 0 0 8px 1px rgba(246, 183, 60, 0.75);
 
-  /* Thanh ngang: trong suốt ở đầu trang, nền kem mờ khi đã cuộn */
-  --topbar-scrolled-bg: rgba(255, 252, 240, 0.86);
-  --topbar-blur: blur(12px) saturate(1.2);
+  /* Thanh ngang: kính navy cùng tông thanh bên, viền dưới là một nét cực quang */
+  --topbar-bg: linear-gradient(100deg, rgba(3, 25, 100, 0.9) 0%, rgba(11, 42, 132, 0.84) 60%, rgba(43, 42, 143, 0.82) 100%);
+  --topbar-menu-bg: rgba(3, 25, 100, 0.94);
+  --topbar-blur: blur(16px) saturate(1.5);
+  --topbar-shadow: 0 10px 30px -12px rgba(3, 25, 100, 0.45);
+  --aurora-line: linear-gradient(90deg, rgba(34, 211, 238, 0.9), rgba(139, 108, 255, 0.9) 45%, rgba(240, 91, 208, 0.85) 80%, rgba(246, 183, 60, 0.85));
 
   /* Borders & Dividers */
   --color-border: #d8e2f4;
@@ -132,17 +135,17 @@
   --soft-glow-teal: rgba(67, 182, 152, 0.3);
   --soft-glow-coral: rgba(228, 140, 102, 0.3);
 
-  /* Bề mặt phẳng: nền trắng, viền mảnh, không kính mờ hay ánh sáng */
-  --surface-glass: var(--color-bg-surface);
-  --glass-bg: var(--color-bg-surface);
-  --glass-bg-strong: var(--color-bg-surface);
-  --glass-border: var(--color-border);
-  --glass-blur: none;
+  /* Bề mặt kính: trắng trong mờ để thấy sóng và vầng sáng phía sau, viền sáng, mép trên ánh trắng */
+  --surface-glass: rgba(255, 255, 255, 0.7);
+  --glass-bg: rgba(255, 255, 255, 0.52);
+  --glass-bg-strong: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.72));
+  --glass-border: rgba(255, 255, 255, 0.85);
+  --glass-blur: blur(16px) saturate(1.5);
   --chip-bg: var(--color-bg-surface);
   --chip-border: var(--color-border);
   --chip-shadow: 0 0 0 0 transparent;
-  --glass-edge: 0 0 0 0 transparent;
-  --glass-shadow: var(--shadow-xs);
+  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --glass-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 0 0 1px rgba(53, 96, 194, 0.08), 0 12px 32px -14px rgba(3, 25, 100, 0.22);
   --scrim: rgba(3, 25, 100, 0.5);
 
   /* Màu phẳng thay cho gradient */

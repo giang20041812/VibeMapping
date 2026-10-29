@@ -41,7 +41,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onToggle, onClose }) => 
       <aside id="app-sidebar" className={`sidebar ${open ? 'is-open' : ''}`} aria-label="Điều hướng chính">
         <div className="sidebar-top">
           <Link to="/" className="sidebar-brand" aria-label="Vibe Mapping" onClick={onClose}>
-            <span className="sidebar-brand-mark">
+            <span className="sidebar-brand-mark logo-on-dark">
               <LogoMark />
             </span>
             <span className="sidebar-brand-text" aria-hidden="true">

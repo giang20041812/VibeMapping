@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { LogoMark } from '../common';
@@ -17,18 +17,8 @@ export interface TopbarProps {
  * Thanh điều hướng ngang dính ở đầu trang giới thiệu, khám phá trường và khi khách làm bài test:
  * logo bên trái, các mục ở giữa, đăng nhập / đăng ký hoặc thông báo và avatar bên phải.
  * Điện thoại: các mục gộp vào nút menu và xổ xuống dưới thanh.
- * Trong suốt ở đầu trang, có nền khi đã cuộn xuống.
  */
 export const Topbar: React.FC<TopbarProps> = ({ open, onToggle, onClose }) => {
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 4);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
   useEffect(() => {
     if (!open) return;
     const onKey = (event: KeyboardEvent) => {
@@ -42,10 +32,10 @@ export const Topbar: React.FC<TopbarProps> = ({ open, onToggle, onClose }) => {
     <>
       {open && <div className="topbar-scrim" onClick={onClose} aria-hidden="true" />}
 
-      <header className={`topbar ${open ? 'is-open' : ''} ${scrolled ? 'is-scrolled' : ''}`}>
+      <header className={`topbar ${open ? 'is-open' : ''}`}>
         <div className="topbar-inner">
           <Link to="/" className="topbar-brand" aria-label="Vibe Mapping" onClick={onClose}>
-            <span className="topbar-brand-mark">
+            <span className="topbar-brand-mark logo-on-dark">
               <LogoMark />
             </span>
             <span className="topbar-brand-text" aria-hidden="true">

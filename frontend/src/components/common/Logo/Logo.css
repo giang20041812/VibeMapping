@@ -57,6 +57,12 @@
 .logo-dot,
 .logo-pin { fill: var(--brand-mist); }
 
+/* Đảo màu để nổi trên nền navy (thanh bên, thanh ngang): đĩa kem, mũ navy, chấm và ghim xanh */
+.logo-on-dark .logo-disc { fill: var(--brand-cream); }
+.logo-on-dark .logo-cap { fill: var(--brand-navy); }
+.logo-on-dark .logo-dot,
+.logo-on-dark .logo-pin { fill: var(--brand-blue); }
+
 /* Hoạt ảnh: các chấm lộ trình hiện lần lượt từ dây mũ, ghim rơi xuống rồi nhún nhẹ liên tục */
 .logo-svg.is-animated .logo-dot {
   animation: logo-dot-in 360ms var(--ease-out) both;

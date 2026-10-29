@@ -12,8 +12,9 @@
   width: calc(var(--progress, 0) * 100%);
   background: var(--gradient-brand);
   border-radius: var(--radius-full);
-  animation: progress-grow 900ms var(--ease-out) both;
-  transition: width var(--transition-slow);
+  /* Chỉ giữ khung đầu (backwards): giữ cả khung cuối thì animation đè lên width, chặn transition và thanh nhảy cóc */
+  animation: progress-grow 900ms var(--ease-out) backwards;
+  transition: width 700ms var(--ease-out);
 }
 .progress-secondary .progress-fill { background: var(--brand-light); }
 

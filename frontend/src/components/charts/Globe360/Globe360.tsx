@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { useInView } from '../../../hooks/useInView';
 import { useLowPower } from '../../../hooks/useLowPower';
@@ -59,13 +59,12 @@ export const Globe360: React.FC<Globe360Props> = ({ nodes, active = true, compac
   const dragRef = useRef<{ id: number; x: number; y: number; startX: number; startY: number; time: number; moved: boolean } | null>(null);
 
   const [canvasKey, setCanvasKey] = useState<string | null>(null);
-  const [chipKey, setChipKey] = useState<string | null>(null);
   const [pinnedKey, setPinnedKey] = useState<string | null>(null);
   const [tourIndex, setTourIndex] = useState(0);
   const [grabbing, setGrabbing] = useState(false);
 
-  const interacting = canvasKey !== null || chipKey !== null || pinnedKey !== null;
-  const activeKey = compact ? null : (canvasKey ?? chipKey ?? pinnedKey ?? nodes[tourIndex % Math.max(nodes.length, 1)]?.key ?? null);
+  const interacting = canvasKey !== null || pinnedKey !== null;
+  const activeKey = compact ? null : (canvasKey ?? pinnedKey ?? nodes[tourIndex % Math.max(nodes.length, 1)]?.key ?? null);
 
   useEffect(() => {
     activeKeyRef.current = activeKey;
@@ -73,7 +72,7 @@ export const Globe360: React.FC<Globe360Props> = ({ nodes, active = true, compac
     controlRef.current?.redraw();
   }, [activeKey, interacting]);
 
-  const focusKey = chipKey ?? pinnedKey;
+  const focusKey = pinnedKey;
   useEffect(() => {
     sceneRef.current?.focus(focusKey, reduced);
     if (focusKey !== null) controlRef.current?.start();
@@ -235,7 +234,6 @@ export const Globe360: React.FC<Globe360Props> = ({ nodes, active = true, compac
     if (!dragRef.current) setCanvasKey(null);
   };
 
-  const togglePinned = useCallback((key: string) => setPinnedKey((current) => (current === key ? null : key)), []);
 
   return (
     <figure ref={figureRef} className={`globe360 ${compact ? 'is-compact' : ''} ${seen ? 'is-visible' : ''} ${className}`}>
@@ -259,32 +257,7 @@ export const Globe360: React.FC<Globe360Props> = ({ nodes, active = true, compac
       </div>
 
       {!compact && (
-        <>
-          <figcaption className="sr-only">Quả địa cầu 3D với các nhóm người đánh giá quay quanh</figcaption>
-
-          <ul className="globe360-chips">
-            {nodes.map((node) => {
-              const Icon = node.Icon;
-              return (
-              <li key={node.key}>
-                <button
-                  type="button"
-                  className={`globe360-chip globe360-tone-${node.tone} ${Icon ? 'has-icon' : ''} ${activeKey === node.key ? 'is-active' : ''}`}
-                  aria-pressed={pinnedKey === node.key}
-                  onPointerEnter={() => setChipKey(node.key)}
-                  onPointerLeave={() => setChipKey(null)}
-                  onFocus={() => setChipKey(node.key)}
-                  onBlur={() => setChipKey(null)}
-                  onClick={() => togglePinned(node.key)}
-                >
-                  {Icon && <Icon size={16} aria-hidden="true" />}
-                  {node.label}
-                </button>
-              </li>
-              );
-            })}
-          </ul>
-        </>
+        <figcaption className="sr-only">Quả địa cầu 3D với các nhóm người đánh giá quay quanh</figcaption>
       )}
     </figure>
   );

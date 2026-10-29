@@ -46,12 +46,26 @@ export interface RosterRow {
   row: number;
   student_code: string;
   full_name: string;
+  /** yyyy-mm-dd; rỗng nếu tệp không điền */
+  date_of_birth: string;
 }
 
 export interface RosterRowError {
   row: number;
   reason: string;
   student_code?: string;
+}
+
+export type RosterAccountOutcome = 'created' | 'linked_existing' | 'error';
+
+export interface RosterAccount {
+  student_code: string;
+  full_name: string;
+  email: string;
+  /** Chỉ có khi vừa tạo tài khoản mới, và chỉ trả về một lần */
+  password: string | null;
+  outcome: RosterAccountOutcome;
+  reason?: string;
 }
 
 export interface RosterImportResult {

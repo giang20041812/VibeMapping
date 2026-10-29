@@ -4,6 +4,7 @@ import type {
   ClassReport,
   ClassRow,
   JoinedClass,
+  RosterAccount,
   RosterImportResult,
   RosterRow,
   School,
@@ -133,6 +134,13 @@ export async function importClassRoster(classId: string, rows: RosterRow[]): Pro
   const { data, error } = await supabase.rpc('import_class_roster', { p_class_id: classId, p_rows: rows.map((item) => ({ ...item })) });
   if (error) fail('Lỗi nhập danh sách học sinh', error);
   return data as unknown as RosterImportResult;
+}
+
+/** Tạo tài khoản cho các dòng Excel chưa có tài khoản (Edge Function); mật khẩu tạm chỉ trả về lần này */
+export async function createRosterAccounts(classId: string): Promise<RosterAccount[]> {
+  const { data, error } = await supabase.functions.invoke('create-roster-accounts', { body: { class_id: classId } });
+  if (error) fail('Lỗi tạo tài khoản học sinh', error);
+  return ((data as { accounts?: RosterAccount[] } | null)?.accounts ?? []) as RosterAccount[];
 }
 
 export async function joinClassByCode(

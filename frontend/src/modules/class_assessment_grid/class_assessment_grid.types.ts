@@ -11,14 +11,15 @@ export interface GridStudent {
   acquaintance_duration: number | null;
   contact_frequency: number | null;
   observation_depth: number | null;
-  /** Có giá trị khi giáo viên đã nộp điểm cho em này (nộp lại sau khi sửa thì đổi giờ) */
-  submitted_at: string | null;
   guardian_pending: boolean;
   cells: GridCell[];
 }
 
 export interface GridData {
   grid_id: string;
+  /** Bảng đã nộp thì khóa, không sửa được nữa */
+  status: 'draft' | 'submitted';
+  submitted_at: string | null;
   default_acquaintance_duration: number | null;
   default_contact_frequency: number | null;
   default_observation_depth: number | null;
@@ -40,7 +41,9 @@ export type CellValue = '' | '1' | '2' | '3' | '4' | '5' | 'na';
 
 export type GridSubmitResult =
   | { ok: true }
-  | { ok: false; reason: 'empty_cells'; empty_count: number }
-  | { ok: false; reason: 'guardian_pending' }
-  | { ok: false; reason: 'missing_understanding' }
+  | { ok: false; reason: 'empty_cells'; empty_count: number; student_ids: string[] }
+  | { ok: false; reason: 'guardian_pending'; student_ids: string[] }
+  | { ok: false; reason: 'missing_understanding'; student_ids: string[] }
+  | { ok: false; reason: 'no_students' }
+  | { ok: false; reason: 'already_submitted' }
   | { ok: false; reason: 'short_set_not_configured' };

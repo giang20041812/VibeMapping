@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Alert, Badge, Button, Modal, ProgressBar } from '../../../components/common';
 import type { Understanding } from '../class_assessment_grid.service';
@@ -11,11 +11,12 @@ const SCORES: CellValue[] = ['1', '2', '3', '4', '5'];
 interface CriterionRowProps {
   item: ShortCriteria;
   value: CellValue;
+  disabled: boolean;
   onChange: (criteriaId: string, value: CellValue) => void;
 }
 
 /** Một tiêu chí; memo để chọn điểm một tiêu chí không vẽ lại cả danh sách */
-const CriterionRow = React.memo<CriterionRowProps>(function CriterionRow({ item, value, onChange }) {
+const CriterionRow = React.memo<CriterionRowProps>(function CriterionRow({ item, value, disabled, onChange }) {
   return (
     <div className={`grade-row ${value === '' ? 'is-empty' : ''}`}>
       <span className="grade-row-name">
@@ -30,6 +31,7 @@ const CriterionRow = React.memo<CriterionRowProps>(function CriterionRow({ item,
             size="sm"
             variant={value === score ? 'primary' : 'outline'}
             aria-pressed={value === score}
+            disabled={disabled}
             onClick={() => onChange(item.id, value === score ? '' : score)}
           >
             {score}
@@ -40,6 +42,7 @@ const CriterionRow = React.memo<CriterionRowProps>(function CriterionRow({ item,
           size="sm"
           variant={value === 'na' ? 'primary' : 'outline'}
           aria-pressed={value === 'na'}
+          disabled={disabled}
           onClick={() => onChange(item.id, value === 'na' ? '' : 'na')}
         >
           Không đủ cơ sở
@@ -59,12 +62,10 @@ interface GradeStudentModalProps {
   position: { index: number; total: number } | null;
   /** Học sinh đã làm bài tự đánh giá */
   hasResult: boolean;
-  isDirty: boolean;
-  isSubmitting: boolean;
+  /** Bảng điểm đã nộp: không sửa được */
+  readOnly: boolean;
   onChangeCell: (criteriaId: string, value: CellValue) => void;
   onChangeUnderstanding: (value: Understanding) => void;
-  /** Trả về thông báo lỗi nếu chưa gửi được, null nếu đã gửi */
-  onSubmit: () => Promise<string | null>;
   onPrevious: (() => void) | null;
   onNext: (() => void) | null;
   onClose: () => void;
@@ -76,20 +77,14 @@ export const GradeStudentModal: React.FC<GradeStudentModalProps> = ({
   values,
   position,
   hasResult,
-  isDirty,
-  isSubmitting,
+  readOnly,
   onChangeCell,
   onChangeUnderstanding,
-  onSubmit,
   onPrevious,
   onNext,
   onClose,
 }) => {
-  // Lỗi gắn với học sinh đã gửi lỗi, chuyển sang em khác thì tự ẩn
-  const [error, setError] = useState<{ id: string; message: string } | null>(null);
-  const isSubmitted = student.submitted_at !== null;
   const filled = criteria.filter((item) => values.get(item.id)).length;
-  const visibleError = error && error.id === student.grid_student_id ? error.message : null;
 
   const onChangeCellRef = useRef(onChangeCell);
   onChangeCellRef.current = onChangeCell;
@@ -105,53 +100,33 @@ export const GradeStudentModal: React.FC<GradeStudentModalProps> = ({
     return result;
   }, [criteria]);
 
-  const handleSubmit = async () => {
-    setError(null);
-    const message = await onSubmit();
-    if (message) setError({ id: student.grid_student_id, message });
-    else if (onNext) onNext();
-    else onClose();
-  };
-
   return (
     <Modal
       open
       wide
-      locked={isSubmitting}
       title={`Chấm điểm – ${student.full_name || 'Học sinh'}${position ? ` (${position.index}/${position.total})` : ''}`}
       onClose={onClose}
       actions={
         <>
           <div className="grade-nav">
-            <Button type="button" variant="outline" leftIcon={<ChevronLeft size={16} />} onClick={onPrevious ?? undefined} disabled={!onPrevious || isSubmitting}>
+            <Button type="button" variant="outline" leftIcon={<ChevronLeft size={16} />} onClick={onPrevious ?? undefined} disabled={!onPrevious}>
               Trước
             </Button>
-            <Button type="button" variant="outline" rightIcon={<ChevronRight size={16} />} onClick={onNext ?? undefined} disabled={!onNext || isSubmitting}>
+            <Button type="button" variant="outline" rightIcon={<ChevronRight size={16} />} onClick={onNext ?? undefined} disabled={!onNext}>
               Sau
             </Button>
           </div>
-          <Button type="button" variant="ghost" onClick={onClose} disabled={isSubmitting}>
+          <Button type="button" variant="ghost" onClick={onClose}>
             Đóng
-          </Button>
-          <Button
-            type="button"
-            onClick={() => void handleSubmit()}
-            isLoading={isSubmitting}
-            disabled={isSubmitting || student.guardian_pending || (isSubmitted && !isDirty)}
-          >
-            {isSubmitted ? 'Gửi lại' : onNext ? 'Gửi và tiếp' : 'Gửi'}
           </Button>
         </>
       }
     >
-      {visibleError && <Alert variant="danger">{visibleError}</Alert>}
       {student.guardian_pending && (
-        <Alert variant="warning">Học sinh dưới 16 tuổi chưa có xác nhận của người giám hộ nên chưa gửi được điểm.</Alert>
+        <Alert variant="warning">Học sinh dưới 16 tuổi chưa có xác nhận của người giám hộ nên chưa nộp được bảng điểm.</Alert>
       )}
       <div className="admin-badge-list">
         {hasResult && <Badge variant="info">Đã làm bài</Badge>}
-        {isSubmitted && !isDirty && <Badge variant="success">Đã gửi</Badge>}
-        {isDirty && <Badge variant="warning">Sửa chưa gửi lại</Badge>}
       </div>
 
       <div>
@@ -168,6 +143,7 @@ export const GradeStudentModal: React.FC<GradeStudentModalProps> = ({
           observation_depth: student.observation_depth,
         }}
         emptyLabel="Theo cả lớp"
+        disabled={readOnly}
         onChange={onChangeUnderstanding}
       />
 
@@ -175,7 +151,7 @@ export const GradeStudentModal: React.FC<GradeStudentModalProps> = ({
         <section key={group.code} className="grade-group">
           <h3 className="grade-group-title">{`${group.code} · ${group.name}`}</h3>
           {group.items.map((item) => (
-            <CriterionRow key={item.id} item={item} value={values.get(item.id) ?? ''} onChange={handleCell} />
+            <CriterionRow key={item.id} item={item} value={values.get(item.id) ?? ''} disabled={readOnly} onChange={handleCell} />
           ))}
         </section>
       ))}

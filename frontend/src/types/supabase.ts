@@ -854,6 +854,7 @@ export type Database = {
           joined_via: string | null;
           roster_student_code: string | null;
           roster_full_name: string | null;
+          roster_date_of_birth: string | null;
           joined_at: string | null;
           created_at: string;
           updated_at: string;
@@ -867,6 +868,7 @@ export type Database = {
           joined_via?: string | null;
           roster_student_code?: string | null;
           roster_full_name?: string | null;
+          roster_date_of_birth?: string | null;
           joined_at?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -880,6 +882,7 @@ export type Database = {
           joined_via?: string | null;
           roster_student_code?: string | null;
           roster_full_name?: string | null;
+          roster_date_of_birth?: string | null;
           joined_at?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -1826,8 +1829,12 @@ export type Database = {
         Args: { p_resume_token: string };
         Returns: Json;
       };
-      submit_class_grid_student: {
-        Args: { p_grid_student_id: string };
+      submit_class_grid: {
+        Args: { p_grid_id: string };
+        Returns: Json;
+      };
+      list_roster_pending: {
+        Args: { p_class_id: string };
         Returns: Json;
       };
       write_audit_log: {

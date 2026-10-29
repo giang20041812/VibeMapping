@@ -21,9 +21,20 @@ export const ROSTER_ERROR_TEXT: Record<string, string> = {
   missing_field: 'Thiếu mã học sinh hoặc họ tên',
   duplicate_in_file: 'Mã học sinh trùng trong tệp',
   already_in_class: 'Mã học sinh đã có trong lớp',
+  invalid_date: 'Ngày sinh không hợp lệ',
 };
 
-export const ROSTER_TEMPLATE_HEADERS = ['Mã học sinh', 'Họ và tên'] as const;
+export const ACCOUNT_ERROR_TEXT: Record<string, string> = {
+  invalid_student_code: 'Mã học sinh không dùng được để tạo email',
+  duplicate_email: 'Mã học sinh trùng email với dòng khác',
+  create_failed: 'Không tạo được tài khoản',
+  link_failed: 'Không đưa được vào lớp',
+  not_pending: 'Dòng này đã có tài khoản',
+  not_a_student: 'Email này thuộc tài khoản không phải học sinh',
+  already_member: 'Tài khoản đã có trong lớp',
+};
+
+export const ROSTER_TEMPLATE_HEADERS = ['Mã học sinh', 'Họ và tên', 'Ngày sinh'] as const;
 
 export const STAFF_ERROR_TEXT: Record<string, string> = {
   user_not_found: 'Không tìm thấy tài khoản với email này.',
@@ -42,8 +53,12 @@ export const JOIN_ERROR_TEXT: Record<string, string> = {
   removed: 'Bạn đã bị xóa khỏi lớp này.',
 };
 
+/** Lý do chặn nộp bảng điểm; kèm tên học sinh bị chặn khi có */
 export const GRID_BLOCK_TEXT: Record<string, string> = {
-  empty_cells: 'Còn ô chưa chấm.',
-  guardian_pending: 'Có học sinh dưới 16 tuổi chưa được người giám hộ xác nhận.',
-  missing_understanding: 'Còn học sinh chưa có đủ ba câu mức thấu hiểu.',
+  empty_cells: 'Còn ô chưa chấm',
+  guardian_pending: 'Dưới 16 tuổi, chưa có xác nhận của người giám hộ',
+  missing_understanding: 'Chưa có đủ ba câu mức thấu hiểu',
+  no_students: 'Bảng chưa có học sinh nào',
+  already_submitted: 'Bảng điểm đã nộp',
+  short_set_not_configured: 'Chưa có tiêu chí nào thuộc bộ câu hỏi rút gọn',
 };

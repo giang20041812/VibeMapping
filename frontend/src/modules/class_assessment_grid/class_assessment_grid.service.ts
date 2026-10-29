@@ -89,11 +89,12 @@ export async function saveStudentUnderstanding(gridStudentId: string, values: Un
   if (error) fail('Lỗi lưu mức thấu hiểu của học sinh', error);
 }
 
-export async function submitGridStudent(gridStudentId: string): Promise<GridSubmitResult> {
-  const { data, error } = await supabase.rpc('submit_class_grid_student', { p_grid_student_id: gridStudentId });
+export async function submitGrid(gridId: string): Promise<GridSubmitResult> {
+  const { data, error } = await supabase.rpc('submit_class_grid', { p_grid_id: gridId });
   if (error) {
     if (error.message.includes('short_set_not_configured')) return { ok: false, reason: 'short_set_not_configured' };
-    fail('Lỗi nộp điểm học sinh', error);
+    if (error.message.includes('grid_already_submitted')) return { ok: false, reason: 'already_submitted' };
+    fail('Lỗi nộp bảng điểm', error);
   }
   return data as unknown as GridSubmitResult;
 }

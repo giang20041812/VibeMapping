@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { FileSpreadsheet } from 'lucide-react';
-import { Button, Card, ProgressBar, Select } from '../../../components/common';
+import { FileSpreadsheet, Send } from 'lucide-react';
+import { Alert, Badge, Button, Card, Modal, ProgressBar, Select } from '../../../components/common';
 import { SearchableSelect } from '../../../components/filters/SearchableSelect/SearchableSelect';
 import { GRID_BLOCK_TEXT } from '../../class_management/class_management.constants';
 import type { ClassMember } from '../../class_management/class_management.types';
@@ -8,7 +8,7 @@ import {
   saveCells,
   saveGridDefaults,
   saveStudentUnderstanding,
-  submitGridStudent,
+  submitGrid,
   type CellChange,
   type Understanding,
 } from '../class_assessment_grid.service';
@@ -36,8 +36,8 @@ interface ClassGradeTableProps {
   /** Chỉ hiện tiêu chí của nhóm này; rỗng là hiện hết */
   groupCode: string;
   onRemove: (member: ClassMember) => void;
-  /** Gọi sau khi nộp xong một học sinh */
-  onSubmitted: (studentId: string) => void;
+  /** Gọi sau khi nộp bảng điểm xong; cha tải lại lớp */
+  onSubmitted: () => void;
   onError: (message: string | null) => void;
   onNotice: (message: string | null) => void;
 }
@@ -56,9 +56,10 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
   const [grid, setGrid] = useState(initialGrid);
   /** Điểm theo từng học sinh; chỉ học sinh vừa sửa mới có bảng điểm mới nên các dòng khác không vẽ lại */
   const [scores, setScores] = useState<ScoreMap>(() => toScoreMap(initialGrid));
-  /** Học sinh đã nộp nhưng sau đó sửa điểm, chưa nộp lại */
-  const [dirtyIds, setDirtyIds] = useState<Set<string>>(new Set());
-  const [submittingId, setSubmittingId] = useState<string | null>(null);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  /** Lý do chưa nộp được, hiện trong hộp thoại xác nhận */
+  const [blockedReasons, setBlockedReasons] = useState<string[]>([]);
   const [fillCriteria, setFillCriteria] = useState(criteria[0]?.id ?? '');
   const [fillValue, setFillValue] = useState<CellValue>('3');
   const [isImportOpen, setIsImportOpen] = useState(false);
@@ -72,6 +73,7 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
   gridRef.current = grid;
   const callbacksRef = useRef({ onRemove, onSubmitted, onError, onNotice });
   callbacksRef.current = { onRemove, onSubmitted, onError, onNotice };
+  const isLocked = grid.status === 'submitted';
 
   const gridStudents = useMemo(() => new Map(grid.students.map((student) => [student.student_id, student])), [grid]);
   const gridStudentsById = useMemo(() => new Map(grid.students.map((student) => [student.grid_student_id, student])), [grid]);
@@ -95,7 +97,7 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
   }
 
   const applyChanges = useCallback(async (changes: { gridStudentId: string; criteriaId: string; value: CellValue }[]) => {
-    if (changes.length === 0) return;
+    if (changes.length === 0 || gridRef.current.status === 'submitted') return;
     const previous = scoresRef.current;
     const next: ScoreMap = new Map(previous);
     const touched = new Map<string, Map<string, CellValue>>();
@@ -110,14 +112,6 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
       else own.set(change.criteriaId, change.value);
     }
     setScores(next);
-    setDirtyIds((current) => {
-      const updated = new Set(current);
-      for (const id of touched.keys()) {
-        const student = gridRef.current.students.find((item) => item.grid_student_id === id);
-        if (student?.submitted_at) updated.add(id);
-      }
-      return updated.size === current.size ? current : updated;
-    });
     try {
       const payload: CellChange[] = changes.map((change) => ({
         gridStudentId: change.gridStudentId,
@@ -172,7 +166,6 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
       ...current,
       students: current.students.map((item) => (item.grid_student_id === student.grid_student_id ? { ...item, ...value } : item)),
     }));
-    if (student.submitted_at) setDirtyIds((current) => new Set(current).add(student.grid_student_id));
     try {
       await saveStudentUnderstanding(student.grid_student_id, value);
     } catch {
@@ -180,47 +173,33 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
     }
   };
 
-  /** Gửi điểm một học sinh; trả về thông báo lỗi nếu chưa gửi được, null nếu đã gửi */
-  const submitStudent = useCallback(async (student: GridStudent): Promise<string | null> => {
-    setSubmittingId(student.grid_student_id);
-    callbacksRef.current.onError(null);
-    callbacksRef.current.onNotice(null);
-    const name = student.full_name || 'Học sinh';
+  /** Nộp cả bảng; chưa đủ điều kiện thì nêu lý do và tên học sinh bị chặn */
+  const handleSubmitGrid = async () => {
+    setIsSubmitting(true);
+    setBlockedReasons([]);
+    onError(null);
     try {
-      const result = await submitGridStudent(student.grid_student_id);
+      const result = await submitGrid(grid.grid_id);
       if (result.ok) {
-        setGrid((current) => ({
-          ...current,
-          students: current.students.map((item) =>
-            item.grid_student_id === student.grid_student_id ? { ...item, submitted_at: new Date().toISOString() } : item,
-          ),
-        }));
-        setDirtyIds((current) => {
-          const next = new Set(current);
-          next.delete(student.grid_student_id);
-          return next;
-        });
-        callbacksRef.current.onSubmitted(student.student_id);
-        callbacksRef.current.onNotice(`Đã gửi điểm của ${name}.`);
-        return null;
+        setGrid((current) => ({ ...current, status: 'submitted', submitted_at: new Date().toISOString() }));
+        setIsConfirmOpen(false);
+        onNotice('Đã nộp và khóa bảng điểm.');
+        onSubmitted();
+        return;
       }
-      if (result.reason === 'empty_cells') return `${name}: còn ${result.empty_count} tiêu chí chưa chấm.`;
-      if (result.reason === 'short_set_not_configured') return 'Chưa có tiêu chí nào thuộc bộ câu hỏi rút gọn.';
-      return `${name}: ${GRID_BLOCK_TEXT[result.reason] ?? 'chưa gửi được điểm.'}`;
+      const names =
+        'student_ids' in result
+          ? result.student_ids.map((id) => gridStudents.get(id)?.full_name || 'Học sinh').join(', ')
+          : '';
+      const text = GRID_BLOCK_TEXT[result.reason] ?? 'Chưa nộp được bảng điểm';
+      const count = result.reason === 'empty_cells' ? ` (${result.empty_count} ô)` : '';
+      setBlockedReasons([`${text}${count}${names ? `: ${names}` : ''}`]);
     } catch {
-      return 'Không gửi được điểm. Thử lại sau.';
+      setBlockedReasons(['Không nộp được bảng điểm. Thử lại sau.']);
     } finally {
-      setSubmittingId(null);
+      setIsSubmitting(false);
     }
-  }, []);
-
-  const handleRowSubmit = useCallback(
-    async (student: GridStudent) => {
-      const message = await submitStudent(student);
-      if (message) callbacksRef.current.onError(message);
-    },
-    [submitStudent],
-  );
+  };
 
   const handleRemove = useCallback((member: ClassMember) => callbacksRef.current.onRemove(member), []);
 
@@ -244,14 +223,26 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
 
   return (
     <>
-      <Card title="Mức thấu hiểu của cả lớp">
-        <UnderstandingFields value={defaults} emptyLabel="Chưa chọn" onChange={(value) => void handleDefaults(value)} />
+      <Card
+        title="Mức thấu hiểu của cả lớp"
+        action={
+          isLocked ? (
+            <Badge variant="success">Đã nộp</Badge>
+          ) : (
+            <Button type="button" leftIcon={<Send size={16} />} onClick={() => setIsConfirmOpen(true)}>
+              Nộp bảng điểm
+            </Button>
+          )
+        }
+      >
+        <UnderstandingFields value={defaults} emptyLabel="Chưa chọn" disabled={isLocked} onChange={(value) => void handleDefaults(value)} />
         <ProgressBar value={totalCells === 0 ? null : (filledCells / totalCells) * 100} label="Tiến độ chấm" />
         <p className="grid-progress-text">
           {filledCells}/{totalCells} ô
         </p>
       </Card>
 
+      {!isLocked && (
       <div className="grid-fill-bar filter-controls">
         <SearchableSelect
           label="Điền cả cột"
@@ -268,6 +259,7 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
           Nhập điểm từ Excel
         </Button>
       </div>
+      )}
 
       <Card noPadding title="Học sinh">
         <div className="app-table-scroll">
@@ -301,12 +293,9 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
                     student={student}
                     scores={student ? (scores.get(student.grid_student_id) ?? NO_SCORES) : undefined}
                     criteria={visibleCriteria}
-                    isDirty={student ? dirtyIds.has(student.grid_student_id) : false}
-                    isSubmitting={student ? submittingId === student.grid_student_id : false}
-                    isBusy={submittingId !== null}
+                    readOnly={isLocked}
                     onOpen={setOpenId}
                     onChangeCell={handleChangeCell}
-                    onSubmit={handleRowSubmit}
                     onRemove={handleRemove}
                   />
                 );
@@ -325,6 +314,32 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
         onClose={() => setIsImportOpen(false)}
       />
 
+      <Modal
+        open={isConfirmOpen}
+        title="Xác nhận và khóa bảng điểm"
+        locked={isSubmitting}
+        onClose={() => setIsConfirmOpen(false)}
+        actions={
+          <>
+            <Button type="button" variant="ghost" onClick={() => setIsConfirmOpen(false)} disabled={isSubmitting}>
+              Quay lại chỉnh sửa
+            </Button>
+            <Button type="button" onClick={() => void handleSubmitGrid()} isLoading={isSubmitting}>
+              Khóa bảng điểm
+            </Button>
+          </>
+        }
+      >
+        {blockedReasons.map((reason) => (
+          <Alert key={reason} variant="danger">{reason}</Alert>
+        ))}
+        <ProgressBar value={totalCells === 0 ? null : (filledCells / totalCells) * 100} label="Tiến độ chấm" />
+        <p className="grid-progress-text">
+          {grid.students.length} học sinh · {filledCells}/{totalCells} ô
+        </p>
+        <Alert variant="warning">Sau khi khóa, không sửa được bảng điểm.</Alert>
+      </Modal>
+
       {openStudent && (
         <GradeStudentModal
           student={openStudent}
@@ -332,11 +347,9 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
           values={scores.get(openStudent.grid_student_id) ?? NO_SCORES}
           position={openIndex >= 0 ? { index: openIndex + 1, total: visibleGridStudents.length } : null}
           hasResult={members.some((member) => member.user_id === openStudent.student_id && member.has_result)}
-          isDirty={dirtyIds.has(openStudent.grid_student_id)}
-          isSubmitting={submittingId === openStudent.grid_student_id}
+          readOnly={isLocked}
           onChangeCell={(criteriaId, value) => handleChangeCell(openStudent.grid_student_id, criteriaId, value)}
           onChangeUnderstanding={(value) => void updateUnderstanding(openStudent, value)}
-          onSubmit={() => submitStudent(openStudent)}
           onPrevious={previousStudent ? () => setOpenId(previousStudent.grid_student_id) : null}
           onNext={nextStudent ? () => setOpenId(nextStudent.grid_student_id) : null}
           onClose={() => setOpenId(null)}

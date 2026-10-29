@@ -4,6 +4,7 @@ export const AUDIT_ACTION_LABEL: Record<string, string> = {
   decide_submission: 'Duyệt bài đánh giá',
   submit_class_grid: 'Nộp bảng lưới lớp',
   submit_class_grid_student: 'Nộp điểm học sinh trong lớp',
+  create_roster_account: 'Tạo tài khoản học sinh từ danh sách',
   complete_self_assessment: 'Hoàn thành tự đánh giá',
   finalize_result: 'Chốt kết quả',
   set_package_assignments: 'Gán câu hỏi vào gói',

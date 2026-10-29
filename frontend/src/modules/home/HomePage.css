@@ -30,7 +30,7 @@
   position: relative;
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   justify-content: center;
   gap: 0 0.28em;
   font-size: clamp(calc(38 * var(--px)), 11vw, calc(88 * var(--px)));
@@ -38,15 +38,14 @@
   line-height: 1;
   letter-spacing: -0.03em;
 }
-/* Cùng đường cơ sở với chữ Mapping; biểu tượng ngồi trên đường cơ sở và hạ xuống một chút cho cân với chữ */
-.home-brand-word { display: inline-flex; align-items: baseline; gap: 0.28em; }
+/* Biểu tượng canh giữa theo chiều cao chữ in hoa: với Inter và line-height 1, giữa dòng trùng giữa chữ hoa */
+.home-brand-word { display: inline-flex; align-items: center; gap: 0.28em; }
 .home-brand-mark {
   position: relative;
   z-index: 1;
   flex: none;
   width: 1.1em;
   height: 1.1em;
-  margin-bottom: -0.2em;
   animation: home-brand-slide 850ms var(--brand-slide) var(--ease-out) both;
 }
 .home-brand-mark .logo-svg { display: block; }

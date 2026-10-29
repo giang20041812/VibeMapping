@@ -113,7 +113,9 @@ function runStarFlight({ section, copy, visual, canvas, flip, lowPower }: Flight
   const minX = Math.max(-sectionBox.left, path.bounds.minX - margin);
   const maxX = Math.min(viewportWidth - sectionBox.left, path.bounds.maxX + margin);
   const minY = path.bounds.minY - margin;
-  const maxY = path.bounds.maxY + margin;
+  /* Không cho canvas thò quá cuối trang: phần thò ra làm trang dài thêm trong lúc bay rồi co lại khi bay xong (trang bị giật) */
+  const pageBottom = document.documentElement.scrollHeight - (sectionBox.top + window.scrollY);
+  const maxY = Math.min(path.bounds.maxY + margin, pageBottom);
   const cssWidth = maxX - minX;
   const cssHeight = maxY - minY;
   const renderScale = lowPower ? 0.55 : 0.8;

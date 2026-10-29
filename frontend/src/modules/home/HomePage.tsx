@@ -105,7 +105,7 @@ export const HomePage: React.FC = () => {
             <span className="home-brand-mark" aria-hidden="true">
               <LogoMark animated />
             </span>
-            <span className="home-brand-vibe">ibe</span>
+            <span className="home-brand-vibe">Vibe</span>
           </span>
           <span className="home-brand-mapping">Mapping</span>
         </h1>

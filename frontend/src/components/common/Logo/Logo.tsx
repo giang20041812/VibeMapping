@@ -1,4 +1,5 @@
 import React from 'react';
+import { LOGO_CAP, LOGO_DOTS, LOGO_PIN } from './logoPaths';
 import './Logo.css';
 
 export interface LogoProps {
@@ -9,53 +10,21 @@ export interface LogoProps {
   className?: string;
 }
 
-/** Ghim định vị kéo dài, chữ V nằm đúng trên hai cạnh đuôi ghim (đỉnh V là mũi ghim); bản đồ gập là chữ M, mũ cử nhân và nét mặt tươi cho Vibe + Mapping. */
+/** Hình tròn navy: mũ cử nhân, dây mũ nối các chấm lộ trình tới ghim định vị. */
 export const LogoMark: React.FC<{ animated?: boolean }> = ({ animated = false }) => (
   <svg
     className={`logo-svg ${animated ? 'is-animated' : ''}`}
-    viewBox="0 0 240 240"
+    viewBox="0 0 1600 1600"
     role="img"
     aria-label="Vibe Mapping"
   >
-    <g transform="translate(0 10)">
-    <g className="logo-map">
-      <path className="logo-map-light logo-map-panel logo-map-panel-1" d="M24 134 L72 104 L72 188 L24 218 Z" />
-      <path className="logo-map-dark logo-map-panel logo-map-panel-2" d="M72 104 L120 134 L120 218 L72 188 Z" />
-      <path className="logo-map-light logo-map-panel logo-map-panel-3" d="M120 134 L168 104 L168 188 L120 218 Z" />
-      <path className="logo-map-dark logo-map-panel logo-map-panel-4" d="M168 104 L216 134 L216 218 L168 188 Z" />
-      <path className="logo-route" d="M36 184 Q50 158 62 168" />
-      <path className="logo-route" d="M180 156 Q196 182 208 164" />
-    </g>
-    </g>
-
-    <g transform="translate(0 -16)">
-    <g className="logo-character">
-      <path className="logo-pin" d="M120 202 L78.6 116 A46 46 0 1 1 161.4 116 Z" />
-      <path className="logo-pin-v-edge" d="M86.3 132 L120 202 L153.7 132" />
-      <path className="logo-pin-v" d="M86.3 132 L120 202 L153.7 132" />
-
-      <g className="logo-face">
-        <g className="logo-eyes">
-          <path className="logo-eye" d="M98 101 Q105 91 112 101" />
-          <path className="logo-eye" d="M128 101 Q135 91 142 101" />
-        </g>
-        <path className="logo-mouth" d="M108 111 Q120 131 132 111 Z" />
-        <circle className="logo-cheek" cx="94" cy="113" r="5.5" />
-        <circle className="logo-cheek" cx="146" cy="113" r="5.5" />
-      </g>
-
-      <g className="logo-cap">
-        <path className="logo-cap-base" d="M92 56 L92 69 Q120 83 148 69 L148 56 Z" />
-        <path className="logo-cap-board" d="M46 50 L120 26 L194 50 L120 74 Z" />
-        <path className="logo-cap-shine" d="M58 50 L120 30 L120 50 Z" />
-        <circle className="logo-gold" cx="120" cy="50" r="4.5" />
-        <g className="logo-tassel">
-          <path className="logo-cord" d="M120 50 Q172 54 182 64 L182 92" />
-          <rect className="logo-tassel-body" x="176" y="90" width="12" height="22" rx="5" />
-          <path className="logo-fringe" d="M179 118 L179 126 M182 118 L182 128 M185 118 L185 126" />
-        </g>
-      </g>
-    </g>
+    <circle className="logo-disc" cx="800" cy="800" r="800" />
+    <g transform="translate(800 800) scale(1.9)">
+      <path className="logo-cap" d={LOGO_CAP} />
+      {LOGO_DOTS.map((d, i) => (
+        <path key={i} className="logo-dot" d={d} />
+      ))}
+      <path className="logo-pin" fillRule="evenodd" d={LOGO_PIN} />
     </g>
   </svg>
 );

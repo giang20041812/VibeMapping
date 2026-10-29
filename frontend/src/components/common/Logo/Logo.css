@@ -47,89 +47,50 @@
 }
 
 .logo-wordmark-vibe { color: var(--brand-navy); }
-.logo-wordmark-mapping { color: var(--brand-sky); }
-.logo-tone-inverse .logo-wordmark-vibe { color: var(--brand-white); }
-.logo-tone-inverse .logo-wordmark-mapping { color: var(--brand-pale); }
+.logo-wordmark-mapping { color: var(--brand-blue); }
+.logo-tone-inverse .logo-wordmark-vibe { color: var(--brand-cream); }
+.logo-tone-inverse .logo-wordmark-mapping { color: var(--brand-mist); }
 
-/* Hình khối */
-.logo-svg path,
-.logo-svg circle,
-.logo-svg rect {
-  stroke-linejoin: round;
-  stroke-linecap: round;
+/* Hình khối: đúng ba màu của logo */
+.logo-disc { fill: var(--brand-navy); }
+.logo-cap { fill: var(--brand-cream); }
+.logo-dot,
+.logo-pin { fill: var(--brand-mist); }
+
+/* Hoạt ảnh: các chấm lộ trình hiện lần lượt từ dây mũ, ghim rơi xuống rồi nhún nhẹ liên tục */
+.logo-svg.is-animated .logo-dot {
+  animation: logo-dot-in 360ms var(--ease-out) both;
 }
+/* Trong nhóm hình, phần tử đầu là mũ; các chấm bắt đầu từ phần tử thứ 2 */
+.logo-svg.is-animated .logo-dot:nth-child(2) { animation-delay: 0ms; }
+.logo-svg.is-animated .logo-dot:nth-child(3) { animation-delay: 90ms; }
+.logo-svg.is-animated .logo-dot:nth-child(4) { animation-delay: 180ms; }
+.logo-svg.is-animated .logo-dot:nth-child(5) { animation-delay: 270ms; }
+.logo-svg.is-animated .logo-dot:nth-child(6) { animation-delay: 360ms; }
+.logo-svg.is-animated .logo-dot:nth-child(7) { animation-delay: 450ms; }
+.logo-svg.is-animated .logo-dot:nth-child(8) { animation-delay: 540ms; }
+.logo-svg.is-animated .logo-dot:nth-child(9) { animation-delay: 630ms; }
+.logo-svg.is-animated .logo-dot:nth-child(10) { animation-delay: 720ms; }
 
-.logo-map-panel { stroke: var(--brand-navy); stroke-width: 7; }
-.logo-map-light { fill: var(--brand-mist); }
-.logo-map-dark { fill: var(--brand-light); }
-.logo-route { fill: none; stroke: var(--brand-white); stroke-width: 4; opacity: 0.9; }
-
-.logo-pin { fill: var(--brand-sky); stroke: var(--brand-navy); stroke-width: 7; }
-.logo-pin-v-edge { fill: none; stroke: var(--brand-navy); stroke-width: 17; }
-.logo-pin-v { fill: none; stroke: var(--brand-white); stroke-width: 10; }
-
-.logo-eye { fill: none; stroke: var(--brand-navy); stroke-width: 5.5; }
-.logo-mouth { fill: var(--brand-navy); stroke: var(--brand-navy); stroke-width: 4; }
-.logo-cheek { fill: var(--brand-pale); }
-
-.logo-cap-base { fill: var(--brand-deep); stroke: var(--brand-navy); stroke-width: 6; }
-.logo-cap-board { fill: var(--brand-navy); stroke: var(--brand-navy); stroke-width: 6; }
-.logo-cap-shine { fill: var(--brand-deep); }
-.logo-gold { fill: var(--brand-gold); }
-.logo-cord { fill: none; stroke: var(--brand-gold); stroke-width: 4.5; }
-.logo-tassel-body { fill: var(--brand-gold); stroke: var(--brand-navy); stroke-width: 3.5; }
-.logo-fringe { fill: none; stroke: var(--brand-gold); stroke-width: 2.6; }
-
-/* Hoạt ảnh: vào cảnh một lần, sau đó chuyển động nhẹ liên tục */
-.logo-svg.is-animated .logo-map-panel {
+.logo-svg.is-animated .logo-pin {
   transform-box: fill-box;
   transform-origin: center bottom;
-  animation: logo-unfold 640ms var(--ease-spring) both;
-}
-.logo-svg.is-animated .logo-map-panel-2 { animation-delay: 80ms; }
-.logo-svg.is-animated .logo-map-panel-3 { animation-delay: 160ms; }
-.logo-svg.is-animated .logo-map-panel-4 { animation-delay: 240ms; }
-
-.logo-svg.is-animated .logo-character {
-  transform-box: view-box;
-  transform-origin: 120px 202px;
   animation:
-    logo-drop 760ms 280ms var(--ease-spring) both,
-    logo-bob 3.4s 1.1s ease-in-out infinite;
+    logo-drop 640ms 820ms var(--ease-spring) both,
+    logo-bob 3.4s 1.6s ease-in-out infinite;
 }
 
-.logo-svg.is-animated .logo-eyes {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: logo-blink 5.2s 2s infinite;
-}
-
-.logo-svg.is-animated .logo-tassel {
-  transform-origin: 182px 60px;
-  animation: logo-sway 2.6s 1.1s ease-in-out infinite;
-}
-
-@keyframes logo-unfold {
-  from { opacity: 0; transform: scaleY(0.2) translateY(12px); }
-  to { opacity: 1; transform: scaleY(1) translateY(0); }
+@keyframes logo-dot-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes logo-drop {
-  from { opacity: 0; transform: translateY(-42px) scale(0.86); }
+  from { opacity: 0; transform: translateY(-40%) scale(0.86); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 @keyframes logo-bob {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
-}
-
-@keyframes logo-blink {
-  0%, 92%, 100% { transform: scaleY(1); }
-  95% { transform: scaleY(0.12); }
-}
-
-@keyframes logo-sway {
-  0%, 100% { transform: rotate(-5deg); }
-  50% { transform: rotate(6deg); }
+  50% { transform: translateY(-6%); }
 }

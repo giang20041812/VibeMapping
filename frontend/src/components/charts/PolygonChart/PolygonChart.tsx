@@ -24,7 +24,8 @@ export interface PolygonLevel {
 export interface PolygonChartProps {
   /** Từ 3 trục trở lên, thứ tự theo chiều kim đồng hồ từ đỉnh */
   axes: PolygonAxis[];
-  levels: PolygonLevel[];
+  /** Thang mức năng lực; bỏ trống thì chỉ hiện điểm % */
+  levels?: PolygonLevel[];
   valueLabel?: string;
   referenceLabel?: string;
   noDataLabel?: string;
@@ -229,7 +230,7 @@ const DataPlate = memo(function DataPlate({ geometry, uid, activeIndex, keys, fi
 interface ReadoutProps {
   axis: PolygonAxis;
   tone: number;
-  level: string;
+  level: string | null;
   referenceLevel?: string;
   valueLabel?: string;
   referenceLabel?: string;
@@ -245,7 +246,7 @@ const Readout: React.FC<ReadoutProps> = ({ axis, tone, level, valueLabel, refere
       <strong className="polygon-readout-name">{axis.label}</strong>
       {valueLabel && hasReference && <span className="polygon-readout-caption">{valueLabel}</span>}
       <span className="polygon-readout-value">{axis.value === null ? noDataLabel : `${Math.round(count ?? axis.value)}%`}</span>
-      <span className="polygon-readout-level">{level}</span>
+      {level && <span className="polygon-readout-level">{level}</span>}
       {hasReference && (
         <span className="polygon-readout-reference">
           {referenceLabel} {axis.reference === null || axis.reference === undefined ? noDataLabel : `${Math.round(axis.reference)}%`}
@@ -286,6 +287,7 @@ export const PolygonChart: React.FC<PolygonChartProps> = ({
   const levelOf = useCallback(
     (value: number | null | undefined) => {
       if (value === null || value === undefined) return noDataLabel;
+      if (!levels?.length) return null;
       return (levels.find((l) => value >= l.min) ?? levels[levels.length - 1]).label;
     },
     [levels, noDataLabel],
@@ -374,7 +376,7 @@ export const PolygonChart: React.FC<PolygonChartProps> = ({
           {axes.map((axis) => (
             <tr key={axis.key}>
               <th scope="row">{axis.label}</th>
-              <td>{axis.value === null ? noDataLabel : `${Math.round(axis.value)}% – ${levelOf(axis.value)}`}</td>
+              <td>{axis.value === null ? noDataLabel : levelOf(axis.value) ? `${Math.round(axis.value)}% – ${levelOf(axis.value)}` : `${Math.round(axis.value)}%`}</td>
               {hasReference && <td>{axis.reference === null || axis.reference === undefined ? noDataLabel : `${Math.round(axis.reference)}%`}</td>}
             </tr>
           ))}

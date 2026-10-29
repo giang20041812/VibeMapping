@@ -2,9 +2,9 @@
 
 ## Tóm tắt
 
-Phase 1 còn 14 điểm chờ BA xác nhận và 9 nhóm dữ liệu chờ BA cung cấp; trong lúc chờ, hệ thống chạy bằng các quy tắc tạm ghi ở cột "Hệ thống đang xử lý".
+Phase 1 còn 15 điểm chờ BA xác nhận và 9 nhóm dữ liệu chờ BA cung cấp; trong lúc chờ, hệ thống chạy bằng các quy tắc tạm ghi ở cột "Hệ thống đang xử lý".
 
-Đã làm xong phần lớp học: tạo trường và lớp, gán giáo viên, nhập danh sách học sinh từ Excel (kiểm tra trước rồi mới nhập, tự tạo tài khoản), học sinh vào lớp bằng mã hoặc QR, bảng lưới chấm điểm của giáo viên (nộp cả bảng rồi khóa), báo cáo lớp và trường, xuất báo cáo lớp ra Excel.
+Đã làm xong phần lớp học: tạo trường và lớp, gán giáo viên, nhập danh sách học sinh từ Excel (kiểm tra trước rồi mới nhập, tự tạo tài khoản), học sinh vào lớp bằng mã hoặc QR, bảng lưới chấm điểm của giáo viên (nộp từng học sinh hoặc nộp tất cả, em đã nộp thì khóa), báo cáo lớp và trường, xuất báo cáo lớp ra Excel.
 
 Chặn lớn nhất: tài liệu không liệt kê tiêu chí nào thuộc bộ câu hỏi rút gọn, và không gắn nhãn câu tình huống, câu chuyên sâu cho ngân hàng câu hỏi. Khi chưa có danh sách tiêu chí rút gọn, giáo viên chưa nộp được bảng điểm; tự đánh giá vẫn chạy theo đúng số lượng câu của đặc tả.
 
@@ -20,7 +20,7 @@ Mỗi dòng là một quyết định mà đặc tả chưa nêu, nêu chưa đ�
 | 2 | Giáo viên tự chọn tiêu chí hay dùng bộ cố định | Đặc tả dùng từ "giáo viên chọn bộ rút gọn" nhưng phần mô tả lại chỉ nói một bộ chung | Bộ cố định do quản trị đánh dấu; giáo viên không tự chọn được |
 | 3 | Câu nào là 15 câu tình huống (thêm vào gói Tiêu chuẩn) và 25 câu chuyên sâu (thêm vào gói Chuyên sâu) | Đặc tả đã nêu số câu thêm theo từng nhóm, nhưng ngân hàng 620 câu tự đánh giá đều là câu Likert như nhau, 20 câu cho mỗi tiêu chí, không câu nào gắn nhãn tình huống hay chuyên sâu | Bảng gán trống trên Supabase. Hệ thống chọn đúng số lượng của đặc tả: mỗi tiêu chí 1 câu (theo mã câu), thêm câu chia đều trong từng nhóm. Có sẵn lệnh gán trước vào bảng, chưa chạy |
 | 4 | Số câu gói: 35/50/75 hay 31/46/71 | Đặc tả tính gói 35 = 1 câu họ tên/ẩn danh + 3 câu mức hiểu biết + 31 câu tiêu chí; tài liệu nghiệp vụ lại gắn bốn câu đầu với người được mời, không phải học sinh | Học sinh làm 31/46/71 câu tiêu chí, giao diện hiển thị số thật |
-| 5 | Học sinh vào lớp sau khi giáo viên đã nộp và khóa bảng điểm | Đặc tả không nói; bảng đã khóa không sửa được | Học sinh vào sau không nằm trong bảng của giáo viên đó, nên chưa được chấm |
+| 5 | Học sinh vào lớp sau khi giáo viên đã nộp điểm | Đặc tả không nói | Học sinh vào sau được thêm vào bảng của giáo viên và chấm, nộp như các em khác |
 | 6 | Tài khoản của học sinh tạo từ danh sách Excel | Đặc tả nói "khởi tạo tài khoản" nhưng mẫu Excel không có email; không nói học sinh đăng nhập bằng gì | Tạo email nội bộ dạng mãhọcsinh@mãtrường.vibemapping.local và mật khẩu tạm ngẫu nhiên; giáo viên tải tệp tài khoản để phát. Học sinh vào lớp ngay và nhà trường ghi nhận đồng ý thay. Chưa bắt đổi mật khẩu lần đầu; quên mật khẩu không tự lấy lại được vì email không có thật |
 | 7 | Ngưỡng 5 học sinh của báo cáo đếm theo ai; điểm lấy từ nguồn nào | Đặc tả chỉ ghi "nhóm có từ 5 học sinh hoàn thành" | Đếm học sinh đã tham gia lớp và có kết quả; dưới 5 thì chỉ hiện tiến độ tham gia. Mỗi học sinh lấy kết quả mới nhất, ưu tiên điểm tổng hợp 360°, không có thì dùng tự đánh giá |
 | 8 | Giáo viên và quản trị trường được xem gì về học sinh | Tài liệu nghiệp vụ: quản trị trường chỉ xem báo cáo tổng hợp, không xem hồ sơ cá nhân; giáo viên không xem dữ liệu học sinh chưa cấp quyền. Chưa nói tên và trạng thái làm bài có phải hồ sơ cá nhân không | Cả hai vai trò thấy mã học sinh, họ tên, trạng thái (đã tham gia, đã làm bài, đã được chấm) của mọi học sinh trong lớp |
@@ -30,6 +30,7 @@ Mỗi dòng là một quyết định mà đặc tả chưa nêu, nêu chưa đ�
 | 12 | Phạm vi phase 1: đăng ký đăng nhập bằng mã OTP/SMS, gửi email, gửi yêu cầu xác nhận người giám hộ, cấp tài khoản quản trị trường kèm email kích hoạt | Đặc tả mô tả đầy đủ nhưng không nói mục nào thuộc phase 1 | Chưa làm. Đăng nhập bằng email + mật khẩu; quản trị trường được gán theo email tài khoản có sẵn và tự xác nhận; học sinh dưới 16 tuổi chưa có xác nhận giám hộ thì bị chặn nộp bảng điểm |
 | 13 | Báo cáo lớp có "phân bố nghề quan tâm" và lọc học sinh theo mã Holland | Phase 1 loại phần Nghề; mã Holland nổi trội của từng em chưa được tính | Báo cáo chỉ có điểm trung bình G1–G7. Bảng có bộ lọc theo nhóm G nổi trội của học sinh thay cho lọc theo Holland |
 | 14 | Nội dung và định dạng báo cáo lớp xuất ra | Đặc tả cho chọn Excel hoặc PDF, và phạm vi toàn bộ lớp hoặc chỉ học sinh đã hoàn thành; không nói tệp gồm những cột nào | Xuất Excel gồm danh sách học sinh (mã, họ tên, trạng thái tham gia, bài làm, đã được chấm) và điểm trung bình G1–G7 khi đủ ngưỡng. Chưa có PDF |
+| 15 | Giáo viên nộp từng học sinh thay cho nộp cả bảng | SRS ghi nộp bảng điểm là khóa cả bảng lưới lớp khi đủ 100%; nhóm đổi sang nộp từng em cho tiện giáo viên chấm dần | Mỗi dòng có nút Nộp, thêm nút Nộp tất cả cho các em đủ điều kiện. Em đã nộp thì khóa, không sửa được; các em khác vẫn chấm tiếp. Đã có em được nộp thì không đổi được gói câu hỏi |
 
 ## Cần BA cung cấp
 
@@ -59,8 +60,8 @@ Mỗi dòng là một quyết định mà đặc tả chưa nêu, nêu chưa đ�
 - Bảng lưới hiển thị mỗi tiêu chí một cột, mỗi học sinh một dòng. Ô nhận điểm 1–5 hoặc "Không đủ cơ sở" (lưu là trống, không phải 0).
 - Điền cả cột, điền xuống, dán từ bảng tính, nhập từ tệp Excel, chọn nhiều học sinh rồi gán cùng một bộ điểm, lọc theo nhóm tiêu chí và theo nhóm G nổi trội, lưu nháp từng ô. Mất mạng thì điểm lưu tạm trên máy và đồng bộ khi có mạng lại.
 - Ba câu mức thấu hiểu khai báo một lần cho cả lớp, sửa riêng từng em. Nhãn bốn mức theo bảng mặc định của đặc tả.
-- Nộp cả bảng một lần. Nộp bị chặn khi còn ô trống (các ô thiếu được tô đỏ), thiếu mức thấu hiểu, còn học sinh dưới 16 tuổi chưa có xác nhận giám hộ, hoặc chưa có tiêu chí rút gọn.
-- Nộp xong bảng khóa, không mở lại được. Mỗi học sinh có một bài đánh giá nhóm Giáo viên đã chấp nhận, kết quả của em được tính lại. Nhiều giáo viên cùng chấm một lớp thì mỗi người một bảng, các bài được gộp thành điểm nhóm Giáo viên.
+- Nộp từng học sinh bằng nút Nộp trên dòng, hoặc Nộp tất cả. Một em bị chặn khi còn ô trống (các ô thiếu được tô đỏ), thiếu mức thấu hiểu, dưới 16 tuổi chưa có xác nhận giám hộ, hoặc chưa chọn gói câu hỏi. Nộp tất cả nộp mọi em đủ điều kiện và nêu tên các em bị bỏ qua kèm lý do.
+- Em đã nộp thì dòng khóa, không mở lại được; đã có em được nộp thì không đổi được gói câu hỏi. Mỗi học sinh có một bài đánh giá nhóm Giáo viên đã chấp nhận, kết quả của em được tính lại. Nhiều giáo viên cùng chấm một lớp thì mỗi người một bảng, các bài được gộp thành điểm nhóm Giáo viên.
 
 ### Lớp học
 - Quản trị hệ thống tạo trường, thêm giáo viên hoặc quản trị trường theo email tài khoản (quản trị trường không tự đăng ký được, vai trò được nâng khi gán).
@@ -82,9 +83,9 @@ Mỗi dòng là một quyết định mà đặc tả chưa nêu, nêu chưa đ�
 
 | Điểm của bản trước | Hiện tại |
 |---|---|
-| Học sinh dưới 16 tuổi: chặn cả bảng hay chỉ bỏ em đó | Đã có trong đặc tả (giáo viên chưa nộp được bảng điểm cho em đó); hệ thống chặn cả bảng và nêu tên |
+| Học sinh dưới 16 tuổi: chặn cả bảng hay chỉ bỏ em đó | Đặc tả: không ghi nhận bảng điểm của em đó và báo cho giáo viên. Hệ thống bỏ qua em đó, các em khác vẫn nộp |
 | Nhiều giáo viên bộ môn cùng chấm | Đã có trong đặc tả: từ hai giáo viên trở lên thì gộp thành điểm nhóm Giáo viên |
-| Sửa bảng điểm sau khi nộp | Đặc tả: nộp xong khóa bảng. Hệ thống đã làm đúng như vậy |
+| Sửa bảng điểm sau khi nộp | Đặc tả: nộp xong khóa bảng. Hệ thống khóa từng em đã nộp (xem mục 15) |
 | Học sinh mới chỉ có dòng nhập từ Excel được chấm không | Đặc tả yêu cầu khởi tạo tài khoản. Hệ thống đã tạo tài khoản khi nhập; còn lại câu hỏi cách đăng nhập (mục 6) |
 | Bốn mức của ba câu mức thấu hiểu | Đặc tả đã có nhãn từng mức; mã nguồn dùng đúng |
 | Báo cáo dưới 5 học sinh chỉ hiện thông báo thiếu | Đặc tả yêu cầu hiện phần trăm tiến độ tham gia; đã sửa |

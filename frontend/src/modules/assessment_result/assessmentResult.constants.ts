@@ -47,13 +47,13 @@ export const EMPTY_RESULT: AssessmentResultSummary = {
   calculatedAt: null,
   finalizedAt: null,
   groups: [
-    { groupCode: 'G1', name: 'Tính cách cá nhân', sortOrder: 1, self: null, combined: null },
-    { groupCode: 'G2', name: 'Tư duy & Năng lực học tập', sortOrder: 2, self: null, combined: null },
-    { groupCode: 'G3', name: 'Giao tiếp & Xã hội', sortOrder: 3, self: null, combined: null },
-    { groupCode: 'G4', name: 'Thái độ & Tinh thần làm việc', sortOrder: 4, self: null, combined: null },
-    { groupCode: 'G5', name: 'Lãnh đạo & Tổ chức', sortOrder: 5, self: null, combined: null },
-    { groupCode: 'G6', name: 'Sở thích cá nhân tương thích giá trị nghề nghiệp', sortOrder: 6, self: null, combined: null },
-    { groupCode: 'G7', name: 'Động lực', sortOrder: 7, self: null, combined: null },
+    { groupCode: 'G1', name: 'Tính cách cá nhân', sortOrder: 1, self: null, combined: null, criteria: [] },
+    { groupCode: 'G2', name: 'Tư duy & Năng lực học tập', sortOrder: 2, self: null, combined: null, criteria: [] },
+    { groupCode: 'G3', name: 'Giao tiếp & Xã hội', sortOrder: 3, self: null, combined: null, criteria: [] },
+    { groupCode: 'G4', name: 'Thái độ & Tinh thần làm việc', sortOrder: 4, self: null, combined: null, criteria: [] },
+    { groupCode: 'G5', name: 'Lãnh đạo & Tổ chức', sortOrder: 5, self: null, combined: null, criteria: [] },
+    { groupCode: 'G6', name: 'Sở thích cá nhân tương thích giá trị nghề nghiệp', sortOrder: 6, self: null, combined: null, criteria: [] },
+    { groupCode: 'G7', name: 'Động lực', sortOrder: 7, self: null, combined: null, criteria: [] },
   ],
 };
 

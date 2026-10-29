@@ -12,10 +12,11 @@ import {
   saveStudentUnderstanding,
   setGridPackage,
   submitGrid,
+  submitGridStudent,
   type CellChange,
   type Understanding,
 } from '../class_assessment_grid.service';
-import type { CellValue, GridData, GridStudent } from '../class_assessment_grid.types';
+import type { CellValue, GridData, GridStudent, StudentBlockReason } from '../class_assessment_grid.types';
 import { downloadGradeTemplate } from '../grade_template';
 import {
   answerOptions,
@@ -53,7 +54,7 @@ interface ClassGradeTableProps {
   /** Chỉ hiện câu hỏi thuộc nhóm tiêu chí này; rỗng là hiện hết */
   groupCode: string;
   onRemove: (member: ClassMember) => void;
-  /** Gọi sau khi nộp bảng điểm xong; cha tải lại lớp */
+  /** Gọi sau khi nộp tất cả xong; cha tải lại lớp */
   onSubmitted: () => void;
   /** Gọi sau khi đổi gói câu hỏi; cha tải lại bảng */
   onPackageChanged: () => void;
@@ -75,7 +76,8 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
   const [grid, setGrid] = useState(initialGrid);
   /** Điểm theo từng học sinh; chỉ học sinh vừa sửa mới có bảng điểm mới nên các dòng khác không vẽ lại */
   const [scores, setScores] = useState<ScoreMap>(() => toScoreMap(initialGrid));
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  /** Đang xác nhận nộp: 'all' là nộp tất cả, còn lại là mã dòng của học sinh */
+  const [confirmTarget, setConfirmTarget] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   /** Lý do chưa nộp được, hiện trong hộp thoại xác nhận */
   const [blockedReasons, setBlockedReasons] = useState<string[]>([]);
@@ -87,11 +89,13 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
   /** Học sinh được chọn để gán cùng một bộ điểm */
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isAssignOpen, setIsAssignOpen] = useState(false);
-  /** Tô đỏ ô còn trống sau khi nộp bị chặn vì thiếu điểm */
-  const [highlightMissing, setHighlightMissing] = useState(false);
+  /** Học sinh có ô còn trống được tô đỏ sau khi nộp bị chặn vì thiếu điểm */
+  const [highlightIds, setHighlightIds] = useState<Set<string>>(new Set());
   /** Gói đang chờ xác nhận đổi (bảng đã có đáp án) */
   const [pendingPackage, setPendingPackage] = useState<PackageSize | null>(null);
   const [isChangingPackage, setIsChangingPackage] = useState(false);
+  /** Học sinh đang được nộp */
+  const [submittingId, setSubmittingId] = useState<string | null>(null);
 
   // Hàm xử lý của dòng giữ nguyên danh tính qua các lần vẽ; đọc dữ liệu mới nhất qua ref
   const scoresRef = useRef(scores);
@@ -101,6 +105,14 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
   const callbacksRef = useRef({ onRemove, onSubmitted, onError, onNotice });
   callbacksRef.current = { onRemove, onSubmitted, onError, onNotice };
   const isLocked = grid.status === 'submitted';
+  /** Học sinh đã nộp: dòng khóa, mọi thay đổi điểm của em đó bị bỏ qua */
+  const submittedIds = useMemo(
+    () => new Set(grid.students.filter((student) => student.submitted_at).map((student) => student.grid_student_id)),
+    [grid],
+  );
+  const submittedIdsRef = useRef(submittedIds);
+  submittedIdsRef.current = submittedIds;
+  const pendingCount = grid.students.length - submittedIds.size;
   const questions = grid.questions;
   /** Đáp án của từng câu hỏi */
   const answers = useMemo(() => new Map(questions.map((item) => [item.question_id, answerOptions(item)])), [questions]);
@@ -130,7 +142,8 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
     if (questions.length > 0 && filledOfStudent === questions.length) gradedStudents += 1;
   }
 
-  const applyChanges = useCallback(async (changes: GridChange[]) => {
+  const applyChanges = useCallback(async (allChanges: GridChange[]) => {
+    const changes = allChanges.filter((change) => !submittedIdsRef.current.has(change.gridStudentId));
     if (changes.length === 0 || gridRef.current.status === 'submitted') return;
     const previous = scoresRef.current;
     const next: ScoreMap = new Map(previous);
@@ -165,8 +178,12 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
   /** Đẩy các thay đổi đang lưu tạm trên máy lên máy chủ */
   const flushPending = useCallback(async () => {
     const gridId = gridRef.current.grid_id;
-    const pending = loadPending(gridId);
-    if (pending.length === 0 || gridRef.current.status === 'submitted') return;
+    const stored = loadPending(gridId);
+    if (stored.length === 0 || gridRef.current.status === 'submitted') return;
+    // Điểm lưu tạm của em đã nộp không còn ghi được
+    removePending(gridId, stored.filter((item) => submittedIdsRef.current.has(item.gridStudentId)));
+    const pending = stored.filter((item) => !submittedIdsRef.current.has(item.gridStudentId));
+    if (pending.length === 0) return;
     try {
       await saveCells(toPayload(pending));
       removePending(gridId, pending);
@@ -277,9 +294,10 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
     });
   }, []);
 
-  const allVisibleSelected = visibleGridStudents.length > 0 && visibleGridStudents.every((student) => selectedIds.has(student.grid_student_id));
+  const selectableStudents = visibleGridStudents.filter((student) => !student.submitted_at);
+  const allVisibleSelected = selectableStudents.length > 0 && selectableStudents.every((student) => selectedIds.has(student.grid_student_id));
   const handleToggleAll = (checked: boolean) =>
-    setSelectedIds(checked ? new Set(visibleGridStudents.map((student) => student.grid_student_id)) : new Set());
+    setSelectedIds(checked ? new Set(selectableStudents.map((student) => student.grid_student_id)) : new Set());
 
   const handleAssignGroup = (values: Map<string, CellValue>) => {
     const changes = [...selectedIds].flatMap((gridStudentId) =>
@@ -327,42 +345,85 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
     }
   };
 
-  /** Nộp cả bảng; chưa đủ điều kiện thì nêu lý do và tên học sinh bị chặn */
-  const handleSubmitGrid = async () => {
+  const blockText = (reason: StudentBlockReason, emptyCount?: number) =>
+    `${GRID_BLOCK_TEXT[reason] ?? 'Chưa nộp được'}${reason === 'empty_cells' && emptyCount ? ` (${emptyCount} ô)` : ''}`;
+
+  /** Tô đỏ ô trống của các em bị chặn vì thiếu điểm và cuộn tới ô đầu tiên */
+  const showMissing = (gridStudentIds: string[]) => {
+    setHighlightIds(new Set(gridStudentIds));
+    window.requestAnimationFrame(() =>
+      document.querySelector('.grid-cell-select.is-missing')?.scrollIntoView({ block: 'center', inline: 'center' }),
+    );
+  };
+
+  /** Nộp một học sinh; nộp xong dòng của em đó khóa, chưa đủ điều kiện thì nêu lý do */
+  const handleSubmitStudent = async (student: GridStudent) => {
+    const name = student.full_name || 'Học sinh';
+    setConfirmTarget(null);
+    setSubmittingId(student.grid_student_id);
+    onError(null);
+    try {
+      await flushPending();
+      const result = await submitGridStudent(student.grid_student_id);
+      if (result.ok) {
+        setGrid((current) => ({
+          ...current,
+          students: current.students.map((item) =>
+            item.grid_student_id === student.grid_student_id ? { ...item, submitted_at: new Date().toISOString() } : item,
+          ),
+        }));
+        setSelectedIds((current) => new Set([...current].filter((id) => id !== student.grid_student_id)));
+        setHighlightIds((current) => new Set([...current].filter((id) => id !== student.grid_student_id)));
+        onNotice(`Đã nộp điểm của ${name}.`);
+        return;
+      }
+      if (result.reason === 'empty_cells') showMissing([student.grid_student_id]);
+      onError(`${name}: ${blockText(result.reason, result.empty_count)}`);
+    } catch {
+      onError('Không nộp được điểm. Thử lại sau.');
+    } finally {
+      setSubmittingId(null);
+    }
+  };
+
+  /** Nộp tất cả em đủ điều kiện; các em còn lại được nêu tên kèm lý do */
+  const handleSubmitAll = async () => {
     setIsSubmitting(true);
     setBlockedReasons([]);
     onError(null);
     try {
+      await flushPending();
       const result = await submitGrid(grid.grid_id);
-      if (result.ok) {
-        setGrid((current) => ({ ...current, status: 'submitted', submitted_at: new Date().toISOString() }));
-        setIsConfirmOpen(false);
-        onNotice('Đã nộp và khóa bảng điểm.');
+      if (!result.ok) {
+        setBlockedReasons([GRID_BLOCK_TEXT[result.reason] ?? 'Chưa nộp được']);
+        return;
+      }
+      setConfirmTarget(null);
+      const skipped = result.skipped.map(
+        (item) => `${gridStudents.get(item.student_id)?.full_name || 'Học sinh'}: ${blockText(item.reason, item.empty_count)}`,
+      );
+      onNotice(`Đã nộp ${result.submitted_count} học sinh.`);
+      if (skipped.length > 0) onError(`Chưa nộp ${skipped.length} học sinh. ${skipped.join('; ')}`);
+      if (result.submitted_count > 0) {
         onSubmitted();
         return;
       }
-      const names =
-        'student_ids' in result
-          ? result.student_ids.map((id) => gridStudents.get(id)?.full_name || 'Học sinh').join(', ')
-          : '';
-      const text = GRID_BLOCK_TEXT[result.reason] ?? 'Chưa nộp được bảng điểm';
-      if (result.reason === 'empty_cells') {
-        // Đóng hộp thoại để thấy các ô thiếu được tô đỏ trong bảng
-        setIsConfirmOpen(false);
-        setHighlightMissing(true);
-        onError(`${text} (${result.empty_count} ô)${names ? `: ${names}` : ''}`);
-        window.requestAnimationFrame(() =>
-          document.querySelector('.grid-cell-select.is-missing')?.scrollIntoView({ block: 'center', inline: 'center' }),
-        );
-        return;
-      }
-      setBlockedReasons([`${text}${names ? `: ${names}` : ''}`]);
+      showMissing(
+        result.skipped
+          .filter((item) => item.reason === 'empty_cells')
+          .flatMap((item) => gridStudents.get(item.student_id)?.grid_student_id ?? []),
+      );
     } catch {
-      setBlockedReasons(['Không nộp được bảng điểm. Thử lại sau.']);
+      setBlockedReasons(['Không nộp được. Thử lại sau.']);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const handleRequestSubmit = useCallback((gridStudentId: string) => {
+    setBlockedReasons([]);
+    setConfirmTarget(gridStudentId);
+  }, []);
 
   const handleRemove = useCallback((member: ClassMember) => callbacksRef.current.onRemove(member), []);
 
@@ -372,6 +433,8 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
       questions,
     ).catch(() => onError('Không tạo được tệp mẫu. Thử lại sau.'));
   };
+
+  const confirmStudent = confirmTarget && confirmTarget !== 'all' ? (gridStudentsById.get(confirmTarget) ?? null) : null;
 
   const openIndex = openId ? visibleGridStudents.findIndex((student) => student.grid_student_id === openId) : -1;
   const openStudent = openId ? (gridStudentsById.get(openId) ?? null) : null;
@@ -412,7 +475,7 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
       options={PACKAGE_OPTIONS}
       emptyLabel="Chọn gói"
       value={grid.package_size ? String(grid.package_size) : ''}
-      disabled={isLocked || isChangingPackage}
+      disabled={isLocked || isChangingPackage || submittedIds.size > 0}
       onChange={handleSelectPackage}
     />
   );
@@ -424,11 +487,19 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
       <Card
         title="Bảng chấm điểm"
         action={
-          isLocked ? (
+          isLocked || (grid.students.length > 0 && pendingCount === 0) ? (
             <Badge variant="success">Đã nộp</Badge>
           ) : (
-            <Button type="button" leftIcon={<Send size={16} />} disabled={!hasQuestions} onClick={() => setIsConfirmOpen(true)}>
-              Nộp bảng điểm
+            <Button
+              type="button"
+              leftIcon={<Send size={16} />}
+              disabled={!hasQuestions || submittingId !== null}
+              onClick={() => {
+                setBlockedReasons([]);
+                setConfirmTarget('all');
+              }}
+            >
+              Nộp tất cả
             </Button>
           )
         }
@@ -437,7 +508,8 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
         <UnderstandingFields value={defaults} emptyLabel="Chưa chọn" disabled={isLocked} onChange={(value) => void handleDefaults(value)} />
         <ProgressBar value={totalCells === 0 ? null : (filledCells / totalCells) * 100} label="Tiến độ chấm" />
         <p className="grid-progress-text">
-          {gradedStudents}/{grid.students.length} học sinh đã chấm đủ · {filledCells}/{totalCells} ô
+          {gradedStudents}/{grid.students.length} học sinh đã chấm đủ · {submittedIds.size}/{grid.students.length} đã nộp ·{' '}
+          {filledCells}/{totalCells} ô
         </p>
       </Card>
 
@@ -508,10 +580,12 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
                     scores={student ? (scores.get(student.grid_student_id) ?? NO_SCORES) : undefined}
                     questions={visibleQuestions}
                     answers={answers}
-                    readOnly={isLocked}
+                    readOnly={isLocked || Boolean(student?.submitted_at)}
                     selected={student ? selectedIds.has(student.grid_student_id) : false}
-                    highlightMissing={highlightMissing}
+                    highlightMissing={student ? highlightIds.has(student.grid_student_id) : false}
+                    submitting={student ? submittingId === student.grid_student_id : false}
                     onToggle={handleToggle}
+                    onSubmit={handleRequestSubmit}
                     onOpen={setOpenId}
                     onChangeCell={handleChangeCell}
                     onRemove={handleRemove}
@@ -533,17 +607,21 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
       />
 
       <Modal
-        open={isConfirmOpen}
-        title="Xác nhận và khóa bảng điểm"
+        open={confirmTarget !== null}
+        title={confirmStudent ? `Nộp điểm của ${confirmStudent.full_name || 'học sinh'}` : 'Nộp tất cả'}
         locked={isSubmitting}
-        onClose={() => setIsConfirmOpen(false)}
+        onClose={() => setConfirmTarget(null)}
         actions={
           <>
-            <Button type="button" variant="ghost" onClick={() => setIsConfirmOpen(false)} disabled={isSubmitting}>
+            <Button type="button" variant="ghost" onClick={() => setConfirmTarget(null)} disabled={isSubmitting}>
               Quay lại chỉnh sửa
             </Button>
-            <Button type="button" onClick={() => void handleSubmitGrid()} isLoading={isSubmitting}>
-              Khóa bảng điểm
+            <Button
+              type="button"
+              onClick={() => void (confirmStudent ? handleSubmitStudent(confirmStudent) : handleSubmitAll())}
+              isLoading={isSubmitting}
+            >
+              Nộp
             </Button>
           </>
         }
@@ -551,11 +629,12 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
         {blockedReasons.map((reason) => (
           <Alert key={reason} variant="danger">{reason}</Alert>
         ))}
-        <ProgressBar value={totalCells === 0 ? null : (filledCells / totalCells) * 100} label="Tiến độ chấm" />
-        <p className="grid-progress-text">
-          {grid.students.length} học sinh · {filledCells}/{totalCells} ô
-        </p>
-        <Alert variant="warning">Sau khi khóa, không sửa được bảng điểm.</Alert>
+        {!confirmStudent && (
+          <p className="grid-progress-text">
+            {pendingCount} học sinh chưa nộp · {gradedStudents}/{grid.students.length} học sinh đã chấm đủ
+          </p>
+        )}
+        <Alert variant="warning">Sau khi nộp, không sửa được điểm của học sinh đã nộp.</Alert>
       </Modal>
 
       <GroupAssignModal
@@ -575,7 +654,7 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
           values={scores.get(openStudent.grid_student_id) ?? NO_SCORES}
           position={openIndex >= 0 ? { index: openIndex + 1, total: visibleGridStudents.length } : null}
           hasResult={members.some((member) => member.user_id === openStudent.student_id && member.has_result)}
-          readOnly={isLocked}
+          readOnly={isLocked || Boolean(openStudent.submitted_at)}
           onChangeCell={(questionId, value) => handleChangeCell(openStudent.grid_student_id, questionId, value)}
           onChangeUnderstanding={(value) => void updateUnderstanding(openStudent, value)}
           onPrevious={previousStudent ? () => setOpenId(previousStudent.grid_student_id) : null}

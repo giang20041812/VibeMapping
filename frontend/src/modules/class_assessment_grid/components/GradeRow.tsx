@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trash2 } from 'lucide-react';
+import { Send, Trash2 } from 'lucide-react';
 import { Badge, Button, Checkbox } from '../../../components/common';
 import type { ClassMember } from '../../class_management/class_management.types';
 import type { CellValue, GridQuestion, GridStudent } from '../class_assessment_grid.types';
@@ -14,13 +14,16 @@ interface GradeRowProps {
   questions: GridQuestion[];
   /** Đáp án của từng câu hỏi theo mã câu hỏi */
   answers: Map<string, AnswerOption[]>;
-  /** Bảng điểm đã nộp: không sửa được */
+  /** Bảng đã khóa cả bảng hoặc em này đã nộp: không sửa được */
   readOnly: boolean;
   /** Dòng đang được chọn để gán điểm cho nhóm */
   selected: boolean;
-  /** Tô đỏ các ô còn trống sau khi nộp bị chặn */
+  /** Tô đỏ các ô còn trống sau khi nộp em này bị chặn */
   highlightMissing: boolean;
+  /** Đang nộp điểm em này */
+  submitting: boolean;
   onToggle: (gridStudentId: string) => void;
+  onSubmit: (gridStudentId: string) => void;
   onOpen: (gridStudentId: string) => void;
   onChangeCell: (gridStudentId: string, questionId: string, value: CellValue) => void;
   onRemove: (member: ClassMember) => void;
@@ -36,7 +39,9 @@ export const GradeRow = React.memo<GradeRowProps>(function GradeRow({
   readOnly,
   selected,
   highlightMissing,
+  submitting,
   onToggle,
+  onSubmit,
   onOpen,
   onChangeCell,
   onRemove,
@@ -62,6 +67,7 @@ export const GradeRow = React.memo<GradeRowProps>(function GradeRow({
         )}
         {member.student_code && <span className="grid-student-code">{member.student_code}</span>}
         <div className="admin-badge-list">
+          {student?.submitted_at && <Badge variant="success" size="sm">Đã nộp</Badge>}
           {member.has_result && <Badge variant="info" size="sm">Đã làm bài</Badge>}
           {student?.guardian_pending && <Badge variant="warning" size="sm">Chờ người giám hộ</Badge>}
           {!student && <Badge size="sm">Chưa tham gia</Badge>}
@@ -103,6 +109,19 @@ export const GradeRow = React.memo<GradeRowProps>(function GradeRow({
       )}
       <td className="align-right">
         <div className="class-row-actions">
+          {student && !readOnly && (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              leftIcon={<Send size={14} />}
+              isLoading={submitting}
+              disabled={student.guardian_pending}
+              onClick={() => onSubmit(student.grid_student_id)}
+            >
+              Nộp
+            </Button>
+          )}
           <Button type="button" size="sm" variant="ghost" leftIcon={<Trash2 size={14} />} onClick={() => onRemove(member)}>
             Xóa
           </Button>

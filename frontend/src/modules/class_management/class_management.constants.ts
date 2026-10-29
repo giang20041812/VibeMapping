@@ -59,6 +59,6 @@ export const GRID_BLOCK_TEXT: Record<string, string> = {
   guardian_pending: 'Dưới 16 tuổi, chưa có xác nhận của người giám hộ',
   missing_understanding: 'Chưa có đủ ba câu mức thấu hiểu',
   no_students: 'Bảng chưa có học sinh nào',
-  already_submitted: 'Bảng điểm đã nộp',
+  already_submitted: 'Đã nộp',
   package_not_selected: 'Chưa chọn gói câu hỏi',
 };

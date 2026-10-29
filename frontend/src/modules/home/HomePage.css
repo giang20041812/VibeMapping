@@ -89,19 +89,19 @@
 }
 
 /* Chữ nằm sau một lớp che mờ dần; mép lớp che nghiêng theo hướng sao bay và do useStarFlight đẩy đi
-   (lớp che chỉ dùng độ trong suốt, màu của nó không hiện ra). Bay xong thì bỏ hẳn lớp che. */
+   (chỉ một biến --wipe-front đổi mỗi khung; lớp che chỉ dùng độ trong suốt, màu của nó không hiện ra). Bay xong thì bỏ hẳn lớp che. */
 .feature-copy {
   position: relative;
   --wipe-angle: 90deg;
-  --wipe-solid: -2px;
+  --wipe-soft: 1px;
   --wipe-front: -1px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: var(--space-5);
   min-width: 0;
-  -webkit-mask-image: linear-gradient(var(--wipe-angle), var(--color-text-main) var(--wipe-solid), transparent var(--wipe-front));
-  mask-image: linear-gradient(var(--wipe-angle), var(--color-text-main) var(--wipe-solid), transparent var(--wipe-front));
+  -webkit-mask-image: linear-gradient(var(--wipe-angle), var(--color-text-main) calc(var(--wipe-front) - var(--wipe-soft)), transparent var(--wipe-front));
+  mask-image: linear-gradient(var(--wipe-angle), var(--color-text-main) calc(var(--wipe-front) - var(--wipe-soft)), transparent var(--wipe-front));
 }
 .feature.is-landed .feature-copy { -webkit-mask-image: none; mask-image: none; }
 

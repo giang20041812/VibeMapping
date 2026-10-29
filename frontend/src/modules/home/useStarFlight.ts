@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import type { RefObject } from 'react';
+import { useLowPower } from '../../hooks/useLowPower';
 import { createFlightPath, createSparks, drawTrail, readFlightPalette } from './starFlight';
-import type { Point } from './starFlight';
+import type { Point, TrailDetail } from './starFlight';
 
 interface FlightElements {
   section: HTMLElement;
@@ -9,6 +10,7 @@ interface FlightElements {
   visual: HTMLElement;
   canvas: HTMLCanvasElement;
   flip: boolean;
+  lowPower: boolean;
 }
 
 const smoothstep = (edge0: number, edge1: number, value: number) => {
@@ -26,13 +28,18 @@ function readDuration(element: Element): number {
 
 /** Vệt hiện chữ chạy tiếp với tốc độ này (px/ms) sau khi sao đã tới nơi, cho tới khi hiện hết chữ */
 const FINISH_SWEEP_SPEED = 0.9;
+/** Thời gian trung bình mỗi khung (ms) quá ngưỡng này thì bớt một mức chi tiết của đuôi */
+const SLOW_FRAME_MS = 26;
+const SLOW_WINDOW_FRAMES = 10;
+/** Vài khung đầu bỏ qua vì còn đang cấp phát canvas */
+const WARMUP_FRAMES = 6;
 
 /**
  * Hình minh họa bay vào như một ngôi sao theo đường cong, kéo theo đuôi vũ trụ vẽ trên canvas.
- * Sao bay ngang phía trên chữ; sao đi qua rồi chữ mới hiện ra dần, theo chiều sao bay.
+ * Sao lao xuống qua giữa phần chữ rồi vòng lên chỗ hình; sao đi qua rồi chữ mới hiện ra dần, theo chiều sao bay.
  * Trả về hàm hủy; hủy giữa chừng thì trả mọi thứ về trạng thái ban đầu.
  */
-function runStarFlight({ section, copy, visual, canvas, flip }: FlightElements, onDone: () => void): () => void {
+function runStarFlight({ section, copy, visual, canvas, flip, lowPower }: FlightElements, onDone: () => void): () => void {
   const duration = readDuration(section);
   let finished = false;
   const finish = () => {
@@ -97,18 +104,26 @@ function runStarFlight({ section, copy, visual, canvas, flip }: FlightElements, 
   const lag = 150 * unit;
   const soft = Math.min(220 * unit, gradientLength * 0.45);
   copy.style.setProperty('--wipe-angle', `${angle}deg`);
+  copy.style.setProperty('--wipe-soft', `${soft}px`);
 
-  // Canvas phủ bề ngang màn hình để đuôi chạy từ mép màn hình vào, chừa chỗ hai phía cho đường cong
-  const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-  const padTop = 0.6 * sectionHeight;
-  const canvasHeight = sectionHeight * 2.2;
+  /* Canvas chỉ rộng bằng vùng đường bay (cộng chỗ cho quầng sáng) và vẽ ở độ phân giải thấp hơn màn hình:
+     đuôi là vệt sáng mềm nên không cần sắc nét, mà số điểm ảnh phải tô mỗi khung giảm nhiều */
+  const glowCap = 240 * unit;
+  const margin = glowCap + 20 * unit;
+  const minX = Math.max(-sectionBox.left, path.bounds.minX - margin);
+  const maxX = Math.min(viewportWidth - sectionBox.left, path.bounds.maxX + margin);
+  const minY = path.bounds.minY - margin;
+  const maxY = path.bounds.maxY + margin;
+  const cssWidth = maxX - minX;
+  const cssHeight = maxY - minY;
+  const renderScale = lowPower ? 0.55 : 0.8;
   canvas.style.display = 'block';
-  canvas.style.left = `${-sectionBox.left}px`;
-  canvas.style.top = `${-padTop}px`;
-  canvas.style.width = `${viewportWidth}px`;
-  canvas.style.height = `${canvasHeight}px`;
-  canvas.width = Math.round(viewportWidth * dpr);
-  canvas.height = Math.round(canvasHeight * dpr);
+  canvas.style.left = `${minX}px`;
+  canvas.style.top = `${minY}px`;
+  canvas.style.width = `${cssWidth}px`;
+  canvas.style.height = `${cssHeight}px`;
+  canvas.width = Math.max(1, Math.round(cssWidth * renderScale));
+  canvas.height = Math.max(1, Math.round(cssHeight * renderScale));
   const ctx = canvas.getContext('2d');
   if (!ctx) {
     finish();
@@ -116,16 +131,23 @@ function runStarFlight({ section, copy, visual, canvas, flip }: FlightElements, 
   }
 
   const palette = readFlightPalette(section);
-  const sparks = createSparks(56, 7);
+  const sparks = createSparks(lowPower ? 24 : 40, 7, palette);
   const stageWidth = Math.min(visualBox.width, 520 * unit);
   const baseLength = Math.min(path.length * 0.62, 900 * unit);
+  const widthCap = Math.min(80 * unit, viewportWidth * 0.14);
 
   visual.style.willChange = 'transform, opacity';
   let frameId = 0;
   let startTime = 0;
   let lastTime = 0;
   let maxFront = -Infinity;
+  let lastFront = NaN;
+  let opaque = false;
   let cancelled = false;
+  let detail: TrailDetail = lowPower ? 1 : 2;
+  let frameCount = 0;
+  let windowFrames = 0;
+  let windowTime = 0;
 
   const frame = (now: number) => {
     if (cancelled) return;
@@ -133,6 +155,19 @@ function runStarFlight({ section, copy, visual, canvas, flip }: FlightElements, 
       startTime = now;
       lastTime = now;
     }
+    const delta = now - lastTime;
+    // Máy vẽ chậm thì tự bớt chi tiết của đuôi giữa chừng
+    frameCount += 1;
+    if (frameCount > WARMUP_FRAMES) {
+      windowFrames += 1;
+      windowTime += delta;
+      if (windowFrames >= SLOW_WINDOW_FRAMES) {
+        if (windowTime / windowFrames > SLOW_FRAME_MS && detail > 0) detail = (detail - 1) as TrailDetail;
+        windowFrames = 0;
+        windowTime = 0;
+      }
+    }
+
     const p = Math.min((now - startTime) / duration, 1);
     const travel = 1 - Math.pow(1 - p, 2.3);
     const headDistance = path.length * travel;
@@ -141,32 +176,41 @@ function runStarFlight({ section, copy, visual, canvas, flip }: FlightElements, 
     // Hình chính là ngôi sao: nhỏ khi bay, lớn dần và hết xoay khi tới nơi
     const scale = 0.3 + 0.7 * smoothstep(0.25, 1, p);
     const rotation = -200 * Math.pow(1 - p, 1.8);
-    visual.style.opacity = String(Math.min(1, p / 0.05));
-    visual.style.transform = `translate(${head.x - target.x}px, ${head.y - target.y}px) rotate(${rotation}deg) scale(${scale})`;
+    if (p < 0.06) visual.style.opacity = String(Math.min(1, p / 0.05));
+    else if (!opaque) {
+      visual.style.opacity = '1';
+      opaque = true;
+    }
+    visual.style.transform = `translate3d(${head.x - target.x}px, ${head.y - target.y}px, 0) rotate(${rotation}deg) scale(${scale})`;
 
     // Đuôi cong theo đường bay, thu ngắn và mờ đi khi sao tới nơi
     const headSize = stageWidth * scale;
     const strength = 1 - smoothstep(0.72, 1, p);
-    ctx.setTransform(dpr, 0, 0, dpr, sectionBox.left * dpr, padTop * dpr);
-    ctx.clearRect(-sectionBox.left, -padTop, viewportWidth, canvasHeight);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.setTransform(renderScale, 0, 0, renderScale, -minX * renderScale, -minY * renderScale);
     drawTrail(ctx, {
       path,
       head: headDistance,
       length: baseLength * strength,
-      width: Math.min(Math.max(headSize * 0.26, 12 * unit), 80 * unit, viewportWidth * 0.14),
-      glowRadius: headSize * 0.85,
+      width: Math.min(Math.max(headSize * 0.26, 12 * unit), widthCap),
+      glowRadius: Math.min(headSize * 0.85, glowCap),
       strength: Math.pow(strength, 0.7),
       time: now,
       palette,
       sparks,
+      detail,
     });
 
     // Sao đi qua rồi chữ mới hiện: mép vệt đi sau đầu sao một đoạn và không bao giờ lùi lại
     maxFront = Math.max(maxFront, project(head) - lag);
-    if (p >= 1) maxFront += FINISH_SWEEP_SPEED * (now - lastTime);
+    if (p >= 1) maxFront += FINISH_SWEEP_SPEED * delta;
     lastTime = now;
-    copy.style.setProperty('--wipe-front', `${maxFront}px`);
-    copy.style.setProperty('--wipe-solid', `${maxFront - soft}px`);
+    const front = Math.round(maxFront * 2) / 2;
+    if (front !== lastFront) {
+      copy.style.setProperty('--wipe-front', `${front}px`);
+      lastFront = front;
+    }
 
     if (p >= 1 && maxFront - soft >= gradientLength) {
       finish();
@@ -186,8 +230,8 @@ function runStarFlight({ section, copy, visual, canvas, flip }: FlightElements, 
     visual.style.willChange = '';
     canvas.style.display = 'none';
     copy.style.removeProperty('--wipe-angle');
+    copy.style.removeProperty('--wipe-soft');
     copy.style.removeProperty('--wipe-front');
-    copy.style.removeProperty('--wipe-solid');
   };
 }
 
@@ -196,7 +240,7 @@ const READY_TIMEOUT_MS = 3000;
 
 /**
  * Chạy chuyến bay một lần khi hàng giới thiệu đã hiện ra và hình đã sẵn sàng (không còn khung chờ tải).
- * Trả về `started` khi chuyến bay bắt đầu.
+ * Trả về `started` khi chuyến bay bắt đầu và `landed` khi đã bay xong.
  */
 export function useStarFlight(sectionRef: RefObject<HTMLElement | null>, seen: boolean, ready: boolean, flip: boolean) {
   const copyRef = useRef<HTMLDivElement>(null);
@@ -204,6 +248,10 @@ export function useStarFlight(sectionRef: RefObject<HTMLElement | null>, seen: b
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [landed, setLanded] = useState(false);
   const [waitedEnough, setWaitedEnough] = useState(false);
+  /* Đọc qua ref: kết quả đo máy yếu có thể đổi giữa chừng mà không được làm chuyến bay chạy lại */
+  const lowPower = useLowPower();
+  const lowPowerRef = useRef(lowPower);
+  lowPowerRef.current = lowPower;
 
   useEffect(() => {
     if (!seen || ready) return;
@@ -220,7 +268,7 @@ export function useStarFlight(sectionRef: RefObject<HTMLElement | null>, seen: b
     const visual = visualRef.current;
     const canvas = canvasRef.current;
     if (!section || !copy || !visual || !canvas) return;
-    return runStarFlight({ section, copy, visual, canvas, flip }, () => setLanded(true));
+    return runStarFlight({ section, copy, visual, canvas, flip, lowPower: lowPowerRef.current }, () => setLanded(true));
   }, [started, landed, flip, sectionRef]);
 
   return { copyRef, visualRef, canvasRef, started, landed };

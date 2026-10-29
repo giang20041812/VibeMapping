@@ -20,6 +20,8 @@ export interface Globe360Props {
   active?: boolean;
   /** Bản thu gọn dùng làm nút gạt: không có nhóm chọn, không tương tác riêng */
   compact?: boolean;
+  /** Tạm dừng vòng vẽ (giữ nguyên khung hình cuối), ví dụ khi quả cầu đang bay vào trang và máy cần dành sức cho việc khác */
+  paused?: boolean;
   className?: string;
 }
 
@@ -41,7 +43,7 @@ interface Control {
  * tự lần lượt làm nổi từng nhóm khi chưa ai tương tác. Vòng lặp vẽ tự dừng khi quả cầu đứng yên
  * hoặc ra khỏi màn hình, và tự hạ chất lượng nếu máy vẽ chậm.
  */
-export const Globe360: React.FC<Globe360Props> = ({ nodes, active = true, compact = false, className = '' }) => {
+export const Globe360: React.FC<Globe360Props> = ({ nodes, active = true, compact = false, paused = false, className = '' }) => {
   const reduced = useReducedMotion();
   const lowPower = useLowPower();
   const { ref: figureRef, inView, seen } = useInView<HTMLElement>(0.2);
@@ -86,16 +88,16 @@ export const Globe360: React.FC<Globe360Props> = ({ nodes, active = true, compac
   }, [active]);
 
   useEffect(() => {
-    inViewRef.current = inView;
-    if (inView) controlRef.current?.start();
+    inViewRef.current = inView && !paused;
+    if (inView && !paused) controlRef.current?.start();
     else controlRef.current?.stop();
-  }, [inView]);
+  }, [inView, paused]);
 
   useEffect(() => {
-    if (compact || interacting || reduced || !inView || nodes.length === 0) return;
+    if (compact || interacting || reduced || !inView || paused || nodes.length === 0) return;
     const timer = window.setInterval(() => setTourIndex((i) => (i + 1) % nodes.length), TOUR_INTERVAL_MS);
     return () => window.clearInterval(timer);
-  }, [compact, interacting, reduced, inView, nodes.length]);
+  }, [compact, interacting, reduced, inView, paused, nodes.length]);
 
   useEffect(() => {
     const canvas = canvasRef.current;

@@ -47,7 +47,8 @@ interface FeatureProps {
   flip?: boolean;
   /** Hình đã tải xong; chưa xong thì chưa bay, để khung chờ tải không bay vào trang */
   ready?: boolean;
-  visual: React.ReactNode;
+  /** Hình minh họa; dạng hàm nhận `flying` (chưa bay xong) để hình tạm nghỉ việc nặng trong lúc bay */
+  visual: React.ReactNode | ((flying: boolean) => React.ReactNode);
   children: React.ReactNode;
 }
 
@@ -69,7 +70,7 @@ const Feature: React.FC<FeatureProps> = ({ id, flip = false, ready = true, visua
         {children}
       </div>
       <div ref={visualRef} className="feature-visual">
-        {visual}
+        {typeof visual === 'function' ? visual(!landed) : visual}
       </div>
     </section>
   );
@@ -164,11 +165,11 @@ export const HomePage: React.FC = () => {
       <Feature
         id="feature-360"
         flip
-        visual={
+        visual={(flying) => (
           <div className="feature-stage">
-            <Globe360 nodes={GLOBE_NODES} />
+            <Globe360 nodes={GLOBE_NODES} paused={flying} />
           </div>
-        }
+        )}
       >
         <h2 id="feature-360-title" className="feature-title">
           Đánh giá <span className="text-spectrum">360°</span> từ những người hiểu bạn

@@ -3,11 +3,11 @@ import type { CellValue } from './class_assessment_grid.types';
 /** Thay đổi chưa lưu được lên máy chủ (mất mạng), giữ ở Local Storage theo từng bảng điểm */
 export interface PendingChange {
   gridStudentId: string;
-  criteriaId: string;
+  questionId: string;
   value: CellValue;
 }
 
-const keyOf = (gridId: string) => `vm_grid_pending_${gridId}`;
+const keyOf = (gridId: string) => `vm_grid_pending_q_${gridId}`;
 
 export function loadPending(gridId: string): PendingChange[] {
   try {
@@ -22,7 +22,7 @@ export function loadPending(gridId: string): PendingChange[] {
 /** Gộp thay đổi mới vào hàng đợi; cùng một ô thì giữ giá trị sau cùng */
 export function addPending(gridId: string, changes: PendingChange[]): void {
   const merged = new Map<string, PendingChange>();
-  for (const item of [...loadPending(gridId), ...changes]) merged.set(`${item.gridStudentId}|${item.criteriaId}`, item);
+  for (const item of [...loadPending(gridId), ...changes]) merged.set(`${item.gridStudentId}|${item.questionId}`, item);
   try {
     window.localStorage.setItem(keyOf(gridId), JSON.stringify([...merged.values()]));
   } catch {
@@ -32,8 +32,8 @@ export function addPending(gridId: string, changes: PendingChange[]): void {
 
 /** Ô vừa lưu được lên máy chủ thì bỏ khỏi hàng đợi, tránh giá trị cũ ghi đè giá trị mới khi đồng bộ */
 export function removePending(gridId: string, changes: PendingChange[]): void {
-  const done = new Set(changes.map((item) => `${item.gridStudentId}|${item.criteriaId}`));
-  const rest = loadPending(gridId).filter((item) => !done.has(`${item.gridStudentId}|${item.criteriaId}`));
+  const done = new Set(changes.map((item) => `${item.gridStudentId}|${item.questionId}`));
+  const rest = loadPending(gridId).filter((item) => !done.has(`${item.gridStudentId}|${item.questionId}`));
   try {
     if (rest.length === 0) window.localStorage.removeItem(keyOf(gridId));
     else window.localStorage.setItem(keyOf(gridId), JSON.stringify(rest));

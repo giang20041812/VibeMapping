@@ -10,7 +10,9 @@
     "import:schools:dry": "tsx import-schools.ts --dry-run",
     "typecheck": "tsc --noEmit",
     "gen:types": "tsx gen-types.ts",
-    "assign:packages": "tsx assign-default-packages.ts"
+    "assign:packages": "tsx assign-default-packages.ts",
+    "seed:demo": "tsx seed-demo-accounts.ts",
+    "seed:demo:dry": "tsx seed-demo-accounts.ts --dry-run"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",

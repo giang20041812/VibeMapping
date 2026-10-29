@@ -2,8 +2,8 @@ import React from 'react';
 import { Trash2 } from 'lucide-react';
 import { Badge, Button, Checkbox } from '../../../components/common';
 import type { ClassMember } from '../../class_management/class_management.types';
-import type { CellValue, GridStudent, ShortCriteria } from '../class_assessment_grid.types';
-import { CELL_OPTIONS } from '../grid.logic';
+import type { CellValue, GridQuestion, GridStudent } from '../class_assessment_grid.types';
+import type { AnswerOption } from '../grid.logic';
 import './ClassGradeTable.css';
 
 interface GradeRowProps {
@@ -11,7 +11,9 @@ interface GradeRowProps {
   /** Không có khi học sinh chưa có tài khoản trong lớp */
   student: GridStudent | undefined;
   scores: Map<string, CellValue> | undefined;
-  criteria: ShortCriteria[];
+  questions: GridQuestion[];
+  /** Đáp án của từng câu hỏi theo mã câu hỏi */
+  answers: Map<string, AnswerOption[]>;
   /** Bảng điểm đã nộp: không sửa được */
   readOnly: boolean;
   /** Dòng đang được chọn để gán điểm cho nhóm */
@@ -20,7 +22,7 @@ interface GradeRowProps {
   highlightMissing: boolean;
   onToggle: (gridStudentId: string) => void;
   onOpen: (gridStudentId: string) => void;
-  onChangeCell: (gridStudentId: string, criteriaId: string, value: CellValue) => void;
+  onChangeCell: (gridStudentId: string, questionId: string, value: CellValue) => void;
   onRemove: (member: ClassMember) => void;
 }
 
@@ -29,7 +31,8 @@ export const GradeRow = React.memo<GradeRowProps>(function GradeRow({
   member,
   student,
   scores,
-  criteria,
+  questions,
+  answers,
   readOnly,
   selected,
   highlightMissing,
@@ -65,20 +68,21 @@ export const GradeRow = React.memo<GradeRowProps>(function GradeRow({
         </div>
       </th>
       {student ? (
-        criteria.map((item) => {
-          const value = scores?.get(item.id) ?? '';
+        questions.map((item) => {
+          const value = scores?.get(item.question_id) ?? '';
           return (
-            <td key={item.id} className="align-center">
+            <td key={item.question_id} className="align-center">
               <select
                 className={`grid-cell-select ${value === '' ? (highlightMissing ? 'is-missing' : 'is-empty') : ''}`}
                 data-student={student.grid_student_id}
-                data-criteria={item.id}
-                aria-label={`${student.full_name} – ${item.name}`}
+                data-question={item.question_id}
+                aria-label={`${student.full_name} – ${item.content}`}
                 value={value}
                 disabled={readOnly}
-                onChange={(event) => onChangeCell(student.grid_student_id, item.id, event.target.value as CellValue)}
+                onChange={(event) => onChangeCell(student.grid_student_id, item.question_id, event.target.value as CellValue)}
               >
-                {CELL_OPTIONS.map((option) => (
+                <option value="">—</option>
+                {(answers.get(item.question_id) ?? []).map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
@@ -88,7 +92,7 @@ export const GradeRow = React.memo<GradeRowProps>(function GradeRow({
           );
         })
       ) : (
-        <td colSpan={criteria.length + 1} className="align-center">—</td>
+        <td colSpan={questions.length + 1} className="align-center">—</td>
       )}
       {student && (
         <td className="align-center">

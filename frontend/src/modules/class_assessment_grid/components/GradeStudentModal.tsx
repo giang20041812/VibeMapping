@@ -2,51 +2,38 @@ import React, { useCallback, useMemo, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Alert, Badge, Button, Modal, ProgressBar } from '../../../components/common';
 import type { Understanding } from '../class_assessment_grid.service';
-import type { CellValue, GridStudent, ShortCriteria } from '../class_assessment_grid.types';
+import type { CellValue, GridQuestion, GridStudent } from '../class_assessment_grid.types';
+import type { AnswerOption } from '../grid.logic';
 import { UnderstandingFields } from './UnderstandingFields';
 import './ClassGradeTable.css';
 
-const SCORES: CellValue[] = ['1', '2', '3', '4', '5'];
-
-interface CriterionRowProps {
-  item: ShortCriteria;
+interface QuestionRowProps {
+  item: GridQuestion;
+  options: AnswerOption[];
   value: CellValue;
   disabled: boolean;
-  onChange: (criteriaId: string, value: CellValue) => void;
+  onChange: (questionId: string, value: CellValue) => void;
 }
 
-/** Một tiêu chí; memo để chọn điểm một tiêu chí không vẽ lại cả danh sách */
-const CriterionRow = React.memo<CriterionRowProps>(function CriterionRow({ item, value, disabled, onChange }) {
+/** Một câu hỏi; memo để chọn đáp án một câu không vẽ lại cả danh sách */
+const QuestionRow = React.memo<QuestionRowProps>(function QuestionRow({ item, options, value, disabled, onChange }) {
   return (
     <div className={`grade-row ${value === '' ? 'is-empty' : ''}`}>
-      <span className="grade-row-name">
-        <span className="grade-row-code">{item.dimension_code}</span>
-        {item.name}
-      </span>
-      <div className="grade-row-options" role="group" aria-label={item.name}>
-        {SCORES.map((score) => (
+      <span className="grade-row-name">{item.content}</span>
+      <div className="grade-row-options" role="group" aria-label={item.content}>
+        {options.map((option) => (
           <Button
-            key={score}
+            key={option.value}
             type="button"
             size="sm"
-            variant={value === score ? 'primary' : 'outline'}
-            aria-pressed={value === score}
+            variant={value === option.value ? 'primary' : 'outline'}
+            aria-pressed={value === option.value}
             disabled={disabled}
-            onClick={() => onChange(item.id, value === score ? '' : score)}
+            onClick={() => onChange(item.question_id, value === option.value ? '' : option.value)}
           >
-            {score}
+            {option.label}
           </Button>
         ))}
-        <Button
-          type="button"
-          size="sm"
-          variant={value === 'na' ? 'primary' : 'outline'}
-          aria-pressed={value === 'na'}
-          disabled={disabled}
-          onClick={() => onChange(item.id, value === 'na' ? '' : 'na')}
-        >
-          Không đủ cơ sở
-        </Button>
       </div>
     </div>
   );
@@ -54,9 +41,11 @@ const CriterionRow = React.memo<CriterionRowProps>(function CriterionRow({ item,
 
 interface GradeStudentModalProps {
   student: GridStudent;
-  /** Toàn bộ tiêu chí của bộ rút gọn */
-  criteria: ShortCriteria[];
-  /** Điểm hiện có của em này, theo mã tiêu chí */
+  /** Toàn bộ câu hỏi của gói */
+  questions: GridQuestion[];
+  /** Đáp án của từng câu hỏi theo mã câu hỏi */
+  answers: Map<string, AnswerOption[]>;
+  /** Đáp án hiện có của em này, theo mã câu hỏi */
   values: Map<string, CellValue>;
   /** Vị trí trong danh sách đang hiển thị */
   position: { index: number; total: number } | null;
@@ -64,7 +53,7 @@ interface GradeStudentModalProps {
   hasResult: boolean;
   /** Bảng điểm đã nộp: không sửa được */
   readOnly: boolean;
-  onChangeCell: (criteriaId: string, value: CellValue) => void;
+  onChangeCell: (questionId: string, value: CellValue) => void;
   onChangeUnderstanding: (value: Understanding) => void;
   onPrevious: (() => void) | null;
   onNext: (() => void) | null;
@@ -73,7 +62,8 @@ interface GradeStudentModalProps {
 
 export const GradeStudentModal: React.FC<GradeStudentModalProps> = ({
   student,
-  criteria,
+  questions,
+  answers,
   values,
   position,
   hasResult,
@@ -84,21 +74,21 @@ export const GradeStudentModal: React.FC<GradeStudentModalProps> = ({
   onNext,
   onClose,
 }) => {
-  const filled = criteria.filter((item) => values.get(item.id)).length;
+  const filled = questions.filter((item) => values.get(item.question_id)).length;
 
   const onChangeCellRef = useRef(onChangeCell);
   onChangeCellRef.current = onChangeCell;
-  const handleCell = useCallback((criteriaId: string, value: CellValue) => onChangeCellRef.current(criteriaId, value), []);
+  const handleCell = useCallback((questionId: string, value: CellValue) => onChangeCellRef.current(questionId, value), []);
 
   const groups = useMemo(() => {
-    const result: { code: string; name: string; items: ShortCriteria[] }[] = [];
-    for (const item of criteria) {
+    const result: { code: string; name: string; items: GridQuestion[] }[] = [];
+    for (const item of questions) {
       const last = result[result.length - 1];
       if (last && last.code === item.group_code) last.items.push(item);
       else result.push({ code: item.group_code, name: item.group_name, items: [item] });
     }
     return result;
-  }, [criteria]);
+  }, [questions]);
 
   return (
     <Modal
@@ -130,9 +120,9 @@ export const GradeStudentModal: React.FC<GradeStudentModalProps> = ({
       </div>
 
       <div>
-        <ProgressBar value={criteria.length === 0 ? null : (filled / criteria.length) * 100} label="Tiến độ chấm" />
+        <ProgressBar value={questions.length === 0 ? null : (filled / questions.length) * 100} label="Tiến độ chấm" />
         <p className="grid-progress-text">
-          {filled}/{criteria.length} tiêu chí
+          {filled}/{questions.length} câu
         </p>
       </div>
 
@@ -151,7 +141,14 @@ export const GradeStudentModal: React.FC<GradeStudentModalProps> = ({
         <section key={group.code} className="grade-group">
           <h3 className="grade-group-title">{`${group.code} · ${group.name}`}</h3>
           {group.items.map((item) => (
-            <CriterionRow key={item.id} item={item} value={values.get(item.id) ?? ''} disabled={readOnly} onChange={handleCell} />
+            <QuestionRow
+              key={item.question_id}
+              item={item}
+              options={answers.get(item.question_id) ?? []}
+              value={values.get(item.question_id) ?? ''}
+              disabled={readOnly}
+              onChange={handleCell}
+            />
           ))}
         </section>
       ))}

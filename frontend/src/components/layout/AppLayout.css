@@ -10,8 +10,7 @@
   z-index: 1;
   flex: 1 0 auto;
   min-width: 0;
-  padding-top: var(--top-space);
-  padding-left: var(--rail-width);
+  padding-top: var(--space-8);
   padding-bottom: calc(var(--space-10) + var(--safe-bottom));
 }
 
@@ -31,11 +30,6 @@
 @keyframes page-enter {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
-}
-
-/* Điện thoại / cảm ứng: thanh bên ẩn hẳn nên không cần chừa cột biểu tượng */
-@media (hover: none), (pointer: coarse), (max-width: 900px) {
-  .app-main-content { padding-left: 0; }
 }
 
 @media (max-width: 640px) {

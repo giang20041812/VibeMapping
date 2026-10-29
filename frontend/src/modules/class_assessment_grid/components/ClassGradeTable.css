@@ -1,3 +1,7 @@
+.grid-package-select {
+  max-width: 260px;
+}
+
 .grid-understanding {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
@@ -40,22 +44,30 @@
   background-color: var(--color-bg-surface);
 }
 
-.grid-head-code {
-  display: block;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
+/* Cột câu hỏi: nội dung câu xuống dòng, tối đa 3 dòng; di chuột xem đủ câu */
+.grid-table th.grid-question-col {
+  min-width: calc(200 * var(--px));
+  max-width: calc(240 * var(--px));
+  white-space: normal;
+  text-align: left;
+  vertical-align: bottom;
 }
 
 .grid-head-name {
-  display: block;
-  max-width: calc(140 * var(--px));
+  display: -webkit-box;
   overflow: hidden;
-  text-overflow: ellipsis;
+  font-weight: 500;
+  line-height: 1.3;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
 }
 
 .grid-cell-select {
-  min-width: calc(72 * var(--px));
+  width: 100%;
+  min-width: calc(200 * var(--px));
+  max-width: calc(240 * var(--px));
+  text-overflow: ellipsis;
   min-height: 44px;
   padding: 0 var(--space-2);
   font: inherit;
@@ -143,18 +155,21 @@
   color: var(--color-text-main);
 }
 
-.grade-row-code {
-  margin-right: var(--space-2);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
-}
-
-
 .grade-row-options {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-1);
+  min-width: 0;
+}
+
+.grade-row-options .app-button {
+  white-space: normal;
+  text-align: left;
+}
+
+.grade-row-select {
+  flex: 0 1 260px;
+  min-width: 160px;
 }
 
 /* Chuyển qua lại giữa các học sinh trong hộp thoại chấm điểm */

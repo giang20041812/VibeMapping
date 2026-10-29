@@ -1,22 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Modal, Select } from '../../../components/common';
-import type { CellValue, ShortCriteria } from '../class_assessment_grid.types';
-import { CELL_OPTIONS } from '../grid.logic';
+import type { CellValue, GridQuestion } from '../class_assessment_grid.types';
+import type { AnswerOption } from '../grid.logic';
 import './ClassGradeTable.css';
 
 interface GroupAssignModalProps {
   open: boolean;
   /** Số học sinh đã chọn */
   count: number;
-  criteria: ShortCriteria[];
+  questions: GridQuestion[];
+  /** Đáp án của từng câu hỏi theo mã câu hỏi */
+  answers: Map<string, AnswerOption[]>;
   onApply: (values: Map<string, CellValue>) => void;
   onClose: () => void;
 }
 
 const KEEP = '';
 
-/** Một bộ điểm cho nhiều học sinh: tiêu chí để trống thì giữ nguyên điểm hiện có */
-export const GroupAssignModal: React.FC<GroupAssignModalProps> = ({ open, count, criteria, onApply, onClose }) => {
+/** Một bộ đáp án cho nhiều học sinh: câu để trống thì giữ nguyên đáp án hiện có */
+export const GroupAssignModal: React.FC<GroupAssignModalProps> = ({ open, count, questions, answers, onApply, onClose }) => {
   const [values, setValues] = useState<Map<string, CellValue>>(new Map());
 
   useEffect(() => {
@@ -29,7 +31,7 @@ export const GroupAssignModal: React.FC<GroupAssignModalProps> = ({ open, count,
     <Modal
       open={open}
       wide
-      title={`Gán điểm cho ${count} học sinh`}
+      title={`Gán đáp án cho ${count} học sinh`}
       onClose={onClose}
       actions={
         <>
@@ -37,24 +39,22 @@ export const GroupAssignModal: React.FC<GroupAssignModalProps> = ({ open, count,
             Hủy bỏ
           </Button>
           <Button type="button" disabled={filled === 0} onClick={() => onApply(values)}>
-            Gán điểm
+            Gán đáp án
           </Button>
         </>
       }
     >
       <div className="grade-group">
-        {criteria.map((item) => (
-          <div key={item.id} className="grade-row">
-            <span className="grade-row-name">
-              <span className="grade-row-code">{item.dimension_code}</span>
-              {item.name}
-            </span>
+        {questions.map((item) => (
+          <div key={item.question_id} className="grade-row">
+            <span className="grade-row-name">{item.content}</span>
             <Select
-              aria-label={item.name}
-              options={CELL_OPTIONS.filter((option) => option.value !== '')}
+              className="grade-row-select"
+              aria-label={item.content}
+              options={answers.get(item.question_id) ?? []}
               emptyLabel="Giữ nguyên"
-              value={values.get(item.id) ?? KEEP}
-              onChange={(value) => setValues((current) => new Map(current).set(item.id, value as CellValue))}
+              value={values.get(item.question_id) ?? KEEP}
+              onChange={(value) => setValues((current) => new Map(current).set(item.question_id, value as CellValue))}
             />
           </div>
         ))}

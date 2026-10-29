@@ -60,66 +60,33 @@
 
 /* Variants */
 .btn-primary {
-  background: linear-gradient(160deg, color-mix(in srgb, var(--brand-sky) 82%, transparent), color-mix(in srgb, var(--color-primary) 88%, transparent));
+  background: var(--color-primary);
   color: var(--color-text-inverse);
-  border-color: var(--glass-border);
-  box-shadow: var(--glass-edge), 0 8px 18px -8px color-mix(in srgb, var(--color-primary) 70%, transparent);
 }
-.btn-primary::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--gradient-shine);
-  transform: translateX(-120%);
-  pointer-events: none;
-}
-.btn-primary:hover:not(:disabled) {
-  background: linear-gradient(160deg, color-mix(in srgb, var(--brand-sky) 92%, transparent), color-mix(in srgb, var(--color-primary-hover) 94%, transparent));
-  box-shadow: var(--glass-edge), var(--shadow-glow);
-  transform: translateY(-1px);
-}
-.btn-primary:hover:not(:disabled)::after {
-  transform: translateX(120%);
-  transition: transform 700ms var(--ease-out);
-}
-.btn-primary:active:not(:disabled) {
-  background: color-mix(in srgb, var(--color-primary-active) 92%, transparent);
-}
+.btn-primary:hover:not(:disabled) { background: var(--color-primary-hover); }
+.btn-primary:active:not(:disabled) { background: var(--color-primary-active); }
 
 .btn-secondary {
-  background: linear-gradient(160deg, color-mix(in srgb, var(--brand-ice) 85%, transparent), color-mix(in srgb, var(--brand-mist) 55%, transparent));
+  background: var(--brand-ice);
   color: var(--color-text-brand);
-  border-color: var(--glass-border);
-  box-shadow: var(--glass-edge);
 }
-.btn-secondary:hover:not(:disabled) {
-  background-color: var(--brand-mist);
-  border-color: var(--brand-soft);
-  transform: translateY(-1px);
-}
+.btn-secondary:hover:not(:disabled) { background: var(--brand-mist); }
 
 .btn-outline {
-  background: var(--glass-bg-strong);
+  background: var(--color-bg-surface);
   color: var(--color-text-brand);
-  border-color: var(--glass-border);
-  box-shadow: var(--glass-edge);
+  border-color: var(--color-border-hover);
 }
 .btn-outline:hover:not(:disabled) {
-  background-color: var(--brand-ice);
-  border-color: var(--brand-sky);
-  transform: translateY(-1px);
+  background: var(--brand-ice);
+  border-color: var(--color-primary);
 }
 
 .btn-danger {
-  background: linear-gradient(160deg, color-mix(in srgb, var(--color-danger) 80%, transparent), color-mix(in srgb, var(--color-danger-text) 88%, transparent));
+  background: var(--color-danger);
   color: var(--color-text-inverse);
-  border-color: var(--glass-border);
-  box-shadow: var(--glass-edge);
 }
-.btn-danger:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--color-danger-text) 94%, transparent);
-  transform: translateY(-1px);
-}
+.btn-danger:hover:not(:disabled) { background: var(--color-danger-text); }
 
 .btn-ghost {
   background-color: transparent;

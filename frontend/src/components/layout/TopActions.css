@@ -1,15 +1,9 @@
-/* Hai icon nổi ở góc phải trên cùng. Không có thanh nền: chỉ từng nút có nền riêng để luôn nhìn rõ. */
+/* Thông báo và avatar nằm cuối thanh điều hướng */
 .top-actions {
-  position: fixed;
-  top: calc(var(--space-3) + var(--safe-top));
-  right: calc(var(--space-4) + var(--safe-right));
-  z-index: var(--z-sticky);
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  pointer-events: none;
 }
-.top-actions > * { pointer-events: auto; }
 
 .top-popover-root { position: relative; }
 
@@ -23,14 +17,13 @@
   height: 36px;
   transition: box-shadow var(--transition-fast), background-color var(--transition-fast);
 }
-/* Icon thông báo không có nền: chỉ hiện nền nhạt khi rê chuột hoặc đang mở, để không che nội dung phía dưới */
+/* Icon thông báo không có nền: chỉ hiện nền nhạt khi rê chuột hoặc đang mở */
 .top-icon-button {
   color: var(--color-text-main);
   border-radius: var(--radius-md);
 }
-.top-icon-button svg { filter: drop-shadow(0 0 2px var(--color-bg-surface)); }
 .top-icon-button:hover,
-.top-icon-button[aria-expanded='true'] { background: var(--surface-glass); }
+.top-icon-button[aria-expanded='true'] { background: var(--color-bg-subtle); }
 
 .top-avatar {
   font-size: var(--font-size-base);

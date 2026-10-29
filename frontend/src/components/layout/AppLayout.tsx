@@ -1,8 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { Sidebar } from './Sidebar';
-import { TopActions } from './TopActions';
-import { HomeBackdrop } from '../../modules/home/HomeBackdrop';
+import { Navbar } from './Navbar';
 import './AppLayout.css';
 
 /** Màn hình làm bài ẩn nút mở menu để tập trung vào câu hỏi */
@@ -21,9 +19,7 @@ export const AppLayout: React.FC = () => {
 
   return (
     <div className={`app-shell ${focusMode ? 'is-focus' : ''}`}>
-      <HomeBackdrop />
-      <Sidebar open={menuOpen} onToggle={toggleMenu} onClose={closeMenu} />
-      <TopActions />
+      <Navbar open={menuOpen} onToggle={toggleMenu} onClose={closeMenu} />
       <main className="app-main-content">
         <div key={location.pathname} className="app-container page-enter">
           <Outlet />

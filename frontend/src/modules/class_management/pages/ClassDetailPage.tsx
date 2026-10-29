@@ -11,8 +11,8 @@ import { EMPTY_RESULT } from '../../assessment_result/assessmentResult.constants
 import { useAuth } from '../../auth/AuthContext';
 import { qrDataUrl } from '../../invitation_link/invitation.service';
 import { ClassGradeTable } from '../../class_assessment_grid/components/ClassGradeTable';
-import { getClassGrid, listShortSetCriteria } from '../../class_assessment_grid/class_assessment_grid.service';
-import type { GridData, ShortCriteria } from '../../class_assessment_grid/class_assessment_grid.types';
+import { getClassGrid } from '../../class_assessment_grid/class_assessment_grid.service';
+import type { GridData } from '../../class_assessment_grid/class_assessment_grid.types';
 import { MEMBER_ROLE_LABEL, STAFF_ERROR_TEXT } from '../class_management.constants';
 import {
   assignClassTeacher,
@@ -58,7 +58,8 @@ export const ClassDetailPage: React.FC = () => {
   const [isTeacherOpen, setIsTeacherOpen] = useState(false);
   const [grid, setGrid] = useState<GridData | null>(null);
   const [gridKey, setGridKey] = useState(0);
-  const [criteria, setCriteria] = useState<ShortCriteria[]>([]);
+  /** Tải lại riêng bảng điểm (sau khi đổi gói câu hỏi) */
+  const [gridReloadKey, setGridReloadKey] = useState(0);
   /** Nhóm G nổi trội của từng học sinh đã có kết quả (theo mã học sinh trong hệ thống) */
   const [dominantGroups, setDominantGroups] = useState<Map<string, string>>(new Map());
   const [exportScope, setExportScope] = useState<ReportScope>('all');
@@ -101,18 +102,17 @@ export const ClassDetailPage: React.FC = () => {
       return;
     }
     let active = true;
-    Promise.all([getClassGrid(classId), listShortSetCriteria()])
-      .then(([gridData, criteriaList]) => {
+    getClassGrid(classId)
+      .then((gridData) => {
         if (!active) return;
         setGrid(gridData);
-        setCriteria(criteriaList);
         setGridKey((value) => value + 1);
       })
       .catch(() => active && setGrid(null));
     return () => {
       active = false;
     };
-  }, [classId, isTeacher, reloadKey]);
+  }, [classId, isTeacher, reloadKey, gridReloadKey]);
 
   useEffect(() => {
     if (!isTeacher) {
@@ -215,10 +215,10 @@ export const ClassDetailPage: React.FC = () => {
   const gradeRows = useMemo(() => rows.filter((member) => member.member_role === 'student'), [rows]);
   const groupOptions = useMemo(() => {
     const seen = new Map<string, string>();
-    for (const item of criteria) seen.set(item.group_code, `${item.group_code} · ${item.group_name}`);
+    for (const item of grid?.questions ?? []) seen.set(item.group_code, `${item.group_code} · ${item.group_name}`);
     return [...seen].map(([value, label]) => ({ value, label }));
-  }, [criteria]);
-  const showGrid = !isLoading && grid !== null && criteria.length > 0;
+  }, [grid]);
+  const showGrid = !isLoading && grid !== null;
 
   return (
     <>
@@ -301,7 +301,7 @@ export const ClassDetailPage: React.FC = () => {
               onChange={(value) => patch({ dominantGroup: value })}
             />
           )}
-          {showGrid && (
+          {showGrid && groupOptions.length > 0 && (
             <SearchableSelect
               label="Nhóm tiêu chí"
               placeholder="Tất cả"
@@ -311,19 +311,16 @@ export const ClassDetailPage: React.FC = () => {
             />
           )}
         </FilterBar>
-        {!isLoading && grid !== null && criteria.length === 0 && (
-          <Alert variant="warning">Chưa có tiêu chí nào thuộc bộ câu hỏi rút gọn. Quản trị hệ thống cần đánh dấu tiêu chí trước khi chấm.</Alert>
-        )}
         {showGrid ? (
           <ClassGradeTable
             key={gridKey}
             members={gradeRows}
             allMembers={students}
             initialGrid={grid}
-            criteria={criteria}
             groupCode={applied.groupCode}
             onRemove={(member) => void handleRemove(member)}
             onSubmitted={reload}
+            onPackageChanged={() => setGridReloadKey((value) => value + 1)}
             onError={setError}
             onNotice={setNotice}
           />

@@ -695,6 +695,7 @@ export type Database = {
         Row: {
           id: string;
           grid_student_id: string;
+          question_id: string | null;
           criteria_id: string;
           score: number | null;
           is_insufficient_basis: boolean;
@@ -704,7 +705,8 @@ export type Database = {
         Insert: {
           id?: string;
           grid_student_id: string;
-          criteria_id: string;
+          question_id?: string | null;
+          criteria_id?: string;
           score?: number | null;
           is_insufficient_basis?: boolean;
           created_at?: string;
@@ -713,6 +715,7 @@ export type Database = {
         Update: {
           id?: string;
           grid_student_id?: string;
+          question_id?: string | null;
           criteria_id?: string;
           score?: number | null;
           is_insufficient_basis?: boolean;
@@ -796,6 +799,7 @@ export type Database = {
           class_id: string;
           teacher_id: string;
           status: string;
+          package_size: number | null;
           default_acquaintance_duration: number | null;
           default_contact_frequency: number | null;
           default_observation_depth: number | null;
@@ -808,6 +812,7 @@ export type Database = {
           class_id: string;
           teacher_id: string;
           status?: string;
+          package_size?: number | null;
           default_acquaintance_duration?: number | null;
           default_contact_frequency?: number | null;
           default_observation_depth?: number | null;
@@ -820,6 +825,7 @@ export type Database = {
           class_id?: string;
           teacher_id?: string;
           status?: string;
+          package_size?: number | null;
           default_acquaintance_duration?: number | null;
           default_contact_frequency?: number | null;
           default_observation_depth?: number | null;
@@ -1832,6 +1838,10 @@ export type Database = {
       submit_class_grid: {
         Args: { p_grid_id: string };
         Returns: Json;
+      };
+      set_grid_package: {
+        Args: { p_grid_id: string; p_package_size: number; p_question_ids: string[] };
+        Returns: undefined;
       };
       get_class_dominant_groups: {
         Args: { p_class_id: string };

@@ -31,14 +31,30 @@
   --color-accent-gold: var(--brand-gold);
 
   /* Surface & Background */
-  --color-bg-app: #ffffff;
+  --color-bg-app: #f5f8fe;
   --color-bg-surface: #ffffff;
   --color-bg-subtle: #e9eefa;
   --color-bg-hover: #dde6f7;
   --color-bg-cream: var(--brand-cream);
 
-  /* Họa tiết nền: các mảng xám nhạt vát cạnh và nét vẽ mờ, tĩnh, lặp theo chiều dọc */
-  --pattern-bands: url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%201440%201700%22%20preserveAspectRatio=%22xMidYMin%20slice%22%3E%3Cg%20fill=%22%23f4f5f8%22%3E%3Cpolygon%20points=%220,150%20520,70%201440,170%201440,800%20560,900%200,760%22/%3E%3Cpolygon%20points=%220,1180%20900,1120%201440,1220%201440,1640%200,1600%22/%3E%3C/g%3E%3Cg%20fill=%22none%22%20stroke-width=%224%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20opacity=%220.75%22%3E%3Cpath%20stroke=%22%23c7e3fe%22%20d=%22M1060%20330q40-56%2080%200t80%200t80%200t80%200%22/%3E%3Ccircle%20stroke=%22%23d9cdf2%22%20cx=%22210%22%20cy=%22340%22%20r=%2248%22/%3E%3Cpath%20stroke=%22%23c7e3fe%22%20d=%22M1260%20560v44M1238%20582h44%22/%3E%3Cpath%20stroke=%22%23d9cdf2%22%20d=%22M150%20960v44M128%20982h44%22/%3E%3Cpath%20stroke=%22%23c7e3fe%22%20d=%22M1160%201000l44-76%2044%2076z%22/%3E%3Ccircle%20stroke=%22%23c7e3fe%22%20cx=%22320%22%20cy=%221400%22%20r=%2230%22/%3E%3Cpath%20stroke=%22%23d9cdf2%22%20d=%22M880%201420q40-56%2080%200t80%200t80%200%22/%3E%3Cpath%20stroke=%22%23d9cdf2%22%20d=%22M70%20520q60-40%2030-90t30-90%22/%3E%3Cpath%20stroke=%22%23c7e3fe%22%20d=%22M1330%201330q-60%2040-30%2090t-30%2090%22/%3E%3C/g%3E%3C/svg%3E");
+  /* Nền trang: hai vầng sáng tím và cyan rất mờ ở đầu trang, tĩnh, không lặp */
+  --bg-app-glow:
+    radial-gradient(56vw 440px at 100% 0, rgba(141, 127, 214, 0.1), transparent 70%),
+    radial-gradient(44vw 360px at 0 0, rgba(63, 169, 198, 0.07), transparent 70%);
+
+  /* Thanh bên: bầu trời đêm navy, vài chấm sao và một chòm sao mờ ở đáy */
+  --sidebar-bg: linear-gradient(180deg, var(--brand-navy) 0%, var(--brand-deep) 100%);
+  --sidebar-stars: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 260'%3E%3Cg fill='%23c7e3fe' opacity='0.4'%3E%3Ccircle cx='22' cy='58' r='0.9'/%3E%3Ccircle cx='112' cy='38' r='1'/%3E%3Ccircle cx='204' cy='26' r='0.9'/%3E%3Ccircle cx='60' cy='104' r='1'/%3E%3Ccircle cx='222' cy='78' r='0.8'/%3E%3Ccircle cx='132' cy='92' r='0.9'/%3E%3Ccircle cx='24' cy='142' r='0.8'/%3E%3Ccircle cx='216' cy='236' r='1'/%3E%3Ccircle cx='98' cy='242' r='0.9'/%3E%3Ccircle cx='58' cy='252' r='0.8'/%3E%3C/g%3E%3Cpolyline points='34,214 78,176 128,192 168,146 186,104' fill='none' stroke='%23c7e3fe' stroke-opacity='0.2' stroke-width='1'/%3E%3Cline x1='168' y1='146' x2='208' y2='164' stroke='%23c7e3fe' stroke-opacity='0.2' stroke-width='1'/%3E%3Cg fill='%23c7e3fe' opacity='0.6'%3E%3Ccircle cx='34' cy='214' r='1.6'/%3E%3Ccircle cx='78' cy='176' r='1.8'/%3E%3Ccircle cx='128' cy='192' r='1.5'/%3E%3Ccircle cx='168' cy='146' r='1.8'/%3E%3Ccircle cx='208' cy='164' r='1.4'/%3E%3C/g%3E%3Ccircle cx='186' cy='104' r='5' fill='%23f6b73c' opacity='0.18'/%3E%3Ccircle cx='186' cy='104' r='2.2' fill='%23f6b73c' opacity='0.9'/%3E%3C/svg%3E");
+  --sidebar-text: rgba(199, 227, 254, 0.74);
+  --sidebar-text-strong: var(--brand-cream);
+  --sidebar-hover-bg: rgba(199, 227, 254, 0.08);
+  --sidebar-active-bg: rgba(199, 227, 254, 0.14);
+  --sidebar-ring: rgba(199, 227, 254, 0.24);
+  --sidebar-star-glow: 0 0 8px 1px rgba(246, 183, 60, 0.6);
+
+  /* Thanh ngang: trong suốt ở đầu trang, nền kem mờ khi đã cuộn */
+  --topbar-scrolled-bg: rgba(255, 252, 240, 0.86);
+  --topbar-blur: blur(12px) saturate(1.2);
 
   /* Borders & Dividers */
   --color-border: #d8e2f4;

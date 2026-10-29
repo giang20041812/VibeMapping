@@ -1,10 +1,19 @@
-/* Thanh điều hướng ngang: nền trắng đặc, viền dưới mảnh, dính ở đầu trang */
+/* Thanh điều hướng ngang dính ở đầu trang: trong suốt trên nền trang, nền kem mờ khi đã cuộn hoặc đang mở menu */
 .topbar {
   position: sticky;
   top: 0;
   z-index: var(--z-sticky);
-  background: var(--color-bg-surface);
-  border-bottom: 1px solid var(--color-border);
+  background: transparent;
+  border-bottom: 1px solid transparent;
+  transition: background-color var(--transition-normal), border-color var(--transition-normal), box-shadow var(--transition-normal);
+}
+.topbar.is-scrolled,
+.topbar.is-open {
+  background: var(--topbar-scrolled-bg);
+  border-bottom-color: var(--color-border);
+  box-shadow: var(--shadow-sm);
+  -webkit-backdrop-filter: var(--topbar-blur);
+  backdrop-filter: var(--topbar-blur);
 }
 
 .topbar-inner {

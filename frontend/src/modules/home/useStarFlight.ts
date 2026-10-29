@@ -66,18 +66,26 @@ function runStarFlight({ section, copy, visual, canvas, flip }: FlightElements, 
 
   /* Chữ và hình nằm cạnh nhau (hai cột) hay chồng lên nhau (một cột, điện thoại) */
   const sideBySide = visualBox.top < copyBox.top + copyBox.height && copyBox.top < visualBox.top + visualBox.height;
+  /* Sao lao từ ngoài mép màn hình xuống qua giữa phần chữ, lượn xuống thấp nhất rồi vòng lên chỗ hình:
+     đường cong võng xuống nên đuôi quét ngang qua chữ */
   const start: Point = {
     x: flip ? viewportWidth - sectionBox.left + 180 * unit : -sectionBox.left - 180 * unit,
-    y: sideBySide ? target.y - 0.1 * sectionHeight : copyBox.top + 0.25 * copyBox.height,
+    y: sideBySide ? target.y - 0.34 * sectionHeight : copyBox.top - 0.12 * copyBox.height,
   };
   const span = target.x - start.x;
-  const rise = (sideBySide ? 0.38 : 0.45) * sectionHeight;
-  const path = createFlightPath(
-    start,
-    { x: start.x + 0.3 * span, y: start.y - rise },
-    { x: target.x - 0.28 * span, y: target.y - rise * (sideBySide ? 1 : 0.6) },
-    target,
-  );
+  const path = sideBySide
+    ? createFlightPath(
+        start,
+        { x: start.x + 0.34 * span, y: target.y + 0.2 * sectionHeight },
+        { x: target.x - 0.26 * span, y: target.y + 0.15 * sectionHeight },
+        target,
+      )
+    : createFlightPath(
+        start,
+        { x: start.x + 0.34 * span, y: copyBox.top + 0.9 * copyBox.height },
+        { x: target.x - 0.3 * span, y: target.y - 0.35 * visualBox.height },
+        target,
+      );
 
   // Vệt hiện chữ nghiêng theo hướng sao bay (mép vệt vuông góc với hướng bay)
   const dirLength = Math.hypot(span, 0.5 * (target.y - start.y)) || 1;
@@ -86,13 +94,13 @@ function runStarFlight({ section, copy, visual, canvas, flip }: FlightElements, 
   const copyCenter: Point = { x: copyBox.left + copyBox.width / 2, y: copyBox.top + copyBox.height / 2 };
   const gradientLength = Math.abs(copyBox.width * dir.x) + Math.abs(copyBox.height * dir.y);
   const project = (q: Point) => (q.x - copyCenter.x) * dir.x + (q.y - copyCenter.y) * dir.y + gradientLength / 2;
-  const lag = 70 * unit;
-  const soft = Math.min(230 * unit, gradientLength * 0.45);
+  const lag = 150 * unit;
+  const soft = Math.min(220 * unit, gradientLength * 0.45);
   copy.style.setProperty('--wipe-angle', `${angle}deg`);
 
-  // Canvas phủ bề ngang màn hình để đuôi chạy từ mép màn hình vào, chừa chỗ phía trên cho đường cong
+  // Canvas phủ bề ngang màn hình để đuôi chạy từ mép màn hình vào, chừa chỗ hai phía cho đường cong
   const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-  const padTop = 0.8 * sectionHeight;
+  const padTop = 0.6 * sectionHeight;
   const canvasHeight = sectionHeight * 2.2;
   canvas.style.display = 'block';
   canvas.style.left = `${-sectionBox.left}px`;
@@ -183,22 +191,37 @@ function runStarFlight({ section, copy, visual, canvas, flip }: FlightElements, 
   };
 }
 
-/** Chạy chuyến bay một lần khi hàng giới thiệu lần đầu hiện ra */
-export function useStarFlight(sectionRef: RefObject<HTMLElement | null>, seen: boolean, flip: boolean) {
+/** Chờ hình tải xong tối đa chừng này rồi vẫn bay, để hàng không trống mãi khi máy chủ chậm */
+const READY_TIMEOUT_MS = 3000;
+
+/**
+ * Chạy chuyến bay một lần khi hàng giới thiệu đã hiện ra và hình đã sẵn sàng (không còn khung chờ tải).
+ * Trả về `started` khi chuyến bay bắt đầu.
+ */
+export function useStarFlight(sectionRef: RefObject<HTMLElement | null>, seen: boolean, ready: boolean, flip: boolean) {
   const copyRef = useRef<HTMLDivElement>(null);
   const visualRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [landed, setLanded] = useState(false);
+  const [waitedEnough, setWaitedEnough] = useState(false);
 
   useEffect(() => {
-    if (!seen || landed) return;
+    if (!seen || ready) return;
+    const timer = window.setTimeout(() => setWaitedEnough(true), READY_TIMEOUT_MS);
+    return () => window.clearTimeout(timer);
+  }, [seen, ready]);
+
+  const started = seen && (ready || waitedEnough);
+
+  useEffect(() => {
+    if (!started || landed) return;
     const section = sectionRef.current;
     const copy = copyRef.current;
     const visual = visualRef.current;
     const canvas = canvasRef.current;
     if (!section || !copy || !visual || !canvas) return;
     return runStarFlight({ section, copy, visual, canvas, flip }, () => setLanded(true));
-  }, [seen, landed, flip, sectionRef]);
+  }, [started, landed, flip, sectionRef]);
 
-  return { copyRef, visualRef, canvasRef, landed };
+  return { copyRef, visualRef, canvasRef, started, landed };
 }

@@ -64,6 +64,7 @@
 
 /* Hình chính là ngôi sao; ẩn cho tới khi bắt đầu bay (opacity và transform do useStarFlight đặt) */
 .feature-visual {
+  position: relative;
   display: flex;
   justify-content: center;
   min-width: 0;
@@ -72,7 +73,7 @@
 .feature.is-landed .feature-visual { opacity: 1; }
 .feature-stage { width: 100%; max-width: calc(520 * var(--px)); }
 
-/* Đuôi sao vẽ trên canvas phủ bề ngang màn hình; nằm trên chữ, dưới hình */
+/* Đuôi sao vẽ trên canvas phủ bề ngang màn hình; nằm dưới chữ và dưới hình */
 .feature-trail {
   position: absolute;
   display: none;
@@ -90,6 +91,7 @@
 /* Chữ nằm sau một lớp che mờ dần; mép lớp che nghiêng theo hướng sao bay và do useStarFlight đẩy đi
    (lớp che chỉ dùng độ trong suốt, màu của nó không hiện ra). Bay xong thì bỏ hẳn lớp che. */
 .feature-copy {
+  position: relative;
   --wipe-angle: 90deg;
   --wipe-solid: -2px;
   --wipe-front: -1px;

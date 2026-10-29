@@ -45,26 +45,29 @@ interface FeatureProps {
   id: string;
   /** Đưa hình minh họa sang bên trái, chữ sang bên phải */
   flip?: boolean;
+  /** Hình đã tải xong; chưa xong thì chưa bay, để khung chờ tải không bay vào trang */
+  ready?: boolean;
   visual: React.ReactNode;
   children: React.ReactNode;
 }
 
 /** Một hàng giới thiệu: chữ một bên, hình minh họa một bên; hàng sau đổi bên so với hàng trước.
- *  Hình bay vào như một ngôi sao theo đường cong, kéo theo đuôi vũ trụ; sao đi qua rồi chữ mới hiện ra dần. */
-const Feature: React.FC<FeatureProps> = ({ id, flip = false, visual, children }) => {
+ *  Hình bay vào như một ngôi sao theo đường cong, đuôi quét ngang qua chữ; sao đi qua rồi chữ mới hiện ra dần. */
+const Feature: React.FC<FeatureProps> = ({ id, flip = false, ready = true, visual, children }) => {
   /* Chờ hàng hiện rõ hơn mới bắt đầu bay để người xem kịp thấy cả chặng bay */
   const { ref, seen } = useInView<HTMLElement>(0.3);
-  const { copyRef, visualRef, canvasRef, landed } = useStarFlight(ref, seen, flip);
+  const { copyRef, visualRef, canvasRef, started, landed } = useStarFlight(ref, seen, ready, flip);
   return (
     <section
       ref={ref}
-      className={`feature ${flip ? 'feature-flip' : ''} ${seen ? 'is-visible' : ''} ${landed ? 'is-landed' : ''}`}
+      className={`feature ${flip ? 'feature-flip' : ''} ${started ? 'is-visible' : ''} ${landed ? 'is-landed' : ''}`}
       aria-labelledby={`${id}-title`}
     >
+      {/* Canvas nằm dưới chữ: đuôi sao đi qua chữ, chữ hiện lên rõ nét trên đuôi */}
+      <canvas ref={canvasRef} className="feature-trail" aria-hidden="true" />
       <div ref={copyRef} className="feature-copy">
         {children}
       </div>
-      <canvas ref={canvasRef} className="feature-trail" aria-hidden="true" />
       <div ref={visualRef} className="feature-visual">
         {visual}
       </div>
@@ -133,6 +136,7 @@ export const HomePage: React.FC = () => {
 
       <Feature
         id="feature-self"
+        ready={!isChartLoading}
         visual={
           <div className="feature-stage">
             {isChartLoading ? (

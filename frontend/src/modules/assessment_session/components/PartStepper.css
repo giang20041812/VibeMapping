@@ -5,9 +5,13 @@
   list-style: none;
 }
 
-.part-step { position: relative; min-width: 0; }
+.part-step { --step: var(--brand-sky); --step-next: var(--brand-sky); --step-glow: var(--color-primary-ring); position: relative; min-width: 0; }
+.part-step-1 { --step: var(--part-1); --step-next: var(--part-2); --step-glow: var(--part-1-glow); }
+.part-step-2 { --step: var(--part-2); --step-next: var(--part-3); --step-glow: var(--part-2-glow); }
+.part-step-3 { --step: var(--part-3); --step-next: var(--part-4); --step-glow: var(--part-3-glow); }
+.part-step-4 { --step: var(--part-4); --step-next: var(--part-4); --step-glow: var(--part-4-glow); }
 
-/* Đường nối giữa các bước */
+/* Đường nối giữa các bước: phần đã xong tô chuyển màu sang phần kế */
 .part-step:not(:last-child)::after {
   content: '';
   position: absolute;
@@ -15,11 +19,11 @@
   left: calc(50% + 24px);
   right: calc(-50% + 24px);
   height: 3px;
-  background: var(--color-border);
+  background: linear-gradient(90deg, var(--step), var(--step-next)) left / 0 100% no-repeat, var(--color-border);
   border-radius: var(--radius-sm);
-  transition: background-color var(--transition-slow);
+  transition: background-size var(--transition-slow);
 }
-.part-step.is-done:not(:last-child)::after { background: var(--brand-sky); }
+.part-step.is-done:not(:last-child)::after { background-size: 100% 100%, auto; }
 
 .part-step-button {
   display: flex;
@@ -34,9 +38,10 @@
   transition: color var(--transition-fast), transform var(--transition-normal);
 }
 .part-step-button:not([aria-disabled='true']):hover { transform: translateY(-2px); }
-.part-step-button:focus-visible { outline: 3px solid var(--color-primary-ring); outline-offset: 2px; }
+.part-step-button:focus-visible { outline: 3px solid var(--step-glow); outline-offset: 2px; }
 
 .part-step-marker {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -58,14 +63,23 @@
     box-shadow var(--transition-normal);
 }
 
-.part-step.is-open .part-step-marker { color: var(--brand-deep); border-color: var(--brand-sky); }
-.part-step.is-done .part-step-marker { color: var(--color-text-inverse); background: var(--brand-sky); border-color: var(--brand-sky); }
+.part-step.is-open .part-step-marker { color: var(--step); border-color: var(--step); }
+.part-step.is-done .part-step-marker { color: var(--color-text-inverse); background: var(--step); border-color: var(--step); }
 .part-step.is-current .part-step-marker {
   color: var(--color-text-inverse);
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  transform: scale(1.1);
-  box-shadow: var(--shadow-glow);
+  background: var(--step);
+  border-color: var(--step);
+  transform: scale(1.12);
+  box-shadow: 0 0 0 4px var(--step-glow), 0 8px 20px -6px var(--step);
+}
+/* Vòng sáng lan ra quanh phần đang làm */
+.part-step.is-current .part-step-marker::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border: 2px solid var(--step);
+  border-radius: 50%;
+  animation: step-ring 1.8s var(--ease-out) infinite;
 }
 
 .part-step-name {
@@ -76,8 +90,14 @@
   text-align: center;
   overflow-wrap: anywhere;
 }
-.part-step.is-current .part-step-name { color: var(--color-text-main); }
+.part-step.is-done .part-step-name,
+.part-step.is-current .part-step-name { color: var(--step); }
 .part-step.is-locked .part-step-button { cursor: not-allowed; opacity: 0.7; }
+
+@keyframes step-ring {
+  from { opacity: 0.8; transform: scale(1); }
+  to { opacity: 0; transform: scale(1.5); }
+}
 
 @media (max-width: 480px) {
   .part-step-name { font-size: 11px; }

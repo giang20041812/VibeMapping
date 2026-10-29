@@ -19,7 +19,7 @@ export const PartStepper: React.FC<PartStepperProps> = ({ currentPart, unlockedP
       const current = part.number === currentPart;
       const state = done ? 'is-done' : locked ? 'is-locked' : 'is-open';
       return (
-        <li key={part.number} className={`part-step ${state} ${current ? 'is-current' : ''}`}>
+        <li key={part.number} className={`part-step part-step-${part.number} ${state} ${current ? 'is-current' : ''}`}>
           <button
             type="button"
             className="part-step-button"

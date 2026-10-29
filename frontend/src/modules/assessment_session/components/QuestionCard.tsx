@@ -24,7 +24,10 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question, value, dir
         {SCALE_VALUES.map((score) => {
           const selected = !insufficient && value?.score === score;
           return (
-            <label key={score} className={`question-option ${selected ? 'is-selected' : ''} ${insufficient ? 'is-disabled' : ''}`}>
+            <label
+              key={score}
+              className={`question-option question-option-${score} ${selected ? 'is-selected' : ''} ${insufficient ? 'is-disabled' : ''}`}
+            >
               <input
                 type="radio"
                 name={groupName}

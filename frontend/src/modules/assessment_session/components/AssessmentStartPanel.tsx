@@ -163,7 +163,7 @@ export const AssessmentStartPanel: React.FC<{ showDisclaimer?: boolean; showTitl
                   const isSelected = selected === pack.size;
                   const count = selections[pack.size].length;
                   return (
-                    <label key={pack.size} className={`package-card ${isSelected ? 'is-selected' : ''}`}>
+                    <label key={pack.size} className={`package-card package-${pack.size} ${isSelected ? 'is-selected' : ''}`}>
                       <input
                         type="radio"
                         name="package"

@@ -13,6 +13,30 @@
   background: var(--gradient-brand);
   border-radius: var(--radius-full);
   animation: progress-grow 900ms var(--ease-out) both;
+  transition: width var(--transition-slow);
 }
 .progress-secondary .progress-fill { background: var(--brand-light); }
+
+/* Sặc sỡ: dải cực quang chảy liên tục, vệt sáng quét qua */
+.progress-vivid { height: 12px; box-shadow: inset 0 1px 3px rgba(3, 25, 100, 0.12); }
+.progress-vivid .progress-fill {
+  overflow: hidden;
+  background: var(--gradient-aurora-loop) 0 0 / 300% 100%;
+  box-shadow: 0 0 12px var(--glow-aurora);
+  animation:
+    progress-grow 900ms var(--ease-out) both,
+    progress-flow 6s linear infinite;
+}
+.progress-vivid .progress-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.65) 50%, transparent 80%);
+  transform: translateX(-100%);
+  animation: progress-shine 2.2s var(--ease-standard) infinite;
+}
+
 @keyframes progress-grow { from { width: 0; } }
+/* Ảnh rộng 300%: dịch -150% đúng một chu kỳ dải màu nên vòng lặp liền mạch */
+@keyframes progress-flow { to { background-position: -150% 0; } }
+@keyframes progress-shine { 60%, 100% { transform: translateX(100%); } }

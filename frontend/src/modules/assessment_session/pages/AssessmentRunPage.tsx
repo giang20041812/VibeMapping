@@ -47,6 +47,9 @@ type Stage =
 
 /** Dừng ngắn để người dùng thấy mức vừa chọn trước khi chuyển câu */
 const ADVANCE_DELAY_MS = 220;
+/** Trả lời xong câu cuối của phần: chờ người dùng bấm Hoàn thành phần, quá thời gian này thì tự sang bước sau.
+    Khớp thời lượng hiệu ứng đếm ngược .run-finish.is-counting trong AssessmentRunPage.css */
+const PART_FINISH_DELAY_MS = 3000;
 
 const EMPTY_EVIDENCE: EvidenceValues = { gradePointAverage: '', certificates: '', achievements: '' };
 
@@ -74,6 +77,8 @@ export const AssessmentRunPage: React.FC = () => {
   const [isSavingValues, setIsSavingValues] = useState(false);
   const [isFinishing, setIsFinishing] = useState(false);
   const [finishError, setFinishError] = useState<string | null>(null);
+  /** Lượt đếm ngược tự hoàn thành phần đang chạy; đổi số để hiệu ứng chạy lại từ đầu */
+  const [finishCountdown, setFinishCountdown] = useState<number | null>(null);
 
   const advanceTimer = useRef<number | null>(null);
   useEffect(() => () => {
@@ -163,11 +168,16 @@ export const AssessmentRunPage: React.FC = () => {
   const currentQuestion =
     stage?.kind === 'questions' ? questionsOfPart(questions, stage.part)[stage.index] : undefined;
 
-  const go = (next: Stage, dir: 'forward' | 'back' = 'forward') => {
+  const cancelAdvance = () => {
     if (advanceTimer.current) {
       window.clearTimeout(advanceTimer.current);
       advanceTimer.current = null;
     }
+    setFinishCountdown(null);
+  };
+
+  const go = (next: Stage, dir: 'forward' | 'back' = 'forward') => {
+    cancelAdvance();
     setDirection(dir);
     setLockedMessage(null);
     setStage(next);
@@ -185,17 +195,21 @@ export const AssessmentRunPage: React.FC = () => {
       setSaveError(false);
       setAnswers((prev) => new Map(prev).set(currentQuestion.id, { score, insufficient: false }));
 
-      // Chọn xong tự sang câu kế; câu cuối của phần vẫn dùng nút Hoàn thành phần
+      // Chọn xong tự sang câu kế; câu cuối của phần đếm ngược rồi tự hoàn thành nếu người dùng chưa bấm
       if (stage?.kind === 'questions') {
         const list = questionsOfPart(questions, stage.part);
-        if (stage.index < list.length - 1) {
-          const { part, index } = stage;
-          if (advanceTimer.current) window.clearTimeout(advanceTimer.current);
-          advanceTimer.current = window.setTimeout(() => {
+        const { part, index } = stage;
+        const isLast = index === list.length - 1;
+        if (advanceTimer.current) window.clearTimeout(advanceTimer.current);
+        advanceTimer.current = window.setTimeout(
+          () => {
             advanceTimer.current = null;
-            go({ kind: 'questions', part, index: index + 1 });
-          }, ADVANCE_DELAY_MS);
-        }
+            if (isLast) afterPart(part);
+            else go({ kind: 'questions', part, index: index + 1 });
+          },
+          isLast ? PART_FINISH_DELAY_MS : ADVANCE_DELAY_MS,
+        );
+        if (isLast) setFinishCountdown((count) => (count ?? 0) + 1);
       }
 
       try {
@@ -211,6 +225,7 @@ export const AssessmentRunPage: React.FC = () => {
   const handleInsufficient = async (checked: boolean) => {
     if (!session || !currentQuestion) return;
     setSaveError(false);
+    cancelAdvance();
     if (checked) {
       setAnswers((prev) => new Map(prev).set(currentQuestion.id, { score: null, insufficient: true }));
       try {
@@ -359,12 +374,12 @@ export const AssessmentRunPage: React.FC = () => {
       )}
 
       {stage.kind === 'questions' && currentQuestion && (
-        <Card className="run-card">
+        <Card className={`run-card run-part-${stage.part}`}>
           <div className="run-progress">
             <span className="run-progress-text">
-              Phần {stage.part}/4 – Câu {partIndexLabel}/{partQuestions.length}
+              Phần {stage.part}/4 – <span className="run-progress-count">Câu {partIndexLabel}/{partQuestions.length}</span>
             </span>
-            <ProgressBar value={partPercent + 100 / Math.max(partQuestions.length, 1)} label="Tiến độ phần" />
+            <ProgressBar tone="vivid" value={partPercent + 100 / Math.max(partQuestions.length, 1)} label="Tiến độ phần" />
           </div>
 
           <QuestionCard
@@ -380,7 +395,9 @@ export const AssessmentRunPage: React.FC = () => {
               Quay lại
             </Button>
             <Button
+              key={finishCountdown ?? 'idle'}
               size="lg"
+              className={isLastInPart && answeredNow ? `run-finish ${finishCountdown ? 'is-counting' : ''}` : ''}
               onClick={handleNext}
               disabled={!answeredNow}
               rightIcon={isLastInPart ? <Check size={18} /> : <ArrowRight size={18} />}

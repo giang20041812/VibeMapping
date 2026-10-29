@@ -124,6 +124,53 @@
   --accent-teal: #1fd1a5;
   --accent-coral: #ff8a5c;
 
+  /* Màn làm bài: mỗi gói, mỗi phần và mỗi mức trả lời một sắc riêng; chữ trắng đặt được trên màu đậm */
+  --gradient-aurora: linear-gradient(90deg, var(--accent-cyan), var(--accent-violet) 40%, var(--accent-magenta) 75%, var(--brand-gold));
+  --gradient-aurora-loop: linear-gradient(90deg, var(--accent-cyan), var(--accent-violet), var(--accent-magenta), var(--brand-gold), var(--accent-magenta), var(--accent-violet), var(--accent-cyan));
+  --glow-aurora: rgba(139, 108, 255, 0.45);
+
+  --pack-35: #0fa5c2;
+  --pack-35-bg: #e6f8fb;
+  --pack-35-glow: rgba(15, 165, 194, 0.26);
+  --pack-35-gradient: linear-gradient(90deg, var(--accent-cyan), var(--accent-teal));
+  --pack-50: #6d4fe8;
+  --pack-50-bg: #f1edff;
+  --pack-50-glow: rgba(109, 79, 232, 0.26);
+  --pack-50-gradient: linear-gradient(90deg, var(--accent-violet), var(--accent-magenta));
+  --pack-75: #d9449f;
+  --pack-75-bg: #fdecf6;
+  --pack-75-glow: rgba(217, 68, 159, 0.26);
+  --pack-75-gradient: linear-gradient(90deg, var(--accent-magenta), var(--brand-gold));
+
+  --part-1: #6d4fe8;
+  --part-1-bg: #f1edff;
+  --part-1-glow: rgba(109, 79, 232, 0.3);
+  --part-2: #d9449f;
+  --part-2-bg: #fdecf6;
+  --part-2-glow: rgba(217, 68, 159, 0.3);
+  --part-3: #e8672f;
+  --part-3-bg: #fff0e8;
+  --part-3-glow: rgba(232, 103, 47, 0.3);
+  --part-4: #0e9fa8;
+  --part-4-bg: #e3f7f8;
+  --part-4-glow: rgba(14, 159, 168, 0.3);
+
+  --scale-1: #e8572a;
+  --scale-1-bg: #fff0ea;
+  --scale-1-glow: rgba(232, 87, 42, 0.28);
+  --scale-2: #d68200;
+  --scale-2-bg: #fff5e0;
+  --scale-2-glow: rgba(214, 130, 0, 0.28);
+  --scale-3: #1b8fcf;
+  --scale-3-bg: #e6f5fd;
+  --scale-3-glow: rgba(27, 143, 207, 0.28);
+  --scale-4: #6d4fe8;
+  --scale-4-bg: #f1edff;
+  --scale-4-glow: rgba(109, 79, 232, 0.28);
+  --scale-5: #0e9f73;
+  --scale-5-bg: #e4f7f0;
+  --scale-5-glow: rgba(14, 159, 115, 0.28);
+
   /* Hình minh họa hòa vào nền sáng: nét đen xám, màu nhấn dịu chỉ dùng cho biểu tượng và điểm nhấn */
   --ink-900: #232833;
   --ink-700: #444b5a;

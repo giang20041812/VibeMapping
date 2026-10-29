@@ -12,8 +12,9 @@
   padding: var(--space-1) var(--space-3);
   font-size: var(--font-size-sm);
   font-weight: 700;
-  color: var(--brand-deep);
-  background: var(--brand-ice);
+  color: var(--part-color, var(--brand-deep));
+  background: var(--part-bg, var(--brand-ice));
+  border-left: 3px solid var(--part-color, var(--brand-sky));
   border-radius: var(--radius-sm);
 }
 
@@ -31,6 +32,9 @@
 }
 
 .question-option {
+  --opt: var(--color-primary);
+  --opt-bg: var(--brand-ice);
+  --opt-glow: var(--color-primary-ring);
   position: relative;
   display: flex;
   align-items: center;
@@ -49,11 +53,22 @@
     transform var(--transition-normal),
     box-shadow var(--transition-normal);
 }
-.question-option:not(.is-disabled):hover { border-color: var(--brand-soft); transform: translateX(3px); }
+.question-option-1 { --opt: var(--scale-1); --opt-bg: var(--scale-1-bg); --opt-glow: var(--scale-1-glow); }
+.question-option-2 { --opt: var(--scale-2); --opt-bg: var(--scale-2-bg); --opt-glow: var(--scale-2-glow); }
+.question-option-3 { --opt: var(--scale-3); --opt-bg: var(--scale-3-bg); --opt-glow: var(--scale-3-glow); }
+.question-option-4 { --opt: var(--scale-4); --opt-bg: var(--scale-4-bg); --opt-glow: var(--scale-4-glow); }
+.question-option-5 { --opt: var(--scale-5); --opt-bg: var(--scale-5-bg); --opt-glow: var(--scale-5-glow); }
+
+.question-option:not(.is-disabled):hover {
+  border-color: var(--opt);
+  transform: translateX(3px);
+  box-shadow: 0 10px 22px -14px var(--opt);
+}
+.question-option:not(.is-disabled):hover .question-option-score { transform: scale(1.08) rotate(-4deg); }
 .question-option:active { transform: scale(0.985); }
 
 .question-option-input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
-.question-option:has(.question-option-input:focus-visible) { outline: 3px solid var(--color-primary-ring); outline-offset: 2px; }
+.question-option:has(.question-option-input:focus-visible) { outline: 3px solid var(--opt-glow); outline-offset: 2px; }
 
 .question-option-score {
   flex: none;
@@ -64,10 +79,14 @@
   height: 40px;
   font-size: var(--font-size-lg);
   font-weight: 800;
-  color: var(--brand-deep);
-  background: var(--brand-ice);
+  color: var(--opt);
+  background: var(--opt-bg);
   border-radius: var(--radius-md);
-  transition: background-color var(--transition-fast), color var(--transition-fast), transform var(--transition-normal);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-normal),
+    box-shadow var(--transition-normal);
 }
 
 .question-option-label {
@@ -79,15 +98,28 @@
 }
 
 .question-option.is-selected {
-  background: var(--brand-ice);
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-ring);
+  background: var(--opt-bg);
+  border-color: var(--opt);
+  box-shadow: 0 0 0 3px var(--opt-glow), 0 14px 28px -14px var(--opt);
 }
 .question-option.is-selected .question-option-score {
   color: var(--color-text-inverse);
-  background: var(--color-primary);
+  background: var(--opt);
   transform: scale(1.12);
+  box-shadow: 0 6px 14px -4px var(--opt);
+  animation: score-pop 460ms var(--ease-spring);
 }
+/* Vòng sóng lan ra khi vừa chọn */
+.question-option.is-selected::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border: 2px solid var(--opt);
+  border-radius: inherit;
+  pointer-events: none;
+  animation: option-ripple 560ms var(--ease-out) forwards;
+}
+.question-option.is-selected .question-option-label { color: var(--opt); }
 .question-option.is-disabled { cursor: not-allowed; opacity: 0.5; }
 .question-option.is-disabled .question-option-input { cursor: not-allowed; }
 
@@ -146,6 +178,15 @@
 @keyframes question-in-back {
   from { opacity: 0; transform: translateX(-28px); }
   to { opacity: 1; transform: translateX(0); }
+}
+@keyframes score-pop {
+  0% { transform: scale(0.7); }
+  55% { transform: scale(1.28) rotate(-6deg); }
+  100% { transform: scale(1.12); }
+}
+@keyframes option-ripple {
+  from { opacity: 0.9; transform: scale(1); }
+  to { opacity: 0; transform: scale(1.06); }
 }
 
 /* Màn hình rộng: năm mức trả lời xếp thành một hàng, phủ hết chiều ngang thẻ */

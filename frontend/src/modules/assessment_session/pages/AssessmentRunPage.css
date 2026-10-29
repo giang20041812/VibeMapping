@@ -19,8 +19,52 @@
   padding: var(--space-8) var(--space-8) var(--space-6);
 }
 
+/* Sắc của phần đang làm: nhãn tiêu chí, số câu */
+.run-part-1 { --part-color: var(--part-1); --part-bg: var(--part-1-bg); }
+.run-part-2 { --part-color: var(--part-2); --part-bg: var(--part-2-bg); }
+.run-part-3 { --part-color: var(--part-3); --part-bg: var(--part-3-bg); }
+.run-part-4 { --part-color: var(--part-4); --part-bg: var(--part-4-bg); }
+
 .run-progress { display: flex; flex-direction: column; gap: var(--space-2); }
 .run-progress-text { font-size: var(--font-size-sm); font-weight: 700; color: var(--color-text-secondary); }
+.run-progress-count { color: var(--part-color, var(--color-text-main)); font-variant-numeric: tabular-nums; }
+
+/* Câu cuối đã trả lời: nút Hoàn thành phần nổi bật, đếm ngược rồi tự sang bước sau */
+.run-finish.btn-primary,
+.run-finish.btn-primary:hover:not(:disabled),
+.run-finish.btn-primary:active:not(:disabled) {
+  background: var(--gradient-aurora-loop) 0 0 / 300% 100%;
+}
+.run-finish {
+  font-weight: 800;
+  box-shadow: 0 10px 24px -8px var(--glow-aurora);
+  animation:
+    finish-enter 520ms var(--ease-spring),
+    finish-flow 6s linear infinite,
+    finish-pulse 1.6s var(--ease-out) infinite;
+}
+.run-finish:hover:not(:disabled) { transform: translateY(-2px) scale(1.03); }
+.run-finish > span { position: relative; }
+.run-finish .btn-icon-right { animation: finish-check 1.6s var(--ease-spring) infinite; }
+
+.run-finish.is-counting::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.3);
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: finish-countdown 3s linear forwards;
+}
+
+@keyframes finish-enter { from { transform: scale(0.85); } }
+@keyframes finish-flow { to { background-position: -150% 0; } }
+@keyframes finish-pulse {
+  0% { box-shadow: 0 10px 24px -8px var(--glow-aurora), 0 0 0 0 var(--glow-aurora); }
+  100% { box-shadow: 0 10px 24px -8px var(--glow-aurora), 0 0 0 14px transparent; }
+}
+@keyframes finish-check { 0%, 70%, 100% { transform: scale(1); } 80% { transform: scale(1.35); } }
+@keyframes finish-countdown { to { transform: scaleX(1); } }
 
 .run-nav {
   display: flex;

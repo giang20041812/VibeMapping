@@ -16,14 +16,16 @@ const fromNumber = (value: number | null) => (value === null ? '' : String(value
 interface UnderstandingFieldsProps {
   value: Understanding;
   emptyLabel: string;
+  disabled?: boolean;
   onChange: (value: Understanding) => void;
 }
 
-export const UnderstandingFields: React.FC<UnderstandingFieldsProps> = ({ value, emptyLabel, onChange }) => (
+export const UnderstandingFields: React.FC<UnderstandingFieldsProps> = ({ value, emptyLabel, disabled, onChange }) => (
   <div className="grid-understanding">
     <Select
       label="Thời gian quen biết"
       emptyLabel={emptyLabel}
+      disabled={disabled}
       options={DURATION}
       value={fromNumber(value.acquaintance_duration)}
       onChange={(next) => onChange({ ...value, acquaintance_duration: toNumber(next) })}
@@ -31,6 +33,7 @@ export const UnderstandingFields: React.FC<UnderstandingFieldsProps> = ({ value,
     <Select
       label="Tần suất tiếp xúc"
       emptyLabel={emptyLabel}
+      disabled={disabled}
       options={FREQUENCY}
       value={fromNumber(value.contact_frequency)}
       onChange={(next) => onChange({ ...value, contact_frequency: toNumber(next) })}
@@ -38,6 +41,7 @@ export const UnderstandingFields: React.FC<UnderstandingFieldsProps> = ({ value,
     <Select
       label="Mức độ hiểu"
       emptyLabel={emptyLabel}
+      disabled={disabled}
       options={DEPTH}
       value={fromNumber(value.observation_depth)}
       onChange={(next) => onChange({ ...value, observation_depth: toNumber(next) })}

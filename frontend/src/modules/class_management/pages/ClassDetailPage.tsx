@@ -272,9 +272,7 @@ export const ClassDetailPage: React.FC = () => {
             criteria={criteria}
             groupCode={applied.groupCode}
             onRemove={(member) => void handleRemove(member)}
-            onSubmitted={(studentId) =>
-              setMembers((current) => current.map((member) => (member.user_id === studentId ? { ...member, is_graded: true } : member)))
-            }
+            onSubmitted={reload}
             onError={setError}
             onNotice={setNotice}
           />

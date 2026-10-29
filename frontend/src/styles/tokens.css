@@ -142,8 +142,9 @@
   --space-12: calc(48 * var(--px));
   --space-16: calc(64 * var(--px));
 
-  /* Khung ứng dụng: thanh điều hướng ngang dính ở đầu trang */
-  --navbar-height: 64px;
+  /* Khung ứng dụng: thanh điều hướng bên trái; --top-space chừa chỗ cho thông báo và avatar ở góc phải trên */
+  --sidebar-width: 240px;
+  --top-space: calc(var(--space-3) * 2 + 44px);
 
   /* Lề ngang của khung trang: rộng dần theo màn hình, không đặt trần chiều rộng */
   --page-gutter: clamp(16px, 2.6vw, 64px);

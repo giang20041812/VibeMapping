@@ -86,7 +86,7 @@ d:/VibeMapping/
 │       ├── components/
 │       │   ├── common/                 # Nút bấm, Ô nhập, Thẻ, Modal, Badge chuẩn
 │       │   ├── filters/                # SearchableSelect, FilterBar tái sử dụng
-│       │   └── layout/                 # Khung trang, TopActions (thông báo + avatar), Navbar ngang dính đầu trang
+│       │   └── layout/                 # Khung trang, TopActions (thông báo + avatar), Sidebar điều hướng bên trái
 │       ├── hooks/                      # useDebounce, useResponsive, useFilter
 │       ├── lib/                        # Supabase client singleton
 │       ├── modules/                    # Phân chia theo module nghiệp vụ (bám sát spec)

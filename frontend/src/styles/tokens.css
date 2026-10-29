@@ -37,20 +37,31 @@
   --color-bg-hover: #dde6f7;
   --color-bg-cream: var(--brand-cream);
 
-  /* Nền trang: hai vầng sáng tím và cyan rất mờ ở đầu trang, tĩnh, không lặp */
-  --bg-app-glow:
-    radial-gradient(56vw 440px at 100% 0, rgba(141, 127, 214, 0.1), transparent 70%),
-    radial-gradient(44vw 360px at 0 0, rgba(63, 169, 198, 0.07), transparent 70%);
+  /* Nền trang: dải sóng màu ở đầu trang, quỹ đạo kiểu bản đồ ở góc dưới phải,
+     các vầng sáng màu nhấn và lưới chấm mờ. Tĩnh, chỉ lớp chấm lặp. */
+  --bg-app-art:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 300' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='0'%3E%3Cstop offset='0' stop-color='%2322d3ee'/%3E%3Cstop offset='0.45' stop-color='%238b6cff'/%3E%3Cstop offset='0.8' stop-color='%23f05bd0'/%3E%3Cstop offset='1' stop-color='%23f6b73c'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23g)' opacity='0.14' d='M0 70 C 260 0 520 170 820 90 S 1260 -20 1440 40 L 1440 120 C 1250 60 1060 210 800 170 S 300 90 0 160 Z'/%3E%3Cg fill='none' stroke='url(%23g)'%3E%3Cpath stroke-width='2.2' opacity='0.7' vector-effect='non-scaling-stroke' d='M0 80 C 260 10 520 190 820 110 S 1260 0 1440 60'/%3E%3Cpath stroke-width='1.6' opacity='0.5' vector-effect='non-scaling-stroke' d='M0 112 C 280 40 540 220 830 142 S 1270 30 1440 95'/%3E%3Cpath stroke-width='1.3' opacity='0.34' vector-effect='non-scaling-stroke' d='M0 146 C 300 72 560 252 840 176 S 1280 62 1440 132'/%3E%3Cpath stroke-width='1' opacity='0.22' vector-effect='non-scaling-stroke' d='M0 182 C 320 106 580 284 850 212 S 1290 96 1440 170'/%3E%3C/g%3E%3C/svg%3E") center top / 100% calc(300 * var(--px)) no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 560 560'%3E%3Cg fill='none' stroke='%233560c2' stroke-width='1.2'%3E%3Ccircle cx='560' cy='560' r='140' opacity='0.16'/%3E%3Ccircle cx='560' cy='560' r='220' opacity='0.13' stroke-dasharray='4 8'/%3E%3Ccircle cx='560' cy='560' r='300' opacity='0.11'/%3E%3Ccircle cx='560' cy='560' r='380' opacity='0.08' stroke-dasharray='2 10'/%3E%3Ccircle cx='560' cy='560' r='460' opacity='0.06'/%3E%3C/g%3E%3Ccircle cx='404' cy='409' r='9' fill='%238b6cff' opacity='0.18'/%3E%3Ccircle cx='404' cy='409' r='4' fill='%238b6cff' opacity='0.7'/%3E%3Ccircle cx='296' cy='422' r='7' fill='%2322d3ee' opacity='0.2'/%3E%3Ccircle cx='296' cy='422' r='3' fill='%2322d3ee' opacity='0.75'/%3E%3Ccircle cx='360' cy='224' r='8' fill='%23f6b73c' opacity='0.22'/%3E%3Ccircle cx='360' cy='224' r='3.5' fill='%23f6b73c' opacity='0.85'/%3E%3C/svg%3E") right bottom / calc(560 * var(--px)) no-repeat,
+    radial-gradient(60vw 520px at 100% 0, rgba(139, 108, 255, 0.16), transparent 70%),
+    radial-gradient(48vw 440px at 0 0, rgba(34, 211, 238, 0.12), transparent 70%),
+    radial-gradient(52vw 480px at 0 100%, rgba(246, 183, 60, 0.12), transparent 70%),
+    radial-gradient(rgba(3, 25, 100, 0.07) 1px, transparent 1.6px) 0 0 / 22px 22px repeat;
 
-  /* Thanh bên: bầu trời đêm navy, vài chấm sao và một chòm sao mờ ở đáy */
-  --sidebar-bg: linear-gradient(180deg, var(--brand-navy) 0%, var(--brand-deep) 100%);
-  --sidebar-stars: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 260'%3E%3Cg fill='%23c7e3fe' opacity='0.4'%3E%3Ccircle cx='22' cy='58' r='0.9'/%3E%3Ccircle cx='112' cy='38' r='1'/%3E%3Ccircle cx='204' cy='26' r='0.9'/%3E%3Ccircle cx='60' cy='104' r='1'/%3E%3Ccircle cx='222' cy='78' r='0.8'/%3E%3Ccircle cx='132' cy='92' r='0.9'/%3E%3Ccircle cx='24' cy='142' r='0.8'/%3E%3Ccircle cx='216' cy='236' r='1'/%3E%3Ccircle cx='98' cy='242' r='0.9'/%3E%3Ccircle cx='58' cy='252' r='0.8'/%3E%3C/g%3E%3Cpolyline points='34,214 78,176 128,192 168,146 186,104' fill='none' stroke='%23c7e3fe' stroke-opacity='0.2' stroke-width='1'/%3E%3Cline x1='168' y1='146' x2='208' y2='164' stroke='%23c7e3fe' stroke-opacity='0.2' stroke-width='1'/%3E%3Cg fill='%23c7e3fe' opacity='0.6'%3E%3Ccircle cx='34' cy='214' r='1.6'/%3E%3Ccircle cx='78' cy='176' r='1.8'/%3E%3Ccircle cx='128' cy='192' r='1.5'/%3E%3Ccircle cx='168' cy='146' r='1.8'/%3E%3Ccircle cx='208' cy='164' r='1.4'/%3E%3C/g%3E%3Ccircle cx='186' cy='104' r='5' fill='%23f6b73c' opacity='0.18'/%3E%3Ccircle cx='186' cy='104' r='2.2' fill='%23f6b73c' opacity='0.9'/%3E%3C/svg%3E");
-  --sidebar-text: rgba(199, 227, 254, 0.74);
+  /* Thanh bên: bầu trời đêm navy pha tím, sao lặp đều, quỹ đạo ở góc trên, dải cực quang ở đáy */
+  --sidebar-bg:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 240'%3E%3Cg fill='none' stroke='%23c7e3fe'%3E%3Cellipse cx='230' cy='30' rx='150' ry='54' transform='rotate(-24 230 30)' opacity='0.16'/%3E%3Cellipse cx='230' cy='30' rx='200' ry='76' transform='rotate(-24 230 30)' opacity='0.1' stroke-dasharray='3 6'/%3E%3C/g%3E%3Ccircle cx='112' cy='96' r='2' fill='%2322d3ee' opacity='0.9'/%3E%3C/svg%3E") right top / 100% auto no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 300'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='0'%3E%3Cstop offset='0' stop-color='%2322d3ee'/%3E%3Cstop offset='0.45' stop-color='%238b6cff'/%3E%3Cstop offset='0.8' stop-color='%23f05bd0'/%3E%3Cstop offset='1' stop-color='%23f6b73c'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23g)' opacity='0.16' d='M-10 150 C 60 90 130 200 250 120 L 250 175 C 140 250 60 140 -10 215 Z'/%3E%3Cg fill='none' stroke='url(%23g)'%3E%3Cpath stroke-width='1.6' opacity='0.75' d='M-10 160 C 60 100 130 210 250 130'/%3E%3Cpath stroke-width='1.3' opacity='0.55' d='M-10 182 C 66 122 136 232 250 154'/%3E%3Cpath stroke-width='1.1' opacity='0.38' d='M-10 204 C 72 144 142 254 250 178'/%3E%3Cpath stroke-width='1' opacity='0.24' d='M-10 226 C 78 166 148 276 250 202'/%3E%3C/g%3E%3Cg fill='%23c7e3fe'%3E%3Ccircle cx='58' cy='132' r='1.6' opacity='0.8'/%3E%3Ccircle cx='180' cy='160' r='1.4' opacity='0.7'/%3E%3C/g%3E%3Ccircle cx='132' cy='170' r='6' fill='%23f6b73c' opacity='0.22'/%3E%3Ccircle cx='132' cy='170' r='2.4' fill='%23f6b73c'/%3E%3C/svg%3E") center bottom / 100% auto no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='340' viewBox='0 0 240 340'%3E%3Cg fill='%23c7e3fe'%3E%3Ccircle cx='18' cy='22' r='0.9' opacity='0.55'/%3E%3Ccircle cx='96' cy='14' r='0.7' opacity='0.4'/%3E%3Ccircle cx='206' cy='48' r='1.1' opacity='0.6'/%3E%3Ccircle cx='52' cy='70' r='0.6' opacity='0.35'/%3E%3Ccircle cx='150' cy='88' r='0.8' opacity='0.45'/%3E%3Ccircle cx='226' cy='132' r='0.7' opacity='0.4'/%3E%3Ccircle cx='30' cy='150' r='1' opacity='0.5'/%3E%3Ccircle cx='118' cy='176' r='0.6' opacity='0.35'/%3E%3Ccircle cx='184' cy='214' r='1' opacity='0.55'/%3E%3Ccircle cx='70' cy='236' r='0.7' opacity='0.4'/%3E%3Ccircle cx='12' cy='290' r='0.8' opacity='0.45'/%3E%3Ccircle cx='140' cy='300' r='1.1' opacity='0.55'/%3E%3Ccircle cx='212' cy='322' r='0.6' opacity='0.35'/%3E%3Ccircle cx='88' cy='118' r='0.5' opacity='0.3'/%3E%3Cpath d='M168 150 l1.1 3 3 1.1 -3 1.1 -1.1 3 -1.1 -3 -3 -1.1 3 -1.1z' opacity='0.6'/%3E%3C/g%3E%3C/svg%3E") 0 0 / 240px 340px repeat,
+    radial-gradient(260px 220px at 0 100%, rgba(240, 91, 208, 0.22), transparent 70%),
+    radial-gradient(240px 260px at 100% 0, rgba(34, 211, 238, 0.18), transparent 70%),
+    linear-gradient(175deg, var(--brand-navy) 0%, var(--brand-deep) 55%, #2b2a8f 100%);
+  --sidebar-text: rgba(199, 227, 254, 0.78);
   --sidebar-text-strong: var(--brand-cream);
-  --sidebar-hover-bg: rgba(199, 227, 254, 0.08);
-  --sidebar-active-bg: rgba(199, 227, 254, 0.14);
-  --sidebar-ring: rgba(199, 227, 254, 0.24);
-  --sidebar-star-glow: 0 0 8px 1px rgba(246, 183, 60, 0.6);
+  --sidebar-hover-bg: rgba(199, 227, 254, 0.1);
+  --sidebar-active-bg: linear-gradient(90deg, rgba(139, 108, 255, 0.42), rgba(34, 211, 238, 0.12));
+  --sidebar-ring: rgba(199, 227, 254, 0.35);
+  --sidebar-logo-glow: 0 0 0 3px rgba(199, 227, 254, 0.14), 0 0 18px 2px rgba(139, 108, 255, 0.55);
+  --sidebar-star-glow: 0 0 8px 1px rgba(246, 183, 60, 0.75);
 
   /* Thanh ngang: trong suốt ở đầu trang, nền kem mờ khi đã cuộn */
   --topbar-scrolled-bg: rgba(255, 252, 240, 0.86);

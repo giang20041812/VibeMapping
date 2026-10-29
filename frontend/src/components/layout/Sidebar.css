@@ -1,4 +1,4 @@
-/* Thanh điều hướng bên trái: nền navy như bầu trời đêm, chòm sao mờ ở đáy, cố định theo chiều cao màn hình */
+/* Thanh điều hướng bên trái: bầu trời đêm navy pha tím, sao, quỹ đạo và dải cực quang; cố định theo chiều cao màn hình */
 .sidebar {
   position: fixed;
   top: 0;
@@ -10,7 +10,7 @@
   width: calc(var(--sidebar-width) + var(--safe-left));
   padding: var(--safe-top) 0 calc(var(--space-3) + var(--safe-bottom)) var(--safe-left);
   overflow-y: auto;
-  background: var(--sidebar-stars) center bottom / 100% auto no-repeat, var(--sidebar-bg);
+  background: var(--sidebar-bg);
 }
 
 .sidebar-top {
@@ -40,9 +40,14 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  box-shadow: 0 0 0 1px var(--sidebar-ring);
+  box-shadow: var(--sidebar-logo-glow);
 }
 .sidebar-brand-mark .logo-svg { display: block; }
+/* Logo đảo màu để nổi trên nền navy: đĩa kem, mũ navy, chấm và ghim xanh */
+.sidebar-brand-mark .logo-disc { fill: var(--brand-cream); }
+.sidebar-brand-mark .logo-cap { fill: var(--brand-navy); }
+.sidebar-brand-mark .logo-dot,
+.sidebar-brand-mark .logo-pin { fill: var(--brand-blue); }
 .sidebar-brand-text { display: inline-flex; align-items: baseline; gap: 0.28em; }
 .sidebar-brand-vibe { color: var(--brand-cream); }
 .sidebar-brand-mapping { color: var(--brand-mist); }

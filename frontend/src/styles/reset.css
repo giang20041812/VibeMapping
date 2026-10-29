@@ -27,9 +27,7 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
   overflow-x: hidden;
-  background-color: var(--color-bg-app);
-  background-image: var(--bg-app-glow);
-  background-repeat: no-repeat;
+  background: var(--bg-app-art), var(--color-bg-app);
 }
 
 /* Rule 6: CRITICAL FOR SAMSUNG INTERNET & ANDROID

@@ -1,17 +1,24 @@
 import { normalizeSearchText } from '../../lib/searchText';
-import type { CellValue, GridData, ShortCriteria } from './class_assessment_grid.types';
+import type { CellValue, GridData, GridQuestion } from './class_assessment_grid.types';
 
-export const CELL_OPTIONS: { value: CellValue; label: string }[] = [
-  { value: '', label: '—' },
-  { value: '1', label: '1' },
-  { value: '2', label: '2' },
-  { value: '3', label: '3' },
-  { value: '4', label: '4' },
-  { value: '5', label: '5' },
-  { value: 'na', label: 'Không đủ cơ sở' },
-];
+const SCORES = ['1', '2', '3', '4', '5'] as const;
+export const NA_LABEL = 'Không đủ cơ sở';
 
-/** Điểm theo từng học sinh (mã dòng học sinh), mỗi học sinh một bảng nhỏ theo mã tiêu chí */
+export interface AnswerOption {
+  value: CellValue;
+  label: string;
+}
+
+/** Đáp án của câu hỏi theo điểm 1–5, rồi "Không đủ cơ sở"; câu không có nhãn đáp án thì hiện điểm */
+export function answerOptions(question: GridQuestion): AnswerOption[] {
+  const labels = question.answer_options ?? [];
+  return [
+    ...SCORES.map((score, index) => ({ value: score as CellValue, label: labels[index]?.trim() || score })),
+    { value: 'na', label: NA_LABEL },
+  ];
+}
+
+/** Đáp án theo từng học sinh (mã dòng học sinh), mỗi học sinh một bảng nhỏ theo mã câu hỏi */
 export type ScoreMap = Map<string, Map<string, CellValue>>;
 
 export function toScoreMap(grid: GridData): ScoreMap {
@@ -19,8 +26,8 @@ export function toScoreMap(grid: GridData): ScoreMap {
   for (const student of grid.students) {
     const scores = new Map<string, CellValue>();
     for (const cell of student.cells) {
-      if (cell.is_insufficient_basis) scores.set(cell.criteria_id, 'na');
-      else if (cell.score !== null) scores.set(cell.criteria_id, String(cell.score) as CellValue);
+      if (cell.is_insufficient_basis) scores.set(cell.question_id, 'na');
+      else if (cell.score !== null) scores.set(cell.question_id, String(cell.score) as CellValue);
     }
     map.set(student.grid_student_id, scores);
   }
@@ -32,7 +39,7 @@ export function cellToDb(value: CellValue): number | 'na' | null {
   return value === 'na' ? 'na' : Number(value);
 }
 
-/** Hai cột đầu của tệp mẫu chấm điểm */
+/** Hai cột đầu của tệp mẫu chấm điểm; các cột sau là mã câu hỏi */
 export const GRADE_SHEET_HEADERS = ['Mã học sinh', 'Họ và tên'] as const;
 
 const NA_PATTERN = /^(na|n\/a|x|không đủ cơ sở|khong du co so)$/i;
@@ -51,8 +58,15 @@ export interface GradeSheetStudent {
   fullName: string;
 }
 
+/** Một ô cần ghi: học sinh × câu hỏi */
+export interface GridChange {
+  gridStudentId: string;
+  questionId: string;
+  value: CellValue;
+}
+
 export interface GradeSheetResult {
-  changes: { gridStudentId: string; criteriaId: string; value: CellValue }[];
+  changes: GridChange[];
   /** Số học sinh có điểm được nhập */
   studentCount: number;
   /** Số ô sai giá trị, bị bỏ qua */
@@ -64,21 +78,21 @@ export interface GradeSheetResult {
 export class GradeSheetError extends Error {}
 
 /**
- * Đọc bảng điểm từ tệp mẫu: dòng 1 là tiêu đề (Mã học sinh, Họ và tên, rồi mã từng tiêu chí),
+ * Đọc bảng điểm từ tệp mẫu: dòng 1 là tiêu đề (Mã học sinh, Họ và tên, rồi mã từng câu hỏi),
  * mỗi dòng sau là một học sinh. Dòng khớp học sinh theo mã học sinh, không có mã thì theo họ tên.
  * Ô để trống giữ nguyên điểm đang có; ô sai giá trị bị bỏ qua và được đếm vào `invalid`.
  */
-export function parseGradeRows(rows: string[][], students: GradeSheetStudent[], criteria: ShortCriteria[]): GradeSheetResult {
+export function parseGradeRows(rows: string[][], students: GradeSheetStudent[], questions: GridQuestion[]): GradeSheetResult {
   const header = rows[0] ?? [];
   if (header[0] !== GRADE_SHEET_HEADERS[0] || header[1] !== GRADE_SHEET_HEADERS[1]) {
     throw new GradeSheetError('Sai mẫu: dòng đầu phải bắt đầu bằng "Mã học sinh" và "Họ và tên".');
   }
 
-  const criteriaByCode = new Map(criteria.map((item) => [item.dimension_code.toLowerCase(), item]));
+  const questionByCode = new Map(questions.map((item) => [item.question_code.toLowerCase(), item]));
   const columns = header
-    .map((code, index) => ({ index, item: criteriaByCode.get(code.trim().toLowerCase()) }))
+    .map((code, index) => ({ index, item: questionByCode.get(code.trim().toLowerCase()) }))
     .filter((column) => column.index >= GRADE_SHEET_HEADERS.length && column.item);
-  if (columns.length === 0) throw new GradeSheetError('Không có cột tiêu chí nào khớp với bộ câu hỏi rút gọn.');
+  if (columns.length === 0) throw new GradeSheetError('Không có cột câu hỏi nào khớp với gói đang chấm.');
 
   const byCode = new Map(students.filter((student) => student.studentCode).map((student) => [student.studentCode!.trim().toLowerCase(), student]));
   const byName = new Map<string, GradeSheetStudent[]>();
@@ -110,7 +124,7 @@ export function parseGradeRows(rows: string[][], students: GradeSheetStudent[], 
         continue;
       }
       matched.add(student.gridStudentId);
-      changes.push({ gridStudentId: student.gridStudentId, criteriaId: column.item!.id, value: parsed });
+      changes.push({ gridStudentId: student.gridStudentId, questionId: column.item!.question_id, value: parsed });
     }
   });
   return { changes, studentCount: matched.size, invalid, unmatchedRows };
@@ -127,20 +141,16 @@ export function parsePastedText(text: string): string[][] {
 }
 
 /**
- * Điền xuống: đi từ trên xuống, ô trống nhận giá trị của ô có điểm gần nhất phía trên.
+ * Điền xuống: đi từ trên xuống, ô trống nhận đáp án của ô đã trả lời gần nhất phía trên.
  * Ô trống ở trên cùng (chưa có giá trị nào phía trên) giữ nguyên.
  */
-export function fillDownChanges(
-  studentIds: string[],
-  criteriaId: string,
-  scores: ScoreMap,
-): { gridStudentId: string; criteriaId: string; value: CellValue }[] {
-  const changes: { gridStudentId: string; criteriaId: string; value: CellValue }[] = [];
+export function fillDownChanges(studentIds: string[], questionId: string, scores: ScoreMap): GridChange[] {
+  const changes: GridChange[] = [];
   let last: CellValue = '';
   for (const id of studentIds) {
-    const current = scores.get(id)?.get(criteriaId) ?? '';
+    const current = scores.get(id)?.get(questionId) ?? '';
     if (current !== '') last = current;
-    else if (last !== '') changes.push({ gridStudentId: id, criteriaId, value: last });
+    else if (last !== '') changes.push({ gridStudentId: id, questionId, value: last });
   }
   return changes;
 }

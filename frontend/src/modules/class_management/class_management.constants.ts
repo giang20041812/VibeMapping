@@ -60,5 +60,5 @@ export const GRID_BLOCK_TEXT: Record<string, string> = {
   missing_understanding: 'Chưa có đủ ba câu mức thấu hiểu',
   no_students: 'Bảng chưa có học sinh nào',
   already_submitted: 'Bảng điểm đã nộp',
-  short_set_not_configured: 'Chưa có tiêu chí nào thuộc bộ câu hỏi rút gọn',
+  package_not_selected: 'Chưa chọn gói câu hỏi',
 };

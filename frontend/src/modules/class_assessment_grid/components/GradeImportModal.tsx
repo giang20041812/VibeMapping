@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Download, Upload } from 'lucide-react';
 import { Alert, Button, Modal } from '../../../components/common';
-import type { ShortCriteria } from '../class_assessment_grid.types';
+import type { GridQuestion } from '../class_assessment_grid.types';
 import { readGradeSheet } from '../grade_import';
 import { GradeSheetError, parseGradeRows, type GradeSheetResult, type GradeSheetStudent } from '../grid.logic';
 import '../../class_management/ClassManagement.css';
@@ -9,14 +9,14 @@ import '../../class_management/ClassManagement.css';
 interface GradeImportModalProps {
   open: boolean;
   students: GradeSheetStudent[];
-  criteria: ShortCriteria[];
+  questions: GridQuestion[];
   onDownloadTemplate: () => void;
   /** Ghi các điểm đọc được vào bảng */
   onApply: (changes: GradeSheetResult['changes']) => Promise<void>;
   onClose: () => void;
 }
 
-export const GradeImportModal: React.FC<GradeImportModalProps> = ({ open, students, criteria, onDownloadTemplate, onApply, onClose }) => {
+export const GradeImportModal: React.FC<GradeImportModalProps> = ({ open, students, questions, onDownloadTemplate, onApply, onClose }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isBusy, setIsBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +36,7 @@ export const GradeImportModal: React.FC<GradeImportModalProps> = ({ open, studen
     setError(null);
     setResult(null);
     try {
-      const parsed = parseGradeRows(await readGradeSheet(file), students, criteria);
+      const parsed = parseGradeRows(await readGradeSheet(file), students, questions);
       await onApply(parsed.changes);
       setResult(parsed);
     } catch (cause) {

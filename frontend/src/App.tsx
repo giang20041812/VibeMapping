@@ -24,6 +24,7 @@ import { GuestTestPage } from './modules/personal_assessment/pages/GuestTestPage
 import { SchoolExplorerPage } from './modules/school_explorer/pages/SchoolExplorerPage';
 import { AssessmentRunPage } from './modules/assessment_session/pages/AssessmentRunPage';
 import { GuestLayout } from './components/layout/GuestLayout';
+import { GuestRolePickerPage } from './modules/guest_assessment/pages/GuestRolePickerPage';
 import { GuestAssessmentPage } from './modules/guest_assessment/pages/GuestAssessmentPage';
 import { Assessment360Page } from './modules/assessment_360/pages/Assessment360Page';
 import { Assessment360SamplePage } from './modules/assessment_360/pages/Assessment360SamplePage';
@@ -109,6 +110,7 @@ export const App: React.FC = () => (
         <Route path="/bai-danh-gia" element={<Navigate to="/danh-gia-360" replace />} />
 
         <Route element={<GuestLayout />}>
+          <Route path="/moi" element={<GuestRolePickerPage />} />
           <Route path="/moi/:token" element={<GuestAssessmentPage />} />
         </Route>
 

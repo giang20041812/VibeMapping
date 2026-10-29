@@ -4,6 +4,7 @@ import { ArrowRight } from 'lucide-react';
 import { Alert, Button, Modal } from '../../../components/common';
 import type { GlobeNode } from '../../../components/charts/Globe360/Globe360';
 import { GroupPicker } from '../../invitation_link/components/GroupPicker';
+import { SharedQrCard } from '../../invitation_link/components/SharedQrCard';
 import { LinkCard } from '../../invitation_link/components/LinkCard';
 import { CONSENT_NOTE, CONSENT_QUESTION, GROUP_LABEL } from '../../invitation_link/invitation.constants';
 import type { InviteController } from '../useInviteController';
@@ -83,6 +84,7 @@ export const InvitePanel: React.FC<InvitePanelProps> = ({ controller, nodes }) =
           <h2 id="t360-invites-title" className="section-title">
             Đường dẫn mời
           </h2>
+          {state.links.some((l) => !l.expired) && <SharedQrCard links={state.links.filter((l) => !l.expired)} />}
           {state.links.length > 0 && (
             <div className="t360-links">
               {state.links.map((link) => (

@@ -18,3 +18,6 @@ export const CONSENT_QUESTION =
 export const CONSENT_NOTE = 'Bạn có thể tắt việc mời bất kỳ lúc nào và tự quyết định bài nào được tính vào kết quả.';
 
 export const inviteUrl = (token: string) => `${window.location.origin}/moi/${token}`;
+
+/** Đường dẫn chung: chứa token các nhóm đang mở, người quét tự chọn mình thuộc nhóm nào */
+export const sharedInviteUrl = (tokens: string[]) => `${window.location.origin}/moi?t=${tokens.join(',')}`;

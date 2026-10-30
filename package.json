@@ -8,10 +8,16 @@
     "build": "npm --prefix frontend run build",
     "preview": "npm --prefix frontend run preview",
     "typecheck": "npm --prefix frontend run typecheck",
+    "dev:api": "npm --prefix backend run dev",
+    "build:api": "npm --prefix backend run build",
+    "start:api": "npm --prefix backend run start",
+    "typecheck:api": "npm --prefix backend run typecheck",
     "import:ba": "npm --prefix supabase/scripts run import:ba",
     "import:ba:dry": "npm --prefix supabase/scripts run import:ba:dry",
     "supabase:types": "npm --prefix supabase/scripts run gen:types",
-    "assign:packages": "npm --prefix supabase/scripts run assign:packages --"
+    "assign:packages": "npm --prefix supabase/scripts run assign:packages --",
+    "import:phase2": "npm --prefix supabase/scripts run import:phase2",
+    "import:phase2:dry": "npm --prefix supabase/scripts run import:phase2:dry"
   },
   "keywords": [
     "typescript",

@@ -14,7 +14,10 @@
     "seed:demo": "tsx seed-demo-accounts.ts",
     "seed:demo:dry": "tsx seed-demo-accounts.ts --dry-run",
     "import:phase2": "tsx import-phase2-data.ts",
-    "import:phase2:dry": "tsx import-phase2-data.ts --dry-run"
+    "import:phase2:dry": "tsx import-phase2-data.ts --dry-run",
+    "import:phase2:career": "tsx import-phase2-data.ts --step career",
+    "import:phase2:school": "tsx import-phase2-data.ts --step school",
+    "import:phase2:links": "tsx import-phase2-data.ts --step links"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",

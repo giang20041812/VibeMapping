@@ -12,6 +12,13 @@
  *                                        đã chạy migration 20261030000100 và import:ba)
  *         npm run import:phase2:dry    (chỉ đọc và báo cáo, không ghi DB)
  *
+ * Nạp dần từng phần (thứ tự: fields → careers → jds → jd_criteria → matrix → majors → institutions → programs → links):
+ *         npm run import:phase2 -- --step school          (nhóm trường: majors, institutions, programs)
+ *         npm run import:phase2 -- --step career          (nhóm nghề: fields … matrix)
+ *         npm run import:phase2 -- --step majors,institutions
+ *         npm run import:phase2 -- --from programs        (chạy tiếp từ bước đã lỗi tới hết)
+ *   Bước sau đọc lại id từ DB; thiếu dữ liệu của bước trước thì báo cần chạy bước nào.
+ *
  * Quy tắc tính ma trận nghề theo SRS R16:
  *   - chỉ JD mức L0–L2 có Required Level quy đổi được về thang 1–5 mới được dùng;
  *   - Req(d,c)  = trung bình Required Level của các JD đó có gắn tiêu chí d (G1–G5, G7);
@@ -38,6 +45,9 @@ const CAREER_FILE = path.join(repoRoot, 'TEAM BA', 'Career_Profile.xlsx');
 const RESEARCH_FILE = path.join(repoRoot, 'TEAM BA', 'RESEARCH NGÀNH NGHỀ TRƯỜNG.xlsx');
 const FRAMEWORK_FILE = path.join(repoRoot, 'TEAM BA', 'ASSESSMENT FRAMEWORK.xlsx');
 const BATCH_SIZE = 500;
+/** JD nhiều cột chữ dài: lô nhỏ để không chạm giới hạn kích thước request / statement timeout */
+const JD_BATCH_SIZE = 100;
+const MAX_ATTEMPTS = 3;
 /** P16: số JD tối thiểu mỗi nghề (SRS R16, mức đề xuất) - chỉ dùng để báo cáo */
 const MIN_JD_PER_CAREER = 20;
 /** Cột tỉnh/thành có sheet ghi cả địa chỉ; giá trị dài hơn mức này được coi là địa chỉ */
@@ -743,132 +753,242 @@ async function fetchAll(supabase: SupabaseClient, table: string, columns: string
   }
 }
 
-async function upsertBatches(supabase: SupabaseClient, table: string, rows: Row[], onConflict: string, ignoreDuplicates = false) {
-  for (let start = 0; start < rows.length; start += BATCH_SIZE) {
-    const { error } = await supabase.from(table).upsert(rows.slice(start, start + BATCH_SIZE), { onConflict, ignoreDuplicates });
-    if (error) throw new Error(`Ghi ${table}: ${error.message}`);
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** Ghi theo lô, in tiến độ; lỗi mạng/timeout thử lại vài lần (upsert nên ghi lại cùng lô không sinh trùng) */
+async function upsertBatches(
+  supabase: SupabaseClient, table: string, rows: Row[], onConflict: string,
+  options: { ignoreDuplicates?: boolean; batchSize?: number } = {},
+) {
+  const { ignoreDuplicates = false, batchSize = BATCH_SIZE } = options;
+  for (let start = 0; start < rows.length; start += batchSize) {
+    const batch = rows.slice(start, start + batchSize);
+    for (let attempt = 1; ; attempt += 1) {
+      const { error } = await supabase.from(table).upsert(batch, { onConflict, ignoreDuplicates });
+      if (!error) break;
+      if (attempt >= MAX_ATTEMPTS) throw new Error(`Ghi ${table} (dòng ${start + 1}–${start + batch.length}): ${error.message}`);
+      console.log(`  ${table}: lỗi lô ${start + 1}–${start + batch.length} (${error.message}), thử lại lần ${attempt + 1}`);
+      await sleep(1000 * attempt);
+    }
+    process.stdout.write(`\r  ${table}: ${Math.min(start + batchSize, rows.length)}/${rows.length}`);
   }
-  console.log(`  ${table}: ${rows.length}`);
+  process.stdout.write(rows.length === 0 ? `  ${table}: 0\n` : '\n');
 }
 
 const idMap = (rows: Row[], key: string) => new Map(rows.map((row) => [String(row[key]), String(row.id)]));
 
-async function apply(args: {
+/** Lấy id đã có trong DB; thiếu nghĩa là bước đứng trước chưa chạy */
+function idOf(map: Map<string, string>, key: string, what: string, step: Step | 'import:ba'): string {
+  const id = map.get(key);
+  if (!id) throw new Error(`Chưa có ${what} "${key}" trong DB: chạy ${step === 'import:ba' ? 'npm run import:ba' : `bước "${step}"`} trước`);
+  return id;
+}
+
+/**
+ * Các bước ghi theo thứ tự phụ thuộc. Chạy dần từng bước (--step), hoặc tiếp từ một bước đã lỗi (--from).
+ * Bước sau đọc lại id từ DB nên các bước có thể chạy ở những lần khác nhau.
+ */
+const STEPS = ['fields', 'careers', 'jds', 'jd_criteria', 'matrix', 'majors', 'institutions', 'programs', 'links'] as const;
+type Step = (typeof STEPS)[number];
+const STEP_GROUPS: Record<string, Step[]> = {
+  career: ['fields', 'careers', 'jds', 'jd_criteria', 'matrix'],
+  school: ['majors', 'institutions', 'programs'],
+};
+
+function parseSteps(argv: string[]): Step[] {
+  const valueOf = (flag: string) => {
+    const inline = argv.find((arg) => arg.startsWith(`${flag}=`));
+    if (inline) return inline.slice(flag.length + 1);
+    const index = argv.indexOf(flag);
+    return index >= 0 ? argv[index + 1] ?? '' : null;
+  };
+  const known = `${STEPS.join(', ')} (nhóm: ${Object.keys(STEP_GROUPS).join(', ')})`;
+  const stepList = valueOf('--step');
+  const from = valueOf('--from');
+  if (stepList !== null && from !== null) throw new Error('Chỉ dùng một trong --step hoặc --from');
+  if (from !== null) {
+    const index = STEPS.indexOf(from as Step);
+    if (index < 0) throw new Error(`Bước "${from}" không có. Các bước: ${STEPS.join(', ')}`);
+    return STEPS.slice(index);
+  }
+  if (stepList === null) return [...STEPS];
+  const chosen = new Set<Step>();
+  for (const name of stepList.split(',').map((s) => s.trim()).filter(Boolean)) {
+    const steps = STEP_GROUPS[name] ?? (STEPS.includes(name as Step) ? [name as Step] : null);
+    if (!steps) throw new Error(`Bước "${name}" không có. Các bước: ${known}`);
+    steps.forEach((step) => chosen.add(step));
+  }
+  if (chosen.size === 0) throw new Error(`--step trống. Các bước: ${known}`);
+  return STEPS.filter((step) => chosen.has(step));
+}
+
+interface ImportData {
   jds: JobDescription[]; fields: FieldRow[]; careers: CareerRow[]; matrix: CareerMatrix;
   institutions: Map<string, InstitutionRow>; majors: Map<string, MajorRow>; programs: Map<string, ProgramRow>; links: LinkRow[];
-}) {
+}
+
+const PARENT_NAMES: Record<string, string> = {
+  'vnu-hanoi': 'Đại học Quốc gia Hà Nội', 'vnu-hcm': 'Đại học Quốc gia TP.HCM', 'da-nang': 'Đại học Đà Nẵng',
+  'hue': 'Đại học Huế', 'thai-nguyen': 'Đại học Thái Nguyên',
+};
+
+const STEP_RUNNERS: Record<Step, (supabase: SupabaseClient, data: ImportData) => Promise<void>> = {
+  // lĩnh vực: cấp 1 trước để lấy id làm cha cho cấp 2
+  async fields(supabase, data) {
+    const level1 = data.fields.filter((f) => !f.parent_code);
+    await upsertBatches(supabase, 'career_fields', level1.map((f) => ({ field_code: f.field_code, field_name: f.field_name, sort_order: f.sort_order })), 'field_code');
+    const parentId = idMap(await fetchAll(supabase, 'career_fields', 'id, field_code'), 'field_code');
+    const level2 = data.fields.filter((f) => f.parent_code);
+    await upsertBatches(supabase, 'career_fields', level2.map((f) => ({
+      field_code: f.field_code, parent_field_id: idOf(parentId, f.parent_code!, 'lĩnh vực', 'fields'), field_name: f.field_name, sort_order: f.sort_order,
+    })), 'field_code');
+  },
+
+  // nghề: không gửi `status` để nghề đã công bố giữ nguyên trạng thái
+  async careers(supabase, data) {
+    const fieldId = idMap(await fetchAll(supabase, 'career_fields', 'id, field_code'), 'field_code');
+    await upsertBatches(supabase, 'careers', data.careers.map((c) => {
+      const summary = data.matrix.summary.get(c.career_code)!;
+      return {
+        career_code: c.career_code, career_field_id: idOf(fieldId, c.field_code, 'lĩnh vực', 'fields'), career_name: c.career_name,
+        source_group_id: c.source_group_id, holland_top3: summary.holland_top3,
+        qualifying_jd_count: summary.qualifying, is_standard_complete: summary.complete,
+      };
+    }), 'career_code');
+  },
+
+  async jds(supabase, data) {
+    const careerId = idMap(await fetchAll(supabase, 'careers', 'id, career_code'), 'career_code');
+    const jdOwner = new Map<number, string>();
+    for (const career of data.careers) for (const jd of career.jds) jdOwner.set(jd.source_id, career.career_code);
+    await upsertBatches(supabase, 'career_job_descriptions', data.jds.map((jd) => ({
+      career_id: idOf(careerId, jdOwner.get(jd.source_id)!, 'nghề', 'careers'), source_id: jd.source_id, jd_code: jd.jd_code,
+      career_level_raw: jd.career_level_raw, career_level: jd.career_level,
+      required_level_raw: jd.required_level_raw, required_level: jd.required_level, ...jd.text,
+    })), 'source_id', { batchSize: JD_BATCH_SIZE });
+  },
+
+  async jd_criteria(supabase, data) {
+    const criteriaId = await loadCriteria(supabase);
+    const jdId = idMap(await fetchAll(supabase, 'career_job_descriptions', 'id, source_id'), 'source_id');
+    const rows: Row[] = [];
+    for (const jd of data.jds) {
+      for (const { code, basis } of jd.dimensions) {
+        rows.push({
+          job_description_id: idOf(jdId, String(jd.source_id), 'JD', 'jds'),
+          criteria_id: idOf(criteriaId, code, 'tiêu chí', 'import:ba'), selection_basis: basis,
+        });
+      }
+    }
+    await upsertBatches(supabase, 'career_job_description_criteria', rows, 'job_description_id,criteria_id');
+  },
+
+  // ma trận sinh tự động: dựng lại; dòng đã được chuyên gia duyệt (verification_level khác) thì giữ
+  async matrix(supabase, data) {
+    const criteriaId = await loadCriteria(supabase);
+    const careerId = idMap(await fetchAll(supabase, 'careers', 'id, career_code'), 'career_code');
+    const { data: version, error: versionError } = await supabase.from('career_matrix_versions').select('id').eq('is_current', true).single();
+    if (versionError || !version) throw new Error('Chưa có career_matrix_versions hiện hành: chạy migration 20261030000100 trước');
+    const matrixVersionId = String(version.id);
+    for (const table of ['career_requirements', 'career_holland_profiles']) {
+      const query = supabase.from(table).delete().eq('verification_level', 'per_jd_data');
+      const { error } = await (table === 'career_requirements' ? query.eq('matrix_version_id', matrixVersionId) : query);
+      if (error) throw new Error(`Xóa ${table}: ${error.message}`);
+    }
+    await upsertBatches(supabase, 'career_requirements', data.matrix.requirements.map((r) => ({
+      career_id: idOf(careerId, r.career_code, 'nghề', 'careers'), criteria_id: idOf(criteriaId, r.dimension_code, 'tiêu chí', 'import:ba'),
+      matrix_version_id: matrixVersionId, required_score: r.required_score, career_weight: r.career_weight, jd_count: r.jd_count,
+      verification_level: 'per_jd_data',
+    })), 'career_id,criteria_id,matrix_version_id', { ignoreDuplicates: true });
+    await upsertBatches(supabase, 'career_holland_profiles', data.matrix.holland.map((r) => ({
+      career_id: idOf(careerId, r.career_code, 'nghề', 'careers'), holland_code: r.holland_code, strength: r.strength, jd_count: r.jd_count,
+      verification_level: 'per_jd_data',
+    })), 'career_id,holland_code', { ignoreDuplicates: true });
+  },
+
+  async majors(supabase, data) {
+    await upsertBatches(supabase, 'majors', [...data.majors.values()].map((m) => ({ normalized_name: m.normalized_name, major_name: m.major_name })), 'normalized_name');
+  },
+
+  // trường: hệ thống đại học quốc gia/vùng là bản ghi riêng, các trường thành viên trỏ về.
+  // Lĩnh vực mạnh cần bước "fields"; chưa có thì để trống, chạy lại bước này sau khi có.
+  async institutions(supabase, data) {
+    const fieldId = idMap(await fetchAll(supabase, 'career_fields', 'id, field_code'), 'field_code');
+    if (fieldId.size === 0) console.log('  (chưa có lĩnh vực: main_field_id để trống, chạy lại bước institutions sau bước fields)');
+    const usedParents = new Set([...data.institutions.values()].map((i) => i.parent_system).filter((k): k is string => !!k));
+    await upsertBatches(supabase, 'institutions', [...usedParents].map((key) => ({
+      normalized_name: `he-thong:${key}`, institution_name: PARENT_NAMES[key], institution_type: 'parent_university',
+    })), 'normalized_name');
+    const parentId = idMap(await fetchAll(supabase, 'institutions', 'id, normalized_name'), 'normalized_name');
+    await upsertBatches(supabase, 'institutions', [...data.institutions.values()].map((i) => ({
+      normalized_name: i.normalized_name, institution_name: i.institution_name, institution_type: i.institution_type,
+      ownership: i.ownership, segment: i.segment, segment_rank: i.segment_rank,
+      main_field_id: i.main_group ? fieldId.get(`LV${i.main_group.slice(1)}`) ?? null : null,
+      city: i.city, city_before_merger: i.city_before_merger, address: i.address, website_url: i.website_url,
+      parent_institution_id: i.parent_system ? idOf(parentId, `he-thong:${i.parent_system}`, 'hệ thống đại học', 'institutions') : null,
+    })), 'normalized_name');
+  },
+
+  async programs(supabase, data) {
+    const majorId = idMap(await fetchAll(supabase, 'majors', 'id, normalized_name'), 'normalized_name');
+    const institutionId = idMap(await fetchAll(supabase, 'institutions', 'id, normalized_name'), 'normalized_name');
+    await upsertBatches(supabase, 'training_programs', [...data.programs.values()].map((p) => ({
+      source_key: p.source_key,
+      institution_id: idOf(institutionId, p.institution_key, 'trường', 'institutions'), major_id: idOf(majorId, p.major_key, 'ngành', 'majors'),
+      faculty_name: p.faculty_name, specialization_name: p.specialization_name, program_type: p.program_type,
+      degree_levels: p.degree_levels, program_qualifier: p.program_qualifier, program_summary: p.program_summary,
+      study_years: p.study_years, tuition_text: p.tuition_text,
+      tuition_per_semester_min: p.tuition_per_semester_min, tuition_per_semester_max: p.tuition_per_semester_max,
+      program_url: p.program_url, source_reference: p.source_reference, research_status: p.research_status,
+      researcher_name: p.researcher_name, research_note: p.research_note,
+    })), 'source_key');
+  },
+
+  // liên kết nghề – ngành: dựng lại phần sinh tự động chưa kiểm duyệt
+  async links(supabase, data) {
+    const careerId = idMap(await fetchAll(supabase, 'careers', 'id, career_code'), 'career_code');
+    const majorId = idMap(await fetchAll(supabase, 'majors', 'id, normalized_name'), 'normalized_name');
+    const rows = data.links.map((l) => ({
+      career_id: idOf(careerId, l.career_code, 'nghề', 'careers'), major_id: idOf(majorId, l.major_key, 'ngành', 'majors'),
+      link_level: 'direct', link_source: 'jd_education_text', is_verified: false,
+    }));
+    const { error } = await supabase.from('career_major_links').delete().eq('link_source', 'jd_education_text').eq('is_verified', false);
+    if (error) throw new Error(`Xóa career_major_links: ${error.message}`);
+    await upsertBatches(supabase, 'career_major_links', rows, 'career_id,major_id', { ignoreDuplicates: true });
+  },
+};
+
+async function loadCriteria(supabase: SupabaseClient): Promise<Map<string, string>> {
+  const criteriaId = idMap(await fetchAll(supabase, 'criteria', 'id, dimension_code'), 'dimension_code');
+  if (criteriaId.size === 0) throw new Error('Bảng criteria trống: chạy npm run import:ba trước');
+  return criteriaId;
+}
+
+async function apply(data: ImportData, steps: Step[]) {
   const url = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !serviceKey || serviceKey.includes('your_service_role_key')) {
     throw new Error('Thiếu SUPABASE_URL (hoặc VITE_SUPABASE_URL) / SUPABASE_SERVICE_ROLE_KEY trong .env');
   }
   const supabase = createClient(url, serviceKey, { auth: { persistSession: false } });
-  console.log('\nGhi vào cơ sở dữ liệu:');
-
-  const criteriaId = idMap(await fetchAll(supabase, 'criteria', 'id, dimension_code'), 'dimension_code');
-  if (criteriaId.size === 0) throw new Error('Bảng criteria trống: chạy npm run import:ba trước');
-  const { data: version, error: versionError } = await supabase.from('career_matrix_versions').select('id').eq('is_current', true).single();
-  if (versionError || !version) throw new Error('Chưa có career_matrix_versions hiện hành: chạy migration 20261030000100 trước');
-  const matrixVersionId = String(version.id);
-
-  // lĩnh vực: cấp 1 trước để lấy id làm cha cho cấp 2
-  const level1 = args.fields.filter((f) => !f.parent_code);
-  await upsertBatches(supabase, 'career_fields', level1.map((f) => ({ field_code: f.field_code, field_name: f.field_name, sort_order: f.sort_order })), 'field_code');
-  const parentId = idMap(await fetchAll(supabase, 'career_fields', 'id, field_code'), 'field_code');
-  const level2 = args.fields.filter((f) => f.parent_code);
-  await upsertBatches(supabase, 'career_fields', level2.map((f) => ({
-    field_code: f.field_code, parent_field_id: parentId.get(f.parent_code!), field_name: f.field_name, sort_order: f.sort_order,
-  })), 'field_code');
-  const fieldId = idMap(await fetchAll(supabase, 'career_fields', 'id, field_code'), 'field_code');
-
-  // nghề: không gửi `status` để nghề đã công bố giữ nguyên trạng thái
-  await upsertBatches(supabase, 'careers', args.careers.map((c) => {
-    const summary = args.matrix.summary.get(c.career_code)!;
-    return {
-      career_code: c.career_code, career_field_id: fieldId.get(c.field_code), career_name: c.career_name,
-      source_group_id: c.source_group_id, holland_top3: summary.holland_top3,
-      qualifying_jd_count: summary.qualifying, is_standard_complete: summary.complete,
-    };
-  }), 'career_code');
-  const careerId = idMap(await fetchAll(supabase, 'careers', 'id, career_code'), 'career_code');
-
-  const jdOwner = new Map<number, string>();
-  for (const career of args.careers) for (const jd of career.jds) jdOwner.set(jd.source_id, career.career_code);
-  await upsertBatches(supabase, 'career_job_descriptions', args.jds.map((jd) => ({
-    career_id: careerId.get(jdOwner.get(jd.source_id)!), source_id: jd.source_id, jd_code: jd.jd_code,
-    career_level_raw: jd.career_level_raw, career_level: jd.career_level,
-    required_level_raw: jd.required_level_raw, required_level: jd.required_level, ...jd.text,
-  })), 'source_id');
-  const jdId = idMap(await fetchAll(supabase, 'career_job_descriptions', 'id, source_id'), 'source_id');
-
-  const jdCriteria: Row[] = [];
-  for (const jd of args.jds) {
-    for (const { code, basis } of jd.dimensions) {
-      const cid = criteriaId.get(code);
-      if (!cid) throw new Error(`Thiếu tiêu chí ${code} trong bảng criteria`);
-      jdCriteria.push({ job_description_id: jdId.get(String(jd.source_id)), criteria_id: cid, selection_basis: basis });
+  console.log(`\nGhi vào cơ sở dữ liệu, các bước: ${steps.join(' → ')}`);
+  for (const [index, step] of steps.entries()) {
+    console.log(`[${index + 1}/${steps.length}] ${step}`);
+    try {
+      await STEP_RUNNERS[step](supabase, data);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`${message}\nChạy tiếp từ bước lỗi: npm run import:phase2 -- --from ${step}`);
     }
   }
-  await upsertBatches(supabase, 'career_job_description_criteria', jdCriteria, 'job_description_id,criteria_id');
-
-  // ma trận sinh tự động: dựng lại; dòng đã được chuyên gia duyệt (verification_level khác) thì giữ
-  for (const table of ['career_requirements', 'career_holland_profiles']) {
-    const query = supabase.from(table).delete().eq('verification_level', 'per_jd_data');
-    const { error } = await (table === 'career_requirements' ? query.eq('matrix_version_id', matrixVersionId) : query);
-    if (error) throw new Error(`Xóa ${table}: ${error.message}`);
-  }
-  await upsertBatches(supabase, 'career_requirements', args.matrix.requirements.map((r) => ({
-    career_id: careerId.get(r.career_code), criteria_id: criteriaId.get(r.dimension_code), matrix_version_id: matrixVersionId,
-    required_score: r.required_score, career_weight: r.career_weight, jd_count: r.jd_count, verification_level: 'per_jd_data',
-  })), 'career_id,criteria_id,matrix_version_id', true);
-  await upsertBatches(supabase, 'career_holland_profiles', args.matrix.holland.map((r) => ({
-    career_id: careerId.get(r.career_code), holland_code: r.holland_code, strength: r.strength, jd_count: r.jd_count, verification_level: 'per_jd_data',
-  })), 'career_id,holland_code', true);
-
-  // ngành
-  await upsertBatches(supabase, 'majors', [...args.majors.values()].map((m) => ({ normalized_name: m.normalized_name, major_name: m.major_name })), 'normalized_name');
-  const majorId = idMap(await fetchAll(supabase, 'majors', 'id, normalized_name'), 'normalized_name');
-
-  // trường: hệ thống đại học quốc gia/vùng là bản ghi riêng, các trường thành viên trỏ về
-  const PARENT_NAMES: Record<string, string> = {
-    'vnu-hanoi': 'Đại học Quốc gia Hà Nội', 'vnu-hcm': 'Đại học Quốc gia TP.HCM', 'da-nang': 'Đại học Đà Nẵng',
-    'hue': 'Đại học Huế', 'thai-nguyen': 'Đại học Thái Nguyên',
-  };
-  const usedParents = new Set([...args.institutions.values()].map((i) => i.parent_system).filter((k): k is string => !!k));
-  await upsertBatches(supabase, 'institutions', [...usedParents].map((key) => ({
-    normalized_name: `he-thong:${key}`, institution_name: PARENT_NAMES[key], institution_type: 'parent_university',
-  })), 'normalized_name');
-  const institutionIdByKey = idMap(await fetchAll(supabase, 'institutions', 'id, normalized_name'), 'normalized_name');
-  await upsertBatches(supabase, 'institutions', [...args.institutions.values()].map((i) => ({
-    normalized_name: i.normalized_name, institution_name: i.institution_name, institution_type: i.institution_type,
-    ownership: i.ownership, segment: i.segment, segment_rank: i.segment_rank,
-    main_field_id: i.main_group ? fieldId.get(`LV${i.main_group.slice(1)}`) ?? null : null,
-    city: i.city, city_before_merger: i.city_before_merger, address: i.address, website_url: i.website_url,
-    parent_institution_id: i.parent_system ? institutionIdByKey.get(`he-thong:${i.parent_system}`) ?? null : null,
-  })), 'normalized_name');
-  const institutionId = idMap(await fetchAll(supabase, 'institutions', 'id, normalized_name'), 'normalized_name');
-
-  await upsertBatches(supabase, 'training_programs', [...args.programs.values()].map((p) => ({
-    source_key: p.source_key, institution_id: institutionId.get(p.institution_key), major_id: majorId.get(p.major_key),
-    faculty_name: p.faculty_name, specialization_name: p.specialization_name, program_type: p.program_type,
-    degree_levels: p.degree_levels, program_qualifier: p.program_qualifier, program_summary: p.program_summary,
-    study_years: p.study_years, tuition_text: p.tuition_text,
-    tuition_per_semester_min: p.tuition_per_semester_min, tuition_per_semester_max: p.tuition_per_semester_max,
-    program_url: p.program_url, source_reference: p.source_reference, research_status: p.research_status,
-    researcher_name: p.researcher_name, research_note: p.research_note,
-  })), 'source_key');
-
-  // liên kết nghề – ngành: dựng lại phần sinh tự động chưa kiểm duyệt
-  const { error: deleteLinksError } = await supabase.from('career_major_links').delete().eq('link_source', 'jd_education_text').eq('is_verified', false);
-  if (deleteLinksError) throw new Error(`Xóa career_major_links: ${deleteLinksError.message}`);
-  await upsertBatches(supabase, 'career_major_links', args.links.map((l) => ({
-    career_id: careerId.get(l.career_code), major_id: majorId.get(l.major_key), link_level: 'direct', link_source: 'jd_education_text', is_verified: false,
-  })), 'career_id,major_id', true);
-  console.log('Hoàn tất. Nghề mới ở trạng thái draft: quản trị công bố từng nghề đủ chuẩn.');
+  const remaining = STEPS.filter((step) => !steps.includes(step));
+  if (remaining.length > 0) console.log(`Xong các bước đã chọn. Không chạy lần này:${remaining.join(', ')}`);
+  else console.log('Hoàn tất. Nghề mới ở trạng thái draft: quản trị công bố từng nghề đủ chuẩn.');
 }
 
 async function main() {
   const dryRun = process.argv.includes('--dry-run');
+  const steps = parseSteps(process.argv.slice(2));
   const dimensions = await readDimensions();
   const jds = await readJobDescriptions(dimensions);
   const { fields, fieldCodeOf } = buildFields(jds);
@@ -880,10 +1000,10 @@ async function main() {
 
   report({ jds, careers, fieldCount: fields.length, matrix, research, institutions, majors, programs, links });
   if (dryRun) {
-    console.log('\nDry-run: không ghi vào cơ sở dữ liệu.');
+    console.log(`\nDry-run: không ghi vào cơ sở dữ liệu. Các bước sẽ chạy: ${steps.join(' → ')}`);
     return;
   }
-  await apply({ jds, fields, careers, matrix, institutions, majors, programs, links });
+  await apply({ jds, fields, careers, matrix, institutions, majors, programs, links }, steps);
 }
 
 main().catch((error) => {

@@ -17,7 +17,10 @@
     "supabase:types": "npm --prefix supabase/scripts run gen:types",
     "assign:packages": "npm --prefix supabase/scripts run assign:packages --",
     "import:phase2": "npm --prefix supabase/scripts run import:phase2",
-    "import:phase2:dry": "npm --prefix supabase/scripts run import:phase2:dry"
+    "import:phase2:dry": "npm --prefix supabase/scripts run import:phase2:dry",
+    "import:phase2:career": "npm --prefix supabase/scripts run import:phase2:career",
+    "import:phase2:school": "npm --prefix supabase/scripts run import:phase2:school",
+    "import:phase2:links": "npm --prefix supabase/scripts run import:phase2:links"
   },
   "keywords": [
     "typescript",

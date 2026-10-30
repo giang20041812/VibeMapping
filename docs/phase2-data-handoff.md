@@ -1,7 +1,7 @@
 # Phase 2 – Bàn giao dữ liệu: Nghề phù hợp và Nghề – Ngành – Trường
 
 Phạm vi: chỉ phần **dữ liệu** (bảng, nạp từ Excel của BA, kiểm tra). Chưa có giao diện, chưa có RPC tính Career Fit.
-Cập nhật: 2026-10-30. Chưa áp lên Supabase thật (`.env` chưa có khóa); đã chạy thử trên PostgreSQL 18 cục bộ.
+Cập nhật: 2026-10-30. Đã nạp đủ lên Supabase thật (số dòng khớp bảng dưới, chạy lại không sinh trùng).
 
 ## 1. Đã làm
 
@@ -12,6 +12,18 @@ Cập nhật: 2026-10-30. Chưa áp lên Supabase thật (`.env` chưa có khóa
 | Lệnh | `npm run import:phase2:dry` (chỉ đọc, báo cáo) · `npm run import:phase2` (ghi DB) |
 
 Thứ tự áp dụng: migration → `import:ba` (cần bảng `criteria`) → `import:phase2`.
+
+Nạp dần từng phần (mỗi bước đọc lại id từ DB nên chạy ở các lần khác nhau được; thiếu dữ liệu bước trước thì script báo cần chạy bước nào):
+
+| Lệnh | Bước |
+|---|---|
+| `npm run import:phase2:career` | `fields` → `careers` → `jds` → `jd_criteria` → `matrix` |
+| `npm run import:phase2:school` | `majors` → `institutions` → `programs` |
+| `npm run import:phase2:links` | `links` (cần nghề và ngành) |
+| `npm run import:phase2 -- --step majors,institutions` | chọn bước tùy ý |
+| `npm run import:phase2 -- --from programs` | chạy tiếp từ bước đã lỗi tới hết |
+
+Mỗi lô lỗi mạng/timeout được thử lại 3 lần; JD ghi lô 100 dòng (nhiều cột chữ dài). `institutions` chạy trước `fields` thì `main_field_id` để trống, chạy lại `institutions` sau.
 
 ### Bảng (tên theo thực thể SRS mục ENT-04)
 
@@ -83,7 +95,7 @@ File research không có bảng nghề ↔ ngành. Liên kết sinh tự động
 - Chạy toàn bộ 24 migration (cả file mới, hai lần) trên PostgreSQL 18 cục bộ: không lỗi, mọi bảng bật RLS.
 - Chạy đường ghi của script (qua client giả nối Postgres, vì không có Supabase thật) hai lần liên tiếp: toàn bộ ràng buộc CHECK/FK/UNIQUE qua; số dòng không đổi giữa hai lần; nghề đã đặt `published` giữ nguyên.
 - Tổng `career_weight` mỗi nghề trong từng thành phần = 1. Người dùng thường chỉ đọc được nghề `published` và dữ liệu đi kèm, không ghi được; `anon` không đọc được.
-- **Chưa chạy trên Supabase thật** (cần `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, migration đã áp, `import:ba` đã chạy).
+- Đã nạp lên Supabase thật theo từng nhóm bước (`fields,careers` → `jds,jd_criteria,matrix` → `school,links`): số dòng mỗi bảng khớp bảng ở mục 1 (trường 339 + 5 hệ thống, 76 trường thành viên trỏ về hệ thống, cả 339 trường có lĩnh vực mạnh); chạy lại `institutions,links` không đổi số dòng.
 
 ## 6. Đã làm tiếp: trang Khám phá trường (danh sách)
 - Migration `20261030000200_phase2_public_catalog_read.sql`: khách chưa đăng nhập (`anon`) đọc được danh mục lĩnh vực, ngành, trường, chương trình (trang nằm ở khung công khai). Nghề và JD vẫn không mở.

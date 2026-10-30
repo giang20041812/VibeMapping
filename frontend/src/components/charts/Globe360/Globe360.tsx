@@ -20,12 +20,16 @@ export interface Globe360Props {
   active?: boolean;
   /** Bản thu gọn dùng làm nút gạt: không có nhóm chọn, không tương tác riêng */
   compact?: boolean;
-  /** Tạm dừng vòng vẽ (giữ nguyên khung hình cuối), ví dụ khi quả cầu đang bay vào trang và máy cần dành sức cho việc khác */
+  /** Tạm dừng vòng vẽ (giữ nguyên khung hình cuối), ví dụ khi quả cầu chưa tới lượt bay vào trang */
   paused?: boolean;
+  /** Đang bay vào trang: vẫn quay nhưng vẽ nhẹ hơn (ít khung hình, không đổi chất lượng giữa chừng) để chuyến bay mượt */
+  lite?: boolean;
   className?: string;
 }
 
 const TOUR_INTERVAL_MS = 3200;
+/** Khoảng cách tối thiểu giữa hai khung (ms) khi đang bay vào: khoảng 30 khung/giây */
+const LITE_FRAME_MS = 30;
 const CLICK_SLOP_PX = 5;
 /** Thời gian vẽ trung bình mỗi khung (ms) vượt ngưỡng này thì hạ một mức chất lượng */
 const FRAME_BUDGET_MS = [6, 5, 99];
@@ -43,7 +47,7 @@ interface Control {
  * tự lần lượt làm nổi từng nhóm khi chưa ai tương tác. Vòng lặp vẽ tự dừng khi quả cầu đứng yên
  * hoặc ra khỏi màn hình, và tự hạ chất lượng nếu máy vẽ chậm.
  */
-export const Globe360: React.FC<Globe360Props> = ({ nodes, active = true, compact = false, paused = false, className = '' }) => {
+export const Globe360: React.FC<Globe360Props> = ({ nodes, active = true, compact = false, paused = false, lite = false, className = '' }) => {
   const reduced = useReducedMotion();
   const lowPower = useLowPower();
   const { ref: figureRef, inView, seen } = useInView<HTMLElement>(0.2);
@@ -55,6 +59,7 @@ export const Globe360: React.FC<Globe360Props> = ({ nodes, active = true, compac
   const interactingRef = useRef(false);
   const overStageRef = useRef(false);
   const inViewRef = useRef(false);
+  const liteRef = useRef(lite);
   const activeRef = useRef(active);
   const dragRef = useRef<{ id: number; x: number; y: number; startX: number; startY: number; time: number; moved: boolean } | null>(null);
 
@@ -86,17 +91,20 @@ export const Globe360: React.FC<Globe360Props> = ({ nodes, active = true, compac
     controlRef.current?.redraw();
   }, [active]);
 
+  /* Đang bay vào thì quả cầu còn nằm ngoài khung nhìn hoặc đang thu nhỏ, nhưng vẫn phải quay */
   useEffect(() => {
-    inViewRef.current = inView && !paused;
-    if (inView && !paused) controlRef.current?.start();
+    liteRef.current = lite;
+    const running = (inView || lite) && !paused;
+    inViewRef.current = running;
+    if (running) controlRef.current?.start();
     else controlRef.current?.stop();
-  }, [inView, paused]);
+  }, [inView, paused, lite]);
 
   useEffect(() => {
-    if (compact || interacting || reduced || !inView || paused || nodes.length === 0) return;
+    if (compact || interacting || reduced || !inView || paused || lite || nodes.length === 0) return;
     const timer = window.setInterval(() => setTourIndex((i) => (i + 1) % nodes.length), TOUR_INTERVAL_MS);
     return () => window.clearInterval(timer);
-  }, [compact, interacting, reduced, inView, paused, nodes.length]);
+  }, [compact, interacting, reduced, inView, paused, lite, nodes.length]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -115,7 +123,8 @@ export const Globe360: React.FC<Globe360Props> = ({ nodes, active = true, compac
 
     const frame = (now: number) => {
       const level = scene.getQuality();
-      if (now - last < MIN_FRAME_MS[level]) {
+      const lightweight = liteRef.current;
+      if (now - last < (lightweight ? Math.max(MIN_FRAME_MS[level], LITE_FRAME_MS) : MIN_FRAME_MS[level])) {
         raf = requestAnimationFrame(frame);
         return;
       }
@@ -126,7 +135,8 @@ export const Globe360: React.FC<Globe360Props> = ({ nodes, active = true, compac
       const started = performance.now();
       draw(now);
       averageCost = averageCost * 0.9 + (performance.now() - started) * 0.1;
-      framesSinceAdjust += 1;
+      /* Đổi chất lượng phải dựng lại canvas nên không làm giữa chuyến bay; chi phí đo lúc đó cũng bị trang đang bận làm lệch */
+      framesSinceAdjust = lightweight ? 0 : framesSinceAdjust + 1;
       if (framesSinceAdjust >= ADJUST_AFTER_FRAMES && averageCost > FRAME_BUDGET_MS[level]) {
         scene.setQuality(level + 1);
         averageCost = 0;

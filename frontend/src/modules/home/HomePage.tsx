@@ -41,14 +41,17 @@ function resultToAxes(result: AssessmentResultSummary): PolygonAxis[] {
 }
 const POLYGON_LEVELS = COMPETENCY_LEVELS.map(({ min, label }) => ({ min, label }));
 
+/** Chưa tới lượt bay, đang bay, đã đáp */
+type FlightPhase = 'waiting' | 'flying' | 'landed';
+
 interface FeatureProps {
   id: string;
   /** Đưa hình minh họa sang bên trái, chữ sang bên phải */
   flip?: boolean;
   /** Hình đã tải xong; chưa xong thì chưa bay, để khung chờ tải không bay vào trang */
   ready?: boolean;
-  /** Hình minh họa; dạng hàm nhận `flying` (chưa bay xong) để hình tạm nghỉ việc nặng trong lúc bay */
-  visual: React.ReactNode | ((flying: boolean) => React.ReactNode);
+  /** Hình minh họa; dạng hàm nhận giai đoạn chuyến bay để hình nghỉ việc nặng khi chưa bay và làm nhẹ đi trong lúc bay */
+  visual: React.ReactNode | ((phase: FlightPhase) => React.ReactNode);
   children: React.ReactNode;
 }
 
@@ -70,7 +73,7 @@ const Feature: React.FC<FeatureProps> = ({ id, flip = false, ready = true, visua
         {children}
       </div>
       <div ref={visualRef} className="feature-visual">
-        {typeof visual === 'function' ? visual(!landed) : visual}
+        {typeof visual === 'function' ? visual(landed ? 'landed' : started ? 'flying' : 'waiting') : visual}
       </div>
     </section>
   );
@@ -193,9 +196,9 @@ export const HomePage: React.FC = () => {
       <Feature
         id="feature-360"
         flip
-        visual={(flying) => (
+        visual={(phase) => (
           <div className="feature-stage">
-            <Globe360 nodes={GLOBE_NODES} paused={flying} />
+            <Globe360 nodes={GLOBE_NODES} paused={phase === 'waiting'} lite={phase === 'flying'} />
           </div>
         )}
       >

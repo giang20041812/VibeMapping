@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { getInProgressSession } from '../../assessment_session/assessmentSession.service';
 import { Alert, Button, Modal } from '../../../components/common';
@@ -10,7 +10,7 @@ import { ResultSkeleton } from '../../assessment_result/components/ResultSkeleto
 import { ResultView } from '../../assessment_result/components/ResultView';
 import { AssessmentStartPanel } from '../../assessment_session/components/AssessmentStartPanel';
 import { useAuth } from '../../auth/AuthContext';
-import { isLearnerRole, isProfileComplete } from '../../profile/profile.logic';
+import { isLearnerRole } from '../../profile/profile.logic';
 import '../../assessment_result/components/EmptyResult.css';
 import './PersonalAssessmentPage.css';
 
@@ -47,11 +47,6 @@ export const PersonalAssessmentPage: React.FC = () => {
       active = false;
     };
   }, [userId, learner]);
-
-  /* Làm xong bài mà hồ sơ còn thiếu thì phải khai báo nốt mới xem được kết quả */
-  if (learner && profile && !isLoading && result && !isProfileComplete(profile)) {
-    return <Navigate to="/hoan-tat-ho-so" replace />;
-  }
 
   if (!learner) {
     return (

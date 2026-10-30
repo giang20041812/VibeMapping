@@ -3,6 +3,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { LogoMark } from '../common';
 import { useAuth } from '../../modules/auth/AuthContext';
 import type { UserRole } from '../../modules/auth/auth.types';
+import { isLearnerRole, isProfileComplete } from '../../modules/profile/profile.logic';
 import { PageSkeleton } from './PageSkeleton';
 import './RouteGuards.css';
 
@@ -37,6 +38,21 @@ export const RequireRole: React.FC<{ roles: UserRole[] }> = ({ roles }) => {
   const { profile, isProfileLoading } = useAuth();
   if (isProfileLoading) return <PageSkeleton />;
   if (!profile || !roles.includes(profile.role)) return <Navigate to="/" replace />;
+  return <Outlet />;
+};
+
+/**
+ * Học sinh, sinh viên có tài khoản phải khai báo đủ hồ sơ trước khi dùng chức năng đánh giá và lớp học;
+ * khai báo xong thì quay lại đúng trang đang mở. Khách làm bài test thì làm trước, khai báo sau.
+ */
+export const RequireCompleteProfile: React.FC = () => {
+  const { isGuest, profile, isProfileLoading } = useAuth();
+  const location = useLocation();
+  if (isGuest) return <Outlet />;
+  if (isProfileLoading) return <PageSkeleton />;
+  if (profile && isLearnerRole(profile.role) && !isProfileComplete(profile)) {
+    return <Navigate to="/hoan-tat-ho-so" replace state={{ from: location.pathname + location.search }} />;
+  }
   return <Outlet />;
 };
 

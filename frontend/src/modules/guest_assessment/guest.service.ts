@@ -2,7 +2,8 @@ import { supabase } from '../../lib/supabase';
 import type { InviteGroup } from '../invitation_link/invitation.constants';
 
 export interface GuestInvitation {
-  state: 'valid' | 'expired' | 'revoked' | 'full' | 'not_found';
+  /** own_link: người mở đang đăng nhập đúng tài khoản chủ đường dẫn */
+  state: 'valid' | 'expired' | 'revoked' | 'full' | 'not_found' | 'own_link';
   raterGroup: InviteGroup | null;
   subjectDisplayName: string | null;
 }
@@ -21,14 +22,14 @@ export interface GuestAnswer {
 
 export interface GuestSession {
   status: 'draft' | 'pending' | 'accepted' | 'rejected' | 'not_found';
-  linkState: 'valid' | 'expired' | 'revoked' | null;
+  linkState: 'valid' | 'expired' | 'revoked' | 'own_link' | null;
   subjectDisplayName: string | null;
   startedAt: string | null;
   answers: Map<string, GuestAnswer>;
 }
 
 export class GuestError extends Error {
-  constructor(public code: 'duplicate' | 'full' | 'unavailable' | 'unknown') {
+  constructor(public code: 'duplicate' | 'full' | 'unavailable' | 'own' | 'unknown') {
     super(code);
   }
 }
@@ -70,6 +71,7 @@ export async function startSubmission(token: string, form: IntroForm): Promise<s
     if (message.includes('duplicate_ip')) throw new GuestError('duplicate');
     if (message.includes('link_full')) throw new GuestError('full');
     if (message.includes('invitation_unavailable')) throw new GuestError('unavailable');
+    if (message.includes('own_invitation')) throw new GuestError('own');
     console.error('Lỗi tạo bài đánh giá:', message);
     throw new GuestError('unknown');
   }

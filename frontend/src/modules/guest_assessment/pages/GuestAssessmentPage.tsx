@@ -191,6 +191,7 @@ export const GuestAssessmentPage: React.FC = () => {
       if (error instanceof GuestError && error.code === 'duplicate') setStage({ kind: 'unavailable', reason: 'duplicate' });
       else if (error instanceof GuestError && error.code === 'full') setStage({ kind: 'unavailable', reason: 'full' });
       else if (error instanceof GuestError && error.code === 'unavailable') setStage({ kind: 'unavailable', reason: 'expired' });
+      else if (error instanceof GuestError && error.code === 'own') setStage({ kind: 'unavailable', reason: 'own_link' });
       else setIntroFailure('Không bắt đầu được bài đánh giá, vui lòng thử lại');
     } finally {
       setIsStarting(false);
@@ -268,6 +269,7 @@ export const GuestAssessmentPage: React.FC = () => {
     } catch (error) {
       const message = error instanceof Error ? error.message : String((error as { message?: string })?.message ?? '');
       if (message.includes('invitation_unavailable')) setStage({ kind: 'unavailable', reason: 'expired' });
+      else if (message.includes('own_invitation')) setStage({ kind: 'unavailable', reason: 'own_link' });
       else setSubmitFailure('Không nộp được bài, vui lòng thử lại');
     } finally {
       setIsSubmitting(false);

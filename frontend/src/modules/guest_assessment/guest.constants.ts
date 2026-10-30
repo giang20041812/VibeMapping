@@ -42,5 +42,6 @@ export const UNAVAILABLE_TEXT: Record<string, string> = {
   full: 'Đường dẫn này đã nhận đủ số bài.',
   not_found: 'Không tìm thấy đường dẫn này.',
   duplicate: 'Không thể truy cập. Mỗi IP chỉ được nộp tối đa 1 bài trên đường dẫn này.',
+  own_link: 'Đây là đường dẫn mời của bạn. Bạn không thể tự đánh giá mình qua đường dẫn này.',
   error: 'Không mở được bài đánh giá. Vui lòng thử lại sau.',
 };

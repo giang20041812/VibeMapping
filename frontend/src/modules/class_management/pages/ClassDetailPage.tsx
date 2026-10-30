@@ -27,8 +27,8 @@ import '../../../components/filters/filterControls.css';
 import '../ClassManagement.css';
 
 const TEACHER_ROLE_OPTIONS = [
-  { value: 'homeroom_teacher', label: 'Giáo viên chủ nhiệm' },
   { value: 'subject_teacher', label: 'Giáo viên bộ môn' },
+  { value: 'homeroom_teacher', label: 'Giáo viên chủ nhiệm' },
 ];
 
 function joinLink(classCode: string): string {
@@ -59,6 +59,11 @@ export const ClassDetailPage: React.FC = () => {
   const [gridReloadKey, setGridReloadKey] = useState(0);
 
   const isTeacher = profile?.role === 'teacher';
+  /** Gán giáo viên, nhập danh sách, xóa thành viên: quản trị trường và chủ nhiệm của lớp; giáo viên bộ môn chỉ chấm điểm */
+  const canManage =
+    profile?.role === 'school_admin' ||
+    profile?.role === 'system_admin' ||
+    members.some((member) => member.user_id === profile?.id && member.member_role === 'homeroom_teacher' && member.status === 'joined');
 
   useEffect(() => {
     let active = true;
@@ -177,14 +182,15 @@ export const ClassDetailPage: React.FC = () => {
         header: '',
         align: 'right',
         nowrap: true,
-        render: (row) => (
-          <Button type="button" size="sm" variant="ghost" leftIcon={<Trash2 size={14} />} onClick={() => void handleRemove(row)}>
-            Xóa
-          </Button>
-        ),
+        render: (row) =>
+          canManage && (
+            <Button type="button" size="sm" variant="ghost" leftIcon={<Trash2 size={14} />} onClick={() => void handleRemove(row)}>
+              Xóa
+            </Button>
+          ),
       },
     ],
-    [handleRemove],
+    [handleRemove, canManage],
   );
 
   const students = members.filter((member) => member.member_role === 'student');
@@ -201,12 +207,16 @@ export const ClassDetailPage: React.FC = () => {
           <Button type="button" variant="outline" leftIcon={<QrCode size={16} />} disabled={!classRow} onClick={() => setIsInfoOpen(true)}>
             Thông tin lớp
           </Button>
-          <Button type="button" variant="outline" leftIcon={<UserPlus size={16} />} onClick={() => setIsTeacherOpen(true)}>
-            Gán giáo viên
-          </Button>
-          <Button type="button" variant="outline" leftIcon={<Upload size={16} />} onClick={() => setIsImportOpen(true)}>
-            Nhập danh sách
-          </Button>
+          {canManage && (
+            <Button type="button" variant="outline" leftIcon={<UserPlus size={16} />} onClick={() => setIsTeacherOpen(true)}>
+              Gán giáo viên
+            </Button>
+          )}
+          {canManage && (
+            <Button type="button" variant="outline" leftIcon={<Upload size={16} />} onClick={() => setIsImportOpen(true)}>
+              Nhập danh sách
+            </Button>
+          )}
           <Button
             type="button"
             variant="outline"
@@ -233,7 +243,7 @@ export const ClassDetailPage: React.FC = () => {
             allMembers={students}
             initialGrid={grid}
             search={search}
-            onRemove={(member) => void handleRemove(member)}
+            onRemove={canManage ? (member) => void handleRemove(member) : undefined}
             onSubmitted={reload}
             onPackageChanged={() => setGridReloadKey((value) => value + 1)}
             onError={setError}

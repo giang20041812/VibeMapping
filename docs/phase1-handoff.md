@@ -60,7 +60,7 @@ Idempotent (chạy lại được). Đã xóa migration demo `init_schema` và m
 
 | Hàm | Ai gọi | Việc |
 |---|---|---|
-| `get_invitation_public(token)` | khách | trạng thái link: `valid`/`expired`/`revoked`/`full`/`not_found`, nhóm người chấm, tên hiển thị HS/SV |
+| `get_invitation_public(token)` | khách | trạng thái link: `valid`/`expired`/`revoked`/`full`/`not_found`/`own_link` (người mở đang đăng nhập đúng tài khoản chủ link, không được tự đánh giá), nhóm người chấm, tên hiển thị HS/SV |
 | `start_360_submission(token, nickname, relationship, duration, frequency, depth)` | khách | tạo bài nháp, trả `resume_token`; 3 giá trị 1–4 đã quy đổi theo bảng; chống trùng IP; chặn khi link đủ số bài |
 | `get_360_questions(resume_token)` | khách | câu hỏi (mỗi tiêu chí 1 câu, chọn ổn định theo token) |
 | `save_360_answers(resume_token, answers)` | khách | lưu nháp `[{question_id, score\|null, insufficient}]` |

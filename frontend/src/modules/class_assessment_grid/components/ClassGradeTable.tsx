@@ -7,6 +7,7 @@ import type { PackageSize } from '../../assessment_session/assessmentSession.typ
 import { GRID_BLOCK_TEXT } from '../../class_management/class_management.constants';
 import type { ClassMember } from '../../class_management/class_management.types';
 import {
+  getGridPackageCounts,
   saveCells,
   saveGridDefaults,
   saveStudentUnderstanding,
@@ -63,7 +64,12 @@ interface FillDrag {
 
 const toPayload = (changes: GridChange[]): CellChange[] =>
   changes.map((change) => ({ gridStudentId: change.gridStudentId, questionId: change.questionId, value: cellToDb(change.value) }));
-const PACKAGE_OPTIONS = PACKAGES.map((item) => ({ value: String(item.size), label: `${item.name} (${item.size} câu)` }));
+/** Nhãn gói ghi số câu giáo viên thật sự chấm; chưa đếm xong thì chỉ ghi tên gói */
+const packageOptions = (counts: Map<PackageSize, number> | null) =>
+  PACKAGES.map((item) => {
+    const count = counts?.get(item.size);
+    return { value: String(item.size), label: count === undefined ? item.name : `${item.name} (${count} câu)` };
+  });
 
 interface ClassGradeTableProps {
   /** Học sinh của lớp (đã lọc theo từ khóa), mỗi người một dòng */
@@ -74,7 +80,8 @@ interface ClassGradeTableProps {
   initialGrid: GridData;
   /** Ô tìm học sinh, đặt ở góc trên trái của bảng */
   search: React.ReactNode;
-  onRemove: (member: ClassMember) => void;
+  /** Bỏ trống khi người xem không được xóa học sinh khỏi lớp (giáo viên bộ môn) */
+  onRemove?: (member: ClassMember) => void;
   /** Gọi sau khi nộp tất cả xong; cha tải lại lớp */
   onSubmitted: () => void;
   /** Gọi sau khi đổi gói câu hỏi; cha tải lại bảng */
@@ -117,6 +124,7 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
   /** Gói đang chờ xác nhận đổi (bảng đã có đáp án) */
   const [pendingPackage, setPendingPackage] = useState<PackageSize | null>(null);
   const [isChangingPackage, setIsChangingPackage] = useState(false);
+  const [packageCounts, setPackageCounts] = useState<Map<PackageSize, number> | null>(null);
   /** Học sinh đang được nộp */
   const [submittingId, setSubmittingId] = useState<string | null>(null);
 
@@ -213,6 +221,16 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
       clearPending(gridId);
       callbacksRef.current.onError('Không đồng bộ được điểm lưu tạm trên máy.');
     }
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    getGridPackageCounts()
+      .then((counts) => active && setPackageCounts(counts))
+      .catch(() => active && setPackageCounts(null));
+    return () => {
+      active = false;
+    };
   }, []);
 
   // Mở lại bảng: điểm lưu tạm chưa đồng bộ hiện lên trước, rồi đồng bộ khi có mạng
@@ -588,7 +606,7 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
     setConfirmTarget(gridStudentId);
   }, []);
 
-  const handleRemove = useCallback((member: ClassMember) => callbacksRef.current.onRemove(member), []);
+  const handleRemove = useCallback((member: ClassMember) => callbacksRef.current.onRemove?.(member), []);
 
   const handleDownloadTemplate = () => {
     void downloadGradeTemplate(
@@ -635,7 +653,7 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
     <Select
       className="grid-package-select"
       label="Gói câu hỏi"
-      options={PACKAGE_OPTIONS}
+      options={packageOptions(packageCounts)}
       emptyLabel="Chọn gói"
       value={grid.package_size ? String(grid.package_size) : ''}
       disabled={isLocked || isChangingPackage || submittedIds.size > 0}
@@ -738,7 +756,7 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
                     submitting={student ? submittingId === student.grid_student_id : false}
                     onSubmit={handleRequestSubmit}
                     onOpen={setOpenId}
-                    onRemove={handleRemove}
+                    onRemove={onRemove ? handleRemove : undefined}
                   />
                 );
               })}

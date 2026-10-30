@@ -43,6 +43,8 @@ export const CompleteProfilePage: React.FC = () => {
   const { session, profile, isGuest, isLoading, isProfileLoading, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  /** Trang bị chặn vì hồ sơ còn thiếu; khai báo xong thì quay lại đó */
+  const from = (location.state as { from?: string } | null)?.from;
 
   const [group, setGroup] = useState<LearnerGroup>('student');
   const [fullName, setFullName] = useState('');
@@ -91,7 +93,9 @@ export const CompleteProfilePage: React.FC = () => {
   if (!isGuest) {
     if (!profile) return <Alert variant="danger">Không tải được hồ sơ</Alert>;
     if (!isLearnerRole(profile.role)) return <Navigate to="/ho-so" replace />;
-    if (isProfileComplete(profile)) return <Navigate to="/danh-gia-ca-nhan" replace state={location.state} />;
+    if (isProfileComplete(profile)) {
+      return from ? <Navigate to={from} replace /> : <Navigate to="/danh-gia-ca-nhan" replace state={location.state} />;
+    }
   }
 
   const activeGroup: LearnerGroup = isGuest ? group : profile?.role === 'university_student' ? 'university_student' : 'student';
@@ -142,7 +146,8 @@ export const CompleteProfilePage: React.FC = () => {
         }
       }
       await refreshProfile();
-      navigate('/danh-gia-ca-nhan', { replace: true, state: { justCompleted: true } });
+      if (from) navigate(from, { replace: true });
+      else navigate('/danh-gia-ca-nhan', { replace: true, state: { justCompleted: true } });
     } catch (error) {
       setFormError(isGuest ? describeGuestError(error) : 'Không lưu được hồ sơ, vui lòng thử lại');
     } finally {
@@ -246,7 +251,7 @@ export const CompleteProfilePage: React.FC = () => {
 
           <div className="complete-actions">
             <Button type="submit" size="lg" isLoading={isSubmitting} rightIcon={<ArrowRight size={18} />}>
-              {isGuest ? 'Tạo tài khoản và xem kết quả' : 'Lưu và xem kết quả'}
+              {isGuest ? 'Tạo tài khoản và xem kết quả' : from ? 'Lưu và tiếp tục' : 'Lưu và xem kết quả'}
             </Button>
           </div>
         </form>

@@ -21,6 +21,8 @@ export const GuestRolePickerPage: React.FC = () => {
   const navigate = useNavigate();
   const [options, setOptions] = useState<RoleOption[] | null>(null);
   const [failed, setFailed] = useState(false);
+  /** Người quét đang đăng nhập đúng tài khoản chủ mã QR */
+  const [isOwn, setIsOwn] = useState(false);
 
   const raw = params.get('t') ?? '';
 
@@ -30,6 +32,7 @@ export const GuestRolePickerPage: React.FC = () => {
     Promise.all(tokens.map((token) => getInvitation(token).then((invitation) => ({ token, invitation }))))
       .then((list) => {
         if (!active) return;
+        setIsOwn(list.some((item) => item.invitation.state === 'own_link'));
         setOptions(
           list
             .filter((item) => item.invitation.state === 'valid' && item.invitation.raterGroup)
@@ -50,12 +53,13 @@ export const GuestRolePickerPage: React.FC = () => {
 
   if (!options && !failed) return <GuestIntroSkeleton />;
 
-  if (failed || !options || options.length === 0) {
+  if (failed || isOwn || !options || options.length === 0) {
+    const reason = failed ? 'error' : isOwn ? 'own_link' : 'not_found';
     return (
       <Card className="guest-card guest-card-center">
         <div className="guest-state guest-state-warning">
           <AlertTriangle size={40} aria-hidden="true" />
-          <p className="guest-state-text">{UNAVAILABLE_TEXT[failed ? 'error' : 'not_found'] ?? UNAVAILABLE_TEXT.error}</p>
+          <p className="guest-state-text">{UNAVAILABLE_TEXT[reason] ?? UNAVAILABLE_TEXT.error}</p>
         </div>
       </Card>
     );

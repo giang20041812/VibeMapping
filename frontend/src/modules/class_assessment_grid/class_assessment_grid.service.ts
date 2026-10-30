@@ -20,16 +20,40 @@ export async function getClassGrid(classId: string): Promise<GridData> {
  * Thứ tự trả về là thứ tự cột của bảng.
  */
 async function packageQuestionIds(size: PackageSize): Promise<string[]> {
-  const [bank, assigned, hidden] = await Promise.all([
+  const [bank, assigned, hiddenIds] = await Promise.all([
     loadSelfQuestionBank(),
     getPackageAssignments(size),
-    supabase.from('criteria_rater_visibility').select('criteria_id').eq('rater_group', 'teacher').eq('is_visible', false),
+    teacherHiddenCriteriaIds(),
   ]);
-  if (hidden.error) fail('Lỗi đọc ma trận thang đo', hidden.error);
-  const hiddenIds = new Set((hidden.data ?? []).map((row) => row.criteria_id));
   return selectQuestions(bank, size, assigned)
     .filter((question) => !hiddenIds.has(question.criteriaId))
     .map((question) => question.id);
+}
+
+async function teacherHiddenCriteriaIds(): Promise<Set<string>> {
+  const { data, error } = await supabase
+    .from('criteria_rater_visibility')
+    .select('criteria_id')
+    .eq('rater_group', 'teacher')
+    .eq('is_visible', false);
+  if (error) fail('Lỗi đọc ma trận thang đo', error);
+  return new Set((data ?? []).map((row) => row.criteria_id));
+}
+
+/** Số câu thật giáo viên chấm ở từng gói (ít hơn số câu danh nghĩa khi có tiêu chí ẩn với giáo viên) */
+export async function getGridPackageCounts(): Promise<Map<PackageSize, number>> {
+  const sizes: PackageSize[] = [35, 50, 75];
+  const [bank, hiddenIds, ...assigned] = await Promise.all([
+    loadSelfQuestionBank(),
+    teacherHiddenCriteriaIds(),
+    ...sizes.map((size) => getPackageAssignments(size)),
+  ]);
+  return new Map(
+    sizes.map((size, index) => [
+      size,
+      selectQuestions(bank, size, assigned[index]).filter((question) => !hiddenIds.has(question.criteriaId)).length,
+    ]),
+  );
 }
 
 /** Chọn gói câu hỏi cho bảng; câu không còn trong gói mới thì bỏ đáp án đã chấm */

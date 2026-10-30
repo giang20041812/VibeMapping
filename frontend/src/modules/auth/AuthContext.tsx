@@ -23,7 +23,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isProfileLoading, setIsProfileLoading] = useState(false);
+  /** Tài khoản của hồ sơ đã đọc xong (kể cả đọc lỗi); khác tài khoản đang đăng nhập là hồ sơ chưa đọc xong */
+  const [profileUserId, setProfileUserId] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -52,11 +53,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     if (!userId) {
       setProfile(null);
-      setIsProfileLoading(false);
+      setProfileUserId(null);
       return;
     }
     let active = true;
-    setIsProfileLoading(true);
     getProfile(userId)
       .then((value) => {
         if (active) setProfile(value);
@@ -65,7 +65,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (active) setProfile(null);
       })
       .finally(() => {
-        if (active) setIsProfileLoading(false);
+        if (active) setProfileUserId(userId);
       });
     return () => {
       active = false;
@@ -80,6 +80,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!userId) return;
     setProfile(await getProfile(userId));
   }, [userId]);
+
+  /*
+   * Tính ngay trong lần vẽ: lần vẽ đầu tiên sau khi có phiên (trước khi effect đọc hồ sơ kịp chạy) cũng là đang tải,
+   * để trang chặn theo vai trò không coi "chưa có hồ sơ" là "sai vai trò" khi mở thẳng đường dẫn.
+   */
+  const isProfileLoading = Boolean(userId) && profileUserId !== userId;
 
   /* Tài khoản ẩn danh đã gắn email thì là tài khoản thật, kể cả khi cờ ẩn danh chưa kịp cập nhật */
   const isGuest = !session || (session.user.is_anonymous === true && !session.user.email);

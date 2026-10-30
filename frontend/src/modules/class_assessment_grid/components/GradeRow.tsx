@@ -29,7 +29,8 @@ interface GradeRowProps {
   submitting: boolean;
   onSubmit: (gridStudentId: string) => void;
   onOpen: (gridStudentId: string) => void;
-  onRemove: (member: ClassMember) => void;
+  /** Bỏ trống khi người xem không được xóa học sinh khỏi lớp */
+  onRemove?: (member: ClassMember) => void;
 }
 
 /** Một dòng học sinh; memo để chọn điểm một em không vẽ lại cả bảng */
@@ -111,9 +112,11 @@ export const GradeRow = React.memo<GradeRowProps>(function GradeRow({
               Nộp
             </Button>
           )}
-          <Button type="button" size="sm" variant="ghost" leftIcon={<Trash2 size={14} />} onClick={() => onRemove(member)}>
-            Xóa
-          </Button>
+          {onRemove && (
+            <Button type="button" size="sm" variant="ghost" leftIcon={<Trash2 size={14} />} onClick={() => onRemove(member)}>
+              Xóa
+            </Button>
+          )}
         </div>
       </td>
     </tr>

@@ -65,7 +65,7 @@ Mỗi dòng là một quyết định mà đặc tả chưa nêu, nêu chưa đ�
 
 ### Lớp học
 - Quản trị hệ thống tạo trường, thêm giáo viên hoặc quản trị trường theo email tài khoản (quản trị trường không tự đăng ký được, vai trò được nâng khi gán).
-- Giáo viên hoặc quản trị trường tạo lớp; hệ thống sinh mã lớp và mã QR. Giáo viên tạo lớp tự vào lớp với vai trò chủ nhiệm.
+- Quản trị trường tạo lớp (giáo viên không tạo lớp, chốt ngày 30/10/2026); hệ thống sinh mã lớp và mã QR. Gán giáo viên, nhập danh sách, xóa thành viên: quản trị trường và chủ nhiệm của lớp đó; giáo viên bộ môn chỉ chấm điểm và xem báo cáo.
 - Học sinh nhập mã (hoặc quét QR) để vào lớp, được báo trước rằng tham gia lớp được coi là đồng ý để giáo viên đánh giá. Một học sinh vào được nhiều lớp, rời lớp được; bị xóa khỏi lớp thì không tự vào lại.
 - Nhập Excel: đọc tệp .xlsx theo mẫu, hiện kết quả kiểm tra (số dòng hợp lệ, số dòng lỗi, từng dòng lỗi: thiếu mã hoặc tên, trùng trong tệp, đã có trong lớp, ngày sinh sai), rồi bấm Xác nhận nhập hoặc Hủy bỏ. Nhập xong tự tạo tài khoản cho học sinh chưa có tài khoản và cho tải tệp tài khoản.
 - Trạng thái từng học sinh: đã tham gia, đã làm bài, đã được chấm, chờ người giám hộ.

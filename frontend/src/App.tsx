@@ -5,7 +5,7 @@ import { AuthLayout } from './components/layout/AuthLayout';
 import { AppLayout } from './components/layout/AppLayout';
 import { PublicLayout } from './components/layout/PublicLayout';
 import { ShellLayout } from './components/layout/ShellLayout';
-import { GuestOnly, RequireAuth, RequireRole, RequireSession } from './components/layout/RouteGuards';
+import { GuestOnly, RequireAuth, RequireCompleteProfile, RequireRole, RequireSession } from './components/layout/RouteGuards';
 import { PackageAssignmentsPage } from './modules/admin/pages/PackageAssignmentsPage';
 import { QuestionBankPage } from './modules/admin/pages/QuestionBankPage';
 import { CriteriaPage } from './modules/admin/pages/CriteriaPage';
@@ -72,23 +72,24 @@ export const App: React.FC = () => (
         {/* Làm bài: khách (tài khoản ẩn danh) thấy thanh ngang, người có tài khoản thấy thanh bên */}
         <Route element={<RequireSession />}>
           <Route element={<ShellLayout />}>
-            <Route path="/danh-gia-ca-nhan/:sessionId" element={<AssessmentRunPage />} />
+            <Route element={<RequireCompleteProfile />}>
+              <Route path="/danh-gia-ca-nhan/:sessionId" element={<AssessmentRunPage />} />
+            </Route>
           </Route>
         </Route>
 
         <Route element={<RequireAuth />}>
           <Route element={<AppLayout />}>
             <Route path="/ho-so" element={<ProfilePage />} />
-            <Route path="/danh-gia-ca-nhan" element={<PersonalAssessmentPage />} />
-            <Route path="/danh-gia-360" element={<Assessment360Page />} />
-
-            <Route element={<RequireRole roles={['student', 'university_student', 'teacher', 'school_admin']} />}>
-              <Route path="/lop-hoc" element={<ClassListPage />} />
+            <Route element={<RequireCompleteProfile />}>
+              <Route path="/danh-gia-ca-nhan" element={<PersonalAssessmentPage />} />
+              <Route path="/danh-gia-360" element={<Assessment360Page />} />
+              <Route element={<RequireRole roles={['student', 'university_student', 'teacher', 'school_admin']} />}>
+                <Route path="/lop-hoc" element={<ClassListPage />} />
+              </Route>
             </Route>
             <Route element={<RequireRole roles={['teacher', 'school_admin', 'system_admin']} />}>
               <Route path="/lop-hoc/:classId" element={<ClassDetailPage />} />
-            </Route>
-            <Route element={<RequireRole roles={['teacher']} />}>
             </Route>
 
             <Route element={<RequireRole roles={['system_admin']} />}>

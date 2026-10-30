@@ -106,11 +106,22 @@ export const Globe360: React.FC<Globe360Props> = ({ nodes, active = true, compac
     return () => window.clearInterval(timer);
   }, [compact, interacting, reduced, inView, paused, lite, nodes.length]);
 
+  /* Máy được đo là yếu giữa chừng thì chỉ hạ chất lượng, không dựng lại cả cảnh; đang bay vào thì đợi đáp xong mới hạ
+     vì hạ chất lượng phải dựng lại canvas */
+  const lowPowerRef = useRef(lowPower);
+  lowPowerRef.current = lowPower;
+  useEffect(() => {
+    const scene = sceneRef.current;
+    if (!lowPower || lite || !scene || scene.getQuality() >= 1) return;
+    scene.setQuality(1);
+    controlRef.current?.redraw();
+  }, [lowPower, lite]);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     const stage = stageRef.current;
     if (!canvas || !stage) return;
-    const scene = createGlobeScene(canvas, nodes, lowPower ? 1 : 0);
+    const scene = createGlobeScene(canvas, nodes, lowPowerRef.current ? 1 : 0);
     if (!scene) return;
     scene.setActive(activeRef.current);
     sceneRef.current = scene;
@@ -183,7 +194,7 @@ export const Globe360: React.FC<Globe360Props> = ({ nodes, active = true, compac
       controlRef.current = null;
       sceneRef.current = null;
     };
-  }, [nodes, reduced, lowPower]);
+  }, [nodes, reduced]);
 
   const localPoint = (event: React.PointerEvent<HTMLCanvasElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();

@@ -8,10 +8,12 @@
    - lớp tĩnh (quầng sáng, thân cầu, viền) và quầng sáng của nút được vẽ sẵn vào sprite, mỗi khung chỉ drawImage;
    - kiểu chấm: chỉ vẽ nửa điểm phía trước, gộp mọi điểm cùng độ sáng vào một đường path;
    - kiểu gạch chéo: nét kẻ cố định trên màn hình, mỗi mẫu được đưa ngược về tọa độ quả cầu để tra mặt nạ lục địa;
+     vĩ độ của mẫu không đổi khi quả cầu quay, kinh độ chỉ lệch đúng góc quay, nên phép đổi tọa độ được tính sẵn
+     (chỉ tính lại khi đổi cỡ hoặc góc nhìn) và mỗi khung chỉ còn cộng góc quay rồi tra mặt nạ;
    - bờ biển, kinh – vĩ tuyến, vành và vạch chia độ được tính sẵn, mỗi khung chỉ xoay và chiếu;
    - ba mức chất lượng (số điểm, độ phân giải, độ mịn nét) để chủ động hạ khi khung hình chậm. */
 
-import { getCoastlines, getLandMask, isLandAt } from './globeLand';
+import { MASK_HEIGHT, MASK_WIDTH, getCoastlines, getLandMask, isLandAt } from './globeLand';
 
 export type GlobeTone = 'gold' | 'cyan' | 'violet' | 'magenta';
 
@@ -337,6 +339,85 @@ function wrapAngle(angle: number) {
   return a === -Math.PI ? Math.PI : a;
 }
 
+/* ---------- Gạch chéo đất liền ---------- */
+
+/** Các mẫu của một lớp nét gạch, tính sẵn cho một cỡ và một góc nhìn */
+interface HatchPass {
+  count: number;
+  /** Vị trí trên canvas */
+  x: Float32Array;
+  y: Float32Array;
+  /** Vị trí hàng trong mặt nạ lục địa (đã nhân bề ngang mặt nạ) */
+  row: Int32Array;
+  /** Cột trong mặt nạ khi quả cầu ở góc quay 0 */
+  column: Float32Array;
+  /** 1 khi mẫu không nối liền với mẫu trước (đầu nét mới hoặc có mẫu bị bỏ ở giữa) */
+  gapBefore: Uint8Array;
+}
+
+/** Lấy mẫu dọc các nét kẻ song song trên đĩa quả cầu và đổi sẵn mỗi mẫu về vĩ độ cùng kinh độ ở góc quay 0 */
+function buildHatchPass(
+  angle: number,
+  gap: number,
+  step: number,
+  shadedOnly: boolean,
+  R: number,
+  cx: number,
+  cy: number,
+  pitch: number,
+): HatchPass {
+  const cp = Math.cos(pitch);
+  const sp = Math.sin(pitch);
+  const cosTilt = Math.cos(AXIAL_TILT);
+  const sinTilt = Math.sin(AXIAL_TILT);
+  const dirX = Math.cos(angle);
+  const dirY = Math.sin(angle);
+  const x: number[] = [];
+  const y: number[] = [];
+  const row: number[] = [];
+  const column: number[] = [];
+  const gapBefore: number[] = [];
+  for (let c = -1 + gap / 2; c < 1; c += gap) {
+    const half = Math.sqrt(1 - c * c);
+    let broken = true;
+    for (let t = -half; t <= half; t += step) {
+      const u = t * dirX - c * dirY;
+      const v = t * dirY + c * dirX;
+      const w2 = 1 - u * u - v * v;
+      if (w2 <= 0) {
+        broken = true;
+        continue;
+      }
+      const w = Math.sqrt(w2);
+      if (shadedOnly && u * LIGHT[0] + v * LIGHT[1] + w * LIGHT[2] > SHADE_LIMIT) {
+        broken = true;
+        continue;
+      }
+      const py = v * cp + w * sp;
+      const pz = w * cp - v * sp;
+      const x1 = u * cosTilt + py * sinTilt;
+      const y0 = py * cosTilt - u * sinTilt;
+      const lat = Math.asin(y0 > 1 ? 1 : y0 < -1 ? -1 : y0);
+      const r = Math.min(MASK_HEIGHT - 1, Math.floor(((Math.PI / 2 - lat) / Math.PI) * MASK_HEIGHT));
+      x.push(cx + u * R);
+      y.push(cy - v * R);
+      row.push(r * MASK_WIDTH);
+      // Quay quanh trục một góc yaw chỉ trừ kinh độ đi đúng yaw: kinh độ = -atan2(z, x) - yaw
+      column.push(((Math.PI - Math.atan2(pz, x1)) / TAU) * MASK_WIDTH);
+      gapBefore.push(broken ? 1 : 0);
+      broken = false;
+    }
+  }
+  return {
+    count: x.length,
+    x: Float32Array.from(x),
+    y: Float32Array.from(y),
+    row: Int32Array.from(row),
+    column: Float32Array.from(column),
+    gapBefore: Uint8Array.from(gapBefore),
+  };
+}
+
 /* ---------- Cảnh ---------- */
 
 interface NodeState {
@@ -380,6 +461,7 @@ export function createGlobeScene(canvas: HTMLCanvasElement, nodes: SceneNode[], 
   let py = new Float32Array(0);
   let buckets: Int32Array[] = [];
   let sprites: Sprites | null = null;
+  let hatchCache: { key: string; main: HatchPass; cross: HatchPass } | null = null;
 
   let yaw = 0.7;
   let pitch = REST_PITCH;
@@ -531,6 +613,8 @@ export function createGlobeScene(canvas: HTMLCanvasElement, nodes: SceneNode[], 
       yawVel *= Math.exp(-dt * 2.2);
       if (Math.abs(yawVel) < 0.005) yawVel = 0;
       pitch += (REST_PITCH - pitch) * Math.min(1, dt * 0.6);
+      /* Chốt hẳn về góc nghỉ: gạch chéo tính sẵn theo góc nhìn, góc cứ nhích từng chút thì phải tính lại mỗi khung */
+      if (Math.abs(REST_PITCH - pitch) < 1e-4) pitch = REST_PITCH;
     }
     if (focusIndex >= 0) {
       const diff = wrapAngle(focusPhase(focusIndex) - ringPhase);
@@ -742,51 +826,42 @@ export function createGlobeScene(canvas: HTMLCanvasElement, nodes: SceneNode[], 
       /* Đất liền kiểu bản khắc: nét kẻ chéo cố định trên màn hình, chỉ vẽ đoạn nào đang rơi trên đất liền
          (đưa điểm mẫu ngược về tọa độ quả cầu để tra mặt nạ), phía tối kẻ thêm nét đan chéo, bờ biển viền đậm */
       const landMask = getLandMask();
-      const step = Math.max(0.9, HATCH_STEP[quality] * s) / R;
-      const hatch = (angle: number, gap: number, shadedOnly: boolean) => {
-        const dirX = Math.cos(angle);
-        const dirY = Math.sin(angle);
-        const gapN = gap / R;
+      const hatchKey = `${size}|${quality}|${pitch}`;
+      if (!hatchCache || hatchCache.key !== hatchKey) {
+        /* Nét và khoảng cách có mức tối thiểu để quả cầu nhỏ (công tắc) vẫn thấy rõ nét gạch */
+        const step = Math.max(0.9, HATCH_STEP[quality] * s) / R;
+        hatchCache = {
+          key: hatchKey,
+          main: buildHatchPass(Math.PI / 4, Math.max(3.2, HATCH_GAP[quality] * s) / R, step, false, R, cx, cy, pitch),
+          cross: buildHatchPass(-Math.PI / 4, Math.max(4.2, CROSS_GAP * s) / R, step, true, R, cx, cy, pitch),
+        };
+      }
+      /* Góc quay đổi ra số cột mặt nạ, đưa về [0, bề ngang) để mỗi mẫu chỉ cần trừ một lần khi vượt mép */
+      const shift = ((((-yaw / TAU) * MASK_WIDTH) % MASK_WIDTH) + MASK_WIDTH) % MASK_WIDTH;
+      const hatch = (pass: HatchPass) => {
         context.beginPath();
-        for (let c = -1 + gapN / 2; c < 1; c += gapN) {
-          const half = Math.sqrt(1 - c * c);
-          let pen = false;
-          for (let t = -half; t <= half; t += step) {
-            const u = t * dirX - c * dirY;
-            const v = t * dirY + c * dirX;
-            const w2 = 1 - u * u - v * v;
-            if (w2 <= 0) {
-              pen = false;
-              continue;
+        let pen = false;
+        for (let i = 0; i < pass.count; i++) {
+          if (pass.gapBefore[i]) pen = false;
+          let column = Math.floor(pass.column[i] + shift);
+          if (column >= MASK_WIDTH) column -= MASK_WIDTH;
+          if (landMask[pass.row[i] + column] === 1) {
+            if (pen) context.lineTo(pass.x[i], pass.y[i]);
+            else {
+              context.moveTo(pass.x[i], pass.y[i]);
+              pen = true;
             }
-            const w = Math.sqrt(w2);
-            if (shadedOnly && u * LIGHT[0] + v * LIGHT[1] + w * LIGHT[2] > SHADE_LIMIT) {
-              pen = false;
-              continue;
-            }
-            const y = v * cp + w * sp;
-            const z = w * cp - v * sp;
-            const x1 = u * cosTilt + y * sinTilt;
-            const y0 = y * cosTilt - u * sinTilt;
-            if (isLandAt(landMask, x1 * cyw - z * syw, y0, x1 * syw + z * cyw)) {
-              if (pen) context.lineTo(cx + u * R, cy - v * R);
-              else {
-                context.moveTo(cx + u * R, cy - v * R);
-                pen = true;
-              }
-            } else pen = false;
-          }
+          } else pen = false;
         }
         context.stroke();
       };
 
-      /* Nét và khoảng cách có mức tối thiểu để quả cầu nhỏ (công tắc) vẫn thấy rõ nét gạch */
       context.strokeStyle = rgba(land, 0.5);
       context.lineWidth = Math.max(0.7, 0.7 * s);
-      hatch(Math.PI / 4, Math.max(3.2, HATCH_GAP[quality] * s), false);
+      hatch(hatchCache.main);
       context.strokeStyle = rgba(land, 0.42);
       context.lineWidth = Math.max(0.6, 0.6 * s);
-      hatch(-Math.PI / 4, Math.max(4.2, CROSS_GAP * s), true);
+      hatch(hatchCache.cross);
 
       context.strokeStyle = rgba(land, 0.88);
       context.lineWidth = Math.max(1, 1.1 * s);

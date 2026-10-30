@@ -275,7 +275,7 @@ export const PolygonChart: React.FC<PolygonChartProps> = ({
   className = '',
 }) => {
   const uid = useId().replace(/[^a-zA-Z0-9_-]/g, '');
-  const { ref: figureRef, seen } = useInView<HTMLElement>(0.25);
+  const { ref: figureRef, inView, seen } = useInView<HTMLElement>(0.25);
 
   const [hoverKey, setHoverKey] = useState<string | null>(null);
   const [pinnedKey, setPinnedKey] = useState<string | null>(null);
@@ -285,7 +285,8 @@ export const PolygonChart: React.FC<PolygonChartProps> = ({
   const count = axes.length;
   const valid = count >= 3;
   const interacting = hoverKey !== null || pinnedKey !== null;
-  const cycling = valid && seen && !interacting && !reducedMotion && autoCycleMs > 0;
+  /* Khuất khỏi màn hình thì thôi tự chuyển nhóm: mỗi lần chuyển là vẽ lại cả biểu đồ, làm giật hình khác đang chạy trên trang */
+  const cycling = valid && inView && !interacting && !reducedMotion && autoCycleMs > 0;
 
   useEffect(() => {
     if (!cycling) return;

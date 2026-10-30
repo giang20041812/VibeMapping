@@ -9,13 +9,15 @@ export interface GlobeSwitchProps {
   title: string;
   nodes: GlobeNode[];
   onToggle: () => void;
+  /** Phần nằm trong thanh, giữa nội dung và công tắc; bấm vào đây không gạt công tắc */
+  aside?: React.ReactNode;
 }
 
 /**
  * Công tắc có quả địa cầu: bật thì quả cầu hiện màu và quay, tắt thì đổi sang xám, giảm tốc rồi đứng yên.
  * Cả khối là một ô chọn, bấm vào quả cầu hay công tắc đều gạt được.
  */
-export const GlobeSwitch: React.FC<GlobeSwitchProps> = ({ checked, disabled = false, title, nodes, onToggle }) => (
+export const GlobeSwitch: React.FC<GlobeSwitchProps> = ({ checked, disabled = false, title, nodes, onToggle, aside }) => (
   <label className={`globe-switch ${checked ? 'is-on' : 'is-off'} ${disabled ? 'is-disabled' : ''}`}>
     <input type="checkbox" role="switch" className="globe-switch-input" checked={checked} disabled={disabled} onChange={onToggle} />
 
@@ -38,6 +40,12 @@ export const GlobeSwitch: React.FC<GlobeSwitchProps> = ({ checked, disabled = fa
         })}
       </span>
     </span>
+
+    {aside && (
+      <span className="globe-switch-aside" onClick={(e) => e.preventDefault()}>
+        {aside}
+      </span>
+    )}
 
     <span className="globe-switch-track" aria-hidden="true">
       <span className="globe-switch-thumb" />

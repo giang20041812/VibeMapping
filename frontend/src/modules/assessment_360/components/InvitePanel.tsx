@@ -75,6 +75,7 @@ export const InvitePanel: React.FC<InvitePanelProps> = ({ controller, nodes }) =
           title="Cho phép người khác đánh giá"
           nodes={nodes}
           onToggle={controller.requestToggle}
+          aside={enabled && state.links.some((l) => !l.expired) ? <SharedQrCard inline links={state.links.filter((l) => !l.expired)} /> : undefined}
         />
         {switchable && state.consent === 'declined' && <p className="t360-declined">Bạn đang không cho phép người khác đánh giá.</p>}
       </div>
@@ -84,7 +85,6 @@ export const InvitePanel: React.FC<InvitePanelProps> = ({ controller, nodes }) =
           <h2 id="t360-invites-title" className="section-title">
             Đường dẫn mời
           </h2>
-          {state.links.some((l) => !l.expired) && <SharedQrCard links={state.links.filter((l) => !l.expired)} />}
           {state.links.length > 0 && (
             <div className="t360-links">
               {state.links.map((link) => (

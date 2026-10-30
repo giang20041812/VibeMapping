@@ -51,6 +51,21 @@
 .link-card-progress { display: flex; flex-direction: column; gap: var(--space-1); font-size: var(--font-size-sm); font-weight: 600; color: var(--color-text-secondary); }
 .link-card-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 
+/* Mã QR đặt gọn trong thanh bật/tắt */
+.shared-qr-inline { display: flex; align-items: center; gap: var(--space-3); min-width: 0; }
+.shared-qr-inline-img {
+  flex: none;
+  display: block;
+  width: 96px;
+  height: 96px;
+  padding: var(--space-1);
+  background: var(--brand-white);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+.shared-qr-inline-side { display: flex; flex-direction: column; gap: var(--space-2); width: clamp(200px, 18vw, 320px); min-width: 0; }
+.shared-qr-inline .link-card-actions { flex-wrap: nowrap; }
+
 @keyframes link-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes link-pop { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
 
@@ -61,4 +76,5 @@
   .link-card-url { flex-direction: column; align-items: stretch; }
   .link-card-url .app-button { width: 100%; }
   .link-card-actions .app-button { flex: 1; }
+  .shared-qr-inline-side { flex: 1; width: auto; }
 }

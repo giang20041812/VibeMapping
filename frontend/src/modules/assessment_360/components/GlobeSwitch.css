@@ -2,7 +2,7 @@
 .globe-switch {
   position: relative;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-2) var(--space-5) var(--space-2) var(--space-2);
@@ -63,6 +63,10 @@
 .globe-switch.is-on .globe-switch-tone-violet { box-shadow: inset 0 -2px 0 var(--soft-violet); }
 .globe-switch.is-on .globe-switch-tone-magenta { box-shadow: inset 0 -2px 0 var(--soft-magenta); }
 
+/* Nằm trên lớp ô chọn để bấm được nút bên trong */
+.globe-switch-aside { position: relative; z-index: 4; display: block; min-width: 0; cursor: default; }
+.globe-switch:not(:has(.globe-switch-aside)) { grid-template-columns: auto minmax(0, 1fr) auto; }
+
 /* Công tắc hình chữ nhật, góc vuông */
 .globe-switch-track {
   position: relative;
@@ -93,4 +97,6 @@
   .globe-switch { gap: var(--space-3); padding: var(--space-2) var(--space-4) var(--space-2) var(--space-2); }
   .globe-switch-globe { width: 80px; }
   .globe-switch-groups { display: none; }
+  .globe-switch:has(.globe-switch-aside) { grid-template-columns: auto minmax(0, 1fr) auto; }
+  .globe-switch-aside { grid-column: 1 / -1; grid-row: 2; }
 }

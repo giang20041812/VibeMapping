@@ -12,7 +12,9 @@
     "gen:types": "tsx gen-types.ts",
     "assign:packages": "tsx assign-default-packages.ts",
     "seed:demo": "tsx seed-demo-accounts.ts",
-    "seed:demo:dry": "tsx seed-demo-accounts.ts --dry-run"
+    "seed:demo:dry": "tsx seed-demo-accounts.ts --dry-run",
+    "import:phase2": "tsx import-phase2-data.ts",
+    "import:phase2:dry": "tsx import-phase2-data.ts --dry-run"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",

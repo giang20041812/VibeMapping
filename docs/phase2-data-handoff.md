@@ -24,10 +24,10 @@ Thứ tự áp dụng: migration → `import:ba` (cần bảng `criteria`) → `
 | `career_requirements` | Career_Requirement: `required_score` (Req), `career_weight` (CW) | tính từ JD | 5.242 |
 | `career_holland_profiles` | Hồ sơ sáu chiều RIASEC của nghề (G6) | tính từ JD | 5.502 |
 | `career_matrix_versions` | Phiên bản ma trận nghề `NGHE-1.0` (R18) | — | 1 |
-| `majors` | Major | RESEARCH NGÀNH NGHỀ TRƯỜNG | 1.080 |
-| `career_major_links` | Career_Major_Link | tự dò, xem 3.3 | 4.651 |
-| `institutions` | Institution (+ 5 hệ thống đại học quốc gia/vùng) | RESEARCH NGÀNH NGHỀ TRƯỜNG | 341 + 5 |
-| `training_programs` | Training_Program | RESEARCH NGÀNH NGHỀ TRƯỜNG | 9.514 |
+| `majors` | Major | RESEARCH NGÀNH NGHỀ TRƯỜNG | 1.078 |
+| `career_major_links` | Career_Major_Link | tự dò, xem 3.3 | 4.649 |
+| `institutions` | Institution (+ 5 hệ thống đại học quốc gia/vùng) | RESEARCH NGÀNH NGHỀ TRƯỜNG | 339 + 5 |
+| `training_programs` | Training_Program | RESEARCH NGÀNH NGHỀ TRƯỜNG | 9.511 |
 
 Tất cả bật RLS. Người dùng đã đăng nhập đọc được danh mục (lĩnh vực, ngành, trường, chương trình); **nghề và mọi dữ liệu đi kèm chỉ đọc được khi nghề ở trạng thái `published`**; ghi chỉ `system_admin`. `anon` không đọc gì. Nghề nạp vào luôn ở `draft` theo SRS R16 (chỉ `published` mới vào Career Fit).
 
@@ -49,8 +49,8 @@ Script idempotent: chạy lại không đổi `status` nghề đã công bố; m
 - `is_standard_complete` = có yêu cầu thuộc G1–G5 **và** G7 **và** có Holland.
 
 ### Trường – Ngành
-- Mọi sheet có cột "Tên trường" được đọc (trừ danh sách đại học chủ quản). Các sheet chia dòng rời nhau gần như hoàn toàn (9.734 dòng hợp lệ, 220 dòng trùng khóa được gộp, giữ dòng có trạng thái research cao hơn).
-- Tên trường gộp theo khóa: bỏ dấu, bỏ phần ngoặc, bỏ tiền tố "Trường" → 341 trường (từ 419 cách viết).
+- Mọi sheet có cột "Tên trường" được đọc (trừ danh sách đại học chủ quản). Các sheet chia dòng rời nhau gần như hoàn toàn (9.731 dòng hợp lệ, 220 dòng trùng khóa được gộp, giữ dòng có trạng thái research cao hơn).
+- Tên trường gộp theo khóa: bỏ dấu, bỏ phần ngoặc, bỏ tiền tố "Trường" → 339 trường (từ 419 cách viết).
 - Hệ thống đại học quốc gia/vùng (ĐHQGHN, ĐHQG-HCM, Đà Nẵng, Huế, Thái Nguyên) là bản ghi `parent_university`; 76 trường thành viên trỏ về bằng `parent_institution_id`. Các "đại học chủ quản" khác trong file (UEH, Cần Thơ, Duy Tân…) chỉ là chính trường đó nên không tạo cha.
 - Tên ngành: bỏ mọi phần ngoặc cuối (mã ngành, viết tắt, hệ chương trình) để cùng một ngành không bị tách; phần bỏ lưu ở `training_programs.program_qualifier`. Mười dòng ngành giữ chỗ ("Thạc sĩ", "Tiến sĩ các ngành"…) bị bỏ (xem cảnh báo của dry-run).
 - Một **chương trình đào tạo** = trường × khoa × ngành × chuyên ngành × hệ × phần ngoặc. `research_status` lấy từ cột "Trạng thái research".
@@ -69,8 +69,8 @@ File research không có bảng nghề ↔ ngành. Liên kết sinh tự động
 5. **106 JD có Required Level trống/"N / A"** nên không vào ma trận.
 6. **Học phí và số năm**: 40,6% chương trình tách được học phí mỗi kỳ (phần còn lại ghi "chưa công bố", theo tín chỉ hoặc theo năm); 76% có số năm đào tạo.
 7. **Chất lượng research**: 1.240 chương trình "Chưa xác minh", 440 "Cần bổ sung" (file ghi rõ chưa đối chiếu website). Trạng thái được giữ ở `research_status` để giao diện/lọc dùng.
-8. **Liên kết nghề–ngành tự dò chưa kiểm duyệt**: 1.437/2.176 nghề có ít nhất một ngành, nhưng chỉ 325/1.080 ngành có nghề; ngành chung chung ("Kinh tế", "Luật") gắn rất nhiều nghề. Cần BA rà hoặc cung cấp bảng ngành ↔ nghề chính thức.
-9. 2 trường chưa rõ công lập/tư thục và 1 trường chưa có tỉnh/thành do dòng nguồn lệch cột.
+8. **Liên kết nghề–ngành tự dò chưa kiểm duyệt**: 1.437/2.176 nghề có ít nhất một ngành, nhưng chỉ 324/1.078 ngành có nghề; ngành chung chung ("Kinh tế", "Luật") gắn rất nhiều nghề. Cần BA rà hoặc cung cấp bảng ngành ↔ nghề chính thức.
+9. Một số dòng nguồn lệch cột (tên trường nằm trong ô tỉnh/thành, ví dụ dòng cuối sheet thành viên) bị bỏ và liệt kê ở cảnh báo của dry-run; 2 trường chưa rõ công lập/tư thục. Tên lĩnh vực cấp 1 lấy cứng theo sheet CHIA NHÓM vì cột tương ứng trong file JD viết không thống nhất.
 
 ## 4. Chưa làm
 - `Admission_Data` (điểm chuẩn, chỉ tiêu, tổ hợp xét tuyển): file research không có.
@@ -84,3 +84,10 @@ File research không có bảng nghề ↔ ngành. Liên kết sinh tự động
 - Chạy đường ghi của script (qua client giả nối Postgres, vì không có Supabase thật) hai lần liên tiếp: toàn bộ ràng buộc CHECK/FK/UNIQUE qua; số dòng không đổi giữa hai lần; nghề đã đặt `published` giữ nguyên.
 - Tổng `career_weight` mỗi nghề trong từng thành phần = 1. Người dùng thường chỉ đọc được nghề `published` và dữ liệu đi kèm, không ghi được; `anon` không đọc được.
 - **Chưa chạy trên Supabase thật** (cần `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, migration đã áp, `import:ba` đã chạy).
+
+## 6. Đã làm tiếp: trang Khám phá trường (danh sách)
+- Migration `20261030000200_phase2_public_catalog_read.sql`: khách chưa đăng nhập (`anon`) đọc được danh mục lĩnh vực, ngành, trường, chương trình (trang nằm ở khung công khai). Nghề và JD vẫn không mở.
+- `frontend/src/modules/school_explorer/`: `school_explorer.service.ts`, `.types.ts`, `.constants.ts`, trang `/kham-pha-truong` với bộ lọc (tìm tên không phân biệt dấu, ngành, tỉnh/thành, lĩnh vực, loại hình, loại cơ sở), bảng và phân trang 24 dòng.
+- Type các bảng mới được ghép vào `frontend/src/types/supabase.ts`. Không sinh lại cả file vì schema cục bộ lệch với Supabase thật ở phần phase 1.
+- Đã xem trang ở 1440 px và 390 px bằng Edge với server giả đọc từ Postgres cục bộ: không tràn ngang trang. **Chưa chạy với Supabase thật** (bảng mới chưa được áp lên đó).
+- Chưa làm: trang chi tiết trường (danh sách ngành/chương trình, học phí), bấm dòng để mở.

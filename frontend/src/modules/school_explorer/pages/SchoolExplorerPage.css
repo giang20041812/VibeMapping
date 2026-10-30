@@ -1,11 +1,24 @@
-.school-explorer-empty {
-  display: flex;
-  flex-direction: column;
+.school-explorer-alert {
+  margin-bottom: var(--space-4);
+}
+
+.school-explorer-name {
+  display: inline-flex;
   align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-16) var(--space-4);
-  font-size: var(--font-size-lg);
+  gap: var(--space-2);
+  min-width: 0;
   font-weight: 600;
+  color: var(--color-text);
+}
+
+.school-explorer-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
   color: var(--color-text-muted);
-  text-align: center;
+}
+
+.school-explorer-link:hover {
+  color: var(--color-primary);
 }

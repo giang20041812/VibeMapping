@@ -47,6 +47,18 @@ const HOLLAND_BY_DIMENSION: Record<string, string> = {
   'D6.1': 'R', 'D6.2': 'I', 'D6.3': 'A', 'D6.4': 'S', 'D6.5': 'E', 'D6.6': 'C',
 };
 const HOLLAND_ORDER = 'RIASEC';
+/**
+ * Tên lĩnh vực cấp 1 theo sheet CHIA NHÓM của CAREER_JD_RESEARCH_MASTER.xlsm (cùng tên với cột "Tên nhóm G" của file trường).
+ * Cột "Nhóm lĩnh vực nghề" trong Career_Profile viết không thống nhất (có dòng chép cả phần mô tả) nên không dùng làm tên.
+ */
+const LEVEL1_FIELD_NAMES: Record<string, string> = {
+  G1: 'Công nghệ & Kỹ thuật',
+  G2: 'Kinh doanh & Tài chính',
+  G3: 'Truyền thông, Sáng tạo & Dịch vụ',
+  G4: 'Khoa học, Giáo dục & Xã hội',
+  G5: 'Y tế, Sức khỏe & Môi trường',
+  G6: 'Pháp luật, Quản lý & Cộng đồng',
+};
 
 type Row = Record<string, unknown>;
 
@@ -266,7 +278,7 @@ function buildFields(jds: JobDescription[]): { fields: FieldRow[]; fieldCodeOf: 
   const fields: FieldRow[] = [...level1.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([prefix, names], index) => ({
-      field_code: `LV${prefix.slice(1)}`, parent_code: null, field_name: mode(names), sort_order: index + 1,
+      field_code: `LV${prefix.slice(1)}`, parent_code: null, field_name: LEVEL1_FIELD_NAMES[prefix] ?? mode(names), sort_order: index + 1,
     }));
   const level2 = new Map<string, FieldRow>();
   const fieldCodeOf = (jd: JobDescription) => {
@@ -517,6 +529,11 @@ async function readResearch(): Promise<ResearchRow[]> {
       const institutionName = collapse(get(row, cName));
       const majorRaw = collapse(get(row, c.major));
       if (!institutionName || !majorRaw) return;
+      // Vài dòng cuối sheet thành viên lệch cột: ô "Tên trường" chứa tên tỉnh/thành
+      if (fold(institutionName) === fold(get(row, c.after)) || fold(institutionName) === fold(get(row, c.before))) {
+        warn(`${sheet.name} dòng ${rowNumber}: ô tên trường là tên tỉnh/thành "${institutionName}" (lệch cột), bỏ qua`);
+        return;
+      }
       const after = placeFields(collapse(get(row, c.after)));
       const before = placeFields(collapse(get(row, c.before)));
       const segment = get(row, c.segment);

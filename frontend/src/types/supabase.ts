@@ -1674,6 +1674,646 @@ export type Database = {
           },
         ];
       };
+      career_matrix_versions: {
+        Row: {
+          id: string;
+          version_code: string;
+          is_current: boolean;
+          note: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          version_code: string;
+          is_current?: boolean;
+          note?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          version_code?: string;
+          is_current?: boolean;
+          note?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      career_fields: {
+        Row: {
+          id: string;
+          field_code: string;
+          parent_field_id: string | null;
+          field_name: string;
+          sort_order: number;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          field_code: string;
+          parent_field_id?: string | null;
+          field_name: string;
+          sort_order?: number;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          field_code?: string;
+          parent_field_id?: string | null;
+          field_name?: string;
+          sort_order?: number;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "career_fields_parent_field_id_fkey";
+            columns: ["parent_field_id"];
+            isOneToOne: false;
+            referencedRelation: "career_fields";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      careers: {
+        Row: {
+          id: string;
+          career_code: string;
+          career_field_id: string;
+          career_name: string;
+          source_group_id: string;
+          status: string;
+          holland_top3: string | null;
+          qualifying_jd_count: number;
+          is_standard_complete: boolean;
+          data_checked_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          career_code: string;
+          career_field_id: string;
+          career_name: string;
+          source_group_id: string;
+          status?: string;
+          holland_top3?: string | null;
+          qualifying_jd_count?: number;
+          is_standard_complete?: boolean;
+          data_checked_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          career_code?: string;
+          career_field_id?: string;
+          career_name?: string;
+          source_group_id?: string;
+          status?: string;
+          holland_top3?: string | null;
+          qualifying_jd_count?: number;
+          is_standard_complete?: boolean;
+          data_checked_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "careers_career_field_id_fkey";
+            columns: ["career_field_id"];
+            isOneToOne: false;
+            referencedRelation: "career_fields";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      career_job_descriptions: {
+        Row: {
+          id: string;
+          career_id: string;
+          source_id: number;
+          jd_code: string | null;
+          company_name: string | null;
+          job_title: string | null;
+          sub_branch: string | null;
+          company_industry: string | null;
+          work_location: string | null;
+          work_mode: string | null;
+          jd_url: string | null;
+          career_level_raw: string | null;
+          career_level: number | null;
+          required_level_raw: string | null;
+          required_level: number | null;
+          career_summary: string | null;
+          position_objective: string | null;
+          main_tasks: string | null;
+          daily_activities: string | null;
+          work_outputs: string | null;
+          key_stakeholders: string | null;
+          required_knowledge: string | null;
+          professional_skills: string | null;
+          soft_skills: string | null;
+          tools_technologies: string | null;
+          education_requirement: string | null;
+          certifications: string | null;
+          experience_requirement: string | null;
+          language_requirement: string | null;
+          special_requirements: string | null;
+          career_path: string | null;
+          work_environment: string | null;
+          benefits: string | null;
+          salary_reference: string | null;
+          behavior_evidence: string | null;
+          data_source: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          career_id: string;
+          source_id: number;
+          jd_code?: string | null;
+          company_name?: string | null;
+          job_title?: string | null;
+          sub_branch?: string | null;
+          company_industry?: string | null;
+          work_location?: string | null;
+          work_mode?: string | null;
+          jd_url?: string | null;
+          career_level_raw?: string | null;
+          career_level?: number | null;
+          required_level_raw?: string | null;
+          required_level?: number | null;
+          career_summary?: string | null;
+          position_objective?: string | null;
+          main_tasks?: string | null;
+          daily_activities?: string | null;
+          work_outputs?: string | null;
+          key_stakeholders?: string | null;
+          required_knowledge?: string | null;
+          professional_skills?: string | null;
+          soft_skills?: string | null;
+          tools_technologies?: string | null;
+          education_requirement?: string | null;
+          certifications?: string | null;
+          experience_requirement?: string | null;
+          language_requirement?: string | null;
+          special_requirements?: string | null;
+          career_path?: string | null;
+          work_environment?: string | null;
+          benefits?: string | null;
+          salary_reference?: string | null;
+          behavior_evidence?: string | null;
+          data_source?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          career_id?: string;
+          source_id?: number;
+          jd_code?: string | null;
+          company_name?: string | null;
+          job_title?: string | null;
+          sub_branch?: string | null;
+          company_industry?: string | null;
+          work_location?: string | null;
+          work_mode?: string | null;
+          jd_url?: string | null;
+          career_level_raw?: string | null;
+          career_level?: number | null;
+          required_level_raw?: string | null;
+          required_level?: number | null;
+          career_summary?: string | null;
+          position_objective?: string | null;
+          main_tasks?: string | null;
+          daily_activities?: string | null;
+          work_outputs?: string | null;
+          key_stakeholders?: string | null;
+          required_knowledge?: string | null;
+          professional_skills?: string | null;
+          soft_skills?: string | null;
+          tools_technologies?: string | null;
+          education_requirement?: string | null;
+          certifications?: string | null;
+          experience_requirement?: string | null;
+          language_requirement?: string | null;
+          special_requirements?: string | null;
+          career_path?: string | null;
+          work_environment?: string | null;
+          benefits?: string | null;
+          salary_reference?: string | null;
+          behavior_evidence?: string | null;
+          data_source?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "career_job_descriptions_career_id_fkey";
+            columns: ["career_id"];
+            isOneToOne: false;
+            referencedRelation: "careers";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      career_job_description_criteria: {
+        Row: {
+          id: string;
+          job_description_id: string;
+          criteria_id: string;
+          selection_basis: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          job_description_id: string;
+          criteria_id: string;
+          selection_basis?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          job_description_id?: string;
+          criteria_id?: string;
+          selection_basis?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "career_job_description_criteria_criteria_id_fkey";
+            columns: ["criteria_id"];
+            isOneToOne: false;
+            referencedRelation: "criteria";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "career_job_description_criteria_job_description_id_fkey";
+            columns: ["job_description_id"];
+            isOneToOne: false;
+            referencedRelation: "career_job_descriptions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      career_requirements: {
+        Row: {
+          id: string;
+          career_id: string;
+          criteria_id: string;
+          matrix_version_id: string;
+          required_score: number;
+          career_weight: number;
+          jd_count: number;
+          verification_level: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          career_id: string;
+          criteria_id: string;
+          matrix_version_id: string;
+          required_score: number;
+          career_weight: number;
+          jd_count?: number;
+          verification_level?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          career_id?: string;
+          criteria_id?: string;
+          matrix_version_id?: string;
+          required_score?: number;
+          career_weight?: number;
+          jd_count?: number;
+          verification_level?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "career_requirements_career_id_fkey";
+            columns: ["career_id"];
+            isOneToOne: false;
+            referencedRelation: "careers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "career_requirements_criteria_id_fkey";
+            columns: ["criteria_id"];
+            isOneToOne: false;
+            referencedRelation: "criteria";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "career_requirements_matrix_version_id_fkey";
+            columns: ["matrix_version_id"];
+            isOneToOne: false;
+            referencedRelation: "career_matrix_versions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      career_holland_profiles: {
+        Row: {
+          id: string;
+          career_id: string;
+          holland_code: string;
+          strength: number;
+          jd_count: number;
+          verification_level: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          career_id: string;
+          holland_code: string;
+          strength: number;
+          jd_count?: number;
+          verification_level?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          career_id?: string;
+          holland_code?: string;
+          strength?: number;
+          jd_count?: number;
+          verification_level?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "career_holland_profiles_career_id_fkey";
+            columns: ["career_id"];
+            isOneToOne: false;
+            referencedRelation: "careers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "career_holland_profiles_holland_code_fkey";
+            columns: ["holland_code"];
+            isOneToOne: false;
+            referencedRelation: "holland_codes";
+            referencedColumns: ["holland_code"];
+          },
+        ];
+      };
+      majors: {
+        Row: {
+          id: string;
+          major_name: string;
+          normalized_name: string;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          major_name: string;
+          normalized_name: string;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          major_name?: string;
+          normalized_name?: string;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      career_major_links: {
+        Row: {
+          id: string;
+          career_id: string;
+          major_id: string;
+          link_level: string;
+          link_source: string;
+          is_verified: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          career_id: string;
+          major_id: string;
+          link_level?: string;
+          link_source?: string;
+          is_verified?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          career_id?: string;
+          major_id?: string;
+          link_level?: string;
+          link_source?: string;
+          is_verified?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "career_major_links_career_id_fkey";
+            columns: ["career_id"];
+            isOneToOne: false;
+            referencedRelation: "careers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "career_major_links_major_id_fkey";
+            columns: ["major_id"];
+            isOneToOne: false;
+            referencedRelation: "majors";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      institutions: {
+        Row: {
+          id: string;
+          institution_name: string;
+          normalized_name: string;
+          parent_institution_id: string | null;
+          institution_type: string;
+          ownership: string | null;
+          segment: string | null;
+          segment_rank: number | null;
+          main_field_id: string | null;
+          city: string | null;
+          city_before_merger: string | null;
+          address: string | null;
+          website_url: string | null;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          institution_name: string;
+          normalized_name: string;
+          parent_institution_id?: string | null;
+          institution_type: string;
+          ownership?: string | null;
+          segment?: string | null;
+          segment_rank?: number | null;
+          main_field_id?: string | null;
+          city?: string | null;
+          city_before_merger?: string | null;
+          address?: string | null;
+          website_url?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          institution_name?: string;
+          normalized_name?: string;
+          parent_institution_id?: string | null;
+          institution_type?: string;
+          ownership?: string | null;
+          segment?: string | null;
+          segment_rank?: number | null;
+          main_field_id?: string | null;
+          city?: string | null;
+          city_before_merger?: string | null;
+          address?: string | null;
+          website_url?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "institutions_main_field_id_fkey";
+            columns: ["main_field_id"];
+            isOneToOne: false;
+            referencedRelation: "career_fields";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "institutions_parent_institution_id_fkey";
+            columns: ["parent_institution_id"];
+            isOneToOne: false;
+            referencedRelation: "institutions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      training_programs: {
+        Row: {
+          id: string;
+          institution_id: string;
+          major_id: string;
+          source_key: string;
+          faculty_name: string | null;
+          specialization_name: string | null;
+          program_type: string | null;
+          degree_levels: string[] | null;
+          program_qualifier: string | null;
+          program_summary: string | null;
+          study_years: number | null;
+          tuition_text: string | null;
+          tuition_per_semester_min: number | null;
+          tuition_per_semester_max: number | null;
+          program_url: string | null;
+          source_reference: string | null;
+          research_status: string;
+          researcher_name: string | null;
+          research_note: string | null;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          institution_id: string;
+          major_id: string;
+          source_key: string;
+          faculty_name?: string | null;
+          specialization_name?: string | null;
+          program_type?: string | null;
+          degree_levels?: string[] | null;
+          program_qualifier?: string | null;
+          program_summary?: string | null;
+          study_years?: number | null;
+          tuition_text?: string | null;
+          tuition_per_semester_min?: number | null;
+          tuition_per_semester_max?: number | null;
+          program_url?: string | null;
+          source_reference?: string | null;
+          research_status?: string;
+          researcher_name?: string | null;
+          research_note?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          institution_id?: string;
+          major_id?: string;
+          source_key?: string;
+          faculty_name?: string | null;
+          specialization_name?: string | null;
+          program_type?: string | null;
+          degree_levels?: string[] | null;
+          program_qualifier?: string | null;
+          program_summary?: string | null;
+          study_years?: number | null;
+          tuition_text?: string | null;
+          tuition_per_semester_min?: number | null;
+          tuition_per_semester_max?: number | null;
+          program_url?: string | null;
+          source_reference?: string | null;
+          research_status?: string;
+          researcher_name?: string | null;
+          research_note?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "training_programs_institution_id_fkey";
+            columns: ["institution_id"];
+            isOneToOne: false;
+            referencedRelation: "institutions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "training_programs_major_id_fkey";
+            columns: ["major_id"];
+            isOneToOne: false;
+            referencedRelation: "majors";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;

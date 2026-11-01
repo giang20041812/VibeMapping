@@ -35,6 +35,7 @@ import { SkeletonSamplePage } from './modules/dev/SkeletonSamplePage';
 import { CareerListPage } from './modules/career_explorer/pages/CareerListPage';
 import { PublicCareerDetailPage } from './modules/career_explorer/pages/PublicCareerDetailPage';
 import { CareerDetailPage } from './modules/career_explorer/pages/CareerDetailPage';
+import { CareerComparePage } from './modules/career_explorer/pages/CareerComparePage';
 import { PortfolioPage } from './modules/portfolio/pages/PortfolioPage';
 import { CommunityPage } from './modules/community/pages/CommunityPage';
 import { GuardianConfirmPage, PrivacyPage } from './modules/privacy/pages/PrivacyPage';
@@ -109,6 +110,7 @@ export const App: React.FC = () => (
             <Route element={<RequireCompleteProfile />}>
               <Route path="/danh-gia-360" element={<Assessment360Page />} />
               <Route path="/nghe" element={<CareerListPage />} />
+              <Route path="/nghe/so-sanh" element={<CareerComparePage />} />
               <Route path="/nghe/:careerId" element={<CareerDetailPage />} />
               <Route path="/ban-do/:careerId" element={<CareerEducationMapPage />} />
               <Route path="/cong-dong" element={<CommunityPage />} />

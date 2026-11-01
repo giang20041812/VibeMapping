@@ -94,3 +94,4 @@
   .holland-name { flex: 1; }
   .part-report-actions .app-button { width: 100%; }
 }
+.holland-card.is-locked { border-style: dashed; box-shadow: none; }

@@ -78,6 +78,7 @@ export const Assessment360SamplePage: React.FC = () => {
     setConfirmFinalize: noop,
     decide: noop,
     finalize: noop,
+    reload: async () => undefined,
   };
 
   return (

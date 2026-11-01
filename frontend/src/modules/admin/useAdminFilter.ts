@@ -3,11 +3,12 @@ import { useDebounce } from '../../hooks/useDebounce';
 
 /**
  * Trạng thái bộ lọc kiểu thống nhất: ô tìm kiếm tự áp dụng sau 300 ms, các ô lọc phụ chỉ áp dụng khi bấm Áp dụng.
- * `draft` là giá trị đang nhập, `applied` là giá trị dùng để truy vấn.
+ * `draft` là giá trị đang nhập, `applied` là giá trị dùng để truy vấn. `initial` là bộ lọc khi mở trang
+ * (ví dụ lấy từ đường dẫn); Đặt lại luôn về `empty`.
  */
-export function useAdminFilter<T extends { keyword: string }>(empty: T) {
-  const [draft, setDraft] = useState<T>(empty);
-  const [applied, setApplied] = useState<T>(empty);
+export function useAdminFilter<T extends { keyword: string }>(empty: T, initial: T = empty) {
+  const [draft, setDraft] = useState<T>(initial);
+  const [applied, setApplied] = useState<T>(initial);
   const debouncedKeyword = useDebounce(draft.keyword, 300);
 
   useEffect(() => {

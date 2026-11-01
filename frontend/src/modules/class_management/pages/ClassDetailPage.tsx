@@ -49,6 +49,7 @@ export const ClassDetailPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [reportError, setReportError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isTeacherOpen, setIsTeacherOpen] = useState(false);
@@ -221,7 +222,20 @@ export const ClassDetailPage: React.FC = () => {
             type="button"
             variant="outline"
             leftIcon={<Download size={16} />}
-            onClick={() => void downloadClassReport(classRow?.class_name ?? 'lop', members, report, 'all').catch(() => setError('Không xuất được báo cáo. Thử lại sau.'))}
+            isLoading={isExporting}
+            onClick={async () => {
+              setIsExporting(true);
+              setError(null);
+              setNotice(null);
+              try {
+                await downloadClassReport(classRow?.class_name ?? 'lop', members, report, 'all');
+                setNotice('Đã tải báo cáo lớp');
+              } catch {
+                setError('Không xuất được báo cáo. Thử lại sau.');
+              } finally {
+                setIsExporting(false);
+              }
+            }}
           >
             Xuất báo cáo
           </Button>

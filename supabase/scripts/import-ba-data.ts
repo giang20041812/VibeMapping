@@ -45,6 +45,9 @@ const HOLLAND_BY_DIMENSION: Record<string, string> = {
 /** Phần của bài tự đánh giá: 1 Tính cách (G1 + G4), 2 Giá trị/động lực (G7), 3 Sở thích (G6), 4 Năng lực chuyên môn (G2, G3, G5) */
 const PART_BY_GROUP: Record<string, number> = { G1: 1, G4: 1, G7: 2, G6: 3, G2: 4, G3: 4, G5: 4 };
 
+/** Nhãn đáp án viết khác trong file gốc, quy về nhãn của đa số câu cùng thang */
+const ANSWER_LABEL_ALIASES: Record<string, string> = { 'Hoàn toàn không đúng': 'Hoàn toàn sai' };
+
 interface CriteriaRow {
   dimension_code: string;
   group_code: string;
@@ -187,7 +190,10 @@ async function readQuestions(criteriaCodes: Set<string>): Promise<QuestionRow[]>
       warn(`Câu hỏi ${questionCode} (dòng ${rowNumber}): cột Group "${rawGroup}" lệch với tiêu chí ${dimensionCode}, dùng ${groupFromDimension}`);
     }
 
-    const options = [9, 10, 11, 12, 13].map((c) => cellText(row.getCell(c))).filter(Boolean);
+    const options = [9, 10, 11, 12, 13]
+      .map((c) => cellText(row.getCell(c)))
+      .filter(Boolean)
+      .map((option) => ANSWER_LABEL_ALIASES[option] ?? option);
     const isNotApplicable = options.length === 1 && options[0].toUpperCase().startsWith('N/A');
 
     questions.push({

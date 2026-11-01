@@ -34,14 +34,21 @@ export interface TopbarItem {
   to: string;
   label: string;
   end?: boolean;
+  /** Chỉ hiện khi đã có tài khoản (trang đích yêu cầu đăng nhập) */
+  requiresAccount?: boolean;
 }
 
 /** Mục điều hướng của thanh trên cùng: trang giới thiệu, khám phá trường và khi khách làm bài test */
 export const TOPBAR_ITEMS: TopbarItem[] = [
-  { to: '/danh-gia-ca-nhan', label: 'Tổng quan' },
+  { to: '/danh-gia-ca-nhan', label: 'Tổng quan', requiresAccount: true },
   { to: '/', label: 'Giới thiệu', end: true },
+  { to: '/nganh-nghe', label: 'Ngành nghề' },
   { to: '/kham-pha-truong', label: 'Khám phá trường' },
 ];
+
+export function topbarItemsFor(isGuest: boolean): TopbarItem[] {
+  return isGuest ? TOPBAR_ITEMS.filter((item) => !item.requiresAccount) : TOPBAR_ITEMS;
+}
 
 /** Chưa đăng nhập chỉ thấy trang chủ */
 const GUEST_PATHS = ['/'];

@@ -1,3 +1,4 @@
+import { saveWorkbook } from '../../lib/saveWorkbook';
 import { answerOptions, GRADE_SHEET_HEADERS } from './grid.logic';
 import type { GridQuestion } from './class_assessment_grid.types';
 
@@ -42,13 +43,5 @@ export async function downloadGradeTemplate(students: TemplateStudent[], questio
   sheet.columns = [{ width: 16 }, { width: 32 }, ...questions.map(() => ({ width: 14 }))];
   sheet.views = [{ state: 'frozen', xSplit: GRADE_SHEET_HEADERS.length, ySplit: 1 }];
 
-  const buffer = await workbook.xlsx.writeBuffer();
-  const url = URL.createObjectURL(
-    new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }),
-  );
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'mau-cham-diem.xlsx';
-  link.click();
-  URL.revokeObjectURL(url);
+  await saveWorkbook(workbook, 'mau-cham-diem.xlsx');
 }

@@ -1,0 +1,22 @@
+.major-explorer-alert {
+  margin-bottom: var(--space-4);
+}
+
+.major-explorer-name {
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.major-explorer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--touch-target);
+  font-weight: 600;
+  color: var(--color-text-brand);
+  text-decoration: none;
+}
+
+.major-explorer-link:hover {
+  text-decoration: underline;
+}

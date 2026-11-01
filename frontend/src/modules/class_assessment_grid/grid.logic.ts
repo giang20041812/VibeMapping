@@ -6,14 +6,34 @@ export const NA_LABEL = 'Không đủ cơ sở';
 
 export interface AnswerOption {
   value: CellValue;
+  /** Nhãn ngắn hiện trên nút và trong ô */
   label: string;
+  /** Nguyên văn đáp án khi nhãn ngắn đã lược bớt mô tả */
+  detail?: string;
+}
+
+const SHORT_LABEL_MAX = 48;
+
+/**
+ * Nhãn ngắn của đáp án ngân hàng câu hỏi giáo viên: bỏ số mức ở đầu ("1 - ", "1 điểm - ", "Mức 1:"),
+ * giữ phần trước dấu ":" hoặc ";" (phần sau là mô tả hành vi) và bỏ ghi chú trong ngoặc ở cuối
+ */
+export function shortAnswerLabel(text: string): string {
+  const head = text.trim().replace(/^(mức\s*)?\d\s*(điểm)?\s*[-–:.]\s*/i, '');
+  const cut = head.split(/[:;]/)[0].replace(/\s*\([^)]*\)\s*$/, '').trim() || text.trim();
+  return cut.length > SHORT_LABEL_MAX ? `${cut.slice(0, SHORT_LABEL_MAX - 1).replace(/\s+\S*$/, '')}…` : cut;
 }
 
 /** Đáp án của câu hỏi theo điểm 1–5, rồi "Không đủ cơ sở"; câu không có nhãn đáp án thì hiện điểm */
 export function answerOptions(question: GridQuestion): AnswerOption[] {
   const labels = question.answer_options ?? [];
   return [
-    ...SCORES.map((score, index) => ({ value: score as CellValue, label: labels[index]?.trim() || score })),
+    ...SCORES.map((score, index) => {
+      const full = labels[index]?.trim();
+      if (!full) return { value: score as CellValue, label: score };
+      const label = shortAnswerLabel(full);
+      return { value: score as CellValue, label, detail: label === full ? undefined : full };
+    }),
     { value: 'na', label: NA_LABEL },
   ];
 }

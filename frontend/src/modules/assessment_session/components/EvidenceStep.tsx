@@ -1,6 +1,7 @@
 import React from 'react';
 import { Check } from 'lucide-react';
 import { Alert, Button, Card, Input, Textarea } from '../../../components/common';
+import { GPA_MAX } from '../assessmentSession.constants';
 import type { EvidenceValues } from '../assessmentSession.types';
 import './EvidenceStep.css';
 
@@ -9,11 +10,12 @@ export interface EvidenceStepProps {
   isSaving: boolean;
   showInsufficientWarning: boolean;
   error: string | null;
+  gpaError: string | null;
   onChange: (values: EvidenceValues) => void;
   onFinish: () => void;
 }
 
-export const EvidenceStep: React.FC<EvidenceStepProps> = ({ values, isSaving, showInsufficientWarning, error, onChange, onFinish }) => (
+export const EvidenceStep: React.FC<EvidenceStepProps> = ({ values, isSaving, showInsufficientWarning, error, gpaError, onChange, onFinish }) => (
   <Card title="Minh chứng bổ trợ" className="evidence-step">
     {showInsufficientWarning && (
       <Alert variant="warning" title="Thiếu dữ liệu đánh giá">
@@ -26,6 +28,9 @@ export const EvidenceStep: React.FC<EvidenceStepProps> = ({ values, isSaving, sh
       <Input
         label="Điểm trung bình"
         inputMode="decimal"
+        maxLength={5}
+        error={gpaError ?? undefined}
+        rightAction={<span className="evidence-scale">/{GPA_MAX}</span>}
         value={values.gradePointAverage}
         onChange={(e) => onChange({ ...values, gradePointAverage: e.target.value })}
       />

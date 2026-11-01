@@ -16,6 +16,10 @@ const AUDIT_COLUMNS =
 
 type PersonRef = { full_name: string | null; display_name: string | null } | null;
 
+/** Tài khoản khách làm bài thử chưa có họ tên: vẫn là một người, không phải hệ thống */
+const GUEST_NAME = 'Khách';
+const auditPersonName = (ref: PersonRef) => (ref ? (displayPersonName(ref) ?? GUEST_NAME) : null);
+
 /** Tìm người theo tên (người thực hiện hoặc học sinh) để lọc nhật ký */
 async function findPersonIds(name: string): Promise<string[]> {
   const keyword = sanitizeKeyword(name);
@@ -64,8 +68,8 @@ export async function listAuditLogs(filter: AuditLogFilter, page: number): Promi
     target_id: row.target_id,
     details: row.details,
     created_at: row.created_at,
-    actor_name: displayPersonName(row.actor as PersonRef),
-    subject_name: displayPersonName(row.subject as PersonRef),
+    actor_name: auditPersonName(row.actor as PersonRef),
+    subject_name: auditPersonName(row.subject as PersonRef),
   }));
   return { rows, total: count ?? 0 };
 }

@@ -22,6 +22,7 @@ import { CompleteProfilePage } from './modules/profile/pages/CompleteProfilePage
 import { PersonalAssessmentPage } from './modules/personal_assessment/pages/PersonalAssessmentPage';
 import { GuestTestPage } from './modules/personal_assessment/pages/GuestTestPage';
 import { SchoolExplorerPage } from './modules/school_explorer/pages/SchoolExplorerPage';
+import { MajorExplorerPage } from './modules/major_explorer/pages/MajorExplorerPage';
 import { AssessmentRunPage } from './modules/assessment_session/pages/AssessmentRunPage';
 import { GuestLayout } from './components/layout/GuestLayout';
 import { GuestRolePickerPage } from './modules/guest_assessment/pages/GuestRolePickerPage';
@@ -59,9 +60,10 @@ export const App: React.FC = () => (
           </Route>
         </Route>
 
-        {/* Thanh điều hướng ngang, không có thanh bên: giới thiệu, khám phá trường, khách làm bài test và khai báo thông tin sau bài */}
+        {/* Thanh điều hướng ngang, không có thanh bên: giới thiệu, ngành nghề, khám phá trường, khách làm bài test và khai báo thông tin sau bài */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<HomeRoute />} />
+          <Route path="/nganh-nghe" element={<MajorExplorerPage />} />
           <Route path="/kham-pha-truong" element={<SchoolExplorerPage />} />
           <Route path="/lam-bai" element={<GuestTestPage />} />
           <Route element={<RequireSession />}>

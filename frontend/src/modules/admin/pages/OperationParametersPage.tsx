@@ -10,6 +10,9 @@ import { listCurrentParameters, listParameterHistory } from '../operation_parame
 import { formatParameterValue } from '../parameter.logic';
 import './AdminPages.css';
 
+/** Bản ghi nạp sẵn khi cài đặt hệ thống, chưa ai đổi */
+const INITIAL_VALUE_LABEL = 'Khởi tạo';
+
 export const OperationParametersPage: React.FC = () => {
   const { session } = useAuth();
   const userId = session?.user.id ?? '';
@@ -55,7 +58,7 @@ export const OperationParametersPage: React.FC = () => {
       { key: 'param_name', header: 'Tên tham số', render: (row) => <span className="admin-cell-text">{row.param_name}</span> },
       { key: 'param_value', header: 'Giá trị', render: (row) => <span className="admin-cell-text">{formatParameterValue(row.param_value)}</span> },
       { key: 'effective_from', header: 'Hiệu lực từ', nowrap: true, render: (row) => formatDateTime(row.effective_from) },
-      { key: 'changed_by', header: 'Người đổi', nowrap: true, render: (row) => row.changed_by_name ?? '—' },
+      { key: 'changed_by', header: 'Người đổi', nowrap: true, render: (row) => row.changed_by_name ?? INITIAL_VALUE_LABEL },
       {
         key: 'actions',
         header: '',
@@ -80,7 +83,7 @@ export const OperationParametersPage: React.FC = () => {
     () => [
       { key: 'effective_from', header: 'Hiệu lực từ', nowrap: true, render: (row) => formatDateTime(row.effective_from) },
       { key: 'param_value', header: 'Giá trị', render: (row) => <span className="admin-cell-text">{formatParameterValue(row.param_value)}</span> },
-      { key: 'changed_by', header: 'Người đổi', nowrap: true, render: (row) => row.changed_by_name ?? '—' },
+      { key: 'changed_by', header: 'Người đổi', nowrap: true, render: (row) => row.changed_by_name ?? INITIAL_VALUE_LABEL },
       {
         key: 'is_current',
         header: 'Trạng thái',

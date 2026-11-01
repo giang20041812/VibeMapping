@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { AlertTriangle, ArrowLeft, ArrowRight, Check, CheckCircle2 } from 'lucide-react';
 import { Alert, Badge, Button, Card, Input, Modal, ProgressBar } from '../../../components/common';
@@ -62,6 +62,11 @@ const writeResume = (token: string, value: string | null) => {
   }
 };
 
+/** Dừng ngắn để người dùng thấy mức vừa chọn trước khi chuyển câu */
+const ADVANCE_DELAY_MS = 220;
+/** Phím chọn "Không đủ cơ sở", cùng bộ phím với bảng chấm điểm của giáo viên */
+const INSUFFICIENT_KEYS = ['x', 'n', 'k'];
+
 const formatClock = (date: Date) => date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 
 export const GuestAssessmentPage: React.FC = () => {
@@ -95,6 +100,12 @@ export const GuestAssessmentPage: React.FC = () => {
   const [submitFailure, setSubmitFailure] = useState<string | null>(null);
 
   const current = questions[index];
+  const advanceTimer = useRef<number | null>(null);
+  const cancelAdvance = () => {
+    if (advanceTimer.current) window.clearTimeout(advanceTimer.current);
+    advanceTimer.current = null;
+  };
+  useEffect(() => cancelAdvance, []);
   const answeredCount = useMemo(() => questions.filter((q) => isAnswered(answers, q.id)).length, [questions, answers]);
 
   /** Vào màn câu hỏi, dừng ở câu chưa trả lời đầu tiên */
@@ -206,6 +217,7 @@ export const GuestAssessmentPage: React.FC = () => {
       setBlockMessage(null);
       const value = { score, insufficient: false };
       setAnswers((prev) => new Map(prev).set(current.id, value));
+      advanceAfterAnswer();
       try {
         await saveGuestAnswer(resume, current.id, value);
         setLastSavedAt(new Date());
@@ -213,7 +225,8 @@ export const GuestAssessmentPage: React.FC = () => {
         setSaveError(true);
       }
     },
-    [resume, current],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [resume, current, index, questions.length],
   );
 
   const handleInsufficient = async (checked: boolean) => {
@@ -231,6 +244,7 @@ export const GuestAssessmentPage: React.FC = () => {
     }
     const value = { score: null, insufficient: true };
     setAnswers((prev) => new Map(prev).set(current.id, value));
+    advanceAfterAnswer();
     try {
       await saveGuestAnswer(resume, current.id, value);
       setLastSavedAt(new Date());
@@ -240,9 +254,18 @@ export const GuestAssessmentPage: React.FC = () => {
   };
 
   const goTo = (next: number, dir: 'forward' | 'back') => {
+    cancelAdvance();
     setDirection(dir);
     setIndex(next);
   };
+
+  /** Trả lời xong tự sang câu kế; câu cuối thì dừng lại để người dùng bấm Nộp bài */
+  function advanceAfterAnswer() {
+    cancelAdvance();
+    if (index >= questions.length - 1) return;
+    const next = index + 1;
+    advanceTimer.current = window.setTimeout(() => goTo(next, 'forward'), ADVANCE_DELAY_MS);
+  }
 
   const reviewQuestions = () => {
     const open = questions.findIndex((q) => !isAnswered(answers, q.id) || missingIds.includes(q.id));
@@ -310,22 +333,35 @@ export const GuestAssessmentPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current, answers, index, questions, startedAt]);
 
-  // ---- Phím tắt: 1–5 chọn mức, Enter sang câu kế
+  // ---- Phím tắt: 1–5 chọn mức, X/N/K không đủ cơ sở, Enter hoặc ←/→ chuyển câu
   useEffect(() => {
     if (stage.kind !== 'questions' || qualityIssues.length > 0) return;
     const onKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement;
       if (target.tagName === 'INPUT' && (target as HTMLInputElement).type === 'checkbox') return;
       if (target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') return;
-      if (event.key >= '1' && event.key <= '5' && !answers.get(current?.id ?? '')?.insufficient) {
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      const insufficient = answers.get(current?.id ?? '')?.insufficient;
+      if (event.key >= '1' && event.key <= '5' && !insufficient) {
         void handleSelect(Number(event.key));
+      } else if (INSUFFICIENT_KEYS.includes(event.key.toLowerCase())) {
+        void handleInsufficient(!insufficient);
       } else if (event.key === 'Enter' && target.tagName !== 'BUTTON') {
         handleNext();
+      } else if (target.tagName === 'INPUT') {
+        /* mũi tên trên ô chọn mức để trình duyệt tự đổi mức */
+      } else if (event.key === 'ArrowRight' && index < questions.length - 1) {
+        event.preventDefault();
+        handleNext();
+      } else if (event.key === 'ArrowLeft' && index > 0) {
+        event.preventDefault();
+        goTo(index - 1, 'back');
       }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [stage, qualityIssues, answers, current, handleSelect, handleNext]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage, qualityIssues, answers, current, index, handleSelect, handleNext]);
 
   // ---- Hiển thị
   if (stage.kind === 'loading') {

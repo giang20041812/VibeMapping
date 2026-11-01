@@ -12,6 +12,10 @@ const AUDIT_COLUMNS =
 
 type PersonRef = { full_name: string | null; display_name: string | null } | null;
 
+/** Tài khoản khách làm bài thử chưa có họ tên: vẫn là một người, không phải hệ thống */
+const GUEST_NAME = 'Khách';
+const auditPersonName = (ref: PersonRef) => (ref ? (displayPersonName(ref) ?? GUEST_NAME) : null);
+
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 
 const querySchema = z.object({
@@ -65,8 +69,8 @@ auditLogsRouter.get('/', async (req, res) => {
     target_id: row.target_id,
     details: row.details,
     created_at: row.created_at,
-    actor_name: displayPersonName(row.actor as PersonRef),
-    subject_name: displayPersonName(row.subject as PersonRef),
+    actor_name: auditPersonName(row.actor as PersonRef),
+    subject_name: auditPersonName(row.subject as PersonRef),
   }));
   res.json({ rows, total: result.count ?? 0 });
 });

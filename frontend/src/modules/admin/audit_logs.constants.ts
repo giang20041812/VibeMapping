@@ -8,6 +8,12 @@ export const AUDIT_ACTION_LABEL: Record<string, string> = {
   complete_self_assessment: 'Hoàn thành tự đánh giá',
   finalize_result: 'Chốt kết quả',
   set_package_assignments: 'Gán câu hỏi vào gói',
+  enable_invite_360: 'Bật đánh giá 360',
+  disable_invite_360: 'Tắt đánh giá 360',
+  create_invitation_link: 'Tạo đường dẫn mời',
+  revoke_invitation_link: 'Thu hồi đường dẫn mời',
+  grade_class_student: 'Giáo viên chấm điểm học sinh',
+  set_grid_package: 'Chọn gói câu hỏi bảng lưới',
 };
 
 const TABLE_LABEL: Record<string, string> = {
@@ -43,4 +49,5 @@ export const TARGET_TYPE_LABEL: Record<string, string> = {
   criteria_groups: 'Nhóm tiêu chí',
   criteria_rater_visibility: 'Hiển thị tiêu chí',
   operation_parameters: 'Tham số vận hành',
+  invitation_links: 'Đường dẫn mời',
 };

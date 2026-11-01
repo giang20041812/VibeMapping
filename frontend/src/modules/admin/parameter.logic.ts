@@ -68,9 +68,6 @@ export function validateParameter(paramCode: string, leaves: ParameterLeaf[]): s
     case 'retake_min_interval_hours':
       if (!isNumber(first) || first < 0) return 'Giá trị không được âm.';
       return null;
-    case 'min_completion_seconds':
-      if (first !== null && (!isNumber(first) || first < 0)) return 'Giá trị không được âm.';
-      return null;
     case 'competency_levels': {
       const byKey = Object.fromEntries(leaves.map((leaf) => [leaf.path[0], leaf.value]));
       const { very_high: veryHigh, high, medium } = byKey;

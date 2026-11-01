@@ -1,3 +1,4 @@
+import { saveWorkbook } from '../../lib/saveWorkbook';
 import { ACCOUNT_ERROR_TEXT, ROSTER_TEMPLATE_HEADERS } from './class_management.constants';
 import type { ClassMember, ClassReport, RosterAccount, RosterRow } from './class_management.types';
 
@@ -76,15 +77,7 @@ export async function downloadRosterTemplate(): Promise<void> {
   sheet.getRow(1).font = { bold: true };
   sheet.columns = [{ width: 18 }, { width: 36 }, { width: 16 }];
 
-  const buffer = await workbook.xlsx.writeBuffer();
-  const url = URL.createObjectURL(
-    new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }),
-  );
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'mau-danh-sach-hoc-sinh.xlsx';
-  link.click();
-  URL.revokeObjectURL(url);
+  await saveWorkbook(workbook, 'mau-danh-sach-hoc-sinh.xlsx');
 }
 
 export type ReportScope = 'all' | 'completed';
@@ -126,15 +119,7 @@ export async function downloadClassReport(
     scores.columns = [{ width: 10 }, { width: 40 }, { width: 22 }];
   }
 
-  const buffer = await workbook.xlsx.writeBuffer();
-  const url = URL.createObjectURL(
-    new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }),
-  );
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `bao-cao-lop-${className.replace(/[^\w-]+/g, '-')}.xlsx`;
-  link.click();
-  URL.revokeObjectURL(url);
+  await saveWorkbook(workbook, `bao-cao-lop-${className.replace(/[^\w-]+/g, '-')}.xlsx`);
 }
 
 /** Tải tệp tài khoản vừa tạo để giáo viên phát cho học sinh; mật khẩu tạm không lấy lại được sau khi đóng */
@@ -155,13 +140,5 @@ export async function downloadAccountsFile(accounts: RosterAccount[]): Promise<v
   }
   sheet.columns = [{ width: 16 }, { width: 32 }, { width: 44 }, { width: 18 }, { width: 36 }];
 
-  const buffer = await workbook.xlsx.writeBuffer();
-  const url = URL.createObjectURL(
-    new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }),
-  );
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'tai-khoan-hoc-sinh.xlsx';
-  link.click();
-  URL.revokeObjectURL(url);
+  await saveWorkbook(workbook, 'tai-khoan-hoc-sinh.xlsx');
 }

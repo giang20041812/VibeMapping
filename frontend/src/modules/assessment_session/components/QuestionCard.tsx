@@ -8,11 +8,12 @@ export interface QuestionCardProps {
   value: AnswerValue | undefined;
   direction: 'forward' | 'back';
   onSelect: (score: number) => void;
-  onToggleInsufficient: (checked: boolean) => void;
+  /** Không truyền thì không có ô "Không đủ cơ sở" */
+  onToggleInsufficient?: (checked: boolean) => void;
 }
 
 export const QuestionCard: React.FC<QuestionCardProps> = ({ question, value, direction, onSelect, onToggleInsufficient }) => {
-  const insufficient = Boolean(value?.insufficient);
+  const insufficient = Boolean(onToggleInsufficient && value?.insufficient);
   const groupName = `question-${question.id}`;
 
   return (
@@ -46,16 +47,22 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question, value, dir
         })}
       </div>
 
-      <label className={`question-insufficient ${insufficient ? 'is-checked' : ''}`}>
-        <input
-          type="checkbox"
-          checked={insufficient}
-          onChange={(event) => onToggleInsufficient(event.target.checked)}
-          className="question-insufficient-input"
-        />
-        <span className="question-insufficient-box" aria-hidden="true" />
-        <span>Không đủ cơ sở để đánh giá</span>
-      </label>
+      {onToggleInsufficient && (
+        <label className={`question-insufficient ${insufficient ? 'is-checked' : ''}`}>
+          <input
+            aria-keyshortcuts="X"
+            type="checkbox"
+            checked={insufficient}
+            onChange={(event) => onToggleInsufficient(event.target.checked)}
+            className="question-insufficient-input"
+          />
+          <span className="question-insufficient-box" aria-hidden="true" />
+          <span>Không đủ cơ sở để đánh giá</span>
+          <kbd className="question-key" aria-hidden="true">
+            X
+          </kbd>
+        </label>
+      )}
     </section>
   );
 };

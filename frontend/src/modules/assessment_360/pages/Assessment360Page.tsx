@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert } from '../../../components/common';
 import { useAuth } from '../../auth/AuthContext';
@@ -16,6 +16,12 @@ export const Assessment360Page: React.FC = () => {
 
   const invite = useInviteController(userId, isInviteLocked(profile));
   const review = useReviewController(userId, () => navigate('/danh-gia-ca-nhan', { replace: true }));
+  const reloadReview = review.reload;
+
+  // Tiến độ theo nhóm lấy từ các đường dẫn đang mở: đọc lại mỗi khi đường dẫn được tạo, thu hồi hoặc tắt
+  useEffect(() => {
+    if (invite.state) void reloadReview();
+  }, [invite.state, reloadReview]);
 
   return (
     <>

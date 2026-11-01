@@ -17,11 +17,11 @@ export const ClassReportCard: React.FC<ClassReportCardProps> = ({ title, report,
     {report && !report.ok && (
       <div className="class-stack">
         <ProgressBar
-          value={report.member_count === 0 ? null : (report.joined_count / report.member_count) * 100}
+          value={report.member_count ? (report.joined_count / report.member_count) * 100 : null}
           label="Tiến độ tham gia"
         />
         <p className="class-meta-label">
-          {report.joined_count}/{report.member_count} học sinh đã tham gia
+          {report.member_count ? `${report.joined_count}/${report.member_count}` : report.joined_count} học sinh đã tham gia
         </p>
       </div>
     )}

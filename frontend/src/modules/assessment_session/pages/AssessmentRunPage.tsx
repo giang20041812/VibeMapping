@@ -4,7 +4,7 @@ import { ArrowLeft, ArrowRight, Check, Save } from 'lucide-react';
 import { Alert, Button, Card, ProgressBar } from '../../../components/common';
 import { useAuth } from '../../auth/AuthContext';
 import { pathAfterTest } from '../../profile/profile.logic';
-import { INSUFFICIENT_WARNING_RATIO, PARTS } from '../assessmentSession.constants';
+import { GPA_MAX, INSUFFICIENT_PART, INSUFFICIENT_WARNING_RATIO, PARTS } from '../assessmentSession.constants';
 import {
   completeSession,
   deleteAnswer,
@@ -15,6 +15,7 @@ import {
   getSession,
   getSessionCoreValues,
   loadSelfQuestionBank,
+  parseGradePointAverage,
   saveAnswer,
   saveEvidence,
   saveSessionCoreValues,
@@ -77,6 +78,7 @@ export const AssessmentRunPage: React.FC = () => {
   const [isSavingValues, setIsSavingValues] = useState(false);
   const [isFinishing, setIsFinishing] = useState(false);
   const [finishError, setFinishError] = useState<string | null>(null);
+  const [gpaError, setGpaError] = useState<string | null>(null);
   /** Lượt đếm ngược tự hoàn thành phần đang chạy; đổi số để hiệu ứng chạy lại từ đầu */
   const [finishCountdown, setFinishCountdown] = useState<number | null>(null);
 
@@ -284,15 +286,19 @@ export const AssessmentRunPage: React.FC = () => {
 
   const continueFromPart = (part: PartNumber) => go(stageForPart(part + 1, answers, valuesSaved));
 
-  // ---- Phím tắt: 1–5 chọn mức, Enter sang câu kế
+  // ---- Phím tắt: 1–5 chọn mức, X/N/K không đủ cơ sở (phần năng lực), Enter sang câu kế
   useEffect(() => {
     if (stage?.kind !== 'questions') return;
     const onKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement;
       if (target.tagName === 'INPUT' && (target as HTMLInputElement).type === 'checkbox') return;
       if (target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') return;
-      if (event.key >= '1' && event.key <= '5' && !answers.get(currentQuestion?.id ?? '')?.insufficient) {
+      const lockedByInsufficient = stage.part === INSUFFICIENT_PART && answers.get(currentQuestion?.id ?? '')?.insufficient;
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      if (event.key >= '1' && event.key <= '5' && !lockedByInsufficient) {
         void handleSelect(Number(event.key));
+      } else if (stage.part === INSUFFICIENT_PART && ['x', 'n', 'k'].includes(event.key.toLowerCase())) {
+        void handleInsufficient(!lockedByInsufficient);
       } else if (event.key === 'Enter' && target.tagName !== 'BUTTON') {
         handleNext();
       }
@@ -318,6 +324,11 @@ export const AssessmentRunPage: React.FC = () => {
 
   const handleFinish = async () => {
     if (!session) return;
+    if (parseGradePointAverage(evidence.gradePointAverage) === undefined) {
+      setGpaError(`Nhập số từ 0 đến ${GPA_MAX}`);
+      return;
+    }
+    setGpaError(null);
     setIsFinishing(true);
     setFinishError(null);
     try {
@@ -367,7 +378,7 @@ export const AssessmentRunPage: React.FC = () => {
 
       {lockedMessage && <Alert variant="warning">{lockedMessage}</Alert>}
       {saveError && <Alert variant="danger">Không lưu được. Kiểm tra kết nối mạng rồi thử lại.</Alert>}
-      {stage.kind === 'questions' && stage.part === 4 && insufficientTooHigh && (
+      {stage.kind === 'questions' && stage.part === INSUFFICIENT_PART && insufficientTooHigh && (
         <Alert variant="warning" title="Thiếu dữ liệu đánh giá">
           Bạn đã chọn Không đủ cơ sở ở hơn 40% tiêu chí.
         </Alert>
@@ -387,7 +398,7 @@ export const AssessmentRunPage: React.FC = () => {
             value={answers.get(currentQuestion.id)}
             direction={direction}
             onSelect={handleSelect}
-            onToggleInsufficient={handleInsufficient}
+            onToggleInsufficient={stage.part === INSUFFICIENT_PART ? handleInsufficient : undefined}
           />
 
           <div className="run-nav">
@@ -412,7 +423,7 @@ export const AssessmentRunPage: React.FC = () => {
         <PersonalityReport questions={questions} answers={answers} onContinue={() => continueFromPart(1)} />
       )}
       {stage.kind === 'report' && stage.part === 3 && (
-        <HollandReport questions={questions} answers={answers} onContinue={() => continueFromPart(3)} />
+        <HollandReport questions={questions} answers={answers} locked={isGuest} onContinue={() => continueFromPart(3)} />
       )}
       {stage.kind === 'values' && (
         <CoreValuesStep
@@ -429,7 +440,11 @@ export const AssessmentRunPage: React.FC = () => {
           isSaving={isFinishing}
           showInsufficientWarning={insufficientTooHigh}
           error={finishError}
-          onChange={setEvidence}
+          gpaError={gpaError}
+          onChange={(next) => {
+            setEvidence(next);
+            if (gpaError && parseGradePointAverage(next.gradePointAverage) !== undefined) setGpaError(null);
+          }}
           onFinish={handleFinish}
         />
       )}

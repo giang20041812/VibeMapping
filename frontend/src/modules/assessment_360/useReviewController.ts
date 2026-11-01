@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { decideSubmission, finalizeResult, getReviewSummary, listSubmissions } from '../submission_review/submission.service';
 import type { ReviewSummary, SubmissionRow } from '../submission_review/submission.service';
 
 export type ReviewFilter = 'all' | SubmissionRow['group'];
 
-/** Mọi thứ phần "duyệt bài đã nộp" cần để hiển thị và thao tác; tách khỏi giao diện để xem thử bằng dữ liệu mẫu */
+/** Mọi thứ phần "duyệt bài đã nộp" cần để hiển thị và thao tác; tách khỏi giao diện để xem thử bằng dữ liệu mẫu.
+    Trang gọi reload sau khi trạng thái mời được tải, nên tiến độ luôn khớp các đường dẫn đang mở */
 export interface ReviewController {
   rows: SubmissionRow[];
   visible: SubmissionRow[];
@@ -22,6 +23,8 @@ export interface ReviewController {
   setConfirmFinalize: (open: boolean) => void;
   decide: (row: SubmissionRow, decision: 'accepted' | 'rejected') => void;
   finalize: () => void;
+  /** Đọc lại bài đã nộp và tiến độ, ví dụ sau khi tạo hoặc thu hồi đường dẫn mời */
+  reload: () => Promise<void>;
 }
 
 export function useReviewController(userId: string | undefined, onFinalized: () => void): ReviewController {
@@ -48,10 +51,6 @@ export function useReviewController(userId: string | undefined, onFinalized: () 
       setIsLoading(false);
     }
   }, [userId]);
-
-  useEffect(() => {
-    void reload();
-  }, [reload]);
 
   const counts = useMemo(() => {
     const map: Record<string, number> = { all: rows.length };
@@ -102,5 +101,6 @@ export function useReviewController(userId: string | undefined, onFinalized: () 
         setIsFinalizing(false);
       }
     },
+    reload,
   };
 }

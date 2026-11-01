@@ -110,7 +110,7 @@ export const ReviewPanel: React.FC<{ controller: ReviewController }> = ({ contro
                   ))
                 )}
               </div>
-              {!finalized && (
+              {!finalized && rows.length > 0 && (
                 <Button size="lg" onClick={() => controller.setConfirmFinalize(true)} disabled={summary.acceptedCount < 1} leftIcon={<Flag size={18} />}>
                   Chốt kết quả
                 </Button>

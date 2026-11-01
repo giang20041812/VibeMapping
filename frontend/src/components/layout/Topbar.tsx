@@ -2,7 +2,8 @@ import React, { useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { LogoMark } from '../common';
-import { TOPBAR_ITEMS } from './navigation';
+import { useAuth } from '../../modules/auth/AuthContext';
+import { topbarItemsFor } from './navigation';
 import { TopActions } from './TopActions';
 import './Topbar.css';
 
@@ -19,6 +20,7 @@ export interface TopbarProps {
  * Điện thoại: các mục gộp vào nút menu và xổ xuống dưới thanh.
  */
 export const Topbar: React.FC<TopbarProps> = ({ open, onToggle, onClose }) => {
+  const { isGuest } = useAuth();
   useEffect(() => {
     if (!open) return;
     const onKey = (event: KeyboardEvent) => {
@@ -45,7 +47,7 @@ export const Topbar: React.FC<TopbarProps> = ({ open, onToggle, onClose }) => {
           </Link>
 
           <nav id="topbar-links" className="topbar-links" aria-label="Điều hướng chính">
-            {TOPBAR_ITEMS.map((item) => (
+            {topbarItemsFor(isGuest).map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}

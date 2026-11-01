@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { ExternalLink, Search } from 'lucide-react';
 import { Alert, Badge, Card, DataTable, Input, Pagination, Select } from '../../../components/common';
 import type { DataTableColumn } from '../../../components/common';
@@ -24,7 +25,10 @@ import type { InstitutionFilter, InstitutionRow } from '../school_explorer.types
 import './SchoolExplorerPage.css';
 
 export const SchoolExplorerPage: React.FC = () => {
-  const { draft, applied, patch, apply, reset } = useAdminFilter<InstitutionFilter>(EMPTY_INSTITUTION_FILTER);
+  // Mở từ trang Ngành nghề: lọc sẵn theo ngành trong đường dẫn (?nganh=)
+  const [searchParams] = useSearchParams();
+  const [initialFilter] = useState<InstitutionFilter>(() => ({ ...EMPTY_INSTITUTION_FILTER, majorId: searchParams.get('nganh') ?? '' }));
+  const { draft, applied, patch, apply, reset } = useAdminFilter<InstitutionFilter>(EMPTY_INSTITUTION_FILTER, initialFilter);
   const [cities, setCities] = useState<FilterOption[]>([]);
   const [fields, setFields] = useState<FilterOption[]>([]);
   const [majors, setMajors] = useState<FilterOption[]>([]);

@@ -1,5 +1,5 @@
 import { supabase } from '../../lib/supabase';
-import { DRAFT_RETENTION_HOURS } from './assessmentSession.constants';
+import { DRAFT_RETENTION_HOURS, GPA_MAX } from './assessmentSession.constants';
 import type {
   AnswerMap,
   AssessmentSession,
@@ -289,12 +289,22 @@ const splitLines = (value: string) =>
     .map((line) => line.trim())
     .filter(Boolean);
 
+/** Điểm trung bình đã nhập: null khi để trống, undefined khi không phải số trong thang 0–GPA_MAX */
+export function parseGradePointAverage(raw: string): number | null | undefined {
+  const value = raw.trim().replace(',', '.');
+  if (!value) return null;
+  if (!/^\d{1,2}(\.\d{1,2})?$/.test(value)) return undefined;
+  const number = Number(value);
+  return number <= GPA_MAX ? number : undefined;
+}
+
 export async function saveEvidence(sessionId: string, values: EvidenceValues) {
-  const average = values.gradePointAverage.trim().replace(',', '.');
+  const average = parseGradePointAverage(values.gradePointAverage);
+  if (average === undefined) throw new Error('invalid_gpa');
   const { error } = await supabase.from('assessment_evidences').upsert(
     {
       session_id: sessionId,
-      grade_point_average: average ? Number(average) : null,
+      grade_point_average: average,
       certificates: splitLines(values.certificates),
       achievements: splitLines(values.achievements),
     },

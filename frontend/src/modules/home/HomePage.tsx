@@ -172,6 +172,7 @@ export const HomePage: React.FC = () => {
         visual={
           <div className="feature-stage">
             {result && <span className="feature-badge"><Badge variant="success">Đánh giá của bạn</Badge></span>}
+            {!result && !isChartLoading && <span className="feature-badge"><Badge variant="default">Ví dụ</Badge></span>}
             {isChartLoading ? (
               <PolygonChartSkeleton />
             ) : (

@@ -27,3 +27,9 @@ export const CORE_VALUE_MAX = 5;
 export const INSUFFICIENT_WARNING_RATIO = 0.4;
 
 export const SCALE_VALUES = [1, 2, 3, 4, 5] as const;
+
+/** Phần duy nhất của bài tự đánh giá có ô "Không đủ cơ sở": tiêu chí năng lực chưa từng trải nghiệm */
+export const INSUFFICIENT_PART = 4;
+
+/** Điểm trung bình theo thang 10, tối đa 2 chữ số thập phân */
+export const GPA_MAX = 10;

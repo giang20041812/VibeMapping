@@ -42,8 +42,28 @@ export const PersonalityReport: React.FC<ReportProps> = ({ questions, answers, o
   );
 };
 
-/** Báo cáo cuối Phần 3: ba chữ Holland nổi trội nhất */
-export const HollandReport: React.FC<ReportProps> = ({ questions, answers, onContinue }) => {
+/** Báo cáo cuối Phần 3: ba chữ Holland nổi trội nhất. Khách chưa có tài khoản chỉ thấy thẻ che, tạo tài khoản rồi mới xem */
+export const HollandReport: React.FC<ReportProps & { locked?: boolean }> = ({ questions, answers, onContinue, locked = false }) => {
+  if (locked) {
+    return (
+      <Card title="Mã Holland" className="part-report">
+        <ul className="holland-list" aria-hidden="true">
+          {[1, 2, 3].map((index) => (
+            <li key={index} className={`holland-card holland-card-${index} is-locked`}>
+              <span className="holland-letter">?</span>
+            </li>
+          ))}
+        </ul>
+        <Alert variant="info">Tạo tài khoản để xem mã Holland.</Alert>
+        <div className="part-report-actions">
+          <Button size="lg" onClick={onContinue} rightIcon={<ArrowRight size={18} />}>
+            Tiếp tục sang phần sau
+          </Button>
+        </div>
+      </Card>
+    );
+  }
+
   const top = topHolland(
     criteriaPercents(
       questions.filter((q) => q.groupCode === 'G6'),

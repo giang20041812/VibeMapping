@@ -100,7 +100,7 @@ export const ResultView: React.FC<ResultViewProps> = ({ result, onRetake, onCont
         <div className="result-chart">
           <PolygonChart
             axes={axes}
-            valueLabel="Tổng hợp 360°"
+            valueLabel={hasCombined ? 'Tổng hợp 360°' : 'Tự đánh giá'}
             referenceLabel="Tự đánh giá"
             noDataLabel={NO_DATA_LABEL}
             showNodeValues

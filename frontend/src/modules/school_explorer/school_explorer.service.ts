@@ -11,6 +11,9 @@ export const EMPTY_INSTITUTION_FILTER: InstitutionFilter = {
   institutionType: '',
   fieldId: '',
   majorId: '',
+  degreeLevel: '',
+  tuitionMin: '',
+  tuitionMax: '',
 };
 
 const READ_PAGE = 1000;
@@ -20,8 +23,9 @@ const searchKeyword = (keyword: string) => normalizeSearchText(keyword).replace(
 
 export async function listInstitutions(filter: InstitutionFilter, page: number): Promise<Paged<InstitutionRow>> {
   // Lọc theo ngành: nối trong (inner) sang chương trình đào tạo của ngành đó
-  const select = filter.majorId
-    ? 'id, institution_name, institution_type, ownership, city, website_url, field:career_fields!institutions_main_field_id_fkey(field_name), programs:training_programs(count), match:training_programs!inner(major_id)'
+  const needProgramJoin = Boolean(filter.majorId || filter.degreeLevel || filter.tuitionMin || filter.tuitionMax);
+  const select = needProgramJoin
+    ? 'id, institution_name, institution_type, ownership, city, website_url, field:career_fields!institutions_main_field_id_fkey(field_name), programs:training_programs(count), match:training_programs!inner(major_id, degree_levels, tuition_per_semester_min, tuition_per_semester_max)'
     : 'id, institution_name, institution_type, ownership, city, website_url, field:career_fields!institutions_main_field_id_fkey(field_name), programs:training_programs(count)';
   let query = supabase.from('institutions').select(select, { count: 'exact' }).neq('institution_type', 'parent_university');
 
@@ -32,6 +36,11 @@ export async function listInstitutions(filter: InstitutionFilter, page: number):
   if (filter.institutionType) query = query.eq('institution_type', filter.institutionType);
   if (filter.fieldId) query = query.eq('main_field_id', filter.fieldId);
   if (filter.majorId) query = query.eq('match.major_id', filter.majorId);
+  if (filter.degreeLevel) query = query.contains('match.degree_levels', [filter.degreeLevel]);
+  const tuitionMin = Number(filter.tuitionMin.replace(',', '.'));
+  const tuitionMax = Number(filter.tuitionMax.replace(',', '.'));
+  if (Number.isFinite(tuitionMin) && tuitionMin > 0) query = query.gte('match.tuition_per_semester_min', tuitionMin * 1_000_000);
+  if (Number.isFinite(tuitionMax) && tuitionMax > 0) query = query.lte('match.tuition_per_semester_min', tuitionMax * 1_000_000);
 
   const from = (page - 1) * SCHOOL_PAGE_SIZE;
   const { data, error, count } = await query

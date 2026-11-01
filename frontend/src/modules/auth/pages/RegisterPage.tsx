@@ -1,19 +1,20 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, MailCheck, Mail, User } from 'lucide-react';
+import { ArrowRight, Mail, Phone, User } from 'lucide-react';
 import { Alert, Button, Input, PasswordInput } from '../../../components/common';
-import { isLearnerRole, parseVietnameseDate } from '../../profile/profile.logic';
+import { parseVietnameseDate } from '../../profile/profile.logic';
 import { describeAuthError, registerWithEmail } from '../auth.service';
-import type { LearnerInfo, LearnerInfoErrors, RegisterableRole } from '../auth.types';
-import { validateEmail, validateFullName, validateLearnerInfo, validatePassword } from '../auth.validation';
+import type { LearnerInfo, LearnerInfoErrors } from '../auth.types';
+import { validateEmail, validateFullName, validateLearnerInfo, validatePassword, validatePhone } from '../auth.validation';
+import { AuthHomeLink } from '../components/AuthHomeLink';
 import { LearnerInfoFields } from '../components/LearnerInfoFields';
 import { PasswordRules } from '../components/PasswordRules';
-import { RoleSelect } from '../components/RoleSelect';
 import '../auth-form.css';
 
 interface FieldErrors {
   fullName?: string;
   email?: string;
+  phone?: string;
   password?: string;
 }
 
@@ -23,23 +24,13 @@ export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<RegisterableRole>('student');
   const [learnerInfo, setLearnerInfo] = useState<LearnerInfo>(EMPTY_LEARNER_INFO);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [learnerErrors, setLearnerErrors] = useState<LearnerInfoErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [sentTo, setSentTo] = useState<string | null>(null);
-
-  const isLearner = isLearnerRole(role);
-
-  const handleRoleChange = (nextRole: RegisterableRole) => {
-    // Danh sách khối lớp của học sinh và sinh viên khác nhau nên lựa chọn cũ không còn hợp lệ
-    if (nextRole !== role) setLearnerInfo((current) => ({ ...current, grade_or_major: '' }));
-    setLearnerErrors({});
-    setRole(nextRole);
-  };
 
   const handleLearnerInfoChange = (field: keyof LearnerInfo, value: string) => {
     setLearnerInfo((current) => ({ ...current, [field]: value }));
@@ -50,9 +41,10 @@ export const RegisterPage: React.FC = () => {
     const nextErrors: FieldErrors = {
       fullName: validateFullName(fullName),
       email: validateEmail(email),
+      phone: validatePhone(phone),
       password: validatePassword(password),
     };
-    const nextLearnerErrors: LearnerInfoErrors = isLearner ? validateLearnerInfo(learnerInfo) : {};
+    const nextLearnerErrors: LearnerInfoErrors = validateLearnerInfo(learnerInfo);
     setErrors(nextErrors);
     setLearnerErrors(nextLearnerErrors);
     setFormError(null);
@@ -60,57 +52,42 @@ export const RegisterPage: React.FC = () => {
 
     const dateOfBirth = parseVietnameseDate(learnerInfo.date_of_birth);
     setIsSubmitting(true);
+    sessionStorage.setItem('pending-otp-phone', phone.trim());
     try {
       const result = await registerWithEmail({
         fullName: fullName.trim(),
         email: email.trim(),
         password,
-        role,
+        role: 'student',
         learnerInfo:
-          isLearner && dateOfBirth
+          dateOfBirth
             ? {
                 date_of_birth: dateOfBirth,
-                display_name: learnerInfo.display_name.trim(),
+                display_name: fullName.trim(),
                 school_name: learnerInfo.school_name.trim(),
                 grade_or_major: learnerInfo.grade_or_major,
               }
             : undefined,
       });
-      if (result.session) {
-        navigate('/', { replace: true });
-      } else {
-        setSentTo(email.trim());
-      }
+      if (result.user) sessionStorage.removeItem(`otp-sent:${phone.trim()}`);
+      navigate('/xac-minh-otp', { replace: true, state: { phone: phone.trim() } });
     } catch (error) {
+      sessionStorage.removeItem('pending-otp-phone');
       setFormError(describeAuthError(error));
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (sentTo) {
-    return (
-      <section className="auth-success">
-        <span className="auth-success-badge">
-          <MailCheck size={40} aria-hidden="true" />
-        </span>
-        <h1 className="auth-success-title">Kiểm tra email</h1>
-        <p className="auth-success-email">{sentTo}</p>
-        <Link to="/dang-nhap" className="auth-link">
-          Về trang đăng nhập
-        </Link>
-      </section>
-    );
-  }
-
   return (
     <section className="auth-form-card is-wide">
+      <AuthHomeLink />
       <h1 className="auth-form-title">Đăng ký</h1>
 
       {formError && <Alert variant="danger">{formError}</Alert>}
 
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
-        <RoleSelect value={role} onChange={handleRoleChange} />
+        <div className="auth-divider">Thông tin cá nhân</div>
         <div className="auth-grid">
           <Input
             label="Họ và tên"
@@ -121,6 +98,22 @@ export const RegisterPage: React.FC = () => {
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             error={errors.fullName}
+            required
+          />
+          <LearnerInfoFields role="student" values={learnerInfo} errors={learnerErrors} onChange={handleLearnerInfoChange} />
+        </div>
+        <div className="auth-divider">Tài khoản</div>
+        <div className="auth-grid">
+          <Input
+            label="Số điện thoại"
+            name="phone"
+            autoComplete="tel"
+            inputMode="tel"
+            placeholder="0901234567"
+            leftIcon={<Phone size={16} />}
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            error={errors.phone}
             required
           />
           <Input
@@ -149,9 +142,6 @@ export const RegisterPage: React.FC = () => {
             <PasswordRules value={password} />
           </div>
         </div>
-        {isLearner && (
-          <LearnerInfoFields role={role} values={learnerInfo} errors={learnerErrors} onChange={handleLearnerInfoChange} />
-        )}
         <Button type="submit" size="lg" block isLoading={isSubmitting} rightIcon={<ArrowRight size={18} />}>
           Tạo tài khoản
         </Button>

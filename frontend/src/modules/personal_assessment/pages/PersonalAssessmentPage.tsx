@@ -8,6 +8,7 @@ import { getLatestAssessmentResult } from '../../assessment_result/assessmentRes
 import type { AssessmentResultSummary } from '../../assessment_result/assessmentResult.types';
 import { ResultSkeleton } from '../../assessment_result/components/ResultSkeleton';
 import { ResultView } from '../../assessment_result/components/ResultView';
+import { ResultInsightsPanel } from '../../assessment_result/components/ResultInsightsPanel';
 import { AssessmentStartPanel } from '../../assessment_session/components/AssessmentStartPanel';
 import { useAuth } from '../../auth/AuthContext';
 import { isLearnerRole } from '../../profile/profile.logic';
@@ -81,6 +82,7 @@ export const PersonalAssessmentPage: React.FC = () => {
           onRetake={() => setRetakeOpen(true)}
           onContinue={inProgressId ? () => navigate(`/danh-gia-ca-nhan/${inProgressId}`) : undefined}
         />}
+      {!isLoading && !hasError && result && userId && <ResultInsightsPanel userId={userId} isOwner />}
     </section>
   );
 

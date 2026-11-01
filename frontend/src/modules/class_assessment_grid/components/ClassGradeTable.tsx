@@ -10,6 +10,7 @@ import {
   getGridPackageCounts,
   saveCells,
   saveGridDefaults,
+  saveQualitativeNote,
   saveStudentUnderstanding,
   setGridPackage,
   submitGrid,
@@ -145,6 +146,7 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
   submittedIdsRef.current = submittedIds;
   const pendingCount = grid.students.length - submittedIds.size;
   const questions = grid.questions;
+  const isShortSet = grid.grading_mode === 'short_set';
   /** Đáp án của từng câu hỏi */
   const answers = useMemo(() => new Map(questions.map((item) => [item.question_id, answerOptions(item)])), [questions]);
 
@@ -693,7 +695,13 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
         }
       >
         <div className="grid-settings">
-          {packageSelect}
+          {isShortSet ? (
+            <p className="grid-progress-text">
+              Bộ tiêu chí rút gọn: mỗi cột là một tiêu chí giáo viên chấm được, không dùng gói 35/50/75 câu.
+            </p>
+          ) : (
+            packageSelect
+          )}
           <UnderstandingFields value={defaults} emptyLabel="Chưa chọn" disabled={isLocked} onChange={(value) => void handleDefaults(value)} />
         </div>
         <div className="grid-progress">
@@ -718,7 +726,7 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
           onPointerCancel={(event) => endFill(event, false)}
         >
           <table className="grid-table">
-            <caption className="app-table-caption">Đáp án của học sinh theo câu hỏi</caption>
+            <caption className="app-table-caption">{isShortSet ? 'Học sinh theo tiêu chí rút gọn' : 'Đáp án của học sinh theo câu hỏi'}</caption>
             <thead>
               <tr>
                 <th scope="col" className="grid-sticky grid-corner">
@@ -726,7 +734,7 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
                 </th>
                 {questions.map((item) => (
                   <th key={item.question_id} scope="col" className="grid-question-col">
-                    <span className="grid-head-name">{item.content}</span>
+                    <span className="grid-head-name">{isShortSet ? `${item.dimension_code} · ${item.criteria_name}` : item.content}</span>
                   </th>
                 ))}
                 <th scope="col" className="grid-extra-col">Thấu hiểu</th>
@@ -856,6 +864,9 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
           readOnly={isLocked || Boolean(openStudent.submitted_at)}
           onChangeCell={(questionId, value) => handleChangeCell(openStudent.grid_student_id, questionId, value)}
           onChangeUnderstanding={(value) => void updateUnderstanding(openStudent, value)}
+          onChangeNote={(note) => {
+            void saveQualitativeNote(openStudent.grid_student_id, note).catch(() => onError('Không lưu được ghi chú định tính.'));
+          }}
           onPrevious={previousStudent ? () => setOpenId(previousStudent.grid_student_id) : null}
           onNext={nextStudent ? () => setOpenId(nextStudent.grid_student_id) : null}
           onClose={() => setOpenId(null)}

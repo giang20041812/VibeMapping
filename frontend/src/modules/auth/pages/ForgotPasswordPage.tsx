@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, Mail, MailCheck } from 'lucide-react';
 import { Alert, Button, Input } from '../../../components/common';
 import { describeAuthError, requestPasswordReset } from '../auth.service';
+import { AuthHomeLink } from '../components/AuthHomeLink';
 import { validateEmail } from '../auth.validation';
 import '../auth-form.css';
 
@@ -34,6 +35,7 @@ export const ForgotPasswordPage: React.FC = () => {
   if (sentTo) {
     return (
       <section className="auth-success">
+        <AuthHomeLink />
         <span className="auth-success-badge">
           <MailCheck size={40} aria-hidden="true" />
         </span>
@@ -48,6 +50,7 @@ export const ForgotPasswordPage: React.FC = () => {
 
   return (
     <section className="auth-form-card">
+      <AuthHomeLink />
       <h1 className="auth-form-title">Quên mật khẩu</h1>
 
       {formError && <Alert variant="danger">{formError}</Alert>}

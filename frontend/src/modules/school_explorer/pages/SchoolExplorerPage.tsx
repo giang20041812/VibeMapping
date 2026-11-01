@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { ExternalLink, Search } from 'lucide-react';
 import { Alert, Badge, Card, DataTable, Input, Pagination, Select } from '../../../components/common';
 import type { DataTableColumn } from '../../../components/common';
@@ -8,6 +8,7 @@ import { SearchableSelect } from '../../../components/filters/SearchableSelect/S
 import type { FilterOption } from '../../../types/filter';
 import { useAdminFilter } from '../../admin/useAdminFilter';
 import {
+  DEGREE_OPTIONS,
   INSTITUTION_TYPE_LABEL,
   INSTITUTION_TYPE_OPTIONS,
   OWNERSHIP_LABEL,
@@ -76,7 +77,7 @@ export const SchoolExplorerPage: React.FC = () => {
         header: 'Tên trường',
         render: (row) => (
           <span className="school-explorer-name">
-            {row.institution_name}
+            <Link to={`/kham-pha-truong/truong/${row.id}`}>{row.institution_name}</Link>
             {row.website_url && (
               <a className="school-explorer-link" href={row.website_url} target="_blank" rel="noopener noreferrer" aria-label={`Website ${row.institution_name}`}>
                 <ExternalLink size={14} aria-hidden="true" />
@@ -135,6 +136,25 @@ export const SchoolExplorerPage: React.FC = () => {
           options={INSTITUTION_TYPE_OPTIONS}
           value={draft.institutionType}
           onChange={(value) => patch({ institutionType: value as InstitutionFilter['institutionType'] })}
+        />
+        <Select
+          label="Bậc đào tạo"
+          emptyLabel="Tất cả"
+          options={DEGREE_OPTIONS}
+          value={draft.degreeLevel}
+          onChange={(value) => patch({ degreeLevel: value as InstitutionFilter['degreeLevel'] })}
+        />
+        <Input
+          label="Học phí từ (triệu/kỳ)"
+          inputMode="decimal"
+          value={draft.tuitionMin}
+          onChange={(event) => patch({ tuitionMin: event.target.value })}
+        />
+        <Input
+          label="Học phí đến (triệu/kỳ)"
+          inputMode="decimal"
+          value={draft.tuitionMax}
+          onChange={(event) => patch({ tuitionMax: event.target.value })}
         />
       </FilterBar>
 

@@ -16,6 +16,7 @@ import {
   GUARDIAN_AGE,
 } from '../profile.logic';
 import { updateMyProfile } from '../profile.service';
+import { MfaCard } from '../components/MfaCard';
 import './ProfilePage.css';
 
 interface FieldErrors {
@@ -198,6 +199,7 @@ export const ProfilePage: React.FC = () => {
           </div>
         </form>
       </Card>
+      {(profile.role === 'system_admin' || profile.role === 'school_admin') && <MfaCard />}
     </>
   );
 };

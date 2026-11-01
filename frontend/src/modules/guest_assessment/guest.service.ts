@@ -1,3 +1,4 @@
+import { callRpc } from '../../lib/rpc';
 import { supabase } from '../../lib/supabase';
 import type { InviteGroup } from '../invitation_link/invitation.constants';
 
@@ -129,6 +130,23 @@ export async function saveGuestAnswer(resumeToken: string, questionId: string, a
 export interface SubmitResult {
   ok: boolean;
   missingQuestionIds: string[];
+}
+
+export async function saveQualitativeOpen(
+  resumeToken: string,
+  answers: Array<{ aspect: string; text: string }>,
+): Promise<void> {
+  await callRpc('save_qualitative_open_answers', { p_resume_token: resumeToken, p_answers: answers });
+}
+
+export async function recordIdle(resumeToken: string, periods: number[]): Promise<void> {
+  await callRpc('record_360_idle', { p_resume_token: resumeToken, p_periods: periods });
+}
+
+/** R21: người chấm tự xóa bài của mình bằng mã làm tiếp */
+export async function eraseOwnSubmission(resumeToken: string): Promise<void> {
+  const result = await callRpc<{ ok: boolean }>('erase_own_360_submission', { p_resume_token: resumeToken });
+  if (!result.ok) throw new Error('not_found');
 }
 
 export async function submitGuest(resumeToken: string): Promise<SubmitResult> {

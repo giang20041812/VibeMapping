@@ -13,6 +13,7 @@ export interface GridStudent {
   acquaintance_duration: number | null;
   contact_frequency: number | null;
   observation_depth: number | null;
+  qualitative_note?: string | null;
   guardian_pending: boolean;
   /** Đã nộp thì dòng của em này khóa, không sửa được nữa */
   submitted_at: string | null;
@@ -38,8 +39,10 @@ export interface GridData {
   /** Bảng đã khóa cả bảng (nộp cả bảng trước đây) thì không sửa được nữa */
   status: 'draft' | 'submitted';
   submitted_at: string | null;
-  /** Gói câu hỏi; chưa chọn thì chưa chấm được */
+  /** Gói câu hỏi; luồng rút gọn để trống */
   package_size: PackageSize | null;
+  /** short_set: một cột mỗi tiêu chí rút gọn. question_package: bảng cũ theo gói 35/50/75. */
+  grading_mode?: 'short_set' | 'question_package';
   default_acquaintance_duration: number | null;
   default_contact_frequency: number | null;
   default_observation_depth: number | null;

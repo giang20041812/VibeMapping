@@ -22,3 +22,10 @@ export const OWNERSHIP_OPTIONS: SelectOption[] = (Object.keys(OWNERSHIP_LABEL) a
 export const INSTITUTION_TYPE_OPTIONS: SelectOption[] = (Object.keys(INSTITUTION_TYPE_LABEL) as InstitutionType[]).map(
   (value) => ({ value, label: INSTITUTION_TYPE_LABEL[value] }),
 );
+
+export const DEGREE_OPTIONS: SelectOption[] = [
+  { value: 'college', label: 'Cao đẳng' },
+  { value: 'bachelor', label: 'Đại học' },
+  { value: 'master', label: 'Thạc sĩ' },
+  { value: 'doctorate', label: 'Tiến sĩ' },
+];

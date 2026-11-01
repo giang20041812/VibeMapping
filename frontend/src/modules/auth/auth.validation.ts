@@ -1,4 +1,4 @@
-import { parseVietnameseDate, validateDisplayName } from '../profile/profile.logic';
+import { parseVietnameseDate } from '../profile/profile.logic';
 import type { LearnerInfo, LearnerInfoErrors } from './auth.types';
 
 const EMAIL_PATTERN =/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -27,11 +27,18 @@ export function validateFullName(value: string): string | undefined {
   return undefined;
 }
 
+/** Số di động Việt Nam 10 số, bắt đầu bằng 0. Dấu cách được bỏ qua. */
+export function validatePhone(value: string): string | undefined {
+  const digits = value.replace(/\D/g, '');
+  if (!digits) return 'Nhập số điện thoại';
+  if (!/^0\d{9}$/.test(digits)) return 'Số điện thoại không hợp lệ';
+  return undefined;
+}
+
 export function validateLearnerInfo(values: LearnerInfo): LearnerInfoErrors {
   const dateOfBirth = values.date_of_birth.trim();
   return {
     date_of_birth: !dateOfBirth ? 'Nhập ngày sinh' : parseVietnameseDate(dateOfBirth) ? undefined : 'Ngày sinh không hợp lệ',
-    display_name: validateDisplayName(values.display_name),
     school_name: values.school_name.trim() ? undefined : 'Nhập trường',
     grade_or_major: values.grade_or_major ? undefined : 'Chọn khối lớp hoặc ngành học',
   };

@@ -27,6 +27,7 @@ import type {
   BankQuestion,
   CoreValue,
   EvidenceValues,
+  PackageSize,
   PartNumber,
 } from '../assessmentSession.types';
 import { insufficientRatio, isAnswered } from '../assessmentScores';
@@ -37,7 +38,7 @@ import { PartStepper } from '../components/PartStepper';
 import { QuestionCard } from '../components/QuestionCard';
 import { RunSkeleton } from '../components/RunSkeleton';
 import { computeProgress, questionsOfPart } from '../sessionProgress';
-import { selectQuestions } from '../selectQuestions';
+import { adaptQuestions } from '../selectQuestions';
 import './AssessmentRunPage.css';
 
 type Stage =
@@ -83,6 +84,9 @@ export const AssessmentRunPage: React.FC = () => {
   const [finishCountdown, setFinishCountdown] = useState<number | null>(null);
 
   const advanceTimer = useRef<number | null>(null);
+  const bankRef = useRef<BankQuestion[]>([]);
+  const sizeRef = useRef<PackageSize>(50);
+  const assignedRef = useRef<Set<string> | undefined>(undefined);
   useEffect(() => () => {
     if (advanceTimer.current) window.clearTimeout(advanceTimer.current);
   }, []);
@@ -131,7 +135,10 @@ export const AssessmentRunPage: React.FC = () => {
           getEvidence(sessionId),
         ]);
         if (!active) return;
-        const picked = selectQuestions(bank, current.packageSize, assigned);
+        const picked = adaptQuestions(bank, current.packageSize, answerMap, assigned);
+        bankRef.current = bank;
+        sizeRef.current = current.packageSize;
+        assignedRef.current = assigned;
         const progressNow = computeProgress(picked, answerMap);
         const valuesDone = selected.length >= 3;
 
@@ -284,7 +291,10 @@ export const AssessmentRunPage: React.FC = () => {
     go(part === unlockedPart ? stageForPart(part, answers, valuesSaved) : { kind: 'questions', part, index: 0 });
   };
 
-  const continueFromPart = (part: PartNumber) => go(stageForPart(part + 1, answers, valuesSaved));
+  const continueFromPart = (part: PartNumber) => {
+    setQuestions(adaptQuestions(bankRef.current, sizeRef.current, answers, assignedRef.current));
+    go(stageForPart(part + 1, answers, valuesSaved));
+  };
 
   // ---- Phím tắt: 1–5 chọn mức, X/N/K không đủ cơ sở (phần năng lực), Enter sang câu kế
   useEffect(() => {

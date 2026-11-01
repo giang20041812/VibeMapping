@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Alert, Badge, Button, Modal, ProgressBar } from '../../../components/common';
+import { Alert, Badge, Button, Modal, ProgressBar, Textarea } from '../../../components/common';
 import type { Understanding } from '../class_assessment_grid.service';
 import type { CellValue, GridQuestion, GridStudent } from '../class_assessment_grid.types';
 import type { AnswerOption } from '../grid.logic';
@@ -76,6 +76,7 @@ interface GradeStudentModalProps {
   readOnly: boolean;
   onChangeCell: (questionId: string, value: CellValue) => void;
   onChangeUnderstanding: (value: Understanding) => void;
+  onChangeNote?: (note: string) => void;
   onPrevious: (() => void) | null;
   onNext: (() => void) | null;
   onClose: () => void;
@@ -91,6 +92,7 @@ export const GradeStudentModal: React.FC<GradeStudentModalProps> = ({
   readOnly,
   onChangeCell,
   onChangeUnderstanding,
+  onChangeNote,
   onPrevious,
   onNext,
   onClose,
@@ -212,6 +214,15 @@ export const GradeStudentModal: React.FC<GradeStudentModalProps> = ({
           {filled}/{questions.length} câu
         </p>
       </div>
+
+      {onChangeNote && (
+        <Textarea
+          label="Ghi chú định tính về học sinh"
+          defaultValue={student.qualitative_note ?? ''}
+          disabled={readOnly}
+          onBlur={(event) => onChangeNote(event.target.value)}
+        />
+      )}
 
       <UnderstandingFields
         value={{

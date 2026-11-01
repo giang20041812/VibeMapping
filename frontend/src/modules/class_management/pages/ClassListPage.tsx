@@ -213,11 +213,9 @@ const StaffClasses: React.FC<{ isSchoolAdmin: boolean }> = ({ isSchoolAdmin }) =
               Thêm giáo viên
             </Button>
           )}
-          {isSchoolAdmin && (
-            <Button type="button" leftIcon={<Plus size={16} />} onClick={() => setIsFormOpen(true)} disabled={schools.length === 0}>
-              Tạo lớp
-            </Button>
-          )}
+          <Button type="button" leftIcon={<Plus size={16} />} onClick={() => setIsFormOpen(true)} disabled={schools.length === 0}>
+            Tạo lớp
+          </Button>
         </div>
       </div>
       {(error || notice || hasNoSchool || invitations.length > 0) && (

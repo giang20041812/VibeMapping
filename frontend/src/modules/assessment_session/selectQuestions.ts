@@ -78,6 +78,54 @@ export function selectQuestions(bank: BankQuestion[], size: PackageSize, assigne
   return selected.sort(compare);
 }
 
+function meanScore(
+  questions: BankQuestion[],
+  answers: Map<string, { score: number | null; insufficient: boolean }>,
+  criteriaId: string,
+): number | null {
+  const scores = questions
+    .filter((question) => question.criteriaId === criteriaId)
+    .map((question) => answers.get(question.id))
+    .filter((answer): answer is { score: number; insufficient: false } => Boolean(answer && !answer.insufficient && answer.score !== null))
+    .map((answer) => answer.score);
+  if (scores.length === 0) return null;
+  return scores.reduce((sum, score) => sum + score, 0) / scores.length;
+}
+
+/**
+ * FR01.02.10: phần 2–4 không chốt câu thêm ngay từ đầu.
+ * Câu nền (mỗi tiêu chí một câu) giữ nguyên. Câu thêm của phần sau được chọn theo điểm các phần trước:
+ * tiêu chí điểm cao hơn được ưu tiên câu tình huống trước.
+ * Quản trị đã gán câu vào gói thì giữ đúng danh sách đó.
+ */
+export function adaptQuestions(
+  bank: BankQuestion[],
+  size: PackageSize,
+  answers: Map<string, { score: number | null; insufficient: boolean }>,
+  assignedIds?: Set<string>,
+): BankQuestion[] {
+  const fixed = selectQuestions(bank, size, assignedIds);
+  if (assignedIds && assignedIds.size > 0) return fixed;
+  const chosen = new Set(fixed.filter((question) => question.part === 1 || question.round === 0).map((question) => question.id));
+  const result = fixed.filter((question) => question.part === 1 || question.round === 0);
+
+  for (const part of [2, 3, 4] as const) {
+    const quota = fixed.filter((question) => question.part === part && question.round > 0).length;
+    const pool = bank
+      .filter((question) => question.part === part && !chosen.has(question.id))
+      .sort((a, b) => {
+        const left = meanScore(fixed, answers, a.criteriaId) ?? 0;
+        const right = meanScore(fixed, answers, b.criteriaId) ?? 0;
+        return right - left || a.questionCode.localeCompare(b.questionCode);
+      });
+    for (const question of pool.slice(0, quota)) {
+      chosen.add(question.id);
+      result.push({ ...question, round: 1 });
+    }
+  }
+  return result.sort(compare);
+}
+
 export function groupByPart<T extends { part: number }>(items: T[]): Map<number, T[]> {
   const map = new Map<number, T[]>();
   for (const item of items) {

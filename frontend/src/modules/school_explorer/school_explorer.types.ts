@@ -1,6 +1,8 @@
 export type InstitutionType = 'university' | 'academy' | 'college';
 export type Ownership = 'public' | 'private';
 
+export type DegreeLevel = 'college' | 'bachelor' | 'master' | 'doctorate';
+
 export interface InstitutionFilter {
   keyword: string;
   city: string;
@@ -8,6 +10,9 @@ export interface InstitutionFilter {
   institutionType: '' | InstitutionType;
   fieldId: string;
   majorId: string;
+  degreeLevel: '' | DegreeLevel;
+  tuitionMin: string;
+  tuitionMax: string;
 }
 
 export interface InstitutionRow {

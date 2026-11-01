@@ -1,0 +1,55 @@
+.insights {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.insights-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.insights-head h2 {
+  margin: 0;
+}
+
+.insights-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.insights-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-accent);
+}
+
+.insights-values {
+  margin: 0 0 12px;
+  padding-left: 20px;
+}
+
+.insights-group-row th {
+  background: var(--color-bg-subtle);
+  text-align: left;
+}
+
+@media print {
+  .no-print,
+  nav,
+  aside,
+  header {
+    display: none !important;
+  }
+
+  .insights {
+    margin-top: 0;
+  }
+}

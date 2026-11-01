@@ -37,6 +37,7 @@ import { PublicCareerDetailPage } from './modules/career_explorer/pages/PublicCa
 import { CareerDetailPage } from './modules/career_explorer/pages/CareerDetailPage';
 import { CareerComparePage } from './modules/career_explorer/pages/CareerComparePage';
 import { DecisionComparePage } from './modules/decision_support/pages/DecisionComparePage';
+import { RoadmapPage } from './modules/roadmap/pages/RoadmapPage';
 import { PortfolioPage } from './modules/portfolio/pages/PortfolioPage';
 import { CommunityPage } from './modules/community/pages/CommunityPage';
 import { GuardianConfirmPage, PrivacyPage } from './modules/privacy/pages/PrivacyPage';
@@ -122,6 +123,7 @@ export const App: React.FC = () => (
               <Route path="/bao-cao-quyet-dinh/:reportId" element={<DecisionReportPage />} />
               <Route element={<RequireRole roles={['student', 'university_student']} />}>
                 <Route path="/so-sanh" element={<DecisionComparePage />} />
+                <Route path="/lo-trinh" element={<RoadmapPage />} />
                 <Route path="/lich-su-ket-qua" element={<ResultHistoryPage />} />
               </Route>
               <Route element={<RequireRole roles={['parent']} />}>

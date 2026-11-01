@@ -39,6 +39,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/nghe', label: 'Nghề nghiệp', icon: Compass, roles: ['student', 'university_student', 'parent', 'teacher', 'mentor', 'school_admin'] },
   { to: '/so-sanh', label: 'So sánh phương án', icon: Scale, roles: ['student', 'university_student'] },
   { to: '/bao-cao-duoc-chia-se', label: 'Báo cáo của con', icon: FileText, roles: ['parent'] },
+  { to: '/lo-trinh', label: 'Lộ trình', icon: MapIcon, roles: ['student', 'university_student'] },
   { to: '/nang-luc', label: 'Hồ sơ năng lực', icon: Briefcase, roles: ['university_student'] },
   { to: '/cong-dong', label: 'Cộng đồng', icon: MessagesSquare, roles: ['student', 'university_student', 'parent', 'teacher', 'mentor', 'school_admin'] },
   { to: '/quyen-rieng-tu', label: 'Quyền riêng tư', icon: Shield, roles: ['student', 'university_student', 'parent', 'teacher', 'mentor', 'school_admin'] },

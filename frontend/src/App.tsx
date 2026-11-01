@@ -32,6 +32,8 @@ import { SchoolsPage } from './modules/class_management/pages/SchoolsPage';
 import { ClassListPage } from './modules/class_management/pages/ClassListPage';
 import { ClassDetailPage } from './modules/class_management/pages/ClassDetailPage';
 import { SkeletonSamplePage } from './modules/dev/SkeletonSamplePage';
+import { QualitativeReviewPage } from './modules/admin/pages/QualitativeReviewPage';
+import { ResultHistoryPage } from './modules/assessment_result/pages/ResultHistoryPage';
 
 /** Quản trị hệ thống vào thẳng khu quản trị, giáo viên vào thẳng lớp học */
 const HomeRoute: React.FC = () => {
@@ -88,6 +90,7 @@ export const App: React.FC = () => (
             <Route element={<RequireCompleteProfile />}>
               <Route path="/danh-gia-360" element={<Assessment360Page />} />
               <Route element={<RequireRole roles={['student', 'university_student']} />}>
+                <Route path="/lich-su-ket-qua" element={<ResultHistoryPage />} />
               </Route>
               <Route element={<RequireRole roles={['parent']} />}>
               </Route>
@@ -109,6 +112,7 @@ export const App: React.FC = () => (
               <Route path="/quan-tri/tieu-chi" element={<CriteriaPage />} />
               <Route path="/quan-tri/tham-so" element={<OperationParametersPage />} />
               <Route path="/quan-tri/nhat-ky" element={<AuditLogsPage />} />
+              <Route path="/quan-tri/cham-dinh-tinh" element={<QualitativeReviewPage />} />
             </Route>
           </Route>
         </Route>

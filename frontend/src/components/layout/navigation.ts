@@ -36,6 +36,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/', label: 'Trang chủ', icon: HomeIcon, roles: HOME_ROLES, end: true },
   { to: '/danh-gia-360', label: 'Đánh giá 360', icon: Globe360Icon, roles: ['student', 'university_student'] },
   { to: '/lop-hoc', label: 'Lớp học', icon: GraduationCap, roles: ['teacher', 'school_admin'] },
+  { to: '/nghe', label: 'Nghề nghiệp', icon: Compass, roles: ['student', 'university_student', 'parent', 'teacher', 'mentor', 'school_admin'] },
   { to: '/quan-tri/cham-dinh-tinh', label: 'Chấm định tính', icon: ClipboardList, roles: ADMIN_ROLES },
   { to: '/quan-tri/truong', label: 'Trường học', icon: School, roles: ADMIN_ROLES },
   { to: '/quan-tri/goi-cau-hoi', label: 'Gán câu hỏi vào gói', icon: Layers, roles: ADMIN_ROLES },
@@ -57,6 +58,7 @@ export interface TopbarItem {
 export const TOPBAR_ITEMS: TopbarItem[] = [
   { to: '/danh-gia-360', label: 'Tổng quan', requiresAccount: true },
   { to: '/', label: 'Giới thiệu', end: true },
+  { to: '/danh-muc-nghe', label: 'Nghề nghiệp' },
   { to: '/kham-pha-truong', label: 'Khám phá trường' },
 ];
 

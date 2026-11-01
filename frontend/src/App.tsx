@@ -36,6 +36,7 @@ import { CareerListPage } from './modules/career_explorer/pages/CareerListPage';
 import { PublicCareerDetailPage } from './modules/career_explorer/pages/PublicCareerDetailPage';
 import { CareerDetailPage } from './modules/career_explorer/pages/CareerDetailPage';
 import { CareerComparePage } from './modules/career_explorer/pages/CareerComparePage';
+import { DecisionComparePage } from './modules/decision_support/pages/DecisionComparePage';
 import { PortfolioPage } from './modules/portfolio/pages/PortfolioPage';
 import { CommunityPage } from './modules/community/pages/CommunityPage';
 import { GuardianConfirmPage, PrivacyPage } from './modules/privacy/pages/PrivacyPage';
@@ -43,6 +44,7 @@ import { QualitativeReviewPage } from './modules/admin/pages/QualitativeReviewPa
 import { CommunityAdminPage, ContentLibraryAdminPage } from './modules/admin/pages/AdminModulesPages';
 import { ResultHistoryPage } from './modules/assessment_result/pages/ResultHistoryPage';
 import { SharedResultPage } from './modules/privacy/pages/SharedResultPage';
+import { DecisionReportPage, SharedReportsPage } from './modules/decision_support/pages/DecisionReportPage';
 import {
   CareerEducationMapPage,
   InstitutionDetailPage,
@@ -117,10 +119,13 @@ export const App: React.FC = () => (
               <Route path="/quyen-rieng-tu" element={<PrivacyPage />} />
               <Route path="/giam-ho/:token" element={<GuardianConfirmPage />} />
               <Route path="/bao-cao-con/:userId" element={<SharedResultPage />} />
+              <Route path="/bao-cao-quyet-dinh/:reportId" element={<DecisionReportPage />} />
               <Route element={<RequireRole roles={['student', 'university_student']} />}>
+                <Route path="/so-sanh" element={<DecisionComparePage />} />
                 <Route path="/lich-su-ket-qua" element={<ResultHistoryPage />} />
               </Route>
               <Route element={<RequireRole roles={['parent']} />}>
+                <Route path="/bao-cao-duoc-chia-se" element={<SharedReportsPage />} />
               </Route>
               <Route element={<RequireRole roles={['university_student']} />}>
                 <Route path="/nang-luc" element={<PortfolioPage />} />

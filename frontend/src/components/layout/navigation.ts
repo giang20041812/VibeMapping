@@ -66,6 +66,7 @@ export interface TopbarItem {
 export const TOPBAR_ITEMS: TopbarItem[] = [
   { to: '/danh-gia-360', label: 'Tổng quan', requiresAccount: true },
   { to: '/', label: 'Giới thiệu', end: true },
+  { to: '/nganh-nghe', label: 'Ngành nghề' },
   { to: '/danh-muc-nghe', label: 'Nghề nghiệp' },
   { to: '/kham-pha-truong', label: 'Khám phá trường' },
 ];

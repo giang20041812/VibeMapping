@@ -14,6 +14,7 @@ import { AuditLogsPage } from './modules/admin/pages/AuditLogsPage';
 import { LoginPage } from './modules/auth/pages/LoginPage';
 import { RegisterPage } from './modules/auth/pages/RegisterPage';
 import { ForgotPasswordPage } from './modules/auth/pages/ForgotPasswordPage';
+import { OtpVerifyPage } from './modules/auth/pages/OtpVerifyPage';
 import { AssessmentResultSamplePage } from './modules/assessment_result/pages/AssessmentResultSamplePage';
 import { NotFoundPage } from './modules/not_found/NotFoundPage';
 import { HomePage } from './modules/home/HomePage';
@@ -59,6 +60,7 @@ export const App: React.FC = () => (
         </Route>
 
         <Route element={<AuthLayout />}>
+          <Route path="/xac-minh-otp" element={<OtpVerifyPage />} />
         </Route>
 
         {/* Thanh điều hướng ngang, không có thanh bên: giới thiệu, ngành nghề, khám phá trường, khách làm bài test và khai báo thông tin sau bài */}

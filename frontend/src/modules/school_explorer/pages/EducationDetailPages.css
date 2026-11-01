@@ -1,0 +1,139 @@
+.edu-map {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.edu-map-node {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-surface);
+  color: var(--color-text-main);
+  text-decoration: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.edu-map-career {
+  align-self: flex-start;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  font-weight: 700;
+}
+
+.edu-map-major {
+  background: var(--color-primary-light);
+  font-weight: 600;
+}
+
+.edu-map-majors,
+.edu-map-schools {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 24px;
+  border-left: 2px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.edu-map-schools {
+  margin-top: 8px;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .edu-map-schools {
+    flex-direction: column;
+  }
+}
+
+/* Chi tiết trường */
+.school-detail .page-hero { margin-bottom: 0; }
+.school-meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); min-width: 0; }
+.school-address { display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; font-weight: 700; color: var(--color-text-secondary); overflow-wrap: anywhere; }
+.school-address svg { flex: none; }
+.school-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(200 * var(--px))), 1fr)); gap: var(--space-4); }
+.school-facts .stat-tile-value b { font-size: var(--font-size-3xl); }
+
+.program-list { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
+.program-row-sub { margin-top: var(--space-1); font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+.program-compare-bar {
+  position: sticky;
+  bottom: calc(var(--space-4) + var(--safe-bottom));
+  z-index: var(--z-sticky);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-surface);
+  border: var(--cartoon-stroke) solid var(--cartoon-ink);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--cartoon-pop);
+}
+
+/* Ngành và chuyên ngành trong trường */
+.major-group-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-3); min-width: 0; }
+.major-group {
+  --major-tone: var(--brand-blue);
+  --major-tone-soft: var(--color-primary-light);
+  min-width: 0;
+  background: var(--color-bg-surface);
+  border: var(--cartoon-stroke) solid var(--cartoon-ink);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--cartoon-pop);
+  overflow: hidden;
+}
+.major-group-tone-1 { --major-tone: var(--soft-magenta); --major-tone-soft: rgba(236, 72, 153, 0.12); }
+.major-group-tone-2 { --major-tone: var(--soft-gold); --major-tone-soft: rgba(251, 191, 36, 0.2); }
+.major-group-tone-3 { --major-tone: var(--soft-teal); --major-tone-soft: rgba(16, 185, 129, 0.14); }
+.major-group-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 44px;
+  padding: var(--space-3) var(--space-4);
+  background: var(--major-tone-soft);
+  cursor: pointer;
+  list-style: none;
+}
+.major-group-head::-webkit-details-marker { display: none; }
+.major-group-icon {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: calc(36 * var(--px));
+  height: calc(36 * var(--px));
+  color: var(--cartoon-ink);
+  background: var(--major-tone);
+  border: var(--cartoon-stroke-thin) solid var(--cartoon-ink);
+  border-radius: var(--radius-md);
+}
+.major-group-name { flex: 1; min-width: 0; font-weight: 800; overflow-wrap: anywhere; }
+.major-group-chevron { flex: none; transition: transform 0.2s ease; }
+.major-group details[open] .major-group-chevron { transform: rotate(180deg); }
+.major-group details[open] .major-group-head { border-bottom: var(--cartoon-stroke-thin) solid var(--cartoon-ink); }
+.major-program-list { list-style: none; margin: 0; padding: 0; }
+.major-program-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+  padding: var(--space-3) var(--space-4);
+}
+.major-program-row + .major-program-row { border-top: 1px dashed var(--color-border); }
+.major-program-main { min-width: 0; overflow-wrap: anywhere; }
+.major-program-meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--space-2) var(--space-3); }
+.major-program-tuition { font-weight: 700; white-space: nowrap; }
+
+@media (max-width: 640px) {
+  .major-program-row { grid-template-columns: minmax(0, 1fr); }
+  .major-program-meta { justify-content: flex-start; }
+}

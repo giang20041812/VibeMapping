@@ -35,8 +35,13 @@ import { SkeletonSamplePage } from './modules/dev/SkeletonSamplePage';
 import { CareerListPage } from './modules/career_explorer/pages/CareerListPage';
 import { PublicCareerDetailPage } from './modules/career_explorer/pages/PublicCareerDetailPage';
 import { CareerDetailPage } from './modules/career_explorer/pages/CareerDetailPage';
+import { PortfolioPage } from './modules/portfolio/pages/PortfolioPage';
+import { CommunityPage } from './modules/community/pages/CommunityPage';
+import { GuardianConfirmPage, PrivacyPage } from './modules/privacy/pages/PrivacyPage';
 import { QualitativeReviewPage } from './modules/admin/pages/QualitativeReviewPage';
+import { CommunityAdminPage, ContentLibraryAdminPage } from './modules/admin/pages/AdminModulesPages';
 import { ResultHistoryPage } from './modules/assessment_result/pages/ResultHistoryPage';
+import { SharedResultPage } from './modules/privacy/pages/SharedResultPage';
 import {
   CareerEducationMapPage,
   InstitutionDetailPage,
@@ -106,12 +111,17 @@ export const App: React.FC = () => (
               <Route path="/nghe" element={<CareerListPage />} />
               <Route path="/nghe/:careerId" element={<CareerDetailPage />} />
               <Route path="/ban-do/:careerId" element={<CareerEducationMapPage />} />
+              <Route path="/cong-dong" element={<CommunityPage />} />
+              <Route path="/quyen-rieng-tu" element={<PrivacyPage />} />
+              <Route path="/giam-ho/:token" element={<GuardianConfirmPage />} />
+              <Route path="/bao-cao-con/:userId" element={<SharedResultPage />} />
               <Route element={<RequireRole roles={['student', 'university_student']} />}>
                 <Route path="/lich-su-ket-qua" element={<ResultHistoryPage />} />
               </Route>
               <Route element={<RequireRole roles={['parent']} />}>
               </Route>
               <Route element={<RequireRole roles={['university_student']} />}>
+                <Route path="/nang-luc" element={<PortfolioPage />} />
               </Route>
               <Route element={<RequireRole roles={['student', 'university_student', 'teacher', 'school_admin']} />}>
                 <Route path="/lop-hoc" element={<ClassListPage />} />
@@ -130,6 +140,8 @@ export const App: React.FC = () => (
               <Route path="/quan-tri/tham-so" element={<OperationParametersPage />} />
               <Route path="/quan-tri/nhat-ky" element={<AuditLogsPage />} />
               <Route path="/quan-tri/cham-dinh-tinh" element={<QualitativeReviewPage />} />
+              <Route path="/quan-tri/thu-vien" element={<ContentLibraryAdminPage />} />
+              <Route path="/quan-tri/cong-dong" element={<CommunityAdminPage />} />
             </Route>
           </Route>
         </Route>

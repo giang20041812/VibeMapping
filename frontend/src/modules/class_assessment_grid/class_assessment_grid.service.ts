@@ -1,3 +1,4 @@
+import { callRpc } from '../../lib/rpc';
 import { supabase } from '../../lib/supabase';
 import { getPackageAssignments, loadSelfQuestionBank } from '../assessment_session/assessmentSession.service';
 import type { PackageSize } from '../assessment_session/assessmentSession.types';
@@ -115,6 +116,14 @@ export async function saveGridDefaults(gridId: string, values: Understanding): P
     })
     .eq('id', gridId);
   if (error) fail('Lỗi lưu mức thấu hiểu của lớp', error);
+}
+
+export async function saveQualitativeNote(gridStudentId: string, note: string): Promise<void> {
+  try {
+    await callRpc('save_grid_qualitative_note', { p_grid_student_id: gridStudentId, p_note: note });
+  } catch (error) {
+    fail('Lỗi lưu câu trả lời định tính', error as { message: string });
+  }
 }
 
 export async function saveStudentUnderstanding(gridStudentId: string, values: Understanding): Promise<void> {

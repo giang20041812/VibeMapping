@@ -1,0 +1,54 @@
+.edu-map {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.edu-map-node {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-surface);
+  color: var(--color-text-main);
+  text-decoration: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.edu-map-career {
+  align-self: flex-start;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  font-weight: 700;
+}
+
+.edu-map-major {
+  background: var(--color-primary-light);
+  font-weight: 600;
+}
+
+.edu-map-majors,
+.edu-map-schools {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 24px;
+  border-left: 2px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.edu-map-schools {
+  margin-top: 8px;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .edu-map-schools {
+    flex-direction: column;
+  }
+}

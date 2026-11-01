@@ -1,0 +1,123 @@
+.module-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.module-page h1 {
+  margin: 0;
+}
+
+.module-form,
+.module-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.module-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.career-fit-total {
+  margin: 0 0 8px;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.share-link,
+.share-code {
+  word-break: break-all;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--color-bg-subtle);
+}
+
+.share-code {
+  font-size: 1.5rem;
+  letter-spacing: 0.2em;
+  font-weight: 700;
+}
+
+.decision-option {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.top-careers {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.top-career-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+}
+
+.link-button {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--color-accent);
+  text-decoration: underline;
+  cursor: pointer;
+  font: inherit;
+}
+
+.explain-table-wrap {
+  overflow-x: auto;
+}
+
+.explain-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.explain-table th,
+.explain-table td {
+  padding: 6px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.explain-note {
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+}
+
+.module-list li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.compare-table th:first-child,
+.compare-table td {
+  white-space: normal;
+  max-width: 220px;
+}
+
+.compare-diff th,
+.compare-diff td {
+  background: color-mix(in srgb, var(--color-primary) 8%, white);
+}

@@ -1,5 +1,20 @@
 import type React from 'react';
-import { ClipboardList, GraduationCap, History, Layers, Library, School, SlidersHorizontal } from 'lucide-react';
+import {
+  Briefcase,
+  ClipboardList,
+  Compass,
+  FileText,
+  GraduationCap,
+  History,
+  Layers,
+  Library,
+  Map as MapIcon,
+  MessagesSquare,
+  Scale,
+  School,
+  Shield,
+  SlidersHorizontal,
+} from 'lucide-react';
 import { Globe360Icon, HomeIcon, PersonalIcon, type NavIconProps } from './NavIcons';
 import type { UserRole } from '../../modules/auth/auth.types';
 
@@ -22,6 +37,18 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/danh-gia-ca-nhan', label: 'Đánh giá cá nhân', icon: PersonalIcon, roles: ['student', 'university_student'] },
   { to: '/danh-gia-360', label: 'Đánh giá 360', icon: Globe360Icon, roles: ['student', 'university_student'] },
   { to: '/lop-hoc', label: 'Lớp học', icon: GraduationCap, roles: ['student', 'university_student', 'teacher', 'school_admin'] },
+  { to: '/nghe', label: 'Nghề nghiệp', icon: Compass, roles: ['student', 'university_student', 'parent', 'teacher', 'mentor', 'school_admin'] },
+  { to: '/nghe/so-sanh', label: 'So sánh nghề', icon: Layers, roles: ['student', 'university_student'] },
+  { to: '/so-sanh', label: 'So sánh phương án', icon: Scale, roles: ['student', 'university_student'] },
+  { to: '/bao-cao-duoc-chia-se', label: 'Báo cáo của con', icon: FileText, roles: ['parent'] },
+  { to: '/lo-trinh', label: 'Lộ trình', icon: MapIcon, roles: ['student', 'university_student'] },
+  { to: '/nang-luc', label: 'Hồ sơ năng lực', icon: Briefcase, roles: ['university_student'] },
+  { to: '/cong-dong', label: 'Cộng đồng', icon: MessagesSquare, roles: ['student', 'university_student', 'parent', 'teacher', 'mentor', 'school_admin'] },
+  { to: '/quyen-rieng-tu', label: 'Quyền riêng tư', icon: Shield, roles: ['student', 'university_student', 'parent', 'teacher', 'mentor', 'school_admin'] },
+  { to: '/quan-tri/cham-dinh-tinh', label: 'Chấm định tính', icon: ClipboardList, roles: ADMIN_ROLES },
+  { to: '/quan-tri/nghe', label: 'Quản lý nghề', icon: Compass, roles: ADMIN_ROLES },
+  { to: '/quan-tri/thu-vien', label: 'Thư viện gợi ý', icon: Library, roles: ADMIN_ROLES },
+  { to: '/quan-tri/cong-dong', label: 'Kiểm duyệt cộng đồng', icon: MessagesSquare, roles: ADMIN_ROLES },
   { to: '/quan-tri/truong', label: 'Trường học', icon: School, roles: ADMIN_ROLES },
   { to: '/quan-tri/goi-cau-hoi', label: 'Gán câu hỏi vào gói', icon: Layers, roles: ADMIN_ROLES },
   { to: '/quan-tri/cau-hoi', label: 'Ngân hàng câu hỏi', icon: Library, roles: ADMIN_ROLES },
@@ -40,6 +67,7 @@ export interface TopbarItem {
 export const TOPBAR_ITEMS: TopbarItem[] = [
   { to: '/danh-gia-ca-nhan', label: 'Tổng quan' },
   { to: '/', label: 'Giới thiệu', end: true },
+  { to: '/danh-muc-nghe', label: 'Nghề nghiệp' },
   { to: '/kham-pha-truong', label: 'Khám phá trường' },
 ];
 

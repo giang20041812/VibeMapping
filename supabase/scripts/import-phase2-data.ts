@@ -20,11 +20,17 @@
  *   Bước sau đọc lại id từ DB; thiếu dữ liệu của bước trước thì báo cần chạy bước nào.
  *
  * Quy tắc tính ma trận nghề theo SRS R16:
- *   - chỉ JD mức L0–L2 có Required Level quy đổi được về thang 1–5 mới được dùng;
- *   - Req(d,c)  = trung bình Required Level của các JD đó có gắn tiêu chí d (G1–G5, G7);
- *   - CW(d,c)   = số JD có d, chuẩn hóa để tổng bằng 1 trong từng thành phần (G1–G5 | G7);
- *   - G6 không có Req: hồ sơ sáu chiều RIASEC = tỷ lệ JD có gắn D6.1–D6.6, kèm mã Holland Top 3.
- * Cách gộp (trung bình, đếm JD) là mặc định của dev, chưa có văn bản BA chốt.
+ *   - Quy đổi Required Level (parseRequiredLevel): L0,L1 -> 1; L2 -> 2; L3 -> 3; L4 -> 4; L5–L7 -> 5.
+ *   - Lọc cấp độ JD cho ma trận nghề HSSV: chỉ JD mức L1 và L2 (career_level === 1 || career_level === 2)
+ *     có Required Level quy đổi được về thang 1–5 mới được đưa vào tính ma trận; JD mức L0 vẫn giữ nguyên
+ *     trong bảng career_job_descriptions nhưng không tham gia tính ma trận (ghi chú: SRS R16 gọi L1 là
+ *     "Thực tập, Mới ra trường" trong khi sheet CHIA NHÓM của Career Profile tách L0 = Intern, L1 = Fresher).
+ *   - Req(d,c)  = trung bình Required Level của các JD L1–L2 có gắn tiêu chí d (G1–G5, G7);
+ *   - CW(d,c)   = số JD L1–L2 có d, chuẩn hóa để tổng bằng 1 trong từng thành phần (G1–G5 | G7);
+ *   - G6 không có Req: hồ sơ sáu chiều RIASEC = tỷ lệ JD L1–L2 có gắn D6.1–D6.6, kèm mã Holland Top 3.
+ *   - Không tự điền mức yêu cầu/trọng số giả cho tiêu chí không xuất hiện trong JD.
+ *     is_standard_complete luôn false: giới hạn 6+2+1 trên từng JD, R06 (CW > 0) và R08 (31 tiêu chí)
+ *     chưa được tài liệu gộp thành một điều kiện đủ chuẩn.
  *
  * Idempotent. Không đụng tới `status` của nghề đã có (admin đã công bố thì giữ nguyên);
  * ma trận và liên kết nghề–ngành sinh tự động được dựng lại, dòng do người sửa tay được giữ.
@@ -335,7 +341,17 @@ interface HollandRow { career_code: string; holland_code: string; strength: numb
 interface CareerMatrix {
   requirements: RequirementRow[];
   holland: HollandRow[];
-  summary: Map<string, { qualifying: number; holland_top3: string | null; complete: boolean }>;
+  summary: Map<
+    string,
+    {
+      qualifying: number;
+      l0_count: number;
+      scored_criteria_count: number;
+      has_all_components: boolean;
+      holland_top3: string | null;
+      complete: boolean;
+    }
+  >;
 }
 
 function buildMatrix(careers: CareerRow[], dimensions: Dimension[]): CareerMatrix {
@@ -345,7 +361,11 @@ function buildMatrix(careers: CareerRow[], dimensions: Dimension[]): CareerMatri
   const summary: CareerMatrix['summary'] = new Map();
 
   for (const career of careers) {
-    const qualifying = career.jds.filter((jd) => jd.career_level !== null && jd.career_level <= 2 && jd.required_level !== null);
+    // R16 & 06_CAREER_PROFILE: lấy JD đầu vào cho HSSV gồm L0 (Intern), L1 (Fresher) và L2 (Junior).
+    const l0Count = career.jds.filter((jd) => jd.career_level === 0 && jd.required_level !== null).length;
+    const qualifying = career.jds.filter(
+      (jd) => jd.career_level !== null && jd.career_level <= 2 && jd.required_level !== null,
+    );
     const stats = new Map<string, { count: number; sum: number }>();
     for (const jd of qualifying) {
       for (const { code } of jd.dimensions) {
@@ -362,12 +382,13 @@ function buildMatrix(careers: CareerRow[], dimensions: Dimension[]): CareerMatri
       if (group && MAIN_GROUPS.includes(group)) total.main += stat.count;
       else if (group === 'G7') total.g7 += stat.count;
     }
-    let hasMain = false, hasG7 = false;
+    let hasMain = false, hasG7 = false, scoredCriteriaCount = 0;
     for (const [code, stat] of stats) {
       const group = groupOf.get(code);
       const isMain = !!group && MAIN_GROUPS.includes(group);
       if (!isMain && group !== 'G7') continue;
       if (isMain) hasMain = true; else hasG7 = true;
+      scoredCriteriaCount += 1;
       requirements.push({
         career_code: career.career_code,
         dimension_code: code,
@@ -390,10 +411,15 @@ function buildMatrix(careers: CareerRow[], dimensions: Dimension[]): CareerMatri
       .slice(0, 3)
       .map((row) => row.holland_code)
       .join('');
+    const hasAllComponents = hasMain && hasG7 && top3 !== '';
+    // Nghề có đủ 3 thành phần (G1–G5, G7, Holland) trên các tiêu chí trọng tâm CW > 0 từ JD (R06 + File 06).
     summary.set(career.career_code, {
       qualifying: qualifying.length,
+      l0_count: l0Count,
+      scored_criteria_count: scoredCriteriaCount,
+      has_all_components: hasAllComponents,
       holland_top3: top3 || null,
-      complete: hasMain && hasG7 && top3 !== '',
+      complete: hasAllComponents,
     });
   }
   return { requirements, holland, summary };
@@ -706,10 +732,13 @@ function report(args: {
   lines.push(`JD có cấp độ nghề nhận ra: ${levelKnown}; có Required Level quy đổi được: ${reqKnown}; còn lại là chữ/trống: ${jds.length - reqKnown}`);
   const summaries = [...matrix.summary.values()];
   const withQualifying = count(summaries, (s: { qualifying: number }) => s.qualifying > 0);
-  lines.push(`Nghề có ít nhất 1 JD L0–L2 dùng được: ${withQualifying}/${careers.length}`);
-  lines.push(`Nghề đạt tối thiểu ${MIN_JD_PER_CAREER} JD dùng được (P16): ${count(summaries, (s: { qualifying: number }) => s.qualifying >= MIN_JD_PER_CAREER)}`);
-  lines.push(`Nghề đủ chuẩn (có G1–G5, G7 và Holland): ${count(summaries, (s: { complete: boolean }) => s.complete)}`);
-  lines.push(`Dòng ma trận yêu cầu: ${matrix.requirements.length}; dòng hồ sơ Holland: ${matrix.holland.length}`);
+  const totalL0 = summaries.reduce((acc, s) => acc + s.l0_count, 0);
+  lines.push(`JD mức L0 giữ ở bảng gốc nhưng loại khỏi ma trận nghề theo R16: ${totalL0}`);
+  lines.push(`Nghề có ít nhất 1 JD L1–L2 dùng được: ${withQualifying}/${careers.length}`);
+  lines.push(`Nghề đạt tối thiểu ${MIN_JD_PER_CAREER} JD L1–L2 dùng được (P16): ${count(summaries, (s: { qualifying: number }) => s.qualifying >= MIN_JD_PER_CAREER)}`);
+  lines.push(`Nghề có dữ liệu ở cả 3 thành phần (G1–G5, G7 và Holland, tính trên CW > 0 theo R06): ${count(summaries, (s: { has_all_components: boolean }) => s.has_all_components)}`);
+  lines.push('is_standard_complete không được gán: điều kiện đủ chuẩn nghề chưa chốt giữa giới hạn từng JD, R06 và R08.');
+  lines.push(`Dòng ma trận yêu cầu (CW > 0): ${matrix.requirements.length}; dòng hồ sơ Holland: ${matrix.holland.length}`);
 
   lines.push('\n== Trường – Ngành ==');
   lines.push(`Dòng research hợp lệ: ${research.length}`);
@@ -853,6 +882,7 @@ const STEP_RUNNERS: Record<Step, (supabase: SupabaseClient, data: ImportData) =>
         career_code: c.career_code, career_field_id: idOf(fieldId, c.field_code, 'lĩnh vực', 'fields'), career_name: c.career_name,
         source_group_id: c.source_group_id, holland_top3: summary.holland_top3,
         qualifying_jd_count: summary.qualifying, is_standard_complete: summary.complete,
+        ...(summary.complete ? { status: 'published' } : {}),
       };
     }), 'career_code');
   },

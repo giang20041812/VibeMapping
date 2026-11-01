@@ -56,6 +56,24 @@ export const ClassReportCard: React.FC<ClassReportCardProps> = ({ title, report,
             </div>
           ))}
         </div>
+        <div className="class-stack">
+          <span className="class-meta-label">Nghề được quan tâm</span>
+          {(report.career_interests ?? []).length === 0 ? (
+            <p className="class-meta-label">Học sinh chưa lưu nghề nào.</p>
+          ) : (
+            <div className="class-report-bars">
+              {report.career_interests!.map((item) => (
+                <div key={item.career_name}>
+                  <div className="class-report-bar-label">
+                    <span>{item.career_name}</span>
+                    <span>{item.student_count} em</span>
+                  </div>
+                  <ProgressBar value={(item.student_count / Math.max(report.student_count, 1)) * 100} label={`Tỷ lệ quan tâm ${item.career_name}`} />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     )}
   </Card>

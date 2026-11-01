@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { AlertTriangle, ArrowLeft, ArrowRight, Check, CheckCircle2 } from 'lucide-react';
-import { Alert, Badge, Button, Card, Input, Modal, ProgressBar } from '../../../components/common';
+import { Alert, Badge, Button, Card, Input, Modal, ProgressBar, Textarea } from '../../../components/common';
 import { isAnswered } from '../../assessment_session/assessmentScores';
 import type { AnswerMap } from '../../assessment_session/assessmentSession.types';
 import { QuestionCard } from '../../assessment_session/components/QuestionCard';
@@ -25,6 +25,9 @@ import {
   getGuestSession,
   getInvitation,
   saveGuestAnswer,
+  saveQualitativeOpen,
+  eraseOwnSubmission,
+  recordIdle,
   startSubmission,
   submitGuest,
 } from '../guest.service';
@@ -62,7 +65,17 @@ const writeResume = (token: string, value: string | null) => {
   }
 };
 
+const IDLE_THRESHOLD_SECONDS = 120;
+
 const formatClock = (date: Date) => date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+const OPEN_PROMPTS = [
+  { key: 'interest', label: 'Sở thích và thiên hướng của người được đánh giá' },
+  { key: 'ability', label: 'Năng lực và điểm mạnh' },
+  { key: 'value', label: 'Giá trị và động lực' },
+  { key: 'blind_spot', label: 'Điểm mù và rào cản' },
+  { key: 'companion', label: 'Cách bạn phản hồi khi người đó nói về lựa chọn nghề' },
+] as const;
 
 export const GuestAssessmentPage: React.FC = () => {
   const { token } = useParams();
@@ -93,6 +106,20 @@ export const GuestAssessmentPage: React.FC = () => {
   const [qualityIssues, setQualityIssues] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitFailure, setSubmitFailure] = useState<string | null>(null);
+  const [askOpen, setAskOpen] = useState(false);
+  const [openAsked, setOpenAsked] = useState(false);
+  const [erased, setErased] = useState(false);
+  const lastActivityRef = useRef(Date.now());
+  const idlePeriodsRef = useRef<number[]>([]);
+
+  /** R14: ghi lại quãng không thao tác; máy chủ chỉ trừ quãng dài hơn P08 (2 phút) */
+  const markActivity = useCallback(() => {
+    const now = Date.now();
+    const gap = Math.round((now - lastActivityRef.current) / 1000);
+    if (gap > IDLE_THRESHOLD_SECONDS) idlePeriodsRef.current.push(gap);
+    lastActivityRef.current = now;
+  }, []);
+  const [openAnswers, setOpenAnswers] = useState<Record<string, string>>({});
 
   const current = questions[index];
   const answeredCount = useMemo(() => questions.filter((q) => isAnswered(answers, q.id)).length, [questions, answers]);
@@ -202,6 +229,7 @@ export const GuestAssessmentPage: React.FC = () => {
   const handleSelect = useCallback(
     async (score: number) => {
       if (!resume || !current) return;
+      markActivity();
       setSaveError(false);
       setBlockMessage(null);
       const value = { score, insufficient: false };
@@ -213,11 +241,12 @@ export const GuestAssessmentPage: React.FC = () => {
         setSaveError(true);
       }
     },
-    [resume, current],
+    [resume, current, markActivity],
   );
 
   const handleInsufficient = async (checked: boolean) => {
     if (!resume || !current) return;
+    markActivity();
     setSaveError(false);
     setBlockMessage(null);
     if (!checked) {
@@ -240,6 +269,7 @@ export const GuestAssessmentPage: React.FC = () => {
   };
 
   const goTo = (next: number, dir: 'forward' | 'back') => {
+    markActivity();
     setDirection(dir);
     setIndex(next);
   };
@@ -257,6 +287,11 @@ export const GuestAssessmentPage: React.FC = () => {
     setIsSubmitting(true);
     setSubmitFailure(null);
     try {
+      markActivity();
+      if (idlePeriodsRef.current.length > 0) {
+        await recordIdle(resume, idlePeriodsRef.current).catch(() => undefined);
+        idlePeriodsRef.current = [];
+      }
       const result = await submitGuest(resume);
       if (!result.ok) {
         setQualityIssues([]);
@@ -270,6 +305,7 @@ export const GuestAssessmentPage: React.FC = () => {
       const message = error instanceof Error ? error.message : String((error as { message?: string })?.message ?? '');
       if (message.includes('invitation_unavailable')) setStage({ kind: 'unavailable', reason: 'expired' });
       else if (message.includes('own_invitation')) setStage({ kind: 'unavailable', reason: 'own_link' });
+      else if (message.includes('open_answers_required') || message.includes('companion_answer_required')) setAskOpen(true);
       else setSubmitFailure('Không nộp được bài, vui lòng thử lại');
     } finally {
       setIsSubmitting(false);
@@ -289,10 +325,36 @@ export const GuestAssessmentPage: React.FC = () => {
     return issues;
   };
 
+  const requiredOpen = OPEN_PROMPTS.filter((item) => item.key !== 'companion' || group !== 'friend');
+
+  const continueAfterOpen = async (skip: boolean) => {
+    if (!resume) return;
+    const filled = requiredOpen.filter((item) => (openAnswers[item.key] ?? '').trim());
+    setIsSubmitting(true);
+    try {
+      if (!skip && filled.length > 0) {
+        await saveQualitativeOpen(resume, filled.map((item) => ({ aspect: item.key, text: openAnswers[item.key].trim() })));
+      }
+      setAskOpen(false);
+      const issues = checkQuality();
+      if (issues.length > 0) setQualityIssues(issues);
+      else await doSubmit();
+    } catch {
+      setSubmitFailure('Không lưu được câu trả lời mở.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleSubmit = () => {
     const open = questions.filter((q) => !isAnswered(answers, q.id));
     if (open.length > 0) {
       setBlockMessage(`Chưa thể nộp bài. Bạn còn ${open.length} câu chưa trả lời`);
+      return;
+    }
+    if (!openAsked) {
+      setOpenAsked(true);
+      setAskOpen(true);
       return;
     }
     const issues = checkQuality();
@@ -308,11 +370,11 @@ export const GuestAssessmentPage: React.FC = () => {
     if (index < questions.length - 1) goTo(index + 1, 'forward');
     else handleSubmit();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [current, answers, index, questions, startedAt]);
+  }, [current, answers, index, questions, startedAt, openAsked]);
 
   // ---- Phím tắt: 1–5 chọn mức, Enter sang câu kế
   useEffect(() => {
-    if (stage.kind !== 'questions' || qualityIssues.length > 0) return;
+    if (stage.kind !== 'questions' || qualityIssues.length > 0 || askOpen) return;
     const onKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement;
       if (target.tagName === 'INPUT' && (target as HTMLInputElement).type === 'checkbox') return;
@@ -325,7 +387,7 @@ export const GuestAssessmentPage: React.FC = () => {
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [stage, qualityIssues, answers, current, handleSelect, handleNext]);
+  }, [stage, qualityIssues, askOpen, answers, current, handleSelect, handleNext]);
 
   // ---- Hiển thị
   if (stage.kind === 'loading') {
@@ -349,7 +411,26 @@ export const GuestAssessmentPage: React.FC = () => {
         <div className="guest-state guest-state-success">
           <CheckCircle2 size={56} className="guest-thanks-icon" aria-hidden="true" />
           <h1 className="guest-thanks-title">Cảm ơn bạn!</h1>
-          <p className="guest-state-text">Bài đánh giá của bạn đã được ghi nhận.</p>
+          <p className="guest-state-text">{erased ? 'Bài đánh giá của bạn đã được xóa.' : 'Bài đánh giá của bạn đã được ghi nhận.'}</p>
+          {!erased && resume && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={async () => {
+                if (!window.confirm('Xóa bài đánh giá bạn vừa nộp? Thao tác không hoàn tác được.')) return;
+                try {
+                  await eraseOwnSubmission(resume);
+                  if (token) window.localStorage.removeItem(resumeKey(token));
+                  setErased(true);
+                } catch {
+                  setSubmitFailure('Không xóa được bài, vui lòng thử lại');
+                }
+              }}
+            >
+              Xóa bài đánh giá của tôi
+            </Button>
+          )}
+          {submitFailure && <Alert variant="danger">{submitFailure}</Alert>}
         </div>
       </Card>
     );
@@ -479,6 +560,35 @@ export const GuestAssessmentPage: React.FC = () => {
           </div>
         </Card>
       )}
+
+      <Modal
+        open={askOpen}
+        title="Câu trả lời mở"
+        onClose={() => setAskOpen(false)}
+        locked={isSubmitting}
+        actions={
+          <>
+            <Button variant="outline" disabled={isSubmitting} onClick={() => void continueAfterOpen(true)}>
+              Bỏ qua
+            </Button>
+            <Button isLoading={isSubmitting} onClick={() => void continueAfterOpen(false)}>
+              Lưu và nộp
+            </Button>
+          </>
+        }
+      >
+        <Alert variant="info">
+          Không bắt buộc. Câu trả lời giúp chuyên gia chấm mức hiểu biết của bạn về người được đánh giá; hệ thống không tự cho điểm từ nội dung bạn viết.
+        </Alert>
+        {requiredOpen.map((item) => (
+          <Textarea
+            key={item.key}
+            label={item.label}
+            value={openAnswers[item.key] ?? ''}
+            onChange={(event) => setOpenAnswers((current) => ({ ...current, [item.key]: event.target.value }))}
+          />
+        ))}
+      </Modal>
 
       <Modal
         open={qualityIssues.length > 0}

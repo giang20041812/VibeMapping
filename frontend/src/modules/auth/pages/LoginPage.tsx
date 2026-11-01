@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowRight, Mail } from 'lucide-react';
 import { Alert, Button, Input, PasswordInput } from '../../../components/common';
 import { describeAuthError, getEnabledProviders, loginWithEmail, loginWithGoogle } from '../auth.service';
+import { AuthHomeLink } from '../components/AuthHomeLink';
 import { validateEmail } from '../auth.validation';
 import '../auth-form.css';
 
@@ -64,6 +65,7 @@ export const LoginPage: React.FC = () => {
 
   return (
     <section className="auth-form-card">
+      <AuthHomeLink />
       <h1 className="auth-form-title">Đăng nhập</h1>
 
       {formError && <Alert variant="danger">{formError}</Alert>}

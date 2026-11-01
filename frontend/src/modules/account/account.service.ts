@@ -1,7 +1,17 @@
 import { supabase } from '../../lib/supabase';
 
 /** Các loại thông báo trong ứng dụng; hàm push_notification kiểm tra in_app_enabled theo từng loại */
-export const NOTIFICATION_TYPES = ['new_submission', 'result_changed', 'result_finalized', 'link_expiring', 'class_update'] as const;
+export const NOTIFICATION_TYPES = [
+  'new_submission',
+  'result_changed',
+  'result_finalized',
+  'link_expiring',
+  'class_update',
+  'career_ranking_changed',
+  'decision_report_shared',
+  'decision_consensus',
+  'mentor_connection',
+] as const;
 
 export interface AppNotification {
   id: string;

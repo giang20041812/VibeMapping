@@ -80,7 +80,16 @@ export interface ReportGroup {
 }
 
 export type ClassReport =
-  | { ok: true; student_count: number; joined_count: number; member_count: number; graded_count?: number; groups: ReportGroup[] }
+  | {
+      ok: true;
+      student_count: number;
+      joined_count: number;
+      member_count: number;
+      graded_count?: number;
+      groups: ReportGroup[];
+      /** Số học sinh lưu từng nghề (quan tâm hoặc mục tiêu), tối đa 10 nghề */
+      career_interests?: { career_name: string; student_count: number }[];
+    }
   | { ok: false; reason: 'below_threshold'; student_count: number; joined_count: number; member_count: number; graded_count?: number };
 
 export interface JoinedClass extends ClassRow {

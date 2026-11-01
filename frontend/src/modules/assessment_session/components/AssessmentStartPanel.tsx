@@ -116,8 +116,14 @@ export const AssessmentStartPanel: React.FC<{ showDisclaimer?: boolean; showTitl
     try {
       const created = await createSession(userId, selected);
       navigate(`/danh-gia-ca-nhan/${created.id}`);
-    } catch {
-      setStartError('Không bắt đầu được bài đánh giá, vui lòng thử lại');
+    } catch (error) {
+      const message = String((error as { message?: string })?.message ?? '');
+      const retake = message.match(/retake_too_soon:(\S+)/);
+      setStartError(
+        retake
+          ? `Bạn vừa hoàn thành bài đánh giá. Có thể làm lại từ ${new Date(retake[1]).toLocaleString('vi-VN')} (cách 14 ngày theo P18).`
+          : 'Không bắt đầu được bài đánh giá, vui lòng thử lại',
+      );
       setIsStarting(false);
     }
   };

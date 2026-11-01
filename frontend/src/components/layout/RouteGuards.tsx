@@ -56,10 +56,15 @@ export const RequireCompleteProfile: React.FC = () => {
   return <Outlet />;
 };
 
-/** Trang dành cho khách (đăng nhập, đăng ký): đã có tài khoản thì chuyển vào ứng dụng */
+/** Trang dành cho khách (đăng nhập, đăng ký): đã có tài khoản thì chuyển vào ứng dụng.
+ *  Vừa đăng ký xong thì đưa sang nhập OTP, không về trang chủ. */
 export const GuestOnly: React.FC = () => {
   const { isGuest, isLoading } = useAuth();
   if (isLoading) return <FullPageLoader />;
-  if (!isGuest) return <Navigate to="/" replace />;
+  if (!isGuest) {
+    const pendingPhone = sessionStorage.getItem('pending-otp-phone');
+    if (pendingPhone) return <Navigate to="/xac-minh-otp" replace state={{ phone: pendingPhone }} />;
+    return <Navigate to="/" replace />;
+  }
   return <Outlet />;
 };

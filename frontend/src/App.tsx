@@ -32,8 +32,17 @@ import { SchoolsPage } from './modules/class_management/pages/SchoolsPage';
 import { ClassListPage } from './modules/class_management/pages/ClassListPage';
 import { ClassDetailPage } from './modules/class_management/pages/ClassDetailPage';
 import { SkeletonSamplePage } from './modules/dev/SkeletonSamplePage';
+import { CareerListPage } from './modules/career_explorer/pages/CareerListPage';
+import { PublicCareerDetailPage } from './modules/career_explorer/pages/PublicCareerDetailPage';
+import { CareerDetailPage } from './modules/career_explorer/pages/CareerDetailPage';
 import { QualitativeReviewPage } from './modules/admin/pages/QualitativeReviewPage';
 import { ResultHistoryPage } from './modules/assessment_result/pages/ResultHistoryPage';
+import {
+  CareerEducationMapPage,
+  InstitutionDetailPage,
+  MajorDetailPage,
+  ProgramDetailPage,
+} from './modules/school_explorer/pages/EducationDetailPages';
 
 /** Quản trị hệ thống vào thẳng khu quản trị, giáo viên vào thẳng lớp học */
 const HomeRoute: React.FC = () => {
@@ -68,7 +77,12 @@ export const App: React.FC = () => (
         {/* Thanh điều hướng ngang, không có thanh bên: giới thiệu, ngành nghề, khám phá trường, khách làm bài test và khai báo thông tin sau bài */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<HomeRoute />} />
+          <Route path="/danh-muc-nghe" element={<CareerListPage publicCatalog />} />
+          <Route path="/danh-muc-nghe/:careerId" element={<PublicCareerDetailPage />} />
           <Route path="/kham-pha-truong" element={<SchoolExplorerPage />} />
+          <Route path="/kham-pha-truong/truong/:id" element={<InstitutionDetailPage />} />
+          <Route path="/kham-pha-truong/nganh/:id" element={<MajorDetailPage />} />
+          <Route path="/kham-pha-truong/chuong-trinh/:id" element={<ProgramDetailPage />} />
           <Route path="/lam-bai" element={<GuestTestPage />} />
           <Route element={<RequireSession />}>
             <Route path="/hoan-tat-ho-so" element={<CompleteProfilePage />} />
@@ -89,6 +103,9 @@ export const App: React.FC = () => (
             <Route path="/ho-so" element={<ProfilePage />} />
             <Route element={<RequireCompleteProfile />}>
               <Route path="/danh-gia-360" element={<Assessment360Page />} />
+              <Route path="/nghe" element={<CareerListPage />} />
+              <Route path="/nghe/:careerId" element={<CareerDetailPage />} />
+              <Route path="/ban-do/:careerId" element={<CareerEducationMapPage />} />
               <Route element={<RequireRole roles={['student', 'university_student']} />}>
                 <Route path="/lich-su-ket-qua" element={<ResultHistoryPage />} />
               </Route>

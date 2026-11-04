@@ -243,8 +243,9 @@ export const HomePage: React.FC = () => {
         <h2 id="feature-self-title" className="feature-title">
           Tự đánh giá qua biểu đồ <span className="text-spectrum">{axes.length} nhóm tiêu chí</span>
         </h2>
-        <p className="feature-lead">Trả lời từng câu hỏi ngắn, xem tố chất của bạn hiện lên thành một biểu đồ.</p>
+        <p className="feature-lead">Đánh giá cá nhân qua biểu đồ tố chất, từ đó gợi ý những ngành nghề phù hợp với bạn.</p>
         <StatTiles items={selfStats} />
+        {scaleStats.length >= 3 && <StatTiles items={scaleStats} />}
         {canExplore && (
           <Link to={testPath} className="feature-link">
             <Button size="lg" rightIcon={<ArrowRight size={18} />}>
@@ -281,12 +282,6 @@ export const HomePage: React.FC = () => {
         )}
       </Feature>
 
-      {/* Chỉ hiện khi đọc được ít nhất hai số liệu danh mục, tránh dải chỉ có một ô */}
-      {scaleStats.length >= 3 && (
-        <section className="home-scale" aria-label="Quy mô dữ liệu">
-          <StatTiles items={scaleStats} size="lg" />
-        </section>
-      )}
     </div>
   );
 };

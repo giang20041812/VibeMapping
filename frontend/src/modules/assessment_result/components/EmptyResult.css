@@ -8,7 +8,6 @@
   background: var(--color-bg-surface);
   border: 1.5px dashed var(--color-border-hover);
   border-radius: var(--radius-xl);
-  animation: empty-in var(--duration-reveal) var(--ease-out) both;
 }
 
 .empty-result-badge {

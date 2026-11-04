@@ -12,13 +12,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  animation: report-rise var(--duration-reveal) var(--ease-out) both;
 }
-.trait-row:nth-child(1) { animation-delay: 60ms; }
-.trait-row:nth-child(2) { animation-delay: 140ms; }
-.trait-row:nth-child(3) { animation-delay: 220ms; }
-.trait-row:nth-child(4) { animation-delay: 300ms; }
-.trait-row:nth-child(5) { animation-delay: 380ms; }
 
 /* Mỗi nét tính cách một sắc: thanh, nền thanh và con số cùng màu */
 .trait-row { --trait: var(--tone-blue); --trait-text: var(--tone-blue); --trait-bg: var(--tone-blue-bg); }
@@ -57,7 +51,6 @@
   border: 1.5px solid transparent;
   border-top: 4px solid var(--h);
   border-radius: var(--radius-xl);
-  animation: report-pop 560ms var(--ease-spring) both;
 }
 /* Sắc theo mã Holland; chữ trên nền vàng dùng màu tối cho dễ đọc */
 .holland-r { --h: var(--tone-blue); --h-text: var(--tone-blue); --h-bg: var(--tone-blue-bg); }
@@ -68,8 +61,6 @@
 .holland-c { --h: var(--tone-slate); --h-text: var(--tone-slate); --h-bg: var(--tone-slate-bg); }
 
 .holland-card-1 { animation-delay: 60ms; color: var(--h-ink); background: var(--h); border-color: var(--h); box-shadow: 0 12px 26px -14px var(--h); }
-.holland-card-2 { animation-delay: 180ms; }
-.holland-card-3 { animation-delay: 300ms; }
 
 .holland-letter { font-size: 56px; font-weight: 800; line-height: 1; letter-spacing: -0.02em; }
 .holland-card:not(.holland-card-1) .holland-letter,

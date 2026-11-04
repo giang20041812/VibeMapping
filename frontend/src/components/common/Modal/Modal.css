@@ -24,7 +24,6 @@
   box-shadow: var(--shadow-lg);
   outline: none;
   will-change: transform, opacity;
-  animation: modal-pop 240ms var(--ease-out) both;
 }
 
 .modal-header {

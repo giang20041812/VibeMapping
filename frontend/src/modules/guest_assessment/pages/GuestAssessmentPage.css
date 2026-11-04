@@ -18,14 +18,11 @@
 .guest-state-warning { color: var(--color-warning-text); }
 .guest-state-success { color: var(--color-success); }
 .guest-state-text { font-size: var(--font-size-lg); font-weight: 600; color: var(--color-text-main); }
-.guest-thanks-icon { animation: guest-pop 620ms var(--ease-spring) both; }
 .guest-thanks-title {
   font-size: var(--font-size-4xl);
   font-weight: 800;
   color: var(--color-text-main);
-  animation: guest-rise var(--duration-reveal) 160ms var(--ease-out) both;
 }
-.guest-state-success .guest-state-text { animation: guest-rise var(--duration-reveal) 280ms var(--ease-out) both; }
 
 /* Làm bài */
 .guest-run { display: flex; flex-direction: column; gap: var(--space-4); }

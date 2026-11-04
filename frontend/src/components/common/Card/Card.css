@@ -4,7 +4,6 @@
   border-radius: var(--radius-xl);
   box-shadow: var(--surface-shadow);
   overflow: hidden;
-  animation: card-reveal var(--duration-reveal) var(--ease-out) both;
   transition:
     box-shadow var(--transition-normal),
     transform var(--transition-normal),

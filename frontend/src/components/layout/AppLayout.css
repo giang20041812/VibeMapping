@@ -15,9 +15,6 @@
   padding-bottom: calc(var(--space-10) + var(--safe-bottom));
 }
 
-.page-enter {
-  animation: page-enter 480ms var(--ease-out) both;
-}
 
 .page-title {
   position: absolute;

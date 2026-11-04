@@ -20,7 +20,6 @@
   gap: var(--space-4);
   padding-top: var(--space-6);
   text-align: center;
-  animation: home-rise var(--duration-reveal) var(--ease-out) both;
 }
 .home-brand-title {
   /* Mở đầu: biểu tượng được vẽ ở giữa tiêu đề, trượt về bên trái rồi chữ hiện ra sau nó.
@@ -55,7 +54,6 @@
 .home-brand-mapping { color: var(--color-accent); animation-delay: calc(var(--brand-slide) + 380ms); }
 .home-brand-lead {
   max-width: calc(560 * var(--px));
-  animation: home-rise var(--duration-reveal) 2350ms var(--ease-out) both;
   font-size: var(--font-size-2xl);
   line-height: 1.4;
   color: var(--color-text-secondary);

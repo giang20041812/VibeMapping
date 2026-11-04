@@ -44,7 +44,7 @@
 }
 .sidebar-brand-mark .logo-svg { display: block; }
 .sidebar-brand-text { display: inline-flex; align-items: baseline; gap: 0.28em; }
-.sidebar-brand-vibe { color: var(--color-text-main); }
+.sidebar-brand-vibe { color: var(--color-primary); }
 .sidebar-brand-mapping { color: var(--color-accent); }
 .sidebar-close { display: none; }
 
@@ -80,7 +80,7 @@
   top: 20%;
   bottom: 20%;
   width: 3px;
-  background: var(--color-primary);
+  background: var(--gradient-brand);
   border-radius: var(--radius-full);
 }
 

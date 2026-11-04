@@ -40,7 +40,6 @@
   border: 2px solid var(--color-border);
   border-radius: var(--radius-xl);
   cursor: pointer;
-  animation: package-rise var(--duration-reveal) var(--ease-out) both;
   transition:
     border-color var(--transition-fast),
     background-color var(--transition-fast),
@@ -60,8 +59,6 @@
   background: var(--pack);
   transition: height var(--transition-normal);
 }
-.package-card:nth-child(2) { animation-delay: 80ms; }
-.package-card:nth-child(3) { animation-delay: 160ms; }
 .package-card:hover { border-color: var(--pack); transform: translateY(-3px); box-shadow: var(--shadow-md); }
 .package-card:has(.package-input:focus-visible) { outline: 3px solid var(--pack-glow); outline-offset: 2px; }
 .package-input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }

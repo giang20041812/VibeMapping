@@ -3,7 +3,6 @@
   flex-direction: column;
   gap: var(--space-4);
   /* Hiện ra khi chọn vai trò học sinh / sinh viên */
-  animation: learner-info-in 420ms var(--ease-out) backwards;
 }
 
 @keyframes learner-info-in {

@@ -4,8 +4,6 @@
   gap: var(--space-4);
 }
 
-.question-enter-forward { animation: question-in-forward 380ms var(--ease-out) both; }
-.question-enter-back { animation: question-in-back 380ms var(--ease-out) both; }
 
 .question-criteria {
   align-self: flex-start;

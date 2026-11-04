@@ -46,22 +46,23 @@
   white-space: nowrap;
 }
 
-.logo-wordmark-vibe { color: var(--brand-navy); }
-.logo-wordmark-mapping { color: var(--brand-blue); }
+.logo-wordmark-vibe { color: var(--logo-b); }
+.logo-wordmark-mapping { color: var(--logo-a); }
 .logo-tone-inverse .logo-wordmark-vibe { color: var(--brand-cream); }
-.logo-tone-inverse .logo-wordmark-mapping { color: var(--brand-mist); }
+.logo-tone-inverse .logo-wordmark-mapping { color: var(--brand-ice); }
 
 /* Hình khối: đúng ba màu của logo */
-.logo-disc { fill: var(--brand-navy); }
+.logo-stop-a { stop-color: var(--logo-a); }
+.logo-stop-b { stop-color: var(--logo-b); }
 .logo-cap { fill: var(--brand-cream); }
 .logo-dot,
-.logo-pin { fill: var(--brand-mist); }
+.logo-pin { fill: var(--brand-white); }
 
 /* Đảo màu để nổi trên nền navy (thanh bên, thanh ngang): đĩa kem, mũ navy, chấm và ghim xanh */
 .logo-on-dark .logo-disc { fill: var(--brand-cream); }
-.logo-on-dark .logo-cap { fill: var(--brand-navy); }
+.logo-on-dark .logo-cap { fill: var(--logo-b); }
 .logo-on-dark .logo-dot,
-.logo-on-dark .logo-pin { fill: var(--brand-blue); }
+.logo-on-dark .logo-pin { fill: var(--logo-b); }
 
 /* Hoạt ảnh: các chấm lộ trình hiện lần lượt từ dây mũ, ghim rơi xuống rồi nhún nhẹ liên tục */
 .logo-svg.is-animated .logo-dot {
@@ -110,7 +111,7 @@
   stroke-linejoin: round;
 }
 .logo-svg.is-drawing .logo-disc {
-  stroke: var(--brand-navy);
+  stroke: var(--logo-b);
   stroke-width: 28;
   animation:
     logo-trace 700ms 100ms var(--ease-standard) both,

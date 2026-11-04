@@ -4,22 +4,6 @@
   gap: var(--space-5);
 }
 
-/* Các khối trong trang vào lần lượt từ trên xuống (backwards: xong thì bỏ transform, không giữ ngữ cảnh xếp lớp) */
-.auth-form-card > *,
-.auth-form > * {
-  animation: auth-form-in 520ms var(--ease-out) backwards;
-}
-.auth-form-card > :nth-child(1) { animation-delay: 40ms; }
-.auth-form-card > :nth-child(2) { animation-delay: 110ms; }
-.auth-form-card > :nth-child(3) { animation-delay: 180ms; }
-.auth-form-card > :nth-child(4) { animation-delay: 250ms; }
-.auth-form-card > :nth-child(5) { animation-delay: 320ms; }
-.auth-form > :nth-child(1) { animation-delay: 120ms; }
-.auth-form > :nth-child(2) { animation-delay: 190ms; }
-.auth-form > :nth-child(3) { animation-delay: 260ms; }
-.auth-form > :nth-child(4) { animation-delay: 330ms; }
-.auth-form > :nth-child(5) { animation-delay: 400ms; }
-.auth-form > :nth-child(n + 6) { animation-delay: 470ms; }
 
 /* Lưới trường nhập: tự chia cột theo bề rộng thẻ */
 .auth-grid {
@@ -231,7 +215,6 @@
   color: var(--brand-sky);
   background: var(--brand-ice);
   border-radius: 50%;
-  animation: auth-pop 620ms var(--ease-spring) both;
 }
 /* Hai vòng tỏa ra từ biểu tượng thành công */
 .auth-success-badge::before,

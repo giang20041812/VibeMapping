@@ -76,6 +76,7 @@ export interface CellChange {
 }
 
 export async function saveCells(changes: CellChange[]): Promise<void> {
+  // criteria_id được trigger điền từ question_id
   const upserts = changes
     .filter((change) => change.value !== null)
     .map((change) => ({
@@ -85,7 +86,7 @@ export async function saveCells(changes: CellChange[]): Promise<void> {
       is_insufficient_basis: change.value === 'na',
     }));
   if (upserts.length > 0) {
-    const { error } = await supabase.from('class_assessment_grid_details').upsert(upserts, {
+    const { error } = await supabase.from('class_assessment_grid_details').upsert(upserts as never, {
       onConflict: 'grid_student_id,question_id',
     });
     if (error) fail('Lỗi lưu điểm', error);

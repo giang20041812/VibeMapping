@@ -72,3 +72,20 @@ export async function getHomeSummary(userId: string): Promise<HomeSummary> {
     pendingSubmissions: pendingResponse.count ?? 0,
   };
 }
+
+export interface CatalogScale {
+  careers: number | null;
+  majors: number | null;
+  schools: number | null;
+}
+
+/** Quy mô danh mục: số nghề đã công bố, ngành đang mở và trường; mục nào không đọc được thì để null để ẩn đi */
+export async function getCatalogScale(): Promise<CatalogScale> {
+  const [careers, majors, schools] = await Promise.all([
+    supabase.from('careers').select('id', { count: 'exact', head: true }).eq('status', 'published'),
+    supabase.from('majors').select('id', { count: 'exact', head: true }).eq('is_active', true),
+    supabase.from('institutions').select('id', { count: 'exact', head: true }).neq('institution_type', 'parent_university'),
+  ]);
+  const pick = (response: { count: number | null; error: unknown }) => (response.error || !response.count ? null : response.count);
+  return { careers: pick(careers), majors: pick(majors), schools: pick(schools) };
+}

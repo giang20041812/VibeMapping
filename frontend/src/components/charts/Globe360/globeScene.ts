@@ -121,6 +121,9 @@ interface Palette {
   /** Nền nút và nền nhãn (kiểu nút viền) */
   face: RGB;
   labelBg: RGB;
+  /** Nét biểu tượng và viền của nút đặc màu (kiểu hình dán) */
+  icon: RGB;
+  nodeLine: RGB;
   tones: Record<GlobeTone, RGB>;
   font: string;
   haloAlpha: number;
@@ -167,6 +170,8 @@ function readPalette(element: HTMLElement): Palette {
     ink: get('--globe-ink', [255, 255, 255]),
     face: get('--globe-face', [255, 255, 255]),
     labelBg: get('--globe-label-bg', [3, 25, 100]),
+    icon: get('--globe-icon', get('--globe-body-dark', [3, 25, 100])),
+    nodeLine: get('--globe-node-line', get('--globe-ink', [255, 255, 255])),
     tones: {
       gold: get('--globe-tone-gold', [246, 183, 60]),
       cyan: get('--globe-tone-cyan', [34, 211, 238]),
@@ -736,8 +741,8 @@ export function createGlobeScene(canvas: HTMLCanvasElement, nodes: SceneNode[], 
       context.beginPath();
       context.arc(st.x, st.y, radius, 0, TAU);
       context.fill();
-      context.strokeStyle = palette.outline ? rgba(tone, 1) : rgba(ink, 0.9);
-      context.lineWidth = Math.max(1, (palette.outline ? 1.5 : 1.3) * s);
+      context.strokeStyle = palette.outline ? rgba(tone, 1) : rgba(palette.nodeLine, 1);
+      context.lineWidth = Math.max(1, (palette.outline ? 1.5 : 2.4) * s);
       context.stroke();
 
       const iconPath = iconPaths[k];
@@ -746,7 +751,7 @@ export function createGlobeScene(canvas: HTMLCanvasElement, nodes: SceneNode[], 
         context.save();
         context.translate(st.x - 12 * scale, st.y - 12 * scale);
         context.scale(scale, scale);
-        context.strokeStyle = rgba(palette.outline ? ink : palette.bodyDark, 1);
+        context.strokeStyle = rgba(palette.outline ? ink : palette.icon, 1);
         context.lineWidth = 2.2;
         context.lineCap = 'round';
         context.lineJoin = 'round';
@@ -998,8 +1003,8 @@ export function createGlobeScene(canvas: HTMLCanvasElement, nodes: SceneNode[], 
 
       context.fillStyle = rgba(palette.labelBg, 0.92);
       context.strokeStyle = rgba(tone, 0.95);
-      context.lineWidth = 1.5 * s;
-      const rr = Math.min(4 * s, boxH / 2);
+      context.lineWidth = 2 * s;
+      const rr = boxH / 2;
       context.beginPath();
       context.moveTo(bx + rr, by);
       context.arcTo(bx + boxW, by, bx + boxW, by + boxH, rr);

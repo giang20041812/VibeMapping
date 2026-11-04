@@ -184,20 +184,29 @@
   --ink-100: #e7e9ef;
   --ink-wash: rgba(35, 40, 51, 0.045);
   --shadow-ink: 0 8px 18px -8px rgba(35, 40, 51, 0.32);
-  --soft-gold: #d9a845;
-  --soft-cyan: #3fa9c6;
-  --soft-sky: #5a9fd0;
-  --soft-violet: #8d7fd6;
-  --soft-magenta: #cf73b0;
-  --soft-teal: #43b698;
-  --soft-coral: #e48c66;
-  --soft-glow-gold: rgba(217, 168, 69, 0.32);
-  --soft-glow-cyan: rgba(63, 169, 198, 0.3);
-  --soft-glow-sky: rgba(90, 159, 208, 0.3);
-  --soft-glow-violet: rgba(141, 127, 214, 0.3);
-  --soft-glow-magenta: rgba(207, 115, 176, 0.3);
-  --soft-glow-teal: rgba(67, 182, 152, 0.3);
-  --soft-glow-coral: rgba(228, 140, 102, 0.3);
+  /* Màu tươi cho biểu đồ đa giác, quả cầu 360 và các nhóm kết quả */
+  --soft-gold: #fbbf24;
+  --soft-cyan: #22d3ee;
+  --soft-sky: #3b82f6;
+  --soft-violet: #8b5cf6;
+  --soft-magenta: #ec4899;
+  --soft-teal: #10b981;
+  --soft-coral: #fb7185;
+  --soft-glow-gold: rgba(251, 191, 36, 0.38);
+  --soft-glow-cyan: rgba(34, 211, 238, 0.36);
+  --soft-glow-sky: rgba(59, 130, 246, 0.34);
+  --soft-glow-violet: rgba(139, 92, 246, 0.34);
+  --soft-glow-magenta: rgba(236, 72, 153, 0.32);
+  --soft-glow-teal: rgba(16, 185, 129, 0.34);
+  --soft-glow-coral: rgba(251, 113, 133, 0.34);
+
+  /* Phong cách hơi hoạt hình cho hình minh họa: nét viền chàm đậm, bóng đặc lệch xuống dưới */
+  --cartoon-ink: var(--brand-navy);
+  --cartoon-line: var(--brand-soft);
+  --cartoon-wash: rgba(99, 102, 241, 0.06);
+  --cartoon-drop: 0 4px 0 rgba(43, 39, 117, 0.16);
+  --cartoon-drop-lg: 0 6px 0 rgba(43, 39, 117, 0.14), 0 18px 30px -14px rgba(79, 70, 229, 0.35);
+  --gradient-rainbow: linear-gradient(100deg, var(--soft-cyan) 0%, var(--soft-sky) 30%, var(--soft-violet) 62%, var(--soft-magenta) 100%);
 
   /* Bề mặt: thẻ trắng đặc, viền mảnh, bóng nhẹ. --surface-glass giữ lại cho quả cầu và biểu đồ. */
   --surface-glass: rgba(255, 255, 255, 0.7);
@@ -214,6 +223,11 @@
   --gradient-feature: linear-gradient(135deg, #2b2775 0%, #4338ca 100%);
   --gradient-brand-hover: linear-gradient(135deg, var(--brand-deep) 0%, var(--brand-azure) 100%);
   --gradient-brand-active: linear-gradient(135deg, #2e2792 0%, var(--brand-deep) 100%);
+  /* Nút kêu gọi hành động: dải chàm – tím – hồng, rộng gấp đôi để trượt màu khi rê chuột */
+  --gradient-cta: linear-gradient(110deg, var(--brand-blue) 0%, var(--brand-sky) 30%, var(--brand-violet) 65%, #c026d3 100%);
+  --shadow-cta: 0 10px 24px -10px rgba(124, 58, 237, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  --shadow-cta-hover: 0 16px 32px -12px rgba(124, 58, 237, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.32);
+  --gradient-cta-border: linear-gradient(110deg, var(--brand-sky) 0%, var(--brand-violet) 60%, #d946ef 100%);
   --gradient-soft-blue: linear-gradient(135deg, var(--brand-ice) 0%, var(--brand-mist) 100%);
   --logo-a: #818cf8;
   --logo-b: #4f46e5;

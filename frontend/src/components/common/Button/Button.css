@@ -60,11 +60,35 @@
 
 /* Variants */
 .btn-primary {
-  background: var(--gradient-brand);
   color: var(--color-text-inverse);
+  background: var(--gradient-cta);
+  background-size: 200% 100%;
+  background-position: 0% 50%;
+  box-shadow: var(--shadow-cta);
+  transition:
+    background-position var(--transition-slow),
+    box-shadow var(--transition-normal),
+    transform var(--transition-normal);
 }
-.btn-primary:hover:not(:disabled) { background: var(--gradient-brand-hover); }
-.btn-primary:active:not(:disabled) { background: var(--gradient-brand-active); }
+/* Vệt sáng lướt qua nút khi rê chuột */
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.35) 50%, transparent 70%);
+  transform: translateX(-120%);
+  pointer-events: none;
+}
+.btn-primary:hover:not(:disabled) {
+  background-position: 100% 50%;
+  box-shadow: var(--shadow-cta-hover);
+  transform: translateY(-1px);
+}
+.btn-primary:hover:not(:disabled)::after { transform: translateX(120%); transition: transform 700ms var(--ease-out); }
+.btn-primary:active:not(:disabled) { transform: translateY(0) scale(0.98); box-shadow: var(--shadow-cta); }
+.btn-primary .btn-text,
+.btn-primary .btn-icon-left,
+.btn-primary .btn-icon-right { position: relative; z-index: 1; }
 
 .btn-secondary {
   background: var(--gradient-soft-blue);
@@ -72,14 +96,21 @@
 }
 .btn-secondary:hover:not(:disabled) { background: var(--brand-mist); }
 
+/* Viền gradient: nền trắng ở lớp đệm, dải màu ở lớp viền */
 .btn-outline {
-  background: var(--color-bg-surface);
   color: var(--color-text-brand);
-  border-color: var(--color-border-hover);
+  background:
+    linear-gradient(var(--color-bg-surface), var(--color-bg-surface)) padding-box,
+    var(--gradient-cta-border) border-box;
+  border: 1.5px solid transparent;
+  box-shadow: var(--shadow-xs);
 }
 .btn-outline:hover:not(:disabled) {
-  background: var(--brand-ice);
-  border-color: var(--color-primary);
+  background:
+    linear-gradient(var(--brand-ice), var(--brand-ice)) padding-box,
+    var(--gradient-cta-border) border-box;
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 
 .btn-danger {

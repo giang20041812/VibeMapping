@@ -102,7 +102,9 @@
 .feature-visual .globe360-canvas { opacity: 1; transform: none; }
 .feature-visual .polygon-chart.is-visible .polygon-svg-data { animation: none; }
 .feature.is-visible .feature-visual .polygon-chart .polygon-svg-data {
-  animation: polygon-grow 900ms var(--ease-out) var(--arrive) both;
+  animation:
+    polygon-grow 900ms var(--ease-spring) var(--arrive) both,
+    polygon-breathe 4.5s ease-in-out calc(var(--arrive) + 1s) infinite;
 }
 
 /* Chữ nằm sau một lớp che mờ dần; mép lớp che nghiêng theo hướng sao bay và do useStarFlight đẩy đi
@@ -124,6 +126,8 @@
 
 .feature-title { font-size: var(--font-size-4xl); font-weight: 800; line-height: var(--line-tight); letter-spacing: -0.02em; color: var(--color-text-main); }
 .feature-lead { max-width: calc(480 * var(--px)); font-size: var(--font-size-xl); line-height: 1.5; color: var(--color-text-secondary); }
+.feature-copy .stat-tiles { max-width: calc(520 * var(--px)); }
+.home-scale { padding: var(--space-2) 0 var(--space-8); }
 .feature-link { margin-top: var(--space-2); text-decoration: none; border-radius: var(--radius-md); }
 
 @keyframes home-rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }

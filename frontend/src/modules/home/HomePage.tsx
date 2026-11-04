@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, BookOpen, Briefcase, Gauge, Layers, ListChecks, Orbit, Package, School, Timer, Trophy, Users } from 'lucide-react';
 import { Alert, Badge, Button, LogoMark } from '../../components/common';
 import { Globe360 } from '../../components/charts/Globe360/Globe360';
 import { PolygonChart } from '../../components/charts/PolygonChart/PolygonChart';
@@ -10,6 +10,10 @@ import { COMPETENCY_LEVELS, GROUP_ICONS, GROUP_SHORT_LABELS } from '../assessmen
 import { getLatestAssessmentResult } from '../assessment_result/assessmentResult.service';
 import type { AssessmentResultSummary } from '../assessment_result/assessmentResult.types';
 import { GLOBE_NODES } from '../assessment_360/assessment360.constants';
+import { PACKAGES } from '../assessment_session/assessmentSession.constants';
+import { MAX_EXPECTED_PER_GROUP } from '../invitation_link/invitation.constants';
+import { getCatalogScale, type CatalogScale } from './home.service';
+import { StatSticker, StatTiles, type StatItem } from './components/HomeStats';
 import { useAuth } from '../auth/AuthContext';
 import { isLearnerRole } from '../profile/profile.logic';
 import { useInView } from '../../hooks/useInView';
@@ -40,6 +44,27 @@ function resultToAxes(result: AssessmentResultSummary): PolygonAxis[] {
   }));
 }
 const POLYGON_LEVELS = COMPETENCY_LEVELS.map(({ min, label }) => ({ min, label }));
+
+/* Quy mô một bài tự đánh giá lấy từ các gói: số câu ít nhất – nhiều nhất, số phút ngắn nhất – dài nhất */
+const PACKAGE_SIZES = PACKAGES.map((p) => p.size);
+const PACKAGE_MINUTES = PACKAGES.flatMap((p) => (p.minutes.match(/\d+/g) ?? []).map(Number));
+const QUESTION_RANGE = `${Math.min(...PACKAGE_SIZES)}–${Math.max(...PACKAGE_SIZES)}`;
+const MINUTE_RANGE = `${Math.min(...PACKAGE_MINUTES)}–${Math.max(...PACKAGE_MINUTES)}′`;
+
+const VIEW_STATS: StatItem[] = [
+  { key: 'groups', value: GLOBE_NODES.length, label: 'Nhóm góc nhìn', icon: Users, tone: 'gold' },
+  { key: 'raters', value: MAX_EXPECTED_PER_GROUP, label: 'Người mỗi nhóm', icon: Orbit, tone: 'cyan' },
+  { key: 'merge', value: '360°', label: 'Kết quả gộp', icon: Gauge, tone: 'magenta' },
+];
+
+/** Điểm trung bình và nhóm nổi bật nhất của biểu đồ, hiện thành nhãn dán trên hình */
+function summarize(axes: PolygonAxis[]) {
+  const scored = axes.filter((a): a is PolygonAxis & { value: number } => a.value !== null);
+  if (scored.length === 0) return null;
+  const average = Math.round(scored.reduce((sum, a) => sum + a.value, 0) / scored.length);
+  const top = scored.reduce((best, a) => (a.value > best.value ? a : best));
+  return { average, top: top.shortLabel ?? top.label };
+}
 
 /** Chưa tới lượt bay, đang bay, đã đáp */
 type FlightPhase = 'waiting' | 'flying' | 'landed';
@@ -119,6 +144,21 @@ export const HomePage: React.FC = () => {
   const userId = session?.user.id;
   const [result, setResult] = useState<AssessmentResultSummary | null>(null);
   const [isResultLoading, setIsResultLoading] = useState(true);
+  const [scale, setScale] = useState<CatalogScale | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    getCatalogScale()
+      .then((value) => {
+        if (active) setScale(value);
+      })
+      .catch(() => {
+        if (active) setScale(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!userId || !learner || isGuest) {
@@ -146,6 +186,19 @@ export const HomePage: React.FC = () => {
   const axes = useMemo(() => (result ? resultToAxes(result) : SAMPLE_AXES), [result]);
   /* Chờ biết người dùng có kết quả hay chưa, tránh biểu đồ mẫu nháy lên rồi đổi sang biểu đồ thật */
   const isChartLoading = isProfileLoading || (learner && !isGuest && isResultLoading);
+  const summary = useMemo(() => summarize(axes), [axes]);
+  const selfStats: StatItem[] = [
+    { key: 'groups', value: axes.length, label: 'Nhóm tiêu chí', icon: Layers, tone: 'violet' },
+    { key: 'questions', value: QUESTION_RANGE, label: 'Câu hỏi', icon: ListChecks, tone: 'sky' },
+    { key: 'minutes', value: MINUTE_RANGE, label: 'Tự đánh giá', icon: Timer, tone: 'teal' },
+  ];
+  const scaleStats: StatItem[] = [];
+  if (scale) {
+    if (scale.careers !== null) scaleStats.push({ key: 'careers', value: scale.careers, label: 'Nghề nghiệp', icon: Briefcase, tone: 'violet' });
+    if (scale.majors !== null) scaleStats.push({ key: 'majors', value: scale.majors, label: 'Ngành học', icon: BookOpen, tone: 'cyan' });
+    if (scale.schools !== null) scaleStats.push({ key: 'schools', value: scale.schools, label: 'Trường', icon: School, tone: 'magenta' });
+    scaleStats.push({ key: 'packages', value: PACKAGES.length, label: 'Gói đánh giá', icon: Package, tone: 'gold' });
+  }
 
   return (
     <div className="home">
@@ -178,6 +231,12 @@ export const HomePage: React.FC = () => {
             ) : (
               <PolygonChart axes={axes} levels={POLYGON_LEVELS} showReadout={false} showNodeValues />
             )}
+            {!isChartLoading && summary && (
+              <>
+                <StatSticker place="top-left" tone="violet" icon={Gauge} value={`${summary.average}%`} label="Trung bình" />
+                <StatSticker place="bottom-right" tone="gold" icon={Trophy} value={summary.top} label="Nổi bật" />
+              </>
+            )}
           </div>
         }
       >
@@ -185,6 +244,7 @@ export const HomePage: React.FC = () => {
           Tự đánh giá qua biểu đồ <span className="text-spectrum">{axes.length} nhóm tiêu chí</span>
         </h2>
         <p className="feature-lead">Trả lời từng câu hỏi ngắn, xem tố chất của bạn hiện lên thành một biểu đồ.</p>
+        <StatTiles items={selfStats} />
         {canExplore && (
           <Link to={testPath} className="feature-link">
             <Button size="lg" rightIcon={<ArrowRight size={18} />}>
@@ -200,6 +260,8 @@ export const HomePage: React.FC = () => {
         visual={(phase) => (
           <div className="feature-stage">
             <Globe360 nodes={GLOBE_NODES} paused={phase === 'waiting'} lite={phase === 'flying'} />
+            <StatSticker place="top-left" tone="cyan" icon={Orbit} value="360°" label="Đa góc nhìn" />
+            <StatSticker place="bottom-right" tone="magenta" icon={Users} value={`${GLOBE_NODES.length} + Bạn`} label="Người đánh giá" />
           </div>
         )}
       >
@@ -209,6 +271,7 @@ export const HomePage: React.FC = () => {
         <p className="feature-lead">
           Phụ huynh, bạn bè, giáo viên và người hướng dẫn cùng góp góc nhìn để kết quả không chỉ là cảm nhận của riêng bạn.
         </p>
+        <StatTiles items={VIEW_STATS} />
         {canExplore && (
           <Link to="/danh-gia-360" className="feature-link">
             <Button size="lg" rightIcon={<ArrowRight size={18} />}>
@@ -217,6 +280,13 @@ export const HomePage: React.FC = () => {
           </Link>
         )}
       </Feature>
+
+      {/* Chỉ hiện khi đọc được ít nhất hai số liệu danh mục, tránh dải chỉ có một ô */}
+      {scaleStats.length >= 3 && (
+        <section className="home-scale" aria-label="Quy mô dữ liệu">
+          <StatTiles items={scaleStats} size="lg" />
+        </section>
+      )}
     </div>
   );
 };

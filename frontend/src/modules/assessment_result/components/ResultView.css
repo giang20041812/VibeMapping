@@ -54,10 +54,25 @@
 
 .result-retake { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-5); }
 
+.result-notes { display: flex; flex-wrap: wrap; gap: var(--space-2); padding: 0 var(--space-4); margin-bottom: var(--space-2); }
+.result-note {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-warning-text);
+  background: var(--color-warning-bg);
+  border: 1px solid var(--color-warning-border);
+  border-radius: var(--radius-full, 999px);
+}
+
 /* Danh sách điểm nhóm: tự chia cột theo bề rộng còn lại */
 .group-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
   gap: var(--space-2) var(--space-5);
   list-style: none;
 }
@@ -101,6 +116,9 @@
 }
 .group-row-name {
   min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   font-size: var(--font-size-md);
   font-weight: 700;
   color: var(--color-text-main);
@@ -218,6 +236,9 @@
   from { left: 0; }
 }
 
+@media (max-width: 560px) {
+  .group-list { grid-template-columns: minmax(0, 1fr); }
+}
 @media (max-width: 1100px) {
   .result-grid { grid-template-columns: minmax(0, 1fr); }
 }

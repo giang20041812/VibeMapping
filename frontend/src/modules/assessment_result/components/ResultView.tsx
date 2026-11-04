@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import { ArrowRight, RotateCcw } from 'lucide-react';
-import { Alert, Button, Card, ProgressBar } from '../../../components/common';
+import { AlertTriangle, ArrowRight, RotateCcw } from 'lucide-react';
+import { Button, Card, ProgressBar } from '../../../components/common';
 import { PolygonChart } from '../../../components/charts/PolygonChart/PolygonChart';
 import type { PolygonAxis } from '../../../components/charts/PolygonChart/PolygonChart';
 import { useCountUp } from '../../../hooks/useCountUp';
@@ -18,7 +18,7 @@ const GroupRow: React.FC<{ group: GroupScore; index: number }> = ({ group, index
   return (
     <li className="group-row" data-group={group.groupCode} tabIndex={hasDetail ? 0 : undefined}>
       <div className="group-row-head">
-        <span className="group-row-name">{group.name}</span>
+        <span className="group-row-name" title={group.name}>{group.name}</span>
         <span className={`group-row-score ${animated === null ? 'is-empty' : ''}`}>
           {animated === null ? NO_DATA_LABEL : `${Math.round(animated)}%`}
         </span>
@@ -84,17 +84,6 @@ export const ResultView: React.FC<ResultViewProps> = ({ result, onRetake, onCont
 
   return (
     <div className="result-view">
-      {result.thinDataFlag && (
-        <Alert variant="warning" title="Dữ liệu mỏng">
-          Kết quả hiện chỉ dựa trên 1 bài đánh giá.
-        </Alert>
-      )}
-      {result.insufficientBasisWarning && (
-        <Alert variant="warning" title="Thiếu dữ liệu đánh giá">
-          Nhiều tiêu chí chưa có đủ cơ sở để kết luận mức năng lực.
-        </Alert>
-      )}
-
       <div className={`result-stage ${cover ? 'has-cover' : ''}`}>
       <div className="result-grid" aria-hidden={cover ? true : undefined} inert={cover ? true : undefined}>
         <div className="result-chart">
@@ -118,6 +107,22 @@ export const ResultView: React.FC<ResultViewProps> = ({ result, onRetake, onCont
                 </strong>
               </div>
               <ProgressBar value={progress} label="Tiến độ đánh giá 360°" />
+            </div>
+          )}
+          {(result.thinDataFlag || result.insufficientBasisWarning) && (
+            <div className="result-notes">
+              {result.thinDataFlag && (
+                <span className="result-note" title="Kết quả hiện chỉ dựa trên 1 bài đánh giá">
+                  <AlertTriangle size={14} aria-hidden="true" />
+                  Dữ liệu mỏng
+                </span>
+              )}
+              {result.insufficientBasisWarning && (
+                <span className="result-note" title="Nhiều tiêu chí chưa có đủ cơ sở để kết luận mức năng lực">
+                  <AlertTriangle size={14} aria-hidden="true" />
+                  Thiếu dữ liệu đánh giá
+                </span>
+              )}
             </div>
           )}
           <ul className="group-list">

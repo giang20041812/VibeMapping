@@ -17,7 +17,6 @@ import { StatSticker, StatTiles, StatInline, type StatItem } from './components/
 import { useAuth } from '../auth/AuthContext';
 import { isLearnerRole } from '../profile/profile.logic';
 import { useInView } from '../../hooks/useInView';
-import { useStarFlight } from './useStarFlight';
 import './HomePage.css';
 
 interface RouteState {
@@ -66,40 +65,37 @@ function summarize(axes: PolygonAxis[]) {
   return { average, top: top.shortLabel ?? top.label };
 }
 
-/** Chưa tới lượt bay, đang bay, đã đáp */
-type FlightPhase = 'waiting' | 'flying' | 'landed';
+/** Chờ hình tải xong tối đa chừng này rồi vẫn hiện, để hàng không trống mãi khi máy chủ chậm */
+const READY_TIMEOUT_MS = 3000;
 
 interface FeatureProps {
   id: string;
   /** Đưa hình minh họa sang bên trái, chữ sang bên phải */
   flip?: boolean;
-  /** Hình đã tải xong; chưa xong thì chưa bay, để khung chờ tải không bay vào trang */
+  /** Hình đã tải xong; chưa xong thì chưa nhún, để khung chờ tải không nhún vào trang */
   ready?: boolean;
-  /** Hình minh họa; dạng hàm nhận giai đoạn chuyến bay để hình nghỉ việc nặng khi chưa bay và làm nhẹ đi trong lúc bay */
-  visual: React.ReactNode | ((phase: FlightPhase) => React.ReactNode);
+  /** Hình minh họa; dạng hàm nhận `started` để hình nghỉ việc nặng khi chưa tới lượt hiện */
+  visual: React.ReactNode | ((started: boolean) => React.ReactNode);
   children: React.ReactNode;
 }
 
 /** Một hàng giới thiệu: chữ một bên, hình minh họa một bên; hàng sau đổi bên so với hàng trước.
- *  Hình bay vào như một ngôi sao theo đường cong, đuôi quét ngang qua chữ; sao đi qua rồi chữ mới hiện ra dần. */
+ *  Khi hàng hiện ra, từng phần nhún vào lần lượt (hình, nhãn dán, tiêu đề, mô tả, số liệu, nút). */
 const Feature: React.FC<FeatureProps> = ({ id, flip = false, ready = true, visual, children }) => {
-  /* Chờ hàng hiện rõ hơn mới bắt đầu bay để người xem kịp thấy cả chặng bay */
   const { ref, seen } = useInView<HTMLElement>(0.3);
-  const { copyRef, visualRef, canvasRef, started, landed } = useStarFlight(ref, seen, ready, flip);
+  const [waitedEnough, setWaitedEnough] = useState(false);
+
+  useEffect(() => {
+    if (!seen || ready) return;
+    const timer = window.setTimeout(() => setWaitedEnough(true), READY_TIMEOUT_MS);
+    return () => window.clearTimeout(timer);
+  }, [seen, ready]);
+
+  const started = seen && (ready || waitedEnough);
   return (
-    <section
-      ref={ref}
-      className={`feature ${flip ? 'feature-flip' : ''} ${started ? 'is-visible' : ''} ${landed ? 'is-landed' : ''}`}
-      aria-labelledby={`${id}-title`}
-    >
-      {/* Canvas nằm dưới chữ: đuôi sao đi qua chữ, chữ hiện lên rõ nét trên đuôi */}
-      <canvas ref={canvasRef} className="feature-trail" aria-hidden="true" />
-      <div ref={copyRef} className="feature-copy">
-        {children}
-      </div>
-      <div ref={visualRef} className="feature-visual">
-        {typeof visual === 'function' ? visual(landed ? 'landed' : started ? 'flying' : 'waiting') : visual}
-      </div>
+    <section ref={ref} className={`feature ${flip ? 'feature-flip' : ''} ${started ? 'is-visible' : ''}`} aria-labelledby={`${id}-title`}>
+      <div className="feature-copy">{children}</div>
+      <div className="feature-visual">{typeof visual === 'function' ? visual(started) : visual}</div>
     </section>
   );
 };
@@ -257,9 +253,9 @@ export const HomePage: React.FC = () => {
       <Feature
         id="feature-360"
         flip
-        visual={(phase) => (
+        visual={(started) => (
           <div className="feature-stage">
-            <Globe360 nodes={GLOBE_NODES} paused={phase === 'waiting'} lite={phase === 'flying'} />
+            <Globe360 nodes={GLOBE_NODES} paused={!started} />
             <StatSticker place="top-left" tone="cyan" icon={Orbit} value="360°" label="Đa góc nhìn" />
             <StatSticker place="bottom-right" tone="magenta" icon={Users} value={`${GLOBE_NODES.length} + Bạn`} label="Người đánh giá" />
           </div>

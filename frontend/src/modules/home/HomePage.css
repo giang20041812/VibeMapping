@@ -66,11 +66,10 @@
 }
 
 /* Hàng giới thiệu so le hai bên: hai cột bằng nhau, chữ và hình cùng cỡ.
-   Chuyến bay do useStarFlight điều khiển: hình bay theo đường cong, đuôi vẽ trên canvas, chữ hiện dần sau khi sao đi qua. */
+   Khi hàng hiện ra, từng phần nhún vào lần lượt theo --pop (thứ tự) như hoạt hình. */
 .feature {
   position: relative;
-  /* Thời điểm hình đã gần tới nơi, đa giác dữ liệu bắt đầu nở ra từ đây */
-  --arrive: calc(var(--duration-fly) * 0.72);
+  --pop-step: 130ms;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: center;
@@ -78,57 +77,80 @@
 }
 .feature-flip .feature-visual { order: -1; }
 
-/* Hình chính là ngôi sao; ẩn cho tới khi bắt đầu bay (opacity và transform do useStarFlight đặt) */
 .feature-visual {
   position: relative;
   display: flex;
   justify-content: center;
   min-width: 0;
-  opacity: 0;
 }
-.feature.is-landed .feature-visual { opacity: 1; }
 .feature-stage { position: relative; width: 100%; max-width: calc(520 * var(--px)); }
 .feature-badge { position: absolute; top: 0; right: 0; z-index: 1; }
 
-/* Đuôi sao vẽ trên canvas phủ bề ngang màn hình; nằm dưới chữ và dưới hình */
-.feature-trail {
-  position: absolute;
-  display: none;
-  pointer-events: none;
-}
-
-/* Hai hình tự có hiệu ứng hiện riêng; ở đây chuyến bay thay cho phần hiện dần đó,
-   riêng đa giác dữ liệu nở ra sau khi hình đã tới nơi */
-.feature-visual .globe360-canvas { opacity: 1; transform: none; }
-.feature-visual .polygon-chart.is-visible .polygon-svg-data { animation: none; }
-.feature.is-visible .feature-visual .polygon-chart .polygon-svg-data {
-  animation:
-    polygon-grow 900ms var(--ease-spring) var(--arrive) both,
-    polygon-breathe 4.5s ease-in-out calc(var(--arrive) + 1s) infinite;
-}
-
-/* Chữ nằm sau một lớp che mờ dần; mép lớp che nghiêng theo hướng sao bay và do useStarFlight đẩy đi
-   (chỉ một biến --wipe-front đổi mỗi khung; lớp che chỉ dùng độ trong suốt, màu của nó không hiện ra). Bay xong thì bỏ hẳn lớp che. */
 .feature-copy {
   position: relative;
-  --wipe-angle: 90deg;
-  --wipe-soft: 1px;
-  --wipe-front: -1px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: var(--space-5);
   min-width: 0;
-  -webkit-mask-image: linear-gradient(var(--wipe-angle), var(--color-text-main) calc(var(--wipe-front) - var(--wipe-soft)), transparent var(--wipe-front));
-  mask-image: linear-gradient(var(--wipe-angle), var(--color-text-main) calc(var(--wipe-front) - var(--wipe-soft)), transparent var(--wipe-front));
 }
-.feature.is-landed .feature-copy { -webkit-mask-image: none; mask-image: none; }
+
+/* Thứ tự nhún: hình, nhãn dán, tiêu đề, mô tả, số liệu từng ô, nút, số liệu quy mô */
+.feature-visual { --pop: 0; }
+.feature-stage .feature-badge { --pop: 2; }
+.feature-stage .stat-sticker-top-left,
+.feature-stage .stat-sticker-top-right { --pop: 3; }
+.feature-stage .stat-sticker-bottom-left,
+.feature-stage .stat-sticker-bottom-right { --pop: 4; }
+.feature-copy > :nth-child(1) { --pop: 1; }
+.feature-copy > :nth-child(2) { --pop: 2; }
+.feature-copy > :nth-child(3) { --pop: 3; }
+.feature-copy > :nth-child(4) { --pop: 6; }
+.feature-copy > :nth-child(5) { --pop: 7; }
+.feature-copy .stat-tile { --pop: 3; }
+.feature-copy .stat-tile:nth-child(2) { --pop: 4; }
+.feature-copy .stat-tile:nth-child(3) { --pop: 5; }
+.feature-copy .stat-tiles { --pop: 3; }
+
+/* Chưa tới lượt thì ẩn; tới lượt thì nhún vào sau pop × bước */
+.feature .feature-visual,
+.feature .feature-badge,
+.feature .stat-sticker,
+.feature-copy > *,
+.feature-copy .stat-tile { opacity: 0; }
+.feature.is-visible .feature-visual,
+.feature.is-visible .feature-badge,
+.feature.is-visible .feature-copy > *,
+.feature.is-visible .feature-copy .stat-tile {
+  animation: feature-pop 620ms var(--ease-spring) calc(var(--pop) * var(--pop-step)) both;
+}
+/* Nhãn dán vừa nhún vừa bồng bềnh: giữ nguyên độ lệch nhịp bồng bềnh của từng vị trí */
+.feature.is-visible .stat-sticker { animation: feature-pop 620ms var(--ease-spring) calc(var(--pop) * var(--pop-step)) both, sticker-float 4s ease-in-out infinite; }
+.feature.is-visible .stat-sticker-top-right { animation-delay: calc(var(--pop) * var(--pop-step)), -1s; }
+.feature.is-visible .stat-sticker-bottom-left { animation-delay: calc(var(--pop) * var(--pop-step)), -2s; }
+.feature.is-visible .stat-sticker-bottom-right { animation-delay: calc(var(--pop) * var(--pop-step)), -3s; }
+/* Ô số liệu đã nhún bởi từng ô nên khung chứa không nhún thêm */
+.feature.is-visible .feature-copy > .stat-tiles { animation: none; opacity: 1; }
+
+/* Đa giác dữ liệu nở ra sau khi hình đã nhún vào */
+.feature-visual .polygon-chart.is-visible .polygon-svg-data { animation: none; }
+.feature.is-visible .feature-visual .polygon-chart .polygon-svg-data {
+  animation:
+    polygon-grow 900ms var(--ease-spring) calc(var(--pop-step) * 4) both,
+    polygon-breathe 4.5s ease-in-out calc(var(--pop-step) * 4 + 1s) infinite;
+}
+.feature-visual .globe360-canvas { opacity: 1; transform: none; }
 
 .feature-title { font-size: var(--font-size-4xl); font-weight: 800; line-height: var(--line-tight); letter-spacing: -0.02em; color: var(--color-text-main); }
 .feature-lead { max-width: calc(480 * var(--px)); font-size: var(--font-size-xl); line-height: 1.5; color: var(--color-text-secondary); }
 .feature-copy .stat-tiles { max-width: calc(520 * var(--px)); }
 .feature-link { margin-top: var(--space-2); text-decoration: none; border-radius: var(--radius-md); }
 
+@keyframes feature-pop {
+  0% { opacity: 0; scale: 0.4; translate: 0 28px; }
+  55% { opacity: 1; scale: 1.08; translate: 0 -6px; }
+  100% { opacity: 1; scale: 1; translate: 0 0; }
+}
 @keyframes home-rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes home-brand-slide { from { transform: translateX(var(--brand-shift)); } to { transform: none; } }
 /* Chữ lộ dần từ trái sang như được kéo ra từ sau biểu tượng; chừa phần dưới cho nét chữ thòng xuống */
@@ -143,6 +165,16 @@
   .home-brand-vibe,
   .home-brand-mapping,
   .home-brand-lead { animation: none; }
+  .feature .feature-visual,
+  .feature .feature-badge,
+  .feature .stat-sticker,
+  .feature-copy > *,
+  .feature-copy .stat-tile { opacity: 1; }
+  .feature.is-visible .feature-visual,
+  .feature.is-visible .feature-badge,
+  .feature.is-visible .feature-copy > *,
+  .feature.is-visible .feature-copy .stat-tile { animation: none; }
+  .feature.is-visible .stat-sticker { animation: sticker-float 4s ease-in-out infinite; }
 }
 
 @media (max-width: 900px) {

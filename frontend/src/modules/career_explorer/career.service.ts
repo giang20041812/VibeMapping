@@ -541,3 +541,61 @@ export async function loadCareerCompareRows(ids: string[], userId: string): Prom
   }));
   return rows.filter((row): row is CareerCompareFacts => row !== null);
 }
+
+export interface CareerProfileSection {
+  key: string;
+  title: string;
+  items: string[];
+}
+
+export interface CareerProfileInfo {
+  sections: CareerProfileSection[];
+  majors: Array<{ id: string; name: string; direct: boolean }>;
+}
+
+const PROFILE_SECTIONS: Array<{ key: string; title: string }> = [
+  { key: 'main_tasks', title: 'Công việc chính' },
+  { key: 'professional_skills', title: 'Kỹ năng chuyên môn' },
+  { key: 'soft_skills', title: 'Kỹ năng mềm' },
+  { key: 'tools_technologies', title: 'Công cụ và công nghệ' },
+  { key: 'work_environment', title: 'Môi trường làm việc' },
+  { key: 'career_path', title: 'Lộ trình nghề nghiệp' },
+  { key: 'salary_reference', title: 'Mức lương tham khảo' },
+];
+
+/** Tách văn bản JD thành các ý ngắn, bỏ trùng, giữ thứ tự xuất hiện nhiều nhất */
+function topItems(texts: string[], limit: number, wholeLines = false): string[] {
+  const counts = new Map<string, { text: string; n: number }>();
+  for (const raw of texts) {
+    for (const part of raw.split(/\r?\n|;|•|(?:^|\s)[-–]\s/)) {
+      const text = part.replace(/^\s*\d+[.)]\s*/, '').trim();
+      if (text.length < 3 || text.length > 220) continue;
+      const key = toSearchKey(text);
+      const hit = counts.get(key);
+      if (hit) hit.n += 1;
+      else counts.set(key, { text, n: 1 });
+    }
+  }
+  return [...counts.values()].sort((a, b) => b.n - a.n).slice(0, limit).map((x) => x.text);
+}
+
+/** Mô tả nghề tổng hợp từ các JD và các ngành liên quan */
+export async function loadCareerProfileInfo(careerId: string): Promise<CareerProfileInfo> {
+  const columns = PROFILE_SECTIONS.map((s) => s.key).join(',');
+  const [jds, links] = await Promise.all([
+    supabase.from('career_job_descriptions').select(columns).eq('career_id', careerId).limit(60),
+    supabase.from('career_major_links').select('major_id, link_level, majors(major_name)').eq('career_id', careerId).limit(40),
+  ]);
+  if (jds.error) throw jds.error;
+  const rows = (jds.data ?? []) as unknown as Array<Record<string, string | null>>;
+  const sections = PROFILE_SECTIONS.map(({ key, title }) => ({
+    key,
+    title,
+    items: topItems(rows.map((row) => row[key] ?? '').filter(Boolean), key === 'salary_reference' ? 2 : 6, key === 'salary_reference'),
+  })).filter((section) => section.items.length > 0);
+  const majors = ((links.data ?? []) as unknown as Array<{ major_id: string; link_level: string; majors: { major_name: string } | null }>)
+    .filter((row) => row.majors)
+    .map((row) => ({ id: row.major_id, name: row.majors!.major_name, direct: row.link_level === 'direct' }))
+    .sort((a, b) => Number(b.direct) - Number(a.direct) || a.name.localeCompare(b.name, 'vi'));
+  return { sections, majors };
+}

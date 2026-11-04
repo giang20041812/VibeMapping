@@ -56,12 +56,19 @@ export const StatInline: React.FC<{ items: StatItem[] }> = ({ items }) => {
   const { ref, seen } = useInView<HTMLUListElement>(0.3);
   return (
     <ul ref={ref} className="stat-inline">
-      {items.map(({ key, value, suffix, label }) => (
-        <li key={key} className="stat-inline-item">
-          <span className="stat-inline-value">
-            <StatValue value={value} suffix={suffix} run={seen} />
+      {items.map(({ key, value, suffix, label, icon: Icon, tone }) => (
+        <li key={key} className={`stat-inline-item stat-tone-${tone}`}>
+          {Icon && (
+            <span className="stat-inline-icon" aria-hidden="true">
+              <Icon size={26} strokeWidth={2.2} />
+            </span>
+          )}
+          <span className="stat-inline-text">
+            <span className="stat-inline-value">
+              <StatValue value={value} suffix={suffix} run={seen} />
+            </span>
+            <span className="stat-inline-label">{label}</span>
           </span>
-          <span className="stat-inline-label">{label}</span>
         </li>
       ))}
     </ul>

@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ArrowRight, BookOpen, Briefcase, Gauge, Layers, ListChecks, Orbit, Package, School, Timer, Trophy, Users } from 'lucide-react';
+import { ArrowRight, BookOpen, Briefcase, Gauge, Layers, ListChecks, Orbit, School, Timer, Trophy, Users } from 'lucide-react';
 import { Alert, Badge, Button, LogoMark } from '../../components/common';
 import { Globe360 } from '../../components/charts/Globe360/Globe360';
 import { PolygonChart } from '../../components/charts/PolygonChart/PolygonChart';
@@ -191,7 +191,6 @@ export const HomePage: React.FC = () => {
     { key: 'groups', value: axes.length, label: 'Nhóm tiêu chí', icon: Layers, tone: 'violet' },
     { key: 'questions', value: QUESTION_RANGE, label: 'Câu hỏi', icon: ListChecks, tone: 'sky' },
     { key: 'minutes', value: MINUTE_RANGE, label: 'Tự đánh giá', icon: Timer, tone: 'teal' },
-    { key: 'packages', value: PACKAGES.length, label: 'Gói đánh giá', icon: Package, tone: 'gold' },
   ];
   const scaleStats: StatItem[] = [];
   if (scale) {

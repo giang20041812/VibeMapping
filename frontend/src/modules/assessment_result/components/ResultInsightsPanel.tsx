@@ -4,22 +4,11 @@ import { Download, History } from 'lucide-react';
 import { downloadPdf, printOrientationProfile } from '../../../lib/printProfile';
 import { Alert, Badge, Button, Card, Spinner } from '../../../components/common';
 import { TopCareers } from '../../career_explorer/components/TopCareers';
-import { loadResultInsights, type ResultInsights, type SourceKey } from '../resultInsights.service';
+import { loadResultInsights, type ResultInsights } from '../resultInsights.service';
 import '../../career_explorer/pages/CareerPages.css';
 import './ResultInsightsPanel.css';
 
-const SOURCE_LABEL: Record<SourceKey, string> = {
-  self: 'Tự đánh giá',
-  parent: 'Phụ huynh',
-  friend: 'Bạn bè',
-  teacher: 'Giáo viên',
-  mentor: 'Người hướng dẫn',
-  others: 'Người khác',
-  combined_360: 'Tổng hợp 360°',
-};
 const CONFIDENCE_LABEL = { high: 'Cao', medium: 'Trung bình', low: 'Thấp' } as const;
-const CONFIDENCE_VARIANT = { high: 'success', medium: 'warning', low: 'danger' } as const;
-const LEVEL_LABEL = { very_high: 'Rất cao', high: 'Cao', medium: 'Trung bình', low: 'Thấp' } as const;
 const STATUS_LABEL: Record<string, string> = {
   self_assessment: 'Tự đánh giá',
   temporary: 'Tạm thời',
@@ -69,7 +58,6 @@ export const ResultInsightsPanel: React.FC<Props> = ({ userId, isOwner, ownerNam
   if (data === undefined) return <Spinner label="Đang tải chi tiết kết quả" />;
   if (data === null) return isOwner ? null : <Alert variant="info">Chưa có kết quả được chia sẻ.</Alert>;
 
-  const sources = data.sourcesPresent;
   const weightNote = WEIGHT_NOTE[data.qualitativeWeightStatus] ?? null;
 
   return (
@@ -167,41 +155,6 @@ export const ResultInsightsPanel: React.FC<Props> = ({ userId, isOwner, ownerNam
           )}
         </Card>
       )}
-
-      <Card title="Điểm theo tiêu chí và nhóm người đánh giá">
-        <p className="explain-note">
-          Nhóm có từ 2 bài trở lên hiện riêng; nhóm ít bài gộp vào "Người khác" (P26, P27). Không hiển thị điểm của từng người.
-        </p>
-        <div className="explain-table-wrap">
-          <table className="explain-table">
-            <thead>
-              <tr>
-                <th scope="col">Tiêu chí</th>
-                {sources.map((s) => <th key={s} scope="col">{SOURCE_LABEL[s]}</th>)}
-                <th scope="col">Mức</th>
-                <th scope="col">Độ phủ</th>
-                <th scope="col">Độ tin cậy</th>
-              </tr>
-            </thead>
-            <tbody>
-              {groups.map(([groupCode, items]) => (
-                <React.Fragment key={groupCode}>
-                  <tr className="insights-group-row"><th colSpan={sources.length + 4} scope="rowgroup">{groupCode}</th></tr>
-                  {items.map((c) => (
-                    <tr key={c.criteriaId}>
-                      <td>{c.dimensionCode} · {c.name}</td>
-                      {sources.map((s) => <td key={s}>{c.bySource[s] === undefined ? '–' : `${Math.round(c.bySource[s]!)}%`}</td>)}
-                      <td>{c.level ? LEVEL_LABEL[c.level] : 'Chưa đủ dữ liệu'}</td>
-                      <td>{c.coverage === null ? '–' : `${Math.round(c.coverage * 100)}%`}</td>
-                      <td>{c.confidence ? <Badge variant={CONFIDENCE_VARIANT[c.confidence]}>{CONFIDENCE_LABEL[c.confidence]}</Badge> : '–'}</td>
-                    </tr>
-                  ))}
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
 
       {isOwner && <TopCareers />}
     </div>

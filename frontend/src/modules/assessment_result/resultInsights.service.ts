@@ -49,14 +49,13 @@ function addMonths(iso: string, months: number): Date {
   return result;
 }
 
-export async function loadResultInsights(userId: string, includePrivate: boolean): Promise<ResultInsights | null> {
-  const { data: result, error } = await db
+export async function loadResultInsights(userId: string, includePrivate: boolean, resultId?: string): Promise<ResultInsights | null> {
+  let query = db
     .from('assessment_results')
     .select('id, session_id, status_label, calculated_at, finalized_at, qualitative_weight_status')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .eq('user_id', userId);
+  if (resultId) query = query.eq('id', resultId);
+  const { data: result, error } = await query.order('created_at', { ascending: false }).limit(1).maybeSingle();
   if (error) throw error;
   if (!result) return null;
 

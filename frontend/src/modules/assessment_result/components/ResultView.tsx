@@ -8,11 +8,12 @@ import { GROUP_ICONS, GROUP_SHORT_LABELS, NO_DATA_LABEL } from '../assessmentRes
 import type { AssessmentResultSummary, GroupScore } from '../assessmentResult.types';
 import './ResultView.css';
 
+const formatPercent = (value: number | null) => (value === null ? '–' : `${Math.round(value)}%`);
+
 const GroupRow: React.FC<{ group: GroupScore; index: number }> = ({ group, index }) => {
   const headline = group.combined ?? group.self;
   const animated = useCountUp(headline, 900, 200 + index * 70);
-  const showSelf = group.combined !== null && group.self !== null;
-  const hasDetail = group.criteria.length > 0 || showSelf;
+  const hasDetail = group.criteria.length > 0 || group.self !== null || group.combined !== null;
   const percent = headline === null ? 0 : Math.max(0, Math.min(headline, 100));
 
   return (
@@ -31,6 +32,11 @@ const GroupRow: React.FC<{ group: GroupScore; index: number }> = ({ group, index
       </div>
       {hasDetail && (
         <div className="group-detail" role="group" aria-label={`Tiêu chí – ${group.name}`}>
+          <div className="score-compare score-compare-head" aria-hidden="true">
+            <span />
+            <span>Tự đánh giá</span>
+            <span>Sau 360°</span>
+          </div>
           {group.criteria.length > 0 && (
             <ul className="criterion-list">
               {group.criteria.map((criterion) => {
@@ -38,19 +44,19 @@ const GroupRow: React.FC<{ group: GroupScore; index: number }> = ({ group, index
                 return (
                   <li key={criterion.dimensionCode} className="criterion-row">
                     <span className="criterion-name">{criterion.name}</span>
-                    <span className="criterion-score">{value === null ? '–' : `${Math.round(value)}%`}</span>
+                    <span className="criterion-score">{formatPercent(criterion.self)}</span>
+                    <span className="criterion-score">{formatPercent(criterion.combined)}</span>
                     <ProgressBar value={value} label={criterion.name} className="criterion-bar" />
                   </li>
                 );
               })}
             </ul>
           )}
-          {showSelf && (
-            <div className="group-detail-self">
-              <span>Tự đánh giá</span>
-              <span>{Math.round(group.self ?? 0)}%</span>
-            </div>
-          )}
+          <div className="score-compare group-detail-self">
+            <span>Cả nhóm</span>
+            <span>{formatPercent(group.self)}</span>
+            <span>{formatPercent(group.combined)}</span>
+          </div>
         </div>
       )}
     </li>
@@ -63,9 +69,13 @@ interface ResultViewProps {
   onContinue?: () => void;
   /** Phủ lên biểu đồ và bảng điểm (ví dụ nút làm bài khi chưa có kết quả); nội dung bên dưới bị làm mờ và khóa */
   cover?: React.ReactNode;
+  /** Đầu thẻ điểm: trạng thái, hiệu lực và chọn lịch sử */
+  header?: React.ReactNode;
+  /** Cuối thẻ điểm: giá trị cốt lõi và minh chứng */
+  footer?: React.ReactNode;
 }
 
-export const ResultView: React.FC<ResultViewProps> = ({ result, onRetake, onContinue, cover }) => {
+export const ResultView: React.FC<ResultViewProps> = ({ result, onRetake, onContinue, cover, header, footer }) => {
   const hasCombined = result.groups.some((g) => g.combined !== null);
 
   const axes: PolygonAxis[] = useMemo(
@@ -97,7 +107,8 @@ export const ResultView: React.FC<ResultViewProps> = ({ result, onRetake, onCont
           />
         </div>
 
-        <Card title="Điểm theo nhóm tiêu chí" className="result-groups-card">
+        <Card className="result-groups-card">
+          {header}
           {progress !== null && (
             <div className="result-progress">
               <div className="result-progress-head">
@@ -130,6 +141,7 @@ export const ResultView: React.FC<ResultViewProps> = ({ result, onRetake, onCont
               <GroupRow key={group.groupCode} group={group} index={index} />
             ))}
           </ul>
+          {footer}
           {(onRetake || onContinue) && (
             <div className="result-retake">
               {onContinue && (

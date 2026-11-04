@@ -23,17 +23,42 @@ function percentOf(rows: ScoreRow[], source: string): number | null {
   return rows.find((r) => r.score_source === source)?.score_percent ?? null;
 }
 
+export interface AssessmentResultListItem {
+  id: string;
+  statusLabel: ResultStatusLabel;
+  createdAt: string;
+}
+
+/** Các lần có kết quả của một HS/SV, mới nhất trước, để chọn xem lại */
+export async function listAssessmentResults(userId: string): Promise<AssessmentResultListItem[]> {
+  const { data, error } = await supabase
+    .from('assessment_results')
+    .select('id, status_label, created_at')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(100);
+  if (error) {
+    console.error('Lỗi đọc lịch sử kết quả:', error.message);
+    throw error;
+  }
+  return (data ?? []).map((row) => ({ id: row.id, statusLabel: row.status_label as ResultStatusLabel, createdAt: row.created_at }));
+}
+
 /** Kết quả mới nhất của một HS/SV cùng điểm từng nhóm tiêu chí; null nếu chưa có kết quả */
-export async function getLatestAssessmentResult(userId: string): Promise<AssessmentResultSummary | null> {
-  const { data: result, error } = await supabase
+export function getLatestAssessmentResult(userId: string): Promise<AssessmentResultSummary | null> {
+  return getAssessmentResult(userId);
+}
+
+/** Kết quả theo mã chọn, hoặc mới nhất khi không chọn; null nếu không có */
+export async function getAssessmentResult(userId: string, resultId?: string): Promise<AssessmentResultSummary | null> {
+  let query = supabase
     .from('assessment_results')
     .select(
       'id, status_label, accepted_count, expected_count, groups_count, thin_data_flag, insufficient_basis_warning, calculated_at, finalized_at',
     )
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .eq('user_id', userId);
+  if (resultId) query = query.eq('id', resultId);
+  const { data: result, error } = await query.order('created_at', { ascending: false }).limit(1).maybeSingle();
 
   if (error) {
     console.error('Lỗi đọc kết quả đánh giá:', error.message);

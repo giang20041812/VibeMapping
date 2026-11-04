@@ -198,7 +198,7 @@
 }
 .criterion-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) 5.5em 5.5em;
   align-items: baseline;
   gap: var(--space-1) var(--space-3);
 }
@@ -208,16 +208,25 @@
   color: var(--color-text-secondary);
 }
 .criterion-score {
+  text-align: right;
   font-size: var(--font-size-sm);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--color-text-main);
 }
 .group-row .criterion-bar { grid-column: 1 / -1; height: 4px; }
-.group-detail-self {
-  display: flex;
-  justify-content: space-between;
+.score-compare {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 5.5em 5.5em;
   gap: var(--space-3);
+}
+.score-compare > span:not(:first-child) { text-align: right; }
+.score-compare-head {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+.group-detail-self {
   font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--color-text-muted);

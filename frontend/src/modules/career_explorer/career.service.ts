@@ -567,7 +567,7 @@ const PROFILE_SECTIONS: Array<{ key: string; title: string }> = [
 function topItems(texts: string[], limit: number, wholeLines = false): string[] {
   const counts = new Map<string, { text: string; n: number }>();
   for (const raw of texts) {
-    for (const part of raw.split(/\r?\n|;|•|(?:^|\s)[-–]\s/)) {
+    for (const part of wholeLines ? raw.split(/\r?\n/) : raw.split(/\r?\n|;|•|(?:^|\s)[-–]\s/)) {
       const text = part.replace(/^\s*\d+[.)]\s*/, '').trim();
       if (text.length < 3 || text.length > 220) continue;
       const key = toSearchKey(text);

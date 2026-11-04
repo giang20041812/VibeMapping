@@ -1,37 +1,53 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Alert, Badge, Button, Card, Input, Select, Spinner } from '../../../components/common';
+import { Bookmark, GitCompare, Target } from 'lucide-react';
+import { Alert, Badge, Button, Pagination, Skeleton } from '../../../components/common';
+import { FilterBar } from '../../../components/filters/FilterBar/FilterBar';
+import { FilterSearch } from '../../../components/filters/FilterSearch/FilterSearch';
+import { SearchableSelect } from '../../../components/filters/SearchableSelect/SearchableSelect';
+import { useDebounce } from '../../../hooks/useDebounce';
 import { careerCompareReady, readCareerCompare, toggleCareerCompare } from '../../../lib/selectionCart';
 import { useAuth } from '../../auth/AuthContext';
 import {
   careerIdsMatchingFilters,
   fieldAndDescendants,
   listPublishedCareers,
+  listSavedCareers,
   loadCareerFields,
   loadCareerFilterChoices,
   searchCareers,
-  listSavedCareers,
   type CareerFieldNode,
   type CareerListItem,
 } from '../career.service';
 import { TopCareers } from '../components/TopCareers';
 import './CareerPages.css';
+import './CareerFit.css';
+
+const PAGE_SIZE = 24;
+const INTEREST_NAME: Record<string, string> = { R: 'Thực tế', I: 'Nghiên cứu', A: 'Nghệ thuật', S: 'Xã hội', E: 'Quản lý', C: 'Nghiệp vụ' };
+const interestLabel = (code: string) => code.split('').map((ch) => INTEREST_NAME[ch] ?? ch).join(' · ');
+const EMPTY_FILTERS = { salary: '', growth: '', education: '', environment: '' };
+type Tab = 'fit' | 'catalog';
+type SavedItem = { career_id: string; kind: string; career_name: string };
 
 export const CareerListPage: React.FC<{ publicCatalog?: boolean }> = ({ publicCatalog = false }) => {
   const { profile } = useAuth();
+  const isLearner = profile?.role === 'student' || profile?.role === 'university_student';
+  const [tab, setTab] = useState<Tab>('fit');
   const [draft, setDraft] = useState('');
-  const [query, setQuery] = useState('');
+  const query = useDebounce(draft.trim(), 300);
   const [fields, setFields] = useState<CareerFieldNode[]>([]);
-  const [fieldId, setFieldId] = useState<string | null>(null);
-  const [filters, setFilters] = useState({ salary: '', growth: '', education: '', environment: '' });
+  const [fieldId, setFieldId] = useState('');
+  const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [choices, setChoices] = useState({ salaries: [] as string[], growth: [] as string[], education: [] as string[], environments: [] as string[] });
   const [rows, setRows] = useState<CareerListItem[]>([]);
-  const [saved, setSaved] = useState<Array<{ career_id: string; kind: string; career_name: string }>>([]);
+  const [saved, setSaved] = useState<SavedItem[]>([]);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [picked, setPicked] = useState<string[]>(() => readCareerCompare());
   const [notice, setNotice] = useState<string | null>(null);
-  const isLearner = profile?.role === 'student' || profile?.role === 'university_student';
+  const showFit = isLearner && tab === 'fit';
 
   const toggleCompare = (id: string) => {
     const next = toggleCareerCompare(id);
@@ -49,22 +65,27 @@ export const CareerListPage: React.FC<{ publicCatalog?: boolean }> = ({ publicCa
   }, []);
 
   useEffect(() => {
+    if (!isLearner) return;
+    let active = true;
+    listSavedCareers().then((value) => active && setSaved((value ?? []) as SavedItem[])).catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [isLearner]);
+
+  useEffect(() => {
     let active = true;
     setLoading(true);
-    const careers = (query
-      ? searchCareers(query)
-      : fieldId
-        ? listPublishedCareers().then((all) => all.filter((row) => fieldAndDescendants(fields, fieldId).has(row.career_field_id)))
-        : searchCareers('')
-    ).then(async (found) => {
-      const allowed = await careerIdsMatchingFilters(filters);
-      return allowed === null ? found : found.filter((row) => allowed.has(row.id));
-    });
-    Promise.all([careers, isLearner ? listSavedCareers().catch(() => []) : Promise.resolve([])])
-      .then(([found, bookmarks]) => {
+    const inField = (row: CareerListItem) => !fieldId || fieldAndDescendants(fields, fieldId).has(row.career_field_id);
+    (query ? searchCareers(query) : fieldId ? listPublishedCareers() : searchCareers(''))
+      .then(async (list) => {
+        const allowed = await careerIdsMatchingFilters(filters);
+        return list.filter((row) => inField(row) && (allowed === null || allowed.has(row.id)));
+      })
+      .then((list) => {
         if (!active) return;
-        setRows(found);
-        setSaved(bookmarks ?? []);
+        setRows(list);
+        setPage(1);
         setError(null);
       })
       .catch(() => active && setError('Không tải được danh sách nghề.'))
@@ -72,91 +93,120 @@ export const CareerListPage: React.FC<{ publicCatalog?: boolean }> = ({ publicCa
     return () => {
       active = false;
     };
-  }, [query, fieldId, fields, filters, isLearner]);
+  }, [query, fieldId, fields, filters]);
 
-  const roots = fields.filter((field) => !field.parent_field_id);
-  const children = fields.filter((field) => field.parent_field_id === fieldId);
+  const fieldOptions = useMemo(
+    () => [{ value: '', label: 'Tất cả lĩnh vực' }, ...fields.filter((f) => !f.parent_field_id).map((f) => ({ value: f.id, label: f.field_name }))],
+    [fields],
+  );
+  const toOptions = (values: string[]) => [{ value: '', label: 'Tất cả' }, ...values.map((value) => ({ value, label: value }))];
+  const reset = () => {
+    setDraft('');
+    setFieldId('');
+    setFilters(EMPTY_FILTERS);
+  };
   const careerHref = (id: string) => (publicCatalog ? `/danh-muc-nghe/${id}` : `/nghe/${id}`);
+  const visible = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const targets = saved.filter((item) => item.kind === 'target');
+  const interested = saved.filter((item) => item.kind !== 'target');
+  const clearPicked = () => {
+    picked.forEach((id) => toggleCareerCompare(id));
+    setPicked(readCareerCompare());
+  };
 
-  return (
-    <div className="module-page">
-      <h1>Nghề nghiệp</h1>
-      {isLearner && <TopCareers />}
-      {notice && <Alert variant="info">{notice}</Alert>}
-      {isLearner && picked.length > 0 && (
-        <Alert variant="info">
-          Đã chọn {picked.length}/4 nghề để so sánh.{' '}
-          {careerCompareReady(picked) ? <Link to={`/nghe/so-sanh?ids=${picked.join(',')}`}>Mở bảng so sánh</Link> : 'Chọn thêm nghề (cần 2–4 nghề).'}
-        </Alert>
-      )}
-      <Card title="Cây danh mục">
-        <div className="module-form">
-          {roots.map((field) => (
-            <Button key={field.id} type="button" size="sm" variant={fieldId === field.id ? 'primary' : 'outline'} onClick={() => { setFieldId(field.id); setQuery(''); setDraft(''); }}>
-              {field.field_name}
-            </Button>
-          ))}
-          {fieldId && (
-            <Button type="button" size="sm" variant="outline" onClick={() => setFieldId(null)}>Tất cả lĩnh vực</Button>
-          )}
-        </div>
-        {children.length > 0 && (
-          <div className="module-form">
-            {children.map((field) => (
-              <Button key={field.id} type="button" size="sm" variant="outline" onClick={() => setFieldId(field.id)}>
-                {field.field_name}
-              </Button>
-            ))}
-          </div>
-        )}
-      </Card>
-      <Card title="Tìm nghề">
-        <form
-          className="module-form"
-          onSubmit={(event) => {
-            event.preventDefault();
-            setQuery(draft.trim());
-          }}
-        >
-          <Input label="Tên nghề" value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Nhập tên nghề" />
-          <Button type="submit">Tìm</Button>
-          <Select label="Thang lương" value={filters.salary} emptyLabel="Tất cả" options={choices.salaries.map((value) => ({ value, label: value }))} onChange={(value) => setFilters((current) => ({ ...current, salary: value }))} />
-          <Select label="Mức tăng trưởng" value={filters.growth} emptyLabel={choices.growth.length ? 'Tất cả' : 'Chưa có dữ liệu'} options={choices.growth.map((value) => ({ value, label: value }))} onChange={(value) => setFilters((current) => ({ ...current, growth: value }))} />
-          <Select label="Trình độ học vấn" value={filters.education} emptyLabel="Tất cả" options={choices.education.map((value) => ({ value, label: value }))} onChange={(value) => setFilters((current) => ({ ...current, education: value }))} />
-          <Select label="Môi trường làm việc" value={filters.environment} emptyLabel="Tất cả" options={choices.environments.map((value) => ({ value, label: value }))} onChange={(value) => setFilters((current) => ({ ...current, environment: value }))} />
-        </form>
-        {loading && <Spinner />}
-        {error && <Alert variant="danger">{error}</Alert>}
-        {!loading && !error && rows.length === 0 && <p>Chưa có nghề đã công bố khớp với từ khóa này.</p>}
-        <ul className="module-list">
-          {rows.map((row) => (
-            <li key={row.id}>
-              <Link to={careerHref(row.id)}>{row.career_name}</Link>
-              <span>{row.career_code}</span>
-              <span>{row.qualifying_jd_count} JD L0–L2</span>
-              {row.holland_top3 && <Badge>Holland {row.holland_top3}</Badge>}
-              {isLearner && (
-                <Button type="button" size="sm" variant={picked.includes(row.id) ? 'primary' : 'outline'} onClick={() => toggleCompare(row.id)}>
-                  {picked.includes(row.id) ? 'Bỏ so sánh' : 'So sánh nghề'}
-                </Button>
-              )}
+  const catalog = (
+    <>
+      <FilterBar onReset={reset} totalResults={rows.length} isLoading={loading}>
+        <FilterSearch placeholder="Tên nghề" value={draft} onChange={setDraft} />
+        <SearchableSelect label="Lĩnh vực" options={fieldOptions} value={fieldId} onChange={setFieldId} />
+        <SearchableSelect label="Thang lương" options={toOptions(choices.salaries)} value={filters.salary} onChange={(value) => setFilters((c) => ({ ...c, salary: value }))} />
+        <SearchableSelect label="Mức tăng trưởng" options={toOptions(choices.growth)} value={filters.growth} onChange={(value) => setFilters((c) => ({ ...c, growth: value }))} />
+        <SearchableSelect label="Trình độ học vấn" options={toOptions(choices.education)} value={filters.education} onChange={(value) => setFilters((c) => ({ ...c, education: value }))} />
+        <SearchableSelect label="Môi trường làm việc" options={toOptions(choices.environments)} value={filters.environment} onChange={(value) => setFilters((c) => ({ ...c, environment: value }))} />
+      </FilterBar>
+      {error && <Alert variant="danger">{error}</Alert>}
+      {loading ? (
+        <ul className="career-grid">
+          {Array.from({ length: 8 }, (_, i) => (
+            <li key={i} className="career-card">
+              <Skeleton shape="title" width={70} />
+              <Skeleton shape="chip" width={40} />
             </li>
           ))}
         </ul>
-      </Card>
+      ) : rows.length === 0 ? (
+        <div className="fit-empty">
+          <h2>Không có nghề khớp bộ lọc</h2>
+          <Button variant="outline" onClick={reset}>Đặt lại bộ lọc</Button>
+        </div>
+      ) : (
+        <>
+          <ul className="career-grid">
+            {visible.map((row) => (
+              <li key={row.id} className="career-card">
+                <Link to={careerHref(row.id)} className="career-card-title">{row.career_name}</Link>
+                <div className="career-card-meta">
+                  {row.holland_top3 && <Badge variant="info" size="sm">{interestLabel(row.holland_top3)}</Badge>}
+                </div>
+                {isLearner && (
+                  <Button size="sm" variant={picked.includes(row.id) ? 'primary' : 'outline'} leftIcon={<GitCompare size={14} />} onClick={() => toggleCompare(row.id)}>
+                    {picked.includes(row.id) ? 'Bỏ so sánh' : 'So sánh'}
+                  </Button>
+                )}
+              </li>
+            ))}
+          </ul>
+          <Pagination page={page} pageSize={PAGE_SIZE} total={rows.length} onChange={setPage} />
+        </>
+      )}
+    </>
+  );
+
+  return (
+    <div className="module-page career-page">
+      <h1>Nghề nghiệp</h1>
+      {notice && <Alert variant="info">{notice}</Alert>}
       {isLearner && (
-        <Card title="Nghề đã lưu">
-          {saved.length === 0 ? <p>Bạn chưa lưu nghề nào.</p> : (
-            <ul className="module-list">
-              {saved.map((item) => (
-                <li key={`${item.kind}-${item.career_id}`}>
-                  <Link to={careerHref(item.career_id)}>{item.career_name}</Link>
-                  <Badge variant={item.kind === 'target' ? 'success' : 'default'}>{item.kind === 'target' ? 'Mục tiêu' : 'Quan tâm'}</Badge>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
+        <div className="career-tabs" role="tablist" aria-label="Nghề nghiệp">
+          {([['fit', 'Phù hợp với bạn'], ['catalog', 'Danh mục nghề']] as const).map(([key, label]) => (
+            <button key={key} type="button" role="tab" aria-selected={tab === key} className={`career-tab ${tab === key ? 'is-active' : ''}`} onClick={() => setTab(key)}>
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+      {showFit ? (
+        <>
+          <TopCareers picked={picked} onToggleCompare={toggleCompare} onBrowse={() => setTab('catalog')} />
+          <section className="career-mine">
+            <h2>Nghề của tôi</h2>
+            <div className="career-mine-grid">
+              <div className="career-mine-block">
+                <h3><Target size={16} aria-hidden="true" /> Nghề mục tiêu</h3>
+                {targets.length === 0 ? <p className="career-muted">Chưa chọn nghề mục tiêu</p> : (
+                  <ul>{targets.map((item) => <li key={item.career_id}><Link to={careerHref(item.career_id)}>{item.career_name}</Link></li>)}</ul>
+                )}
+              </div>
+              <div className="career-mine-block">
+                <h3><Bookmark size={16} aria-hidden="true" /> Nghề quan tâm</h3>
+                {interested.length === 0 ? <p className="career-muted">Chưa lưu nghề nào</p> : (
+                  <ul>{interested.map((item) => <li key={item.career_id}><Link to={careerHref(item.career_id)}>{item.career_name}</Link></li>)}</ul>
+                )}
+              </div>
+            </div>
+          </section>
+        </>
+      ) : (
+        catalog
+      )}
+      {isLearner && picked.length > 0 && (
+        <div className="compare-tray" role="status">
+          <span>Đã chọn {picked.length}/4 nghề</span>
+          <Button size="sm" variant="ghost" onClick={clearPicked}>Bỏ chọn</Button>
+          <Link className="compare-tray-go" to={careerCompareReady(picked) ? `/nghe/so-sanh?ids=${picked.join(',')}` : '#'} aria-disabled={!careerCompareReady(picked)}>
+            {careerCompareReady(picked) ? 'So sánh ngay' : 'Chọn thêm nghề'}
+          </Link>
+        </div>
       )}
     </div>
   );

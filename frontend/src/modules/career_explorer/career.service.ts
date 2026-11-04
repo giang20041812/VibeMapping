@@ -181,7 +181,10 @@ export async function loadLearnerProfile(userId: string): Promise<LearnerProfile
   };
 }
 
+let publishedCache: { at: number; rows: CareerListItem[] } | null = null;
+
 export async function listPublishedCareers(): Promise<CareerListItem[]> {
+  if (publishedCache && Date.now() - publishedCache.at < 60_000) return publishedCache.rows;
   const rows: CareerListItem[] = [];
   for (let from = 0; ; from += PAGE) {
     const { data, error } = await supabase
@@ -194,6 +197,7 @@ export async function listPublishedCareers(): Promise<CareerListItem[]> {
     rows.push(...(data ?? []));
     if (!data || data.length < PAGE) break;
   }
+  publishedCache = { at: Date.now(), rows };
   return rows;
 }
 
@@ -201,10 +205,9 @@ export async function listPublishedCareers(): Promise<CareerListItem[]> {
 export async function searchCareers(query: string): Promise<CareerListItem[]> {
   const text = toSearchKey(query);
   const rows = await listPublishedCareers();
-  if (!text) return rows.slice(0, 40);
+  if (!text) return rows;
   return rows
-    .filter((row) => toSearchKey(row.career_name).includes(text) || toSearchKey(row.career_code).includes(text))
-    .slice(0, 40);
+    .filter((row) => toSearchKey(row.career_name).includes(text) || toSearchKey(row.career_code).includes(text));
 }
 
 export interface CareerFilterChoices {

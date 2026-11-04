@@ -12,9 +12,7 @@
   font-size: var(--font-size-base);
   font-weight: 600;
   color: var(--color-text-main);
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  background: var(--color-bg-surface);
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-sm);
   cursor: pointer;

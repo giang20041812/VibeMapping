@@ -5,7 +5,7 @@
   min-height: 100dvh;
 }
 
-/* Khối thương hiệu: bầu trời đêm navy như thanh bên, quỹ đạo quanh logo, cực quang ở đáy */
+/* Khối thương hiệu: nền xanh sáng phẳng với chấm mờ */
 .auth-hero {
   position: relative;
   display: flex;
@@ -26,7 +26,6 @@
   gap: var(--space-4);
   text-align: center;
 }
-.auth-hero .logo-mark-box { border-radius: 50%; box-shadow: var(--auth-logo-glow); }
 
 .auth-hero-slogan {
   max-width: 420px;
@@ -39,10 +38,10 @@
 .auth-hero-slogan-sub {
   font-size: var(--font-size-lg);
   font-weight: 500;
-  color: var(--sidebar-text);
+  color: var(--brand-ice);
 }
 
-/* Khối form: nằm trên nền sóng của trang, thẻ kính trắng, mép trên là một nét cực quang */
+/* Khối form: nằm trên nền sóng của trang, thẻ trắng đặc */
 .auth-panel {
   position: relative;
   z-index: 1;
@@ -63,26 +62,14 @@
   width: 100%;
   max-width: 440px;
   padding: var(--space-8);
-  background: var(--glass-bg);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--surface-border);
   border-radius: var(--radius-xl);
-  box-shadow: var(--glass-shadow);
+  box-shadow: var(--surface-shadow);
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
   transition: max-width 420ms var(--ease-out);
-}
-.auth-panel-inner::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--aurora-line);
-  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
 }
 /* Trang có nhiều trường (đăng ký) cần thẻ rộng hơn */
 .auth-panel-inner:has(.is-wide) { max-width: 600px; }

@@ -34,8 +34,6 @@
   font-size: var(--font-size-sm);
   color: var(--brand-deep);
   background: var(--chip-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--chip-border);
   border-radius: var(--radius-full);
   box-shadow: var(--chip-shadow);
@@ -56,9 +54,7 @@
   font-size: var(--font-size-base);
   font-weight: 700;
   color: var(--color-text-secondary);
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  background: var(--color-bg-surface);
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-md);
   transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
@@ -96,9 +92,7 @@
   align-items: center;
   gap: var(--space-3) var(--space-5);
   padding: var(--space-4) var(--space-5);
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  background: var(--color-bg-surface);
   border: 1.5px solid var(--color-border);
   border-left-width: 5px;
   border-radius: var(--radius-lg);

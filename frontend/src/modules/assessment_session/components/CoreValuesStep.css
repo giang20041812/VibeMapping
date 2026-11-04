@@ -12,8 +12,6 @@
   font-weight: 700;
   color: var(--color-text-secondary);
   background: var(--chip-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--chip-border);
   border-radius: var(--radius-full);
   box-shadow: var(--chip-shadow);

@@ -8,10 +8,10 @@
 :root {
   /* Thang màu thương hiệu */
   --brand-navy: #031964;
-  --brand-deep: #0b2a84;
-  --brand-azure: #1d43a3;
-  --brand-blue: #3560c2;
-  --brand-sky: #4a78d6;
+  --brand-deep: #1558c8;
+  --brand-azure: #1a63de;
+  --brand-blue: #1f6feb;
+  --brand-sky: #38a3f5;
   --brand-light: #7fa6e8;
   --brand-soft: #a5c6f5;
   --brand-pale: #b8d6fa;
@@ -22,78 +22,55 @@
   --brand-white: #ffffff;
 
   /* Primary */
-  --color-primary: var(--brand-navy);
-  --color-primary-hover: var(--brand-deep);
-  --color-primary-active: #02114a;
+  --color-primary: var(--brand-blue);
+  --color-primary-hover: #1a5fd6;
+  --color-primary-active: #164fb5;
   --color-primary-light: var(--brand-ice);
-  --color-primary-ring: rgba(53, 96, 194, 0.28);
-  --color-accent: var(--brand-blue);
+  --color-primary-ring: rgba(31, 111, 235, 0.3);
+  --color-accent: var(--brand-sky);
   --color-accent-gold: var(--brand-gold);
 
   /* Surface & Background */
-  --color-bg-app: #f5f8fe;
+  --color-bg-app: #f6f9ff;
   --color-bg-surface: #ffffff;
-  --color-bg-subtle: #e9eefa;
-  --color-bg-hover: #dde6f7;
+  --color-bg-subtle: #eaf1fc;
+  --color-bg-hover: #dce8fa;
   --color-bg-cream: var(--brand-cream);
 
-  /* Nền trang: các dải sóng màu lặp dọc theo trang, quỹ đạo kiểu bản đồ ở góc dưới phải,
-     các vầng sáng màu nhấn và lưới chấm mờ. Tĩnh, chỉ lớp chấm lặp. */
-  --bg-app-art:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 1400' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='0'%3E%3Cstop offset='0' stop-color='%2322d3ee'/%3E%3Cstop offset='0.45' stop-color='%238b6cff'/%3E%3Cstop offset='0.8' stop-color='%23f05bd0'/%3E%3Cstop offset='1' stop-color='%23f6b73c'/%3E%3C/linearGradient%3E%3ClinearGradient id='h' x1='1' y1='0' x2='0' y2='0'%3E%3Cstop offset='0' stop-color='%23f6b73c'/%3E%3Cstop offset='0.35' stop-color='%23f05bd0'/%3E%3Cstop offset='0.7' stop-color='%238b6cff'/%3E%3Cstop offset='1' stop-color='%2322d3ee'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23g)' opacity='0.14' d='M0 70 C 260 0 520 170 820 90 S 1260 -20 1440 40 L 1440 120 C 1250 60 1060 210 800 170 S 300 90 0 160 Z'/%3E%3Cg fill='none' stroke='url(%23g)'%3E%3Cpath stroke-width='2.2' opacity='0.7' vector-effect='non-scaling-stroke' d='M0 80 C 260 10 520 190 820 110 S 1260 0 1440 60'/%3E%3Cpath stroke-width='1.6' opacity='0.5' vector-effect='non-scaling-stroke' d='M0 112 C 280 40 540 220 830 142 S 1270 30 1440 95'/%3E%3Cpath stroke-width='1.3' opacity='0.34' vector-effect='non-scaling-stroke' d='M0 146 C 300 72 560 252 840 176 S 1280 62 1440 132'/%3E%3Cpath stroke-width='1' opacity='0.22' vector-effect='non-scaling-stroke' d='M0 182 C 320 106 580 284 850 212 S 1290 96 1440 170'/%3E%3C/g%3E%3Cpath fill='url(%23h)' opacity='0.1' d='M0 760 C 300 620 640 820 980 640 S 1340 560 1440 600 L 1440 680 C 1300 650 1100 760 940 760 S 380 700 0 860 Z'/%3E%3Cg fill='none' stroke='url(%23h)'%3E%3Cpath stroke-width='1.8' opacity='0.6' vector-effect='non-scaling-stroke' d='M0 780 C 300 640 640 840 980 660 S 1340 580 1440 620'/%3E%3Cpath stroke-width='1.3' opacity='0.4' vector-effect='non-scaling-stroke' d='M0 818 C 320 676 660 876 1000 698 S 1350 618 1440 660'/%3E%3Cpath stroke-width='1' opacity='0.24' vector-effect='non-scaling-stroke' d='M0 858 C 340 714 680 914 1020 738 S 1360 658 1440 702'/%3E%3C/g%3E%3Cg fill='none' stroke='url(%23g)'%3E%3Cpath stroke-width='1.4' opacity='0.42' vector-effect='non-scaling-stroke' d='M0 1180 C 360 1100 620 1260 1000 1170 S 1320 1120 1440 1150'/%3E%3Cpath stroke-width='1' opacity='0.26' vector-effect='non-scaling-stroke' d='M0 1214 C 380 1136 640 1296 1020 1206 S 1330 1156 1440 1188'/%3E%3C/g%3E%3Cg fill='%238b6cff'%3E%3Ccircle cx='980' cy='660' r='9' opacity='0.16'/%3E%3Ccircle cx='980' cy='660' r='3.5' opacity='0.7'/%3E%3C/g%3E%3Cg fill='%23f6b73c'%3E%3Ccircle cx='620' cy='1222' r='8' opacity='0.2'/%3E%3Ccircle cx='620' cy='1222' r='3' opacity='0.85'/%3E%3C/g%3E%3C/svg%3E") center top / 100% calc(1400 * var(--px)) repeat-y,
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 560 560'%3E%3Cg fill='none' stroke='%233560c2' stroke-width='1.2'%3E%3Ccircle cx='560' cy='560' r='140' opacity='0.16'/%3E%3Ccircle cx='560' cy='560' r='220' opacity='0.13' stroke-dasharray='4 8'/%3E%3Ccircle cx='560' cy='560' r='300' opacity='0.11'/%3E%3Ccircle cx='560' cy='560' r='380' opacity='0.08' stroke-dasharray='2 10'/%3E%3Ccircle cx='560' cy='560' r='460' opacity='0.06'/%3E%3C/g%3E%3Ccircle cx='404' cy='409' r='9' fill='%238b6cff' opacity='0.18'/%3E%3Ccircle cx='404' cy='409' r='4' fill='%238b6cff' opacity='0.7'/%3E%3Ccircle cx='296' cy='422' r='7' fill='%2322d3ee' opacity='0.2'/%3E%3Ccircle cx='296' cy='422' r='3' fill='%2322d3ee' opacity='0.75'/%3E%3Ccircle cx='360' cy='224' r='8' fill='%23f6b73c' opacity='0.22'/%3E%3Ccircle cx='360' cy='224' r='3.5' fill='%23f6b73c' opacity='0.85'/%3E%3C/svg%3E") right bottom / calc(560 * var(--px)) no-repeat,
-    radial-gradient(60vw 520px at 100% 0, rgba(139, 108, 255, 0.16), transparent 70%),
-    radial-gradient(48vw 440px at 0 0, rgba(34, 211, 238, 0.12), transparent 70%),
-    radial-gradient(52vw 480px at 0 100%, rgba(246, 183, 60, 0.12), transparent 70%),
-    radial-gradient(rgba(3, 25, 100, 0.07) 1px, transparent 1.6px) 0 0 / 22px 22px repeat;
+/* Nền trang: nền xanh rất nhạt, lưới chấm mờ và một vầng xanh nhạt ở đầu trang. Tĩnh, không ảnh nặng. */
+  --bg-pattern:
+    radial-gradient(70vw 420px at 50% 0, rgba(31, 111, 235, 0.08), transparent 72%),
+    radial-gradient(rgba(31, 111, 235, 0.12) 1px, transparent 1.4px) 0 0 / 24px 24px repeat;
 
-  /* Sao rải ngẫu nhiên trên nền navy, lặp đều (thanh bên, khối thương hiệu trang đăng nhập) */
-  --night-stars: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='340' viewBox='0 0 240 340'%3E%3Cg fill='%23c7e3fe'%3E%3Ccircle cx='18' cy='22' r='0.9' opacity='0.55'/%3E%3Ccircle cx='96' cy='14' r='0.7' opacity='0.4'/%3E%3Ccircle cx='206' cy='48' r='1.1' opacity='0.6'/%3E%3Ccircle cx='52' cy='70' r='0.6' opacity='0.35'/%3E%3Ccircle cx='150' cy='88' r='0.8' opacity='0.45'/%3E%3Ccircle cx='226' cy='132' r='0.7' opacity='0.4'/%3E%3Ccircle cx='30' cy='150' r='1' opacity='0.5'/%3E%3Ccircle cx='118' cy='176' r='0.6' opacity='0.35'/%3E%3Ccircle cx='184' cy='214' r='1' opacity='0.55'/%3E%3Ccircle cx='70' cy='236' r='0.7' opacity='0.4'/%3E%3Ccircle cx='12' cy='290' r='0.8' opacity='0.45'/%3E%3Ccircle cx='140' cy='300' r='1.1' opacity='0.55'/%3E%3Ccircle cx='212' cy='322' r='0.6' opacity='0.35'/%3E%3Ccircle cx='88' cy='118' r='0.5' opacity='0.3'/%3E%3Cpath d='M168 150 l1.1 3 3 1.1 -3 1.1 -1.1 3 -1.1 -3 -3 -1.1 3 -1.1z' opacity='0.6'/%3E%3C/g%3E%3C/svg%3E");
+  /* Thanh bên và thanh ngang: trắng đặc, viền mảnh */
+  --sidebar-bg: var(--color-bg-surface);
+  --sidebar-border: var(--color-border);
+  --sidebar-text: var(--color-text-secondary);
+  --sidebar-text-strong: var(--color-text-main);
+  --sidebar-hover-bg: var(--brand-ice);
+  --sidebar-active-bg: var(--color-primary-light);
+  --sidebar-active-text: var(--color-primary);
+  --sidebar-ring: var(--color-primary-ring);
+  --topbar-bg: var(--color-bg-surface);
+  --topbar-shadow: 0 1px 0 var(--color-border);
 
-  /* Khối thương hiệu trang đăng nhập: cùng bầu trời đêm với thanh bên, quỹ đạo quanh logo, cực quang ở đáy */
+  /* Khối thương hiệu trang đăng nhập: xanh sáng phẳng, chấm trắng mờ */
   --auth-hero-bg:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 720 900' preserveAspectRatio='xMidYMid slice'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='0'%3E%3Cstop offset='0' stop-color='%2322d3ee'/%3E%3Cstop offset='0.45' stop-color='%238b6cff'/%3E%3Cstop offset='0.8' stop-color='%23f05bd0'/%3E%3Cstop offset='1' stop-color='%23f6b73c'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg fill='none' stroke='%23c7e3fe'%3E%3Cellipse cx='360' cy='380' rx='300' ry='96' transform='rotate(-16 360 380)' opacity='0.2'/%3E%3Cellipse cx='360' cy='380' rx='390' ry='136' transform='rotate(-16 360 380)' opacity='0.12' stroke-dasharray='4 9'/%3E%3Cellipse cx='360' cy='380' rx='230' ry='70' transform='rotate(14 360 380)' opacity='0.14'/%3E%3C/g%3E%3Ccircle cx='651' cy='298' r='10' fill='%2322d3ee' opacity='0.18'/%3E%3Ccircle cx='651' cy='298' r='4' fill='%2322d3ee'/%3E%3Ccircle cx='96' cy='470' r='9' fill='%23f6b73c' opacity='0.2'/%3E%3Ccircle cx='96' cy='470' r='3.5' fill='%23f6b73c'/%3E%3Ccircle cx='566' cy='452' r='8' fill='%23f05bd0' opacity='0.2'/%3E%3Ccircle cx='566' cy='452' r='3' fill='%23f05bd0'/%3E%3Cpolyline points='70,120 132,84 196,112 252,64 318,92' fill='none' stroke='%23c7e3fe' stroke-opacity='0.28'/%3E%3Cline x1='196' y1='112' x2='214' y2='170' stroke='%23c7e3fe' stroke-opacity='0.28'/%3E%3Cg fill='%23c7e3fe' opacity='0.85'%3E%3Ccircle cx='70' cy='120' r='2'/%3E%3Ccircle cx='132' cy='84' r='2.4'/%3E%3Ccircle cx='196' cy='112' r='2'/%3E%3Ccircle cx='252' cy='64' r='2.6'/%3E%3Ccircle cx='318' cy='92' r='1.8'/%3E%3Ccircle cx='214' cy='170' r='1.8'/%3E%3C/g%3E%3Cpath fill='url(%23g)' opacity='0.16' d='M-20 700 C 140 600 330 780 520 690 S 700 610 740 640 L 740 730 C 640 700 560 820 400 800 S 120 720 -20 800 Z'/%3E%3Cg fill='none' stroke='url(%23g)'%3E%3Cpath stroke-width='2.2' opacity='0.8' d='M-20 712 C 140 612 330 792 520 702 S 700 622 740 652'/%3E%3Cpath stroke-width='1.7' opacity='0.58' d='M-20 746 C 150 648 340 828 530 738 S 705 660 740 690'/%3E%3Cpath stroke-width='1.3' opacity='0.4' d='M-20 782 C 160 686 350 864 540 776 S 710 700 740 730'/%3E%3Cpath stroke-width='1' opacity='0.26' d='M-20 820 C 170 726 360 900 550 816 S 715 742 740 772'/%3E%3C/g%3E%3Ccircle cx='340' cy='752' r='9' fill='%23f6b73c' opacity='0.22'/%3E%3Ccircle cx='340' cy='752' r='3.4' fill='%23f6b73c'/%3E%3C/svg%3E") center / cover no-repeat,
-    var(--night-stars) 0 0 / 240px 340px repeat,
-    radial-gradient(360px 300px at 50% 42%, rgba(139, 108, 255, 0.32), transparent 70%),
-    radial-gradient(420px 360px at 0 100%, rgba(240, 91, 208, 0.24), transparent 70%),
-    radial-gradient(380px 340px at 100% 0, rgba(34, 211, 238, 0.2), transparent 70%),
-    linear-gradient(170deg, var(--brand-navy) 0%, var(--brand-deep) 55%, #2b2a8f 100%);
-  --auth-logo-glow: 0 0 0 6px rgba(199, 227, 254, 0.1), 0 0 48px 6px rgba(139, 108, 255, 0.55);
+    radial-gradient(rgba(255, 255, 255, 0.18) 1px, transparent 1.4px) 0 0 / 22px 22px repeat,
+    linear-gradient(160deg, var(--color-primary) 0%, var(--brand-sky) 100%);
 
-  /* Thanh bên: bầu trời đêm navy pha tím, sao lặp đều, quỹ đạo ở góc trên, dải cực quang ở đáy */
-  --sidebar-bg:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 240'%3E%3Cg fill='none' stroke='%23c7e3fe'%3E%3Cellipse cx='230' cy='30' rx='150' ry='54' transform='rotate(-24 230 30)' opacity='0.16'/%3E%3Cellipse cx='230' cy='30' rx='200' ry='76' transform='rotate(-24 230 30)' opacity='0.1' stroke-dasharray='3 6'/%3E%3C/g%3E%3Ccircle cx='112' cy='96' r='2' fill='%2322d3ee' opacity='0.9'/%3E%3C/svg%3E") right top / 100% auto no-repeat,
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 300'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='0'%3E%3Cstop offset='0' stop-color='%2322d3ee'/%3E%3Cstop offset='0.45' stop-color='%238b6cff'/%3E%3Cstop offset='0.8' stop-color='%23f05bd0'/%3E%3Cstop offset='1' stop-color='%23f6b73c'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23g)' opacity='0.16' d='M-10 150 C 60 90 130 200 250 120 L 250 175 C 140 250 60 140 -10 215 Z'/%3E%3Cg fill='none' stroke='url(%23g)'%3E%3Cpath stroke-width='1.6' opacity='0.75' d='M-10 160 C 60 100 130 210 250 130'/%3E%3Cpath stroke-width='1.3' opacity='0.55' d='M-10 182 C 66 122 136 232 250 154'/%3E%3Cpath stroke-width='1.1' opacity='0.38' d='M-10 204 C 72 144 142 254 250 178'/%3E%3Cpath stroke-width='1' opacity='0.24' d='M-10 226 C 78 166 148 276 250 202'/%3E%3C/g%3E%3Cg fill='%23c7e3fe'%3E%3Ccircle cx='58' cy='132' r='1.6' opacity='0.8'/%3E%3Ccircle cx='180' cy='160' r='1.4' opacity='0.7'/%3E%3C/g%3E%3Ccircle cx='132' cy='170' r='6' fill='%23f6b73c' opacity='0.22'/%3E%3Ccircle cx='132' cy='170' r='2.4' fill='%23f6b73c'/%3E%3C/svg%3E") center bottom / 100% auto no-repeat,
-    var(--night-stars) 0 0 / 240px 340px repeat,
-    radial-gradient(260px 220px at 0 100%, rgba(240, 91, 208, 0.22), transparent 70%),
-    radial-gradient(240px 260px at 100% 0, rgba(34, 211, 238, 0.18), transparent 70%),
-    linear-gradient(175deg, var(--brand-navy) 0%, var(--brand-deep) 55%, #2b2a8f 100%);
-  --sidebar-text: rgba(199, 227, 254, 0.78);
-  --sidebar-text-strong: var(--brand-cream);
-  --sidebar-hover-bg: rgba(199, 227, 254, 0.1);
-  --sidebar-active-bg: linear-gradient(90deg, rgba(139, 108, 255, 0.42), rgba(34, 211, 238, 0.12));
-  --sidebar-ring: rgba(199, 227, 254, 0.35);
-  --sidebar-logo-glow: 0 0 0 3px rgba(199, 227, 254, 0.14), 0 0 18px 2px rgba(139, 108, 255, 0.55);
-  --sidebar-star-glow: 0 0 8px 1px rgba(246, 183, 60, 0.75);
-
-  /* Thanh ngang: kính trắng, viền dưới là một nét cực quang */
-  --topbar-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.6));
-  --topbar-menu-bg: rgba(255, 255, 255, 0.96);
-  --topbar-blur: blur(18px) saturate(1.6);
-  --topbar-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 10px 30px -14px rgba(3, 25, 100, 0.22);
-  --aurora-line: linear-gradient(90deg, rgba(34, 211, 238, 0.9), rgba(139, 108, 255, 0.9) 45%, rgba(240, 91, 208, 0.85) 80%, rgba(246, 183, 60, 0.85));
 
   /* Borders & Dividers */
-  --color-border: #d8e2f4;
-  --color-border-hover: #b8cbea;
+  --color-border: #e1e8f3;
+  --color-border-hover: #c6d4ea;
   --color-border-focus: var(--brand-blue);
 
   /* Typography / Text hierarchy */
-  --color-text-main: var(--brand-navy);
-  --color-text-secondary: #41588c;
-  --color-text-muted: #6a7ca3;
+  --color-text-main: #0f2747;
+  --color-text-secondary: #475a7a;
+  --color-text-muted: #7486a3;
   --color-text-inverse: #ffffff;
-  --color-text-brand: var(--brand-navy);
+  --color-text-brand: var(--brand-blue);
 
   /* Status Colors (luôn đi kèm chữ mô tả, không chỉ dựa vào màu) */
   --color-success: #12a56f;
@@ -114,7 +91,7 @@
   --color-info: var(--brand-blue);
   --color-info-bg: var(--brand-ice);
   --color-info-border: var(--brand-mist);
-  --color-info-text: var(--brand-navy);
+  --color-info-text: #0f2747;
 
   /* Màu nhấn cho trực quan hóa (biểu đồ ngũ giác, quả địa cầu, nền trang chủ).
      Chỉ dùng cho hình minh họa, không dùng cho nút bấm, chữ hay trạng thái. */
@@ -219,18 +196,14 @@
   --soft-glow-teal: rgba(67, 182, 152, 0.3);
   --soft-glow-coral: rgba(228, 140, 102, 0.3);
 
-  /* Bề mặt kính: trắng trong mờ để thấy sóng và vầng sáng phía sau, viền sáng, mép trên ánh trắng */
+  /* Bề mặt: thẻ trắng đặc, viền mảnh, bóng nhẹ. --surface-glass giữ lại cho quả cầu và biểu đồ. */
   --surface-glass: rgba(255, 255, 255, 0.7);
-  --glass-bg: rgba(255, 255, 255, 0.52);
-  --glass-bg-strong: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.72));
-  --glass-border: rgba(255, 255, 255, 0.85);
-  --glass-blur: blur(16px) saturate(1.5);
+  --surface-border: var(--color-border);
+  --surface-shadow: 0 1px 2px rgba(15, 39, 71, 0.04), 0 4px 14px -6px rgba(31, 111, 235, 0.14);
   --chip-bg: var(--color-bg-surface);
   --chip-border: var(--color-border);
   --chip-shadow: 0 0 0 0 transparent;
-  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  --glass-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 0 0 1px rgba(53, 96, 194, 0.08), 0 12px 32px -14px rgba(3, 25, 100, 0.22);
-  --scrim: rgba(3, 25, 100, 0.5);
+  --scrim: rgba(15, 39, 71, 0.45);
 
   /* Màu phẳng thay cho gradient */
   --gradient-brand: var(--color-primary);
@@ -265,23 +238,23 @@
   /* Lề ngang của khung trang: rộng dần theo màn hình, không đặt trần chiều rộng */
   --page-gutter: clamp(16px, 2.6vw, 64px);
 
-  /* Border Radii: góc vuông vắn, chỉ bo rất nhẹ. --radius-full chỉ dành cho hình tròn thật. */
-  --radius-xs: 2px;
-  --radius-sm: 2px;
-  --radius-md: 4px;
-  --radius-lg: 4px;
-  --radius-xl: 6px;
-  --radius-2xl: 8px;
+  /* Border Radii: bo mềm hiện đại. --radius-full chỉ dành cho hình tròn thật. */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --radius-2xl: 18px;
   --radius-full: 9999px;
 
   /* Shadows (pha tông navy) */
-  --shadow-xs: 0 1px 2px rgba(3, 25, 100, 0.05);
-  --shadow-sm: 0 1px 3px rgba(3, 25, 100, 0.08), 0 1px 2px rgba(3, 25, 100, 0.04);
-  --shadow-md: 0 6px 14px -4px rgba(3, 25, 100, 0.12), 0 2px 6px -2px rgba(3, 25, 100, 0.06);
-  --shadow-lg: 0 18px 32px -10px rgba(3, 25, 100, 0.18), 0 6px 12px -6px rgba(3, 25, 100, 0.08);
+  --shadow-xs: 0 1px 2px rgba(15, 39, 71, 0.05);
+  --shadow-sm: 0 1px 3px rgba(15, 39, 71, 0.08), 0 1px 2px rgba(15, 39, 71, 0.04);
+  --shadow-md: 0 6px 14px -4px rgba(15, 39, 71, 0.12), 0 2px 6px -2px rgba(15, 39, 71, 0.06);
+  --shadow-lg: 0 18px 32px -10px rgba(15, 39, 71, 0.18), 0 6px 12px -6px rgba(15, 39, 71, 0.08);
   --shadow-glow: var(--shadow-md);
-  --shadow-dropdown: 0 14px 30px rgba(3, 25, 100, 0.16), 0 4px 10px rgba(3, 25, 100, 0.08);
-  --shadow-sticky: 0 -6px 16px rgba(3, 25, 100, 0.08);
+  --shadow-dropdown: 0 14px 30px rgba(15, 39, 71, 0.16), 0 4px 10px rgba(15, 39, 71, 0.08);
+  --shadow-sticky: 0 -6px 16px rgba(15, 39, 71, 0.08);
 
   /* Typography */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;

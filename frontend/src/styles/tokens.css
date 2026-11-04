@@ -206,6 +206,12 @@
   --cartoon-wash: rgba(99, 102, 241, 0.06);
   --cartoon-drop: 0 4px 0 rgba(43, 39, 117, 0.16);
   --cartoon-drop-lg: 0 6px 0 rgba(43, 39, 117, 0.14), 0 18px 30px -14px rgba(79, 70, 229, 0.35);
+  /* Kiểu hình dán: viền mực dày, bóng đặc lệch xuống (không nhòe); nhô lên khi rê chuột, lún xuống khi bấm */
+  --cartoon-stroke: 3px;
+  --cartoon-stroke-thin: 2px;
+  --cartoon-pop: 0 4px 0 var(--cartoon-ink);
+  --cartoon-pop-hover: 0 6px 0 var(--cartoon-ink);
+  --cartoon-pop-press: 0 1px 0 var(--cartoon-ink);
   --gradient-rainbow: linear-gradient(100deg, var(--soft-cyan) 0%, var(--soft-sky) 30%, var(--soft-violet) 62%, var(--soft-magenta) 100%);
 
   /* Bề mặt: thẻ trắng đặc, viền mảnh, bóng nhẹ. --surface-glass giữ lại cho quả cầu và biểu đồ. */

@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useId, useMemo, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { useCountUp } from '../../../hooks/useCountUp';
 import { useInView } from '../../../hooks/useInView';
@@ -34,7 +34,7 @@ export interface PolygonChartProps {
   showReadout?: boolean;
   /** Hiện điểm % ngay dưới tên mỗi nhóm; mặc định tắt */
   showNodeValues?: boolean;
-  /** Tự làm nổi lần lượt từng trục sau mỗi khoảng này (ms) khi không ai rê chuột hay chọn; 0 để tắt */
+  /** Tự làm nổi lần lượt từng trục sau mỗi khoảng này (ms) khi không ai rê chuột hay chọn; mặc định 0 là tắt, biểu đồ đứng yên */
   autoCycleMs?: number;
   className?: string;
 }
@@ -44,6 +44,11 @@ const RADIUS = 27;
 const NODE_RATIO = 1.28;
 const RINGS = [25, 50, 75, 100];
 const TONE_COUNT = 7;
+/* Bốn vạch tia ngắn quanh đỉnh đang chọn, kiểu "bụp!" trong truyện tranh */
+const BURST_RAYS = [45, 135, 225, 315].map((deg) => {
+  const rad = (deg * Math.PI) / 180;
+  return [Math.cos(rad) * 5.2, Math.sin(rad) * 5.2, Math.cos(rad) * 7.4, Math.sin(rad) * 7.4].map((n) => Number(n.toFixed(2)));
+});
 
 const fmt = (n: number) => n.toFixed(2);
 const toneOf = (index: number) => (index % TONE_COUNT) + 1;
@@ -60,7 +65,9 @@ interface Geometry {
   data: Point[];
   reference: Point[] | null;
   nodes: Point[];
-  rings: { ring: number; path: string }[];
+  /** Từ vòng ngoài vào trong để vòng trong tô đè lên */
+  rings: { ring: number; path: string; tinted: boolean }[];
+  dataPath: string;
   referencePath: string | null;
   hits: string[];
 }
@@ -82,69 +89,32 @@ function buildGeometry(axes: PolygonAxis[]): Geometry {
     data: axes.map((a, i) => pointAt(i, clampScore(a.value) / 100)),
     reference,
     nodes: axes.map((_, i) => pointAt(i, NODE_RATIO)),
-    rings: RINGS.map((ring) => ({ ring, path: toPath(axes.map((_, i) => pointAt(i, ring / 100))) })),
+    rings: RINGS.map((ring, i) => ({ ring, path: toPath(axes.map((_, k) => pointAt(k, ring / 100))), tinted: i % 2 === 0 })).reverse(),
+    dataPath: toPath(axes.map((a, i) => pointAt(i, clampScore(a.value) / 100))),
     referencePath: reference ? toPath(reference) : null,
     hits: axes.map((_, i) => toPath([{ x: CENTER, y: CENTER }, pointAt(i - 0.5, 1.15), pointAt(i, 1.15), pointAt(i + 0.5, 1.15)])),
   };
 }
 
-/* ---------- Lớp nền: vòng chia, trục, khung màu (tĩnh, chỉ vẽ lại khi đổi trục được chọn) ---------- */
+/* ---------- Lớp nền: các dải thang đo xen kẽ, trục, viền mực (tĩnh, chỉ vẽ lại khi đổi trục được chọn) ---------- */
 
 interface PlateProps {
   geometry: Geometry;
-  uid: string;
   /** Trục đang rê chuột hoặc được chọn; null khi chưa có */
   activeIndex: number | null;
 }
 
-const BasePlate = memo(function BasePlate({ geometry, uid, activeIndex }: PlateProps) {
-  const { count, outer } = geometry;
+const BasePlate = memo(function BasePlate({ geometry, activeIndex }: PlateProps) {
+  const { outer } = geometry;
   return (
     <svg className="polygon-svg polygon-svg-base" viewBox="0 0 100 100" aria-hidden="true">
-      <defs>
-        <radialGradient id={`${uid}-core`} cx="50%" cy="50%" r="50%">
-          <stop offset="0" className="polygon-stop-core" />
-          <stop offset="1" className="polygon-stop-clear" />
-        </radialGradient>
-        {outer.map((point, i) => {
-          const to = outer[(i + 1) % count];
-          return (
-            <linearGradient key={`frame-${i}`} id={`${uid}-frame-${i}`} gradientUnits="userSpaceOnUse" x1={point.x} y1={point.y} x2={to.x} y2={to.y}>
-              <stop offset="0" className={`polygon-stop-${toneOf(i)}`} />
-              <stop offset="1" className={`polygon-stop-${toneOf(i + 1)}`} />
-            </linearGradient>
-          );
-        })}
-        {outer.map((point, i) => (
-          <linearGradient key={`spoke-${i}`} id={`${uid}-spoke-${i}`} gradientUnits="userSpaceOnUse" x1={CENTER} y1={CENTER} x2={point.x} y2={point.y}>
-            <stop offset="0" className="polygon-stop-line" />
-            <stop offset="1" className={`polygon-stop-${toneOf(i)}`} />
-          </linearGradient>
-        ))}
-      </defs>
-
-      <circle cx={CENTER} cy={CENTER} r={RADIUS * 1.05} fill={`url(#${uid}-core)`} />
-
-      {geometry.rings.map(({ ring, path }, i) => (
-        <path key={ring} d={path} className={`polygon-ring ${i % 2 === 0 ? 'is-tinted' : ''}`} />
+      {geometry.rings.map(({ ring, path, tinted }) => (
+        <path key={ring} d={path} className={`polygon-ring ${tinted ? 'is-tinted' : ''} ${ring === 100 ? 'is-outer' : ''}`} />
       ))}
 
       {outer.map((point, i) => (
-        <line
-          key={`spoke-${i}`}
-          x1={CENTER}
-          y1={CENTER}
-          x2={point.x}
-          y2={point.y}
-          stroke={`url(#${uid}-spoke-${i})`}
-          className={`polygon-spoke ${activeIndex === i ? 'is-active' : ''}`}
-        />
+        <line key={`spoke-${i}`} x1={CENTER} y1={CENTER} x2={point.x} y2={point.y} className={`polygon-spoke ${activeIndex === i ? 'is-active' : ''}`} />
       ))}
-
-      {outer.map((point, i) => {
-        const to = outer[(i + 1) % count];
-        return <line key={`frame-${i}`} x1={point.x} y1={point.y} x2={to.x} y2={to.y} stroke={`url(#${uid}-frame-${i})`} className="polygon-frame" />;
-      })}
     </svg>
   );
 });
@@ -158,23 +128,13 @@ interface DataPlateProps extends PlateProps {
   onSelect: (key: string) => void;
 }
 
-const DataPlate = memo(function DataPlate({ geometry, uid, activeIndex, keys, filled, onHover, onSelect }: DataPlateProps) {
+const DataPlate = memo(function DataPlate({ geometry, activeIndex, keys, filled, onHover, onSelect }: DataPlateProps) {
   const { count, data, reference } = geometry;
   const active = activeIndex === null ? null : data[activeIndex];
   return (
     <div className="polygon-layer">
       <svg className="polygon-svg polygon-svg-data" viewBox="0 0 100 100" aria-hidden="true">
-        <defs>
-          {data.map((point, i) => {
-            const to = data[(i + 1) % count];
-            return (
-              <linearGradient key={`data-${i}`} id={`${uid}-data-${i}`} gradientUnits="userSpaceOnUse" x1={point.x} y1={point.y} x2={to.x} y2={to.y}>
-                <stop offset="0" className={`polygon-stop-${toneOf(i)}`} />
-                <stop offset="1" className={`polygon-stop-${toneOf(i + 1)}`} />
-              </linearGradient>
-            );
-          })}
-        </defs>
+        <path d={geometry.dataPath} className="polygon-shadow" />
 
         {data.map((point, i) => {
           const to = data[(i + 1) % count];
@@ -183,22 +143,14 @@ const DataPlate = memo(function DataPlate({ geometry, uid, activeIndex, keys, fi
             <path
               key={`wedge-${i}`}
               d={toPath([{ x: CENTER, y: CENTER }, point, to])}
-              fill={`url(#${uid}-data-${i})`}
-              className={`polygon-wedge ${touched ? 'is-active' : ''}`}
+              className={`polygon-wedge polygon-tone-${toneOf(i)} ${touched ? 'is-active' : ''}`}
             />
           );
         })}
 
         {reference && geometry.referencePath && <path d={geometry.referencePath} className="polygon-reference" />}
 
-        {data.map((point, i) => {
-          const to = data[(i + 1) % count];
-          return <line key={`glow-${i}`} x1={point.x} y1={point.y} x2={to.x} y2={to.y} stroke={`url(#${uid}-data-${i})`} className="polygon-edge-glow" />;
-        })}
-        {data.map((point, i) => {
-          const to = data[(i + 1) % count];
-          return <line key={`edge-${i}`} x1={point.x} y1={point.y} x2={to.x} y2={to.y} stroke={`url(#${uid}-data-${i})`} className="polygon-edge" />;
-        })}
+        <path d={geometry.dataPath} className="polygon-edge" />
 
         {data.map((point, i) => (
           <circle
@@ -209,6 +161,17 @@ const DataPlate = memo(function DataPlate({ geometry, uid, activeIndex, keys, fi
             className={`polygon-dot polygon-tone-${toneOf(i)} ${activeIndex === i ? 'is-active' : ''} ${filled[i] ? '' : 'is-empty'}`}
           />
         ))}
+
+        {active && activeIndex !== null && (
+          <g transform={`translate(${fmt(active.x)} ${fmt(active.y)})`}>
+            <g key={activeIndex} className="polygon-burst">
+              <circle r={3.6} className="polygon-burst-ring" />
+              {BURST_RAYS.map(([x1, y1, x2, y2], i) => (
+                <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} className="polygon-burst-ray" />
+              ))}
+            </g>
+          </g>
+        )}
 
         {geometry.hits.map((path, i) => (
           <path
@@ -221,9 +184,6 @@ const DataPlate = memo(function DataPlate({ geometry, uid, activeIndex, keys, fi
           />
         ))}
       </svg>
-      {active && activeIndex !== null && (
-        <span key={`halo-${activeIndex}`} className={`polygon-halo polygon-tone-${toneOf(activeIndex)}`} style={{ left: `${fmt(active.x)}%`, top: `${fmt(active.y)}%` }} />
-      )}
     </div>
   );
 });
@@ -260,7 +220,8 @@ const Readout: React.FC<ReadoutProps> = ({ axis, tone, level, valueLabel, refere
 };
 
 /**
- * Biểu đồ đa giác cho nền tối: mỗi trục một màu. Tự làm nổi lần lượt từng trục; rê chuột, tab vào hoặc chạm chọn thì dừng ở trục đó.
+ * Biểu đồ đa giác kiểu hình dán: mỗi trục một màu đặc, viền mực dày, bóng đặc lệch xuống, không phát sáng.
+ * Đứng yên; chỉ chuyển động một lần khi hiện ra và khi rê chuột, tab vào hoặc chạm chọn một trục.
  * Tối ưu: lớp tĩnh và lớp dữ liệu được ghi nhớ, hoạt ảnh chỉ dùng transform/opacity, không dùng bộ lọc.
  */
 export const PolygonChart: React.FC<PolygonChartProps> = ({
@@ -271,10 +232,9 @@ export const PolygonChart: React.FC<PolygonChartProps> = ({
   noDataLabel = 'Chưa đủ dữ liệu',
   showReadout = true,
   showNodeValues = false,
-  autoCycleMs = 1000,
+  autoCycleMs = 0,
   className = '',
 }) => {
-  const uid = useId().replace(/[^a-zA-Z0-9_-]/g, '');
   const { ref: figureRef, inView, seen } = useInView<HTMLElement>(0.25);
 
   const [hoverKey, setHoverKey] = useState<string | null>(null);
@@ -321,12 +281,11 @@ export const PolygonChart: React.FC<PolygonChartProps> = ({
     <figure ref={figureRef} className={`polygon-chart ${seen ? 'is-visible' : ''} ${interacting || cycling ? 'is-interacting' : ''} ${className}`}>
       <div className="polygon-stage">
         <div className="polygon-layer">
-          <BasePlate geometry={geometry} uid={uid} activeIndex={activeIndex} />
+          <BasePlate geometry={geometry} activeIndex={activeIndex} />
         </div>
 
         <DataPlate
           geometry={geometry}
-          uid={uid}
           activeIndex={activeIndex}
           keys={keys}
           filled={filled}

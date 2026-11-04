@@ -1,47 +1,22 @@
-/* Quả địa cầu 360° – tươi sáng, hơi hoạt hình: biển xanh trời, đất liền xanh ngọc phác nét, quầng tím,
-   nút đặc màu nhóm có viền trắng. Màu của canvas lấy từ các biến --globe-* này (xem readPalette trong globeScene.ts). */
+/* Quả địa cầu 360° kiểu hình dán: biển phẳng, đất liền xanh ngọc, viền mực dày, bóng đặc lệch xuống. Không phát sáng.
+   Màu của canvas lấy từ các biến --globe-* này (xem readPalette trong globeScene.ts). */
 .globe360 {
-  --globe-land-style: hatch;
-  --globe-node-style: solid;
   --globe-land: var(--soft-teal);
   --globe-sea: var(--soft-sky);
-  --globe-sea-alpha: 0.7;
-  --globe-body-lit: var(--brand-white);
-  --globe-body-dark: var(--brand-pale);
-  --globe-body-alpha: 0.96;
-  --globe-halo: var(--soft-violet);
-  --globe-halo-alpha: 0.9;
-  --globe-halo-shift: 0.06;
-  --globe-rim: var(--brand-sky);
-  --globe-rim-fill: 0.14;
-  --globe-rim-line: 0.9;
-  --globe-grid: var(--brand-light);
-  --globe-grid-alpha: 0.45;
-  --globe-sweep: var(--soft-magenta);
-  --globe-sweep-alpha: 0.55;
+  --globe-grid: var(--brand-white);
+  --globe-grid-alpha: 0.5;
   --globe-ring: var(--soft-violet);
-  --globe-tick: var(--brand-sky);
-  --globe-shade: var(--brand-azure);
-  --globe-shade-alpha: 0.16;
-  --globe-limb: var(--brand-white);
-  --globe-limb-alpha: 0.35;
-  --globe-ink: var(--brand-navy);
-  --globe-face: var(--brand-white);
-  --globe-label-bg: var(--brand-white);
+  --globe-shade: var(--cartoon-ink);
+  --globe-shade-alpha: 0.22;
+  --globe-ink: var(--cartoon-ink);
+  --globe-paper: var(--brand-white);
   --globe-icon: var(--brand-white);
-  --globe-node-line: var(--brand-white);
-  --globe-node-glow: 1;
   --globe-tone-gold: var(--soft-gold);
   --globe-tone-cyan: var(--soft-cyan);
   --globe-tone-violet: var(--soft-violet);
   --globe-tone-magenta: var(--soft-magenta);
-  --globe-glow-gold: var(--soft-glow-gold);
-  --globe-glow-cyan: var(--soft-glow-cyan);
-  --globe-glow-violet: var(--soft-glow-violet);
-  --globe-glow-magenta: var(--soft-glow-magenta);
-  --globe-chip-text: var(--color-text-main);
-  --globe-chip-bg: var(--color-bg-surface);
-  --globe-chip-line: var(--tone);
+  --globe-chip-text: var(--cartoon-ink);
+  --globe-chip-bg: var(--brand-white);
 
   display: flex;
   flex-direction: column;
@@ -52,10 +27,10 @@
   color: var(--ink-700);
 }
 
-.globe360-tone-gold { --tone: var(--globe-tone-gold); --tone-glow: var(--globe-glow-gold); }
-.globe360-tone-cyan { --tone: var(--globe-tone-cyan); --tone-glow: var(--globe-glow-cyan); }
-.globe360-tone-violet { --tone: var(--globe-tone-violet); --tone-glow: var(--globe-glow-violet); }
-.globe360-tone-magenta { --tone: var(--globe-tone-magenta); --tone-glow: var(--globe-glow-magenta); }
+.globe360-tone-gold { --tone: var(--globe-tone-gold); }
+.globe360-tone-cyan { --tone: var(--globe-tone-cyan); }
+.globe360-tone-violet { --tone: var(--globe-tone-violet); }
+.globe360-tone-magenta { --tone: var(--globe-tone-magenta); }
 
 .globe360-stage {
   position: relative;
@@ -100,35 +75,31 @@
   font-weight: 700;
   color: var(--globe-chip-text);
   background: var(--globe-chip-bg);
-  border: 2px solid var(--globe-chip-line);
+  border: var(--cartoon-stroke-thin) solid var(--cartoon-ink);
   border-radius: var(--radius-full);
-  box-shadow: 0 4px 0 var(--tone-glow);
+  box-shadow: var(--cartoon-pop);
   transition:
     transform var(--transition-normal),
-    color var(--transition-fast),
     background-color var(--transition-fast),
-    border-color var(--transition-fast),
     box-shadow var(--transition-normal);
 }
 .globe360-chip::before {
   content: '';
   flex: none;
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   background: var(--tone);
+  border: var(--cartoon-stroke-thin) solid var(--cartoon-ink);
   border-radius: var(--radius-full);
-  box-shadow: 0 0 8px var(--tone-glow);
-  transition: background-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 .globe360-chip:focus-visible { outline: 2px solid var(--color-border-focus); outline-offset: 3px; }
 .globe360-chip:hover,
 .globe360-chip.is-active {
-  color: var(--brand-white);
-  background: var(--tone);
-  border-color: var(--tone);
-  box-shadow: 0 0 0 4px var(--tone-glow), 0 6px 0 color-mix(in srgb, var(--tone) 55%, var(--cartoon-ink));
-  transform: translateY(-3px);
+  background: color-mix(in srgb, var(--tone) 28%, var(--brand-white));
+  box-shadow: var(--cartoon-pop-hover);
+  transform: translateY(-2px);
 }
+.globe360-chip:active { box-shadow: var(--cartoon-pop-press); transform: translateY(3px); }
 
 /* Bản thu gọn làm nút gạt */
 .globe360.is-compact { gap: 0; }
@@ -137,6 +108,9 @@
 
 /* Có biểu tượng thì không cần chấm màu */
 .globe360-chip.has-icon::before { display: none; }
-.globe360-chip svg { flex: none; color: var(--tone); transition: color var(--transition-fast); }
-.globe360-chip:hover svg,
-.globe360-chip.is-active svg { color: var(--brand-white); }
+.globe360-chip svg { flex: none; color: var(--cartoon-ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  .globe360-canvas { transform: none; transition: none; }
+  .globe360-chip { transition: none; }
+}

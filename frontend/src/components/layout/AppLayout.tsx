@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
+import { useAuth } from '../../modules/auth/AuthContext';
+import { isLearnerRole } from '../../modules/profile/profile.logic';
 import { Sidebar } from './Sidebar';
 import { TopActions } from './TopActions';
 import './AppLayout.css';
@@ -9,6 +11,8 @@ const FOCUS_ROUTE = /^\/danh-gia-ca-nhan\/.+/;
 
 export const AppLayout: React.FC = () => {
   const location = useLocation();
+  const { profile } = useAuth();
+  const learner = isLearnerRole(profile?.role);
   const focusMode = FOCUS_ROUTE.test(location.pathname);
   const [menuOpen, setMenuOpen] = useState(false);
   const toggleMenu = useCallback(() => setMenuOpen((value) => !value), []);
@@ -17,6 +21,15 @@ export const AppLayout: React.FC = () => {
   useEffect(() => {
     setMenuOpen(false);
   }, [location.pathname]);
+
+  /* Nút kiểu hình dán chỉ áp dụng phía học sinh; đặt trên <html> để modal cũng nhận được */
+  useEffect(() => {
+    if (!learner) return;
+    document.documentElement.dataset.ui = 'cartoon';
+    return () => {
+      delete document.documentElement.dataset.ui;
+    };
+  }, [learner]);
 
   return (
     <div className={`app-shell ${focusMode ? 'is-focus' : ''}`}>

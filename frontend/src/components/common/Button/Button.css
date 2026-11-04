@@ -168,3 +168,44 @@
 .app-button:hover:not(:disabled) .btn-icon-right {
   transform: translateX(3px);
 }
+
+/* ===== Phía học sinh: mọi nút chuyển sang kiểu hình dán ===== */
+[data-ui='cartoon'] .app-button:not(.btn-ghost) {
+  overflow: visible;
+  border: var(--cartoon-stroke) solid var(--cartoon-ink);
+  border-radius: var(--radius-lg);
+  font-weight: 800;
+  box-shadow: var(--cartoon-pop);
+  transition:
+    background-color var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+[data-ui='cartoon'] .app-button:not(.btn-ghost)::after { display: none; }
+[data-ui='cartoon'] .app-button:hover:not(:disabled):not(.btn-ghost) {
+  transform: translateY(-2px);
+  box-shadow: var(--cartoon-pop-hover);
+}
+[data-ui='cartoon'] .app-button:active:not(:disabled):not(.btn-ghost) {
+  transform: translateY(3px);
+  box-shadow: var(--cartoon-pop-press);
+}
+[data-ui='cartoon'] .app-button:disabled:not(.btn-ghost) { opacity: 0.6; box-shadow: var(--cartoon-pop-press); }
+
+[data-ui='cartoon'] .btn-primary,
+[data-ui='cartoon'] .btn-primary:hover:not(:disabled) {
+  background: var(--brand-gold);
+  color: var(--cartoon-ink);
+}
+[data-ui='cartoon'] .btn-secondary,
+[data-ui='cartoon'] .btn-secondary:hover:not(:disabled) {
+  background: var(--brand-mist);
+  color: var(--cartoon-ink);
+}
+[data-ui='cartoon'] .btn-outline,
+[data-ui='cartoon'] .btn-outline:hover:not(:disabled) {
+  background: var(--color-bg-surface);
+  color: var(--cartoon-ink);
+}
+[data-ui='cartoon'] .btn-danger { color: var(--color-text-inverse); }
+[data-ui='cartoon'] .btn-ghost { font-weight: 700; }

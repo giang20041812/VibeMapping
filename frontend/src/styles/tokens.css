@@ -38,11 +38,6 @@
   --color-bg-hover: #e3e6fb;
   --color-bg-cream: var(--brand-cream);
 
-/* Nền trang: nền xanh rất nhạt, lưới chấm mờ và một vầng xanh nhạt ở đầu trang. Tĩnh, không ảnh nặng. */
-  --bg-pattern:
-    radial-gradient(70vw 420px at 50% 0, rgba(31, 111, 235, 0.08), transparent 72%),
-    radial-gradient(rgba(31, 111, 235, 0.12) 1px, transparent 1.4px) 0 0 / 24px 24px repeat;
-
   /* Nền trang: lưới mảnh rất mờ và vài vầng sáng lớn. Tĩnh. */
   --bg-pattern:
     radial-gradient(40vw 360px at 6% 24%, rgba(99, 102, 241, 0.12), transparent 70%),

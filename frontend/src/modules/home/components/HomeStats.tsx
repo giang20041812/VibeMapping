@@ -51,6 +51,23 @@ export const StatTiles: React.FC<{ items: StatItem[]; size?: 'md' | 'lg'; classN
   );
 };
 
+/** Hàng số liệu chỉ có chữ trên nền, các cột ngăn bằng đường kẻ nhạt */
+export const StatInline: React.FC<{ items: StatItem[] }> = ({ items }) => {
+  const { ref, seen } = useInView<HTMLUListElement>(0.3);
+  return (
+    <ul ref={ref} className="stat-inline">
+      {items.map(({ key, value, suffix, label }) => (
+        <li key={key} className="stat-inline-item">
+          <span className="stat-inline-value">
+            <StatValue value={value} suffix={suffix} run={seen} />
+          </span>
+          <span className="stat-inline-label">{label}</span>
+        </li>
+      ))}
+    </ul>
+  );
+};
+
 export type StickerPlace = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 
 /** Nhãn dán nổi trên hình minh họa: một con số và nhãn ngắn, bồng bềnh nhẹ */

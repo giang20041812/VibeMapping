@@ -13,7 +13,7 @@ import { GLOBE_NODES } from '../assessment_360/assessment360.constants';
 import { PACKAGES } from '../assessment_session/assessmentSession.constants';
 import { MAX_EXPECTED_PER_GROUP } from '../invitation_link/invitation.constants';
 import { getCatalogScale, type CatalogScale } from './home.service';
-import { StatSticker, StatTiles, type StatItem } from './components/HomeStats';
+import { StatSticker, StatTiles, StatInline, type StatItem } from './components/HomeStats';
 import { useAuth } from '../auth/AuthContext';
 import { isLearnerRole } from '../profile/profile.logic';
 import { useInView } from '../../hooks/useInView';
@@ -191,13 +191,13 @@ export const HomePage: React.FC = () => {
     { key: 'groups', value: axes.length, label: 'Nhóm tiêu chí', icon: Layers, tone: 'violet' },
     { key: 'questions', value: QUESTION_RANGE, label: 'Câu hỏi', icon: ListChecks, tone: 'sky' },
     { key: 'minutes', value: MINUTE_RANGE, label: 'Tự đánh giá', icon: Timer, tone: 'teal' },
+    { key: 'packages', value: PACKAGES.length, label: 'Gói đánh giá', icon: Package, tone: 'gold' },
   ];
   const scaleStats: StatItem[] = [];
   if (scale) {
     if (scale.careers !== null) scaleStats.push({ key: 'careers', value: scale.careers, label: 'Nghề nghiệp', icon: Briefcase, tone: 'violet' });
     if (scale.majors !== null) scaleStats.push({ key: 'majors', value: scale.majors, label: 'Ngành học', icon: BookOpen, tone: 'cyan' });
     if (scale.schools !== null) scaleStats.push({ key: 'schools', value: scale.schools, label: 'Trường', icon: School, tone: 'magenta' });
-    scaleStats.push({ key: 'packages', value: PACKAGES.length, label: 'Gói đánh giá', icon: Package, tone: 'gold' });
   }
 
   return (
@@ -245,7 +245,6 @@ export const HomePage: React.FC = () => {
         </h2>
         <p className="feature-lead">Đánh giá cá nhân qua biểu đồ tố chất, từ đó gợi ý những ngành nghề phù hợp với bạn.</p>
         <StatTiles items={selfStats} />
-        {scaleStats.length >= 3 && <StatTiles items={scaleStats} />}
         {canExplore && (
           <Link to={testPath} className="feature-link">
             <Button size="lg" rightIcon={<ArrowRight size={18} />}>
@@ -253,6 +252,7 @@ export const HomePage: React.FC = () => {
             </Button>
           </Link>
         )}
+        {scaleStats.length > 0 && <StatInline items={scaleStats} />}
       </Feature>
 
       <Feature

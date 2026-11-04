@@ -1,13 +1,12 @@
 import {
-  careerComponents,
   careerStandardStatus,
-  findPerceptionGaps,
-  rankCareerRecommendations,
   type CareerComponentResult,
   type CareerRankItem,
-  type CriterionRequirement,
+  type ComponentMatch,
+  type CriterionEvaluation,
   type DisplayGroup,
   type PerceptionGapItem,
+  type PriorityLevel,
 } from '../../domain/assessmentRules';
 import { callRpc, db as supabase } from '../../lib/rpc';
 import { toSearchKey } from '../../lib/vnSearch';
@@ -47,16 +46,61 @@ export interface CareerPolicy {
   topN: number;
   perceptionGapPercent: number;
   riasecMethod: string;
+  decimals: number;
+}
+
+/** Một tiêu chí trong bảng giải thích tầng 2 */
+export interface CareerCriterionRow extends CriterionEvaluation {
+  criteriaId: string;
+  contributionPoints: number;
+  isCore: boolean;
 }
 
 export interface CareerDetail {
   career: CareerListItem;
   holland: { code: string; strength: number; jdCount: number }[];
-  components: CareerComponentResult;
+  components: Omit<CareerComponentResult, 'criteriaEvaluations'> & { criteriaEvaluations: CareerCriterionRow[] };
   perceptionGaps: PerceptionGapItem[];
   standardNote: string;
+  hasResult: boolean;
   hasUserScores: boolean;
+  hasGroupScores: boolean;
+  statusLabel: string | null;
+  acceptedCount: number;
+  rank: number | null;
   policy: CareerPolicy;
+}
+
+/** Nghề trong danh sách gợi ý */
+export interface CareerSuggestion extends CareerRankItem {
+  rank: number;
+  isTarget: boolean;
+}
+
+export interface TargetCareerFit {
+  careerId: string;
+  careerCode: string;
+  careerName: string;
+  fitPercent: number | null;
+  nearThreshold: boolean;
+  inTop: boolean;
+  result: CareerComponentResult;
+}
+
+export interface CareerRecommendations {
+  hasResult: boolean;
+  hasScores: boolean;
+  resultId: string | null;
+  statusLabel: string | null;
+  acceptedCount: number;
+  finalized: boolean;
+  packageSize: number | null;
+  learnerCompleteness: number;
+  policy: CareerPolicy;
+  items: CareerSuggestion[];
+  targets: TargetCareerFit[];
+  /** Không có nghề nào vượt ngưỡng phù hợp tối thiểu */
+  belowThreshold: boolean;
 }
 
 const CAREER_COLUMNS = 'id, career_code, career_name, career_field_id, holland_top3, qualifying_jd_count, status, is_standard_complete';
@@ -94,37 +138,265 @@ function loadCriteria(): Promise<CriterionMeta[]> {
   return criteriaCache;
 }
 
-async function paramValue(code: string): Promise<unknown> {
-  const { data, error } = await supabase
-    .from('operation_parameters')
-    .select('param_value')
-    .eq('param_code', code)
-    .eq('is_current', true)
-    .maybeSingle();
-  if (error) throw error;
-  return data?.param_value ?? null;
+// ---------------------------------------------------------------------------------------------
+// Dữ liệu trả về từ RPC Career Fit (tính trên máy chủ)
+// ---------------------------------------------------------------------------------------------
+
+interface RawPolicy {
+  w_main: number;
+  w_g6: number;
+  w_g7: number;
+  min_fit: number;
+  near_fit: number;
+  top_n: number;
+  gap_percent: number;
+  decimals: number;
+  riasec_method: string;
 }
 
-export async function loadCareerPolicy(): Promise<CareerPolicy> {
-  const codes = [
-    'career_fit_weight_competency',
-    'career_fit_weight_interest',
-    'career_fit_weight_motivation',
-    'career_fit_min_percent',
-    'career_near_fit_percent',
-    'career_top_n',
-    'perception_gap_percent',
-    'riasec_match_method',
-  ];
-  const values = await Promise.all(codes.map(paramValue));
-  const num = (value: unknown, fallback: number) => (typeof value === 'number' ? value : fallback);
+interface RawParts {
+  match_g1_g5: number | null;
+  match_g6: number | null;
+  match_g7: number | null;
+  applied_g1_g5?: number | null;
+  applied_g6?: number | null;
+  applied_g7?: number | null;
+  completeness: number | null;
+  riasec_method?: string;
+  highest_weight_gap?: number;
+  unmet?: number;
+}
+
+interface RawSuggestion extends RawParts {
+  career_id: string;
+  career_code: string;
+  career_name: string;
+  holland_top3: string | null;
+  rank: number;
+  fit: number;
+  band: number;
+  near: boolean;
+  is_target: boolean;
+}
+
+interface RawTarget extends RawParts {
+  career_id: string;
+  career_code: string;
+  career_name: string;
+  fit: number | null;
+  near: boolean;
+  in_top: boolean;
+}
+
+interface RawRecommendations {
+  has_result: boolean;
+  has_scores: boolean;
+  result_id?: string;
+  status_label?: string;
+  accepted_count?: number;
+  finalized?: boolean;
+  package_size?: number | null;
+  learner_completeness?: number;
+  policy: RawPolicy;
+  items: RawSuggestion[];
+  targets: RawTarget[];
+}
+
+interface RawCriterion {
+  criteria_id: string;
+  dimension_code: string;
+  name: string;
+  group_code: string;
+  required_score: number;
+  career_weight: number;
+  user_score: number | null;
+  fit: number | null;
+  gap: number | null;
+  is_core: boolean;
+  priority: PriorityLevel | null;
+  penalty_points: number;
+  contribution_points: number;
+}
+
+interface RawDetail {
+  has_result: boolean;
+  has_scores: boolean;
+  status_label?: string;
+  accepted_count?: number;
+  policy: RawPolicy;
+  rank: number | null;
+  fit: (RawParts & { career_fit_raw: number; rank_band: number }) | null;
+  criteria: RawCriterion[];
+  has_group_scores?: boolean;
+  perception_gaps: Array<{
+    dimension_code: string;
+    name: string;
+    group: DisplayGroup;
+    self_percent: number;
+    group_percent: number;
+    delta_percent: number;
+  }>;
+}
+
+const num = (value: unknown): number | null => (value === null || value === undefined ? null : Number(value));
+
+function mapPolicy(raw: RawPolicy): CareerPolicy {
   return {
-    weights: { g1toG5: num(values[0], 0.4), g6: num(values[1], 0.3), g7: num(values[2], 0.3) },
-    minFitPercent: num(values[3], 50),
-    nearFitPercent: num(values[4], 40),
-    topN: num(values[5], 5),
-    perceptionGapPercent: num(values[6], 25),
-    riasecMethod: typeof values[7] === 'string' ? values[7] : 'profile_6d_demo',
+    weights: { g1toG5: Number(raw.w_main), g6: Number(raw.w_g6), g7: Number(raw.w_g7) },
+    minFitPercent: Number(raw.min_fit),
+    nearFitPercent: Number(raw.near_fit),
+    topN: Number(raw.top_n),
+    perceptionGapPercent: Number(raw.gap_percent),
+    riasecMethod: raw.riasec_method,
+    decimals: Number(raw.decimals ?? 1),
+  };
+}
+
+function part(match: unknown, originalWeight: number, applied: unknown, rows: CriterionEvaluation[]): ComponentMatch {
+  const value = num(match);
+  return {
+    match: value,
+    matchPercent: value === null ? null : value * 100,
+    originalWeight,
+    appliedWeight: num(applied) ?? 0,
+    usedCriteria: rows.filter((row) => row.fit !== null).length,
+    missingUserScores: rows.filter((row) => row.fit === null).length,
+  };
+}
+
+function toComponents<T extends CriterionEvaluation>(
+  raw: RawParts | null,
+  fitRaw: number | null,
+  band: number | null,
+  criteria: T[],
+  policy: CareerPolicy,
+): Omit<CareerComponentResult, 'criteriaEvaluations'> & { criteriaEvaluations: T[] } {
+  const main = criteria.filter((row) => row.groupCode !== 'G7');
+  const g7 = criteria.filter((row) => row.groupCode === 'G7');
+  const method = (raw?.riasec_method ?? 'missing') as CareerComponentResult['g6']['method'];
+  return {
+    g1toG5: part(raw?.match_g1_g5, policy.weights.g1toG5, raw?.applied_g1_g5, main),
+    g6: { ...part(raw?.match_g6, policy.weights.g6, raw?.applied_g6, []), method },
+    g7: part(raw?.match_g7, policy.weights.g7, raw?.applied_g7, g7),
+    careerFitPercent: fitRaw,
+    rankBand: band,
+    componentCompleteness: num(raw?.completeness) ?? 0,
+    highestWeightGap: num(raw?.highest_weight_gap) ?? 0,
+    unmetCriteriaCount: num(raw?.unmet) ?? 0,
+    criteriaEvaluations: criteria,
+    status: fitRaw === null ? 'insufficient_data' : 'ready',
+    notice: '',
+  };
+}
+
+function mapCriterion(row: RawCriterion): CareerCriterionRow {
+  const fit = num(row.fit);
+  const gap = num(row.gap);
+  return {
+    criteriaId: row.criteria_id,
+    dimensionCode: row.dimension_code,
+    name: row.name,
+    groupCode: row.group_code,
+    careerWeight: Number(row.career_weight),
+    requiredScore: Number(row.required_score),
+    userScore: num(row.user_score),
+    fit,
+    gap,
+    priority: row.priority,
+    status: fit === null ? 'missing' : gap !== null && gap > 0 ? 'gap' : 'met',
+    penaltyPoints: Number(row.penalty_points),
+    contributionPoints: Number(row.contribution_points),
+    isCore: row.is_core,
+  };
+}
+
+/** R20: Top nghề phù hợp (máy chủ tính và tự cập nhật khi kết quả hoặc danh mục nghề đổi). */
+export async function recommendCareers(subjectUserId?: string): Promise<CareerRecommendations> {
+  const raw = await callRpc<RawRecommendations>('get_career_recommendations', subjectUserId ? { p_user_id: subjectUserId } : {});
+  const policy = mapPolicy(raw.policy);
+  const items: CareerSuggestion[] = (raw.items ?? []).map((item) => {
+    const fit = Number(item.fit);
+    return {
+      careerId: item.career_id,
+      careerCode: item.career_code,
+      careerName: item.career_name,
+      hollandTop3: item.holland_top3,
+      fitPercent: fit,
+      rankBand: Number(item.band),
+      highestWeightGap: Number(item.highest_weight_gap ?? 0),
+      unmetCriteriaCount: Number(item.unmet ?? 0),
+      componentCompleteness: Number(item.completeness ?? 0),
+      nearThreshold: item.near,
+      rank: item.rank,
+      isTarget: item.is_target,
+      result: toComponents(item, fit, Number(item.band), [], policy),
+    };
+  });
+  const targets: TargetCareerFit[] = (raw.targets ?? []).map((item) => ({
+    careerId: item.career_id,
+    careerCode: item.career_code,
+    careerName: item.career_name,
+    fitPercent: num(item.fit),
+    nearThreshold: item.near,
+    inTop: item.in_top,
+    result: toComponents(item, num(item.fit), null, [], policy),
+  }));
+  return {
+    hasResult: raw.has_result,
+    hasScores: raw.has_scores,
+    resultId: raw.result_id ?? null,
+    statusLabel: raw.status_label ?? null,
+    acceptedCount: raw.accepted_count ?? 0,
+    finalized: Boolean(raw.finalized),
+    packageSize: raw.package_size ?? null,
+    learnerCompleteness: Number(raw.learner_completeness ?? 0),
+    policy,
+    items,
+    targets,
+    belowThreshold: !items.some((item) => !item.nearThreshold),
+  };
+}
+
+/** Chi tiết phù hợp của một nghề; `subjectUserId` dùng khi phụ huynh xem kết quả con đã chia sẻ */
+export async function loadCareerDetail(careerId: string, subjectUserId?: string): Promise<CareerDetail | null> {
+  const [{ data: career, error }, raw, { data: holland, error: hollandError }] = await Promise.all([
+    supabase.from('careers').select(CAREER_COLUMNS).eq('id', careerId).maybeSingle(),
+    callRpc<RawDetail>('get_career_fit_detail', { p_career_id: careerId, p_user_id: subjectUserId ?? null }),
+    supabase.from('career_holland_profiles').select('holland_code, strength, jd_count').eq('career_id', careerId),
+  ]);
+  if (error) throw error;
+  if (hollandError) throw hollandError;
+  if (!career) return null;
+  const policy = mapPolicy(raw.policy);
+  const criteria = (raw.criteria ?? []).map(mapCriterion);
+  const components = toComponents(raw.fit, raw.fit ? Number(raw.fit.career_fit_raw) : null, raw.fit ? Number(raw.fit.rank_band) : null, criteria, policy);
+  const hollandRows = (holland ?? []).map((h) => ({ code: h.holland_code, strength: Number(h.strength), jdCount: h.jd_count }));
+  const status = careerStandardStatus({
+    weightedCriteria: criteria.length,
+    hasMainComponent: criteria.some((c) => c.groupCode !== 'G7'),
+    hasG7Component: criteria.some((c) => c.groupCode === 'G7'),
+    hasHollandProfile: hollandRows.some((h) => h.jdCount > 0) || Boolean(career.holland_top3),
+  });
+  return {
+    career,
+    holland: hollandRows,
+    components,
+    perceptionGaps: (raw.perception_gaps ?? []).map((gap) => ({
+      dimensionCode: gap.dimension_code,
+      dimensionName: gap.name,
+      group: gap.group,
+      selfPercent: Number(gap.self_percent),
+      groupPercent: Number(gap.group_percent),
+      deltaPercent: Number(gap.delta_percent),
+    })),
+    standardNote: status.note,
+    hasResult: raw.has_result,
+    hasUserScores: raw.has_scores,
+    hasGroupScores: Boolean(raw.has_group_scores),
+    statusLabel: raw.status_label ?? null,
+    acceptedCount: raw.accepted_count ?? 0,
+    rank: raw.rank ?? null,
+    policy,
   };
 }
 
@@ -287,193 +559,31 @@ export function fieldAndDescendants(fields: CareerFieldNode[], rootId: string): 
   return ids;
 }
 
-async function fetchAllRequirements(careerIds?: string[]) {
-  const rows: { career_id: string; criteria_id: string; required_score: number; career_weight: number }[] = [];
-  for (let from = 0; ; from += PAGE) {
-    let request = supabase
-      .from('career_requirements')
-      .select('career_id, criteria_id, required_score, career_weight')
-      .gt('career_weight', 0)
-      .order('id')
-      .range(from, from + PAGE - 1);
-    if (careerIds) request = request.in('career_id', careerIds);
-    const { data, error } = await request;
-    if (error) throw error;
-    rows.push(...(data ?? []));
-    if (!data || data.length < PAGE) break;
-  }
-  return rows;
+export type CareerBookmarkKind = 'saved' | 'target';
+
+export interface SavedCareer {
+  career_id: string;
+  kind: CareerBookmarkKind;
+  career_name: string;
+  career_code: string;
+  created_at?: string;
 }
 
-async function fetchAllHolland(careerIds?: string[]) {
-  const rows: { career_id: string; holland_code: string; strength: number; jd_count: number }[] = [];
-  for (let from = 0; ; from += PAGE) {
-    let request = supabase
-      .from('career_holland_profiles')
-      .select('career_id, holland_code, strength, jd_count')
-      .order('id')
-      .range(from, from + PAGE - 1);
-    if (careerIds) request = request.in('career_id', careerIds);
-    const { data, error } = await request;
-    if (error) throw error;
-    rows.push(...(data ?? []));
-    if (!data || data.length < PAGE) break;
-  }
-  return rows;
-}
-
-function evaluateCareer(
-  career: CareerListItem,
-  requirements: { criteria_id: string; required_score: number; career_weight: number }[],
-  holland: { holland_code: string; strength: number }[],
-  learner: LearnerProfile,
-  criteria: Map<string, CriterionMeta>,
-  policy: CareerPolicy,
-): CareerComponentResult {
-  const rows: CriterionRequirement[] = requirements.flatMap((req) => {
-    const meta = criteria.get(req.criteria_id);
-    if (!meta) return [];
-    return [{
-      dimensionCode: meta.dimensionCode,
-      name: meta.name,
-      groupCode: meta.groupCode,
-      careerWeight: Number(req.career_weight),
-      requiredScore: Number(req.required_score),
-      userScore: learner.scoreByCriterionId.get(req.criteria_id) ?? null,
-    }];
-  });
-  const profile = policy.riasecMethod === 'top3_overlap_demo'
-    ? undefined
-    : Object.fromEntries(holland.map((h) => [h.holland_code, Number(h.strength)]));
-  return careerComponents(rows, {
-    learnerDimensionScores1to5: learner.scoreByDimension,
-    careerHollandProfile: profile,
-    careerHollandTop3: career.holland_top3,
-    weights: policy.weights,
-  });
-}
-
-/** R20: Top N nghề phù hợp từ toàn bộ nghề đã công bố; lưu bản chụp khi thứ hạng thay đổi */
-export async function recommendCareers(userId: string): Promise<{
-  items: CareerRankItem[];
-  learner: LearnerProfile;
-  policy: CareerPolicy;
-  belowThreshold: boolean;
-}> {
-  const [learner, policy, criteria] = await Promise.all([loadLearnerProfile(userId), loadCareerPolicy(), loadCriteria()]);
-  if (!learner.resultId || learner.scoreByCriterionId.size === 0) {
-    return { items: [], learner, policy, belowThreshold: false };
-  }
-  const careers: CareerListItem[] = [];
-  for (let from = 0; ; from += PAGE) {
-    const { data, error } = await supabase
-      .from('careers')
-      .select(CAREER_COLUMNS)
-      .eq('status', 'published')
-      .order('career_code')
-      .range(from, from + PAGE - 1);
-    if (error) throw error;
-    careers.push(...(data ?? []));
-    if (!data || data.length < PAGE) break;
-  }
-  const [requirements, holland] = await Promise.all([fetchAllRequirements(), fetchAllHolland()]);
-  const reqByCareer = groupBy(requirements, (r) => r.career_id);
-  const hollandByCareer = groupBy(holland, (h) => h.career_id);
-  const criteriaById = new Map(criteria.map((c) => [c.id, c]));
-
-  const candidates = careers.map((career) => ({
-    careerId: career.id,
-    careerCode: career.career_code,
-    careerName: career.career_name,
-    hollandTop3: career.holland_top3,
-    result: evaluateCareer(career, reqByCareer.get(career.id) ?? [], hollandByCareer.get(career.id) ?? [], learner, criteriaById, policy),
-  }));
-  const items = rankCareerRecommendations(candidates, policy.topN, policy.minFitPercent, policy.nearFitPercent);
-
-  if (items.length > 0) {
-    await callRpc('save_career_match_snapshot', {
-      p_result_id: learner.resultId,
-      p_payload: {
-        weights: policy.weights,
-        riasec_method: policy.riasecMethod,
-        ranking: items.map((item) => ({ career_id: item.careerId, fit: item.fitPercent, band: item.rankBand })),
-        details: items.map((item) => ({
-          career_id: item.careerId,
-          g1to5: item.result.g1toG5.matchPercent,
-          g6: item.result.g6.matchPercent,
-          g7: item.result.g7.matchPercent,
-          completeness: item.componentCompleteness,
-          near_threshold: item.nearThreshold,
-          criteria: item.result.criteriaEvaluations.map((c) => ({
-            d: c.dimensionCode, req: c.requiredScore, us: c.userScore, cw: c.careerWeight, fit: c.fit, gap: c.gap, p: c.priority,
-          })),
-        })),
-      },
-    }).catch(() => undefined);
-  }
-  return { items, learner, policy, belowThreshold: !items.some((item) => !item.nearThreshold) };
-}
-
-export async function loadCareerDetail(careerId: string, userId: string): Promise<CareerDetail | null> {
-  const { data: career, error } = await supabase.from('careers').select(CAREER_COLUMNS).eq('id', careerId).maybeSingle();
-  if (error) throw error;
-  if (!career) return null;
-  const [learner, policy, criteria, requirements, holland] = await Promise.all([
-    loadLearnerProfile(userId),
-    loadCareerPolicy(),
-    loadCriteria(),
-    fetchAllRequirements([careerId]),
-    fetchAllHolland([careerId]),
-  ]);
-  const criteriaById = new Map(criteria.map((c) => [c.id, c]));
-  const components = evaluateCareer(career, requirements, holland, learner, criteriaById, policy);
-  const perceptionGaps = findPerceptionGaps(
-    learner.selfPercentByDimension,
-    learner.groupPercentByDimension,
-    components.criteriaEvaluations.map((c) => ({ dimensionCode: c.dimensionCode, name: c.name ?? c.dimensionCode, careerWeight: c.careerWeight })),
-    policy.perceptionGapPercent,
-  );
-  const status = careerStandardStatus({
-    weightedCriteria: components.criteriaEvaluations.length,
-    hasMainComponent: components.criteriaEvaluations.some((c) => c.groupCode !== 'G7'),
-    hasG7Component: components.criteriaEvaluations.some((c) => c.groupCode === 'G7'),
-    hasHollandProfile: holland.some((h) => h.jd_count > 0) || Boolean(career.holland_top3),
-  });
-  return {
-    career,
-    holland: holland.map((h) => ({ code: h.holland_code, strength: Number(h.strength), jdCount: h.jd_count })),
-    components,
-    perceptionGaps,
-    standardNote: status.note,
-    hasUserScores: learner.scoreByCriterionId.size > 0,
-    policy,
-  };
-}
-
-function groupBy<T>(rows: T[], key: (row: T) => string): Map<string, T[]> {
-  const map = new Map<string, T[]>();
-  for (const row of rows) {
-    const list = map.get(key(row)) ?? [];
-    list.push(row);
-    map.set(key(row), list);
-  }
-  return map;
-}
-
-export function saveCareerBookmark(careerId: string, kind: 'saved' | 'target') {
+export function saveCareerBookmark(careerId: string, kind: CareerBookmarkKind) {
   return callRpc<void>('save_career_bookmark', { p_career_id: careerId, p_kind: kind });
 }
 
+export function removeCareerBookmark(careerId: string, kind: CareerBookmarkKind) {
+  return callRpc<void>('remove_career_bookmark', { p_career_id: careerId, p_kind: kind });
+}
+
 export function listSavedCareers() {
-  return callRpc<Array<{ career_id: string; kind: string; career_name: string; career_code: string }>>('list_my_saved_careers');
+  return callRpc<SavedCareer[]>('list_my_saved_careers');
 }
 
 export function setCareerStatus(careerId: string, status: string) {
   return callRpc<void>('set_career_status', { p_career_id: careerId, p_status: status });
 }
-
-export const RIASEC_DEMO_NOTE =
-  'G6 (Sở thích RIASEC) đang tính theo phương pháp thử nghiệm (Demo) vì công thức R05 chưa được BA/PO chốt. Phương pháp hiện tại được cấu hình ở tham số riasec_match_method.';
 
 export interface CareerCompareFacts {
   id: string;
@@ -495,19 +605,20 @@ function firstText(values: Array<string | null | undefined>): string | null {
 }
 
 /** FR04.02.12–13: thông tin công bố + % phù hợp để so sánh 2–4 nghề */
-export async function loadCareerCompareRows(ids: string[], userId: string): Promise<CareerCompareFacts[]> {
+export async function loadCareerCompareRows(ids: string[]): Promise<CareerCompareFacts[]> {
   const unique = [...new Set(ids)].slice(0, 4);
+  const fits = await callRpc<{ has_scores: boolean; items: Array<{ career_id: string; fit: number }> }>(
+    'get_career_fit_many', { p_career_ids: unique },
+  );
+  const fitById = new Map((fits.items ?? []).map((item) => [item.career_id, Number(item.fit)]));
   const rows = await Promise.all(unique.map(async (id) => {
-    const [{ data: career, error }, detail] = await Promise.all([
-      supabase
-        .from('careers')
-        .select('id, career_name, holland_top3, status, data_checked_at, field:career_fields(field_name)')
-        .eq('id', id)
-        .maybeSingle(),
-      loadCareerDetail(id, userId),
-    ]);
+    const { data: career, error } = await supabase
+      .from('careers')
+      .select('id, career_name, holland_top3, status, data_checked_at, field:career_fields(field_name)')
+      .eq('id', id)
+      .maybeSingle();
     if (error) throw error;
-    if (!career || career.status !== 'published' || !detail) return null;
+    if (!career || career.status !== 'published') return null;
 
     const [{ data: jds }, { data: links }] = await Promise.all([
       supabase
@@ -535,8 +646,8 @@ export async function loadCareerCompareRows(ids: string[], userId: string): Prom
       skills: firstText((jds ?? []).map((j) => j.professional_skills)),
       sourceUrl: firstText((jds ?? []).map((j) => j.jd_url ?? j.data_source)),
       reviewedAt: career.data_checked_at,
-      fitPercent: detail.components.careerFitPercent,
-      hasUserScores: detail.hasUserScores,
+      fitPercent: fitById.get(id) ?? null,
+      hasUserScores: fits.has_scores,
     };
   }));
   return rows.filter((row): row is CareerCompareFacts => row !== null);

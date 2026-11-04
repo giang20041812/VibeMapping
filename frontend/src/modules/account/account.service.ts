@@ -19,6 +19,8 @@ export interface AppNotification {
   body: string | null;
   createdAt: string;
   read: boolean;
+  /** Trang mở khi bấm vào thông báo */
+  href: string | null;
 }
 
 export async function updatePassword(newPassword: string) {
@@ -69,7 +71,7 @@ export async function countUnreadNotifications(userId: string): Promise<number> 
 export async function listNotifications(userId: string, limit = 20): Promise<AppNotification[]> {
   const { data, error } = await supabase
     .from('notifications')
-    .select('id, title, body, created_at, read_at')
+    .select('id, title, body, payload, created_at, read_at')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .limit(limit);
@@ -83,6 +85,7 @@ export async function listNotifications(userId: string, limit = 20): Promise<App
     body: row.body,
     createdAt: row.created_at,
     read: row.read_at !== null,
+    href: typeof (row.payload as { href?: unknown } | null)?.href === 'string' ? (row.payload as { href: string }).href : null,
   }));
 }
 

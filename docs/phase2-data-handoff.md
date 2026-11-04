@@ -103,3 +103,20 @@ File research không có bảng nghề ↔ ngành. Liên kết sinh tự động
 - Type các bảng mới được ghép vào `frontend/src/types/supabase.ts`. Không sinh lại cả file vì schema cục bộ lệch với Supabase thật ở phần phase 1.
 - Đã xem trang ở 1440 px và 390 px bằng Edge với server giả đọc từ Postgres cục bộ: không tràn ngang trang. **Chưa chạy với Supabase thật** (bảng mới chưa được áp lên đó).
 - Chưa làm: trang chi tiết trường (danh sách ngành/chương trình, học phí), bấm dòng để mở.
+
+## 7. Gợi ý nghề tính trên máy chủ (2026-11-05)
+
+| Thành phần | File |
+|---|---|
+| Career Fit, xếp hạng, bản chụp, thông báo | `supabase/migrations/20261105000100_phase2_career_fit_engine.sql` |
+| Bỏ lưu, bỏ nghề mục tiêu, lịch sử nghề mục tiêu | `supabase/migrations/20261105000200_phase2_my_careers.sql` |
+| Kiểm thử hành vi | `supabase/tests/phase2_career_fit.sql` (chạy `supabase/tests/run-local.ps1`) |
+
+- `career_fit_compute` tính R06–R08 và R13 cho mọi nghề `published` + `is_standard_complete` theo ma trận NGHE hiện hành; G6 theo `riasec_match_method` (Demo). Giá trị lưu là giá trị gốc, chỉ làm tròn khi hiển thị.
+- `career_fit_results` lưu theo cặp (kết quả, nghề, phiên bản NGHE). `career_fit_ranked` xếp R20: vượt P06 trước, bậc P24, Gap ở tiêu chí CW cao nhất, số tiêu chí chưa đạt, mã nghề; bổ sung Nghề gần đạt từ P25.
+- Trigger `trg_refresh_career_ranking` chạy mỗi khi `recalculate_result` tính lại kết quả mới nhất (tự đánh giá, chấp nhận/loại bài 360°, chốt). Lỗi phần nghề chỉ ghi cảnh báo, không chặn việc tính điểm.
+- RPC đọc (`get_career_recommendations`, `get_career_fit_detail`, `get_career_fit_many`) tự tính lại khi nghề, ma trận hoặc tham số đổi (`career_fit_runs.fingerprint`). Phụ huynh/người được chia sẻ truyền `p_user_id`, kiểm tra bằng `can_view_result_of`.
+- Bản chụp `career_match_snapshots` do máy chủ ghi: lý do tính lại, bốn mã phiên bản, tham số, Top trước/sau, bậc và tiêu chí phụ, từng tiêu chí. Trình duyệt không còn quyền gọi `save_career_match_snapshot`.
+- Thông báo `career_ranking_changed` chỉ gửi khi Top đổi, nêu nghề mới vào, nghề rời danh sách, nghề biến động nhiều nhất; bấm mở `/nghe`. Email chưa gửi (chưa có dịch vụ thư).
+- Nghề mục tiêu ngoài Top vẫn trả về trong `targets`. Lệch góc nhìn chỉ xét tiêu chí có CW ≥ trung bình trong phần (giả định của dev, chờ BA chốt "tiêu chí quan trọng").
+- Điểm bị trừ tầng 2 = (1 − Fit) × CW ÷ ΣCW các tiêu chí đã có điểm trong phần × tỷ trọng sau chia lại; điểm góp + điểm bị trừ của một phần = tỷ trọng phần đó.

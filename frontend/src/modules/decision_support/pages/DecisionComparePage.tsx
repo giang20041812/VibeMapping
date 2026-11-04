@@ -72,7 +72,7 @@ export const DecisionComparePage: React.FC = () => {
     searchCareers('').then(setCareers).catch(() => undefined);
     reload().catch(() => setMessage({ tone: 'danger', text: 'Không tải được phương án đã lưu.' }));
     if (session?.user.id) {
-      recommendCareers(session.user.id)
+      recommendCareers()
         .then((r) => setFitByCareer(new Map(r.items.map((i) => [i.careerId, i.fitPercent]))))
         .catch(() => undefined);
       callRpc<{ latest_score: number | null; budget_per_year: number | null }>('get_my_study_finance')

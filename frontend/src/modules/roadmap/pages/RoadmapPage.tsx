@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Alert, Badge, Button, Card, Checkbox, Input, ProgressBar, Select, Spinner } from '../../../components/common';
 import { evaluateRoadmapProgress } from '../../../domain/assessmentRules';
 import { generateRoadmapFromLibrary, type ApprovedActivityTemplate } from '../../../domain/roadmapGeneration';
@@ -43,7 +44,8 @@ export const RoadmapPage: React.FC = () => {
   const { session } = useAuth();
   const [roadmaps, setRoadmaps] = useState<Roadmap[] | null>(null);
   const [targets, setTargets] = useState<{ career_id: string; career_name: string; kind: string }[]>([]);
-  const [careerId, setCareerId] = useState('');
+  const [params] = useSearchParams();
+  const [careerId, setCareerId] = useState(() => params.get('nghe') ?? '');
   const [title, setTitle] = useState('');
   const [targetDate, setTargetDate] = useState('');
   const [form, setForm] = useState({ pillar: 'knowledge', title: '', due: '', weight: '1', checkpoint: false });

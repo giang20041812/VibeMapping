@@ -218,8 +218,8 @@ SELECT confirm_decision_consensus((SELECT id FROM rep), 'Đồng ý');
 SELECT t_assert((get_decision_report((SELECT id FROM rep)) -> 'shares' -> 0 ->> 'consensus_at') IS NOT NULL, 'Phụ huynh xác nhận đồng thuận');
 SELECT public.t_act_as('00000000-0000-0000-0000-00000000000f');
 SELECT t_expect_error($$SELECT get_decision_report((SELECT id FROM rep))$$, 'forbidden', 'Người không được chia sẻ không đọc báo cáo');
-SELECT t_expect_error($$SELECT save_career_match_snapshot((SELECT v FROM ids WHERE k = 'result_a'), '{}')$$, 'forbidden',
-  'Không lưu bản chụp đối sánh của người khác');
+SELECT t_expect_error($$SELECT save_career_match_snapshot((SELECT v FROM ids WHERE k = 'result_a'), '{}')$$, 'permission denied',
+  'Trình duyệt không tự ghi bản chụp đối sánh (máy chủ ghi)');
 
 -- M09: bài bị 3 người báo cáo tự ẩn; từ khóa cấm tự ẩn ---------------------------------------------
 SELECT public.t_act_as('00000000-0000-0000-0000-00000000000a');

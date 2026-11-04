@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Bell, CheckCheck } from 'lucide-react';
 import { Skeleton, SkeletonRegion } from '../common';
 import { useAuth } from '../../modules/auth/AuthContext';
@@ -27,6 +28,7 @@ const formatAgo = (iso: string) => {
 export const NotificationMenu: React.FC = () => {
   const { session } = useAuth();
   const userId = session?.user.id;
+  const navigate = useNavigate();
   const rootRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [unread, setUnread] = useState(0);
@@ -92,6 +94,10 @@ export const NotificationMenu: React.FC = () => {
   if (!userId) return null;
 
   const readOne = async (item: AppNotification) => {
+    if (item.href?.startsWith('/')) {
+      setOpen(false);
+      navigate(item.href);
+    }
     if (item.read) return;
     setItems((list) => list?.map((n) => (n.id === item.id ? { ...n, read: true } : n)) ?? null);
     setUnread((count) => Math.max(0, count - 1));

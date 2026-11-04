@@ -30,7 +30,7 @@ export const CareerComparePage: React.FC = () => {
       return;
     }
     let active = true;
-    loadCareerCompareRows(ids, session.user.id)
+    loadCareerCompareRows(ids)
       .then((value) => active && setRows(value))
       .catch(() => active && setError('Không tải được bảng so sánh nghề.'));
     return () => {

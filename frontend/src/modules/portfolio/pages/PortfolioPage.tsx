@@ -67,7 +67,7 @@ export const PortfolioPage: React.FC = () => {
       setDetail(null);
       return;
     }
-    loadCareerDetail(careerId, session.user.id).then(setDetail).catch(() => setMessage({ tone: 'danger', text: 'Không phân tích được khoảng cách.' }));
+    loadCareerDetail(careerId).then(setDetail).catch(() => setMessage({ tone: 'danger', text: 'Không phân tích được khoảng cách.' }));
   }, [careerId, session?.user.id]);
 
   const importVerified = async () => {
@@ -151,7 +151,7 @@ export const PortfolioPage: React.FC = () => {
         {detail && !detail.hasUserScores && <Alert variant="warning">Bạn chưa có kết quả đánh giá nên chưa tính được khoảng cách.</Alert>}
         {detail && detail.hasUserScores && (
           <>
-            <p>Đạt {metCount}/{detail.components.criteriaEvaluations.length} tiêu chí có trọng số (yêu cầu tổng hợp từ JD L0–L2).</p>
+            <p>Đạt {metCount}/{detail.components.criteriaEvaluations.length} tiêu chí của nghề.</p>
             {gaps.length === 0 ? <p>Không còn khoảng cách nào.</p> : (
               <ol className="top-careers">
                 {gaps.map((g) => {

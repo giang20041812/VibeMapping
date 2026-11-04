@@ -14,21 +14,22 @@ import {
   listPublishedCareers,
   listSavedCareers,
   loadCareerFields,
+  removeCareerBookmark,
   loadCareerFilterChoices,
   searchCareers,
+  type CareerBookmarkKind,
   type CareerFieldNode,
   type CareerListItem,
+  type SavedCareer,
 } from '../career.service';
+import { interestLabel } from '../careerFit.constants';
 import { TopCareers } from '../components/TopCareers';
 import './CareerPages.css';
 import './CareerFit.css';
 
 const PAGE_SIZE = 24;
-const INTEREST_NAME: Record<string, string> = { R: 'Thực tế', I: 'Nghiên cứu', A: 'Nghệ thuật', S: 'Xã hội', E: 'Quản lý', C: 'Nghiệp vụ' };
-const interestLabel = (code: string) => code.split('').map((ch) => INTEREST_NAME[ch] ?? ch).join(' · ');
 const EMPTY_FILTERS = { salary: '', growth: '', education: '', environment: '' };
 type Tab = 'fit' | 'catalog';
-type SavedItem = { career_id: string; kind: string; career_name: string };
 
 export const CareerListPage: React.FC<{ publicCatalog?: boolean }> = ({ publicCatalog = false }) => {
   const { profile } = useAuth();
@@ -41,7 +42,7 @@ export const CareerListPage: React.FC<{ publicCatalog?: boolean }> = ({ publicCa
   const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [choices, setChoices] = useState({ salaries: [] as string[], growth: [] as string[], education: [] as string[], environments: [] as string[] });
   const [rows, setRows] = useState<CareerListItem[]>([]);
-  const [saved, setSaved] = useState<SavedItem[]>([]);
+  const [saved, setSaved] = useState<SavedCareer[]>([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -67,7 +68,7 @@ export const CareerListPage: React.FC<{ publicCatalog?: boolean }> = ({ publicCa
   useEffect(() => {
     if (!isLearner) return;
     let active = true;
-    listSavedCareers().then((value) => active && setSaved((value ?? []) as SavedItem[])).catch(() => undefined);
+    listSavedCareers().then((value) => active && setSaved(value ?? [])).catch(() => undefined);
     return () => {
       active = false;
     };
@@ -109,6 +110,25 @@ export const CareerListPage: React.FC<{ publicCatalog?: boolean }> = ({ publicCa
   const visible = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const targets = saved.filter((item) => item.kind === 'target');
   const interested = saved.filter((item) => item.kind !== 'target');
+  const unmark = async (careerId: string, kind: CareerBookmarkKind) => {
+    try {
+      await removeCareerBookmark(careerId, kind);
+      setSaved(await listSavedCareers());
+      setNotice(kind === 'target' ? 'Đã bỏ nghề mục tiêu.' : 'Đã bỏ lưu nghề.');
+    } catch {
+      setNotice('Không cập nhật được nghề đã lưu.');
+    }
+  };
+  const mineList = (items: SavedCareer[], kind: CareerBookmarkKind) => (
+    <ul>
+      {items.map((item) => (
+        <li key={item.career_id} className="career-mine-item">
+          <Link to={careerHref(item.career_id)}>{item.career_name}</Link>
+          <Button size="sm" variant="ghost" onClick={() => void unmark(item.career_id, kind)}>{kind === 'target' ? 'Bỏ mục tiêu' : 'Bỏ lưu'}</Button>
+        </li>
+      ))}
+    </ul>
+  );
   const clearPicked = () => {
     picked.forEach((id) => toggleCareerCompare(id));
     setPicked(readCareerCompare());
@@ -184,13 +204,13 @@ export const CareerListPage: React.FC<{ publicCatalog?: boolean }> = ({ publicCa
               <div className="career-mine-block">
                 <h3><Target size={16} aria-hidden="true" /> Nghề mục tiêu</h3>
                 {targets.length === 0 ? <p className="career-muted">Chưa chọn nghề mục tiêu</p> : (
-                  <ul>{targets.map((item) => <li key={item.career_id}><Link to={careerHref(item.career_id)}>{item.career_name}</Link></li>)}</ul>
+                  mineList(targets, 'target')
                 )}
               </div>
               <div className="career-mine-block">
                 <h3><Bookmark size={16} aria-hidden="true" /> Nghề quan tâm</h3>
                 {interested.length === 0 ? <p className="career-muted">Chưa lưu nghề nào</p> : (
-                  <ul>{interested.map((item) => <li key={item.career_id}><Link to={careerHref(item.career_id)}>{item.career_name}</Link></li>)}</ul>
+                  mineList(interested, 'saved')
                 )}
               </div>
             </div>

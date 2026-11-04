@@ -35,7 +35,7 @@
 .topbar-brand-mark .logo-svg { display: block; }
 .topbar-brand-text { display: inline-flex; align-items: baseline; gap: 0.28em; }
 .topbar-brand-vibe { color: var(--color-primary); }
-.topbar-brand-mapping { color: var(--color-accent); }
+.topbar-brand-mapping { color: var(--logo-a); }
 
 /* Các mục: chữ, gạch chân ở mục đang chọn */
 .topbar-links {

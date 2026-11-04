@@ -45,7 +45,7 @@
 .sidebar-brand-mark .logo-svg { display: block; }
 .sidebar-brand-text { display: inline-flex; align-items: baseline; gap: 0.28em; }
 .sidebar-brand-vibe { color: var(--color-primary); }
-.sidebar-brand-mapping { color: var(--color-accent); }
+.sidebar-brand-mapping { color: var(--logo-a); }
 .sidebar-close { display: none; }
 
 .sidebar-nav {

@@ -10,7 +10,13 @@
 }
 .home > * { width: 100%; max-width: var(--home-width); min-width: 0; }
 
-.text-spectrum { color: var(--color-accent); }
+.text-spectrum {
+  color: var(--brand-blue);
+  background: var(--gradient-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
 
 /* Tên sản phẩm: chữ V được thay bằng biểu tượng */
 .home-brand {

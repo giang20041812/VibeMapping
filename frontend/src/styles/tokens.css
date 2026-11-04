@@ -7,40 +7,49 @@
 
 :root {
   /* Thang màu thương hiệu */
-  --brand-navy: #031964;
-  --brand-deep: #1558c8;
-  --brand-azure: #1a63de;
-  --brand-blue: #1f6feb;
-  --brand-sky: #38a3f5;
-  --brand-light: #7fa6e8;
-  --brand-soft: #a5c6f5;
-  --brand-pale: #b8d6fa;
-  --brand-mist: #c7e3fe;
-  --brand-ice: #eaf4ff;
+  --brand-navy: #2b2775;
+  --brand-deep: #3730a3;
+  --brand-azure: #4338ca;
+  --brand-blue: #4f46e5;
+  --brand-sky: #6366f1;
+  --brand-light: #a5a8f8;
+  --brand-soft: #c4c7fb;
+  --brand-pale: #d6d9fd;
+  --brand-mist: #e0e3ff;
+  --brand-ice: #eef0ff;
   --brand-cream: #fffcf0;
   --brand-gold: #f6b73c;
+  --brand-violet: #8b5cf6;
   --brand-white: #ffffff;
 
   /* Primary */
   --color-primary: var(--brand-blue);
-  --color-primary-hover: #1a5fd6;
-  --color-primary-active: #164fb5;
+  --color-primary-hover: #4338ca;
+  --color-primary-active: #3730a3;
   --color-primary-light: var(--brand-ice);
-  --color-primary-ring: rgba(31, 111, 235, 0.3);
+  --color-primary-ring: rgba(79, 70, 229, 0.28);
   --color-accent: var(--brand-sky);
   --color-accent-gold: var(--brand-gold);
 
   /* Surface & Background */
-  --color-bg-app: #f6f9ff;
+  --color-bg-app: #f7f8ff;
   --color-bg-surface: #ffffff;
-  --color-bg-subtle: #eaf1fc;
-  --color-bg-hover: #dce8fa;
+  --color-bg-subtle: #eef0fd;
+  --color-bg-hover: #e3e6fb;
   --color-bg-cream: var(--brand-cream);
 
 /* Nền trang: nền xanh rất nhạt, lưới chấm mờ và một vầng xanh nhạt ở đầu trang. Tĩnh, không ảnh nặng. */
   --bg-pattern:
     radial-gradient(70vw 420px at 50% 0, rgba(31, 111, 235, 0.08), transparent 72%),
     radial-gradient(rgba(31, 111, 235, 0.12) 1px, transparent 1.4px) 0 0 / 24px 24px repeat;
+
+  /* Nền trang: lưới mảnh rất mờ và vài vầng sáng lớn. Tĩnh. */
+  --bg-pattern:
+    radial-gradient(40vw 360px at 6% 24%, rgba(99, 102, 241, 0.12), transparent 70%),
+    radial-gradient(36vw 320px at 94% 10%, rgba(139, 92, 246, 0.1), transparent 70%),
+    radial-gradient(34vw 300px at 46% 62%, rgba(56, 189, 248, 0.08), transparent 70%),
+    linear-gradient(rgba(79, 70, 229, 0.05) 1px, transparent 1px) 0 0 / 40px 40px,
+    linear-gradient(90deg, rgba(79, 70, 229, 0.05) 1px, transparent 1px) 0 0 / 40px 40px;
 
   /* Thanh bên và thanh ngang: trắng đặc, viền mảnh */
   --sidebar-bg: var(--color-bg-surface);
@@ -56,18 +65,18 @@
 
   /* Khối thương hiệu trang đăng nhập: xanh sáng phẳng, chấm trắng mờ */
   --auth-hero-bg:
-    linear-gradient(160deg, var(--brand-azure) 0%, var(--brand-sky) 100%);
+    linear-gradient(160deg, var(--brand-deep) 0%, var(--brand-sky) 100%);
 
 
   /* Borders & Dividers */
-  --color-border: #e1e8f3;
-  --color-border-hover: #c6d4ea;
+  --color-border: #e4e6f7;
+  --color-border-hover: #cdd1f0;
   --color-border-focus: var(--brand-blue);
 
   /* Typography / Text hierarchy */
-  --color-text-main: #0f2747;
-  --color-text-secondary: #475a7a;
-  --color-text-muted: #7486a3;
+  --color-text-main: #2b2775;
+  --color-text-secondary: #55577f;
+  --color-text-muted: #7f819f;
   --color-text-inverse: #ffffff;
   --color-text-brand: var(--brand-blue);
 
@@ -90,7 +99,7 @@
   --color-info: var(--brand-blue);
   --color-info-bg: var(--brand-ice);
   --color-info-border: var(--brand-mist);
-  --color-info-text: #0f2747;
+  --color-info-text: #2b2775;
 
   /* Màu nhấn cho trực quan hóa (biểu đồ ngũ giác, quả địa cầu, nền trang chủ).
      Chỉ dùng cho hình minh họa, không dùng cho nút bấm, chữ hay trạng thái. */
@@ -198,19 +207,21 @@
   /* Bề mặt: thẻ trắng đặc, viền mảnh, bóng nhẹ. --surface-glass giữ lại cho quả cầu và biểu đồ. */
   --surface-glass: rgba(255, 255, 255, 0.7);
   --surface-border: var(--color-border);
-  --surface-shadow: 0 1px 2px rgba(15, 39, 71, 0.04), 0 4px 14px -6px rgba(31, 111, 235, 0.14);
+  --surface-shadow: 0 1px 2px rgba(67, 56, 202, 0.05), 0 14px 34px -14px rgba(79, 70, 229, 0.16);
   --chip-bg: var(--color-bg-surface);
   --chip-border: var(--color-border);
   --chip-shadow: 0 0 0 0 transparent;
-  --scrim: rgba(15, 39, 71, 0.45);
+  --scrim: rgba(30, 27, 90, 0.5);
 
   /* Màu phẳng thay cho gradient */
-  --gradient-brand: linear-gradient(135deg, var(--brand-blue) 0%, var(--brand-sky) 100%);
-  --gradient-brand-hover: linear-gradient(135deg, var(--brand-azure) 0%, #2f94ee 100%);
-  --gradient-brand-active: linear-gradient(135deg, #164fb5 0%, #2a85dd 100%);
+  --gradient-brand: linear-gradient(135deg, var(--brand-azure) 0%, var(--brand-blue) 100%);
+  --gradient-text: linear-gradient(90deg, var(--brand-blue) 0%, var(--brand-violet) 100%);
+  --gradient-feature: linear-gradient(135deg, #2b2775 0%, #4338ca 100%);
+  --gradient-brand-hover: linear-gradient(135deg, var(--brand-deep) 0%, var(--brand-azure) 100%);
+  --gradient-brand-active: linear-gradient(135deg, #2e2792 0%, var(--brand-deep) 100%);
   --gradient-soft-blue: linear-gradient(135deg, var(--brand-ice) 0%, var(--brand-mist) 100%);
-  --logo-a: #6bb8fb;
-  --logo-b: #2f7cf0;
+  --logo-a: #818cf8;
+  --logo-b: #4f46e5;
   --gradient-spectrum: var(--color-primary);
   --gradient-brand-deep: var(--brand-ice);
   --gradient-soft: var(--color-bg-app);
@@ -243,22 +254,22 @@
   --page-gutter: clamp(16px, 2.6vw, 64px);
 
   /* Border Radii: bo mềm hiện đại. --radius-full chỉ dành cho hình tròn thật. */
-  --radius-xs: 4px;
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 10px;
-  --radius-xl: 14px;
-  --radius-2xl: 18px;
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
   --radius-full: 9999px;
 
   /* Shadows (pha tông navy) */
-  --shadow-xs: 0 1px 2px rgba(15, 39, 71, 0.05);
-  --shadow-sm: 0 1px 3px rgba(15, 39, 71, 0.08), 0 1px 2px rgba(15, 39, 71, 0.04);
-  --shadow-md: 0 6px 14px -4px rgba(15, 39, 71, 0.12), 0 2px 6px -2px rgba(15, 39, 71, 0.06);
-  --shadow-lg: 0 18px 32px -10px rgba(15, 39, 71, 0.18), 0 6px 12px -6px rgba(15, 39, 71, 0.08);
+  --shadow-xs: 0 1px 2px rgba(67, 56, 202, 0.05);
+  --shadow-sm: 0 1px 3px rgba(67, 56, 202, 0.08), 0 1px 2px rgba(67, 56, 202, 0.04);
+  --shadow-md: 0 6px 14px -4px rgba(67, 56, 202, 0.12), 0 2px 6px -2px rgba(67, 56, 202, 0.06);
+  --shadow-lg: 0 18px 32px -10px rgba(67, 56, 202, 0.18), 0 6px 12px -6px rgba(67, 56, 202, 0.08);
   --shadow-glow: var(--shadow-md);
-  --shadow-dropdown: 0 14px 30px rgba(15, 39, 71, 0.16), 0 4px 10px rgba(15, 39, 71, 0.08);
-  --shadow-sticky: 0 -6px 16px rgba(15, 39, 71, 0.08);
+  --shadow-dropdown: 0 14px 30px rgba(67, 56, 202, 0.16), 0 4px 10px rgba(67, 56, 202, 0.08);
+  --shadow-sticky: 0 -6px 16px rgba(67, 56, 202, 0.08);
 
   /* Typography */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;

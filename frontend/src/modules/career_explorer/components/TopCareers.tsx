@@ -38,13 +38,13 @@ export const TopCareers: React.FC<Props> = ({ picked = [], onToggleCompare, onBr
     let active = true;
     recommendCareers(subjectUserId)
       .then((value) => active && setData(value))
-      .catch(() => active && setError('Không tính được nghề phù hợp.'));
+      .catch(() => active && setError('Chưa tính được nghề'));
     return () => {
       active = false;
     };
   }, [session?.user.id, subjectUserId]);
 
-  if (error) return <Alert variant="danger">{error}</Alert>;
+  if (error) return <div className="fit-error"><Alert variant="danger">{error}</Alert></div>;
   if (data === null) return <Skeleton shape="block" />;
   if (!data.hasResult || !data.hasScores) {
     return (

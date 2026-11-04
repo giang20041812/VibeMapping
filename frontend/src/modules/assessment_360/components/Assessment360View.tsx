@@ -28,7 +28,7 @@ export const Assessment360View: React.FC<Assessment360ViewProps> = ({ invite, re
 
   const action = showSetup ? (
     <Button variant="cartoon" size="lg" className="t360-who" onClick={() => setSetupOpen(true)} leftIcon={<Users size={20} />}>
-      Ai đánh giá
+      Ai đánh giá?
       {pending > 0 && (
         <span className="t360-who-count" aria-label={`${pending} bài chờ duyệt`}>
           {pending}

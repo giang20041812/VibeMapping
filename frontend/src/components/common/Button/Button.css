@@ -128,6 +128,20 @@
   color: var(--color-text-brand);
 }
 
+/* Kiểu hình dán: viền mực dày, bóng đặc lệch xuống; nhô lên khi rê chuột, lún xuống khi bấm */
+.btn-cartoon {
+  overflow: visible;
+  color: var(--cartoon-ink);
+  background: var(--brand-gold);
+  border: var(--cartoon-stroke) solid var(--cartoon-ink);
+  border-radius: var(--radius-lg);
+  font-weight: 800;
+  box-shadow: var(--cartoon-pop);
+}
+.btn-cartoon:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--cartoon-pop-hover); }
+.btn-cartoon:active:not(:disabled) { transform: translateY(3px); box-shadow: var(--cartoon-pop-press); }
+.btn-cartoon:disabled { opacity: 0.6; cursor: not-allowed; }
+
 /* Loading Spinner */
 .btn-spinner {
   width: 16px;

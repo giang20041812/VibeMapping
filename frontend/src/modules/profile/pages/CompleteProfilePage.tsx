@@ -94,7 +94,7 @@ export const CompleteProfilePage: React.FC = () => {
     if (!profile) return <Alert variant="danger">Không tải được hồ sơ</Alert>;
     if (!isLearnerRole(profile.role)) return <Navigate to="/ho-so" replace />;
     if (isProfileComplete(profile)) {
-      return from ? <Navigate to={from} replace /> : <Navigate to="/danh-gia-ca-nhan" replace state={location.state} />;
+      return from ? <Navigate to={from} replace /> : <Navigate to="/danh-gia-360" replace state={location.state} />;
     }
   }
 
@@ -147,7 +147,7 @@ export const CompleteProfilePage: React.FC = () => {
       }
       await refreshProfile();
       if (from) navigate(from, { replace: true });
-      else navigate('/danh-gia-ca-nhan', { replace: true, state: { justCompleted: true } });
+      else navigate('/danh-gia-360', { replace: true, state: { justCompleted: true } });
     } catch (error) {
       setFormError(isGuest ? describeGuestError(error) : 'Không lưu được hồ sơ, vui lòng thử lại');
     } finally {

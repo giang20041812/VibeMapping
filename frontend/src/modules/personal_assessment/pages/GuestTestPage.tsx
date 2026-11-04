@@ -51,7 +51,7 @@ export const GuestTestPage: React.FC = () => {
   }
 
   if (isLoading) return <PageSkeleton />;
-  if (session && !isGuest) return <Navigate to="/danh-gia-ca-nhan" replace />;
+  if (session && !isGuest) return <Navigate to="/danh-gia-360" replace />;
   if (!session || hasFinished === null) return <PageSkeleton />;
   if (hasFinished) return <Navigate to="/hoan-tat-ho-so" replace />;
 

@@ -39,6 +39,8 @@ export interface InviteController {
   revoke: () => void;
   recreate: (link: InviteLink) => void;
   turnOff: () => void;
+  /** Đọc lại trạng thái mời, ví dụ sau khi chốt kết quả */
+  reload: () => Promise<void>;
 }
 
 export function useInviteController(userId: string | undefined, locked: boolean): InviteController {
@@ -149,5 +151,6 @@ export function useInviteController(userId: string | undefined, locked: boolean)
       void run(() => revokeAndRecreate(userId, link, state.expiryDays), 'Không tạo được đường dẫn mới, vui lòng thử lại');
     },
     turnOff,
+    reload,
   };
 }

@@ -1,0 +1,6 @@
+.personal-section { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
+.personal-career-cta { display: flex; justify-content: center; padding: var(--space-2) 0 var(--space-4); }
+
+@media (max-width: 760px) {
+  .personal-career-cta .app-button { width: 100%; white-space: normal; }
+}

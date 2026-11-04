@@ -94,10 +94,13 @@ export function useReviewController(userId: string | undefined, onFinalized: () 
       try {
         const result = await finalizeResult(summary.resultId);
         if (!result.ok) throw new Error('not_ok');
+        setConfirmFinalize(false);
+        await reload();
         onFinalized();
       } catch {
         setConfirmFinalize(false);
         setActionError('Không chốt được kết quả, vui lòng thử lại');
+      } finally {
         setIsFinalizing(false);
       }
     },

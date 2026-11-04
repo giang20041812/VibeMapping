@@ -140,7 +140,7 @@ export const HomePage: React.FC = () => {
   /* Khách thấy nút khám phá; bấm vào sẽ được đưa tới đăng nhập rồi quay lại đúng trang */
   const canExplore = isGuest || learner;
   /* Khách làm bài test ngay không cần đăng nhập; người có tài khoản làm trong trang tổng quan */
-  const testPath = isGuest ? '/lam-bai' : '/danh-gia-ca-nhan';
+  const testPath = isGuest ? '/lam-bai' : '/danh-gia-360';
   const userId = session?.user.id;
   const [result, setResult] = useState<AssessmentResultSummary | null>(null);
   const [isResultLoading, setIsResultLoading] = useState(true);

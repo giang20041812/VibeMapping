@@ -50,7 +50,7 @@ export function nextSurveyStep(input: { statusLabel: string | null; packageSize:
   { label: string; to: string } | null {
   if (input.statusLabel === 'self_assessment' && !input.finalized) return { label: 'Mời người đánh giá 360°', to: '/danh-gia-360' };
   if (input.packageSize !== null && input.packageSize < 75) {
-    return { label: `Làm gói ${input.packageSize < 50 ? 50 : 75} câu`, to: '/danh-gia-ca-nhan' };
+    return { label: `Làm gói ${input.packageSize < 50 ? 50 : 75} câu`, to: '/danh-gia-360' };
   }
   if (input.statusLabel === 'temporary') return { label: 'Mời thêm người đánh giá', to: '/danh-gia-360' };
   return null;

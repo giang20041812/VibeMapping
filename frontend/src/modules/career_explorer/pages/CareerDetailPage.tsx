@@ -246,7 +246,7 @@ export const CareerDetailPage: React.FC = () => {
       ) : (
         <div className="fit-empty">
           <h2>{subjectUserId ? 'Chưa có kết quả đánh giá' : 'Làm bài kiểm tra đánh giá để mở khóa % phù hợp của bạn với nghề này'}</h2>
-          {!subjectUserId && <Link className="compare-tray-go" to="/danh-gia-ca-nhan">Làm bài đánh giá</Link>}
+          {!subjectUserId && <Link className="compare-tray-go" to="/danh-gia-360">Làm bài đánh giá</Link>}
         </div>
       )}
 

@@ -1,16 +1,28 @@
-/* Lưới trang: công tắc rộng hết hàng, bên dưới đường dẫn mời và bài đã nộp cạnh nhau */
-.t360-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-  gap: var(--space-6) var(--space-8);
-  align-items: start;
-}
-.t360-grid.is-single { grid-template-columns: minmax(0, 1fr); }
-
-.t360-wide { grid-column: 1 / -1; display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; }
-.t360-notices:empty { display: none; }
-.t360-alert-action { margin-top: var(--space-3); }
+/* Công tắc ở trên cùng; thiết lập người đánh giá nằm trong hộp thoại */
+.t360-stack { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; }
+.t360-switch { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; }
 .t360-declined { font-size: var(--font-size-sm); font-weight: 700; color: var(--color-warning-text); }
+.t360-setup { display: flex; flex-direction: column; gap: var(--space-8); min-width: 0; }
+
+/* Nút "Ai đánh giá" kiểu hình dán, số bài chờ duyệt dán ở góc */
+.t360-who { position: relative; }
+.t360-who-count {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 var(--space-1);
+  font-size: var(--font-size-xs);
+  font-weight: 800;
+  color: var(--brand-white);
+  background: var(--soft-magenta);
+  border: var(--cartoon-stroke-thin) solid var(--cartoon-ink);
+  border-radius: var(--radius-full);
+}
 
 .t360-invites,
 .t360-review { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
@@ -84,7 +96,6 @@
   gap: var(--space-3);
   list-style: none;
 }
-.t360-grid.is-single .review-list { grid-template-columns: repeat(auto-fill, minmax(min(100%, 480px), 1fr)); }
 
 .review-row {
   display: flex;
@@ -128,11 +139,8 @@
 
 .review-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-2); margin-left: auto; }
 
-@media (max-width: 1200px) {
-  .t360-grid { grid-template-columns: minmax(0, 1fr); }
-}
-
 @media (max-width: 760px) {
+  .t360-who { width: 100%; }
   .review-summary .card-body { padding: var(--space-4); }
   .review-summary-body .app-button { width: 100%; }
   .review-row { padding: var(--space-4); }

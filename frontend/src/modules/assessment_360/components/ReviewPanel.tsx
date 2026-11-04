@@ -85,9 +85,9 @@ export const ReviewPanel: React.FC<{ controller: ReviewController }> = ({ contro
 
   return (
     <section className="t360-review" aria-labelledby="t360-review-title">
-      <h2 id="t360-review-title" className="section-title">
+      <h3 id="t360-review-title" className="section-title">
         Bài đã nộp
-      </h2>
+      </h3>
 
       {controller.isLoading && <ReviewSkeleton />}
       {!controller.isLoading && controller.hasError && <Alert variant="danger">Không tải được danh sách bài đã nộp</Alert>}

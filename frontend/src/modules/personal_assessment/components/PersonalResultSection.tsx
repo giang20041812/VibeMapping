@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Compass } from 'lucide-react';
 import { getInProgressSession } from '../../assessment_session/assessmentSession.service';
 import { Alert, Button, Modal } from '../../../components/common';
 import { EMPTY_RESULT } from '../../assessment_result/assessmentResult.constants';
@@ -10,16 +10,17 @@ import { ResultSkeleton } from '../../assessment_result/components/ResultSkeleto
 import { ResultView } from '../../assessment_result/components/ResultView';
 import { ResultInsightsPanel } from '../../assessment_result/components/ResultInsightsPanel';
 import { AssessmentStartPanel } from '../../assessment_session/components/AssessmentStartPanel';
-import { useAuth } from '../../auth/AuthContext';
-import { isLearnerRole } from '../../profile/profile.logic';
 import '../../assessment_result/components/EmptyResult.css';
-import './PersonalAssessmentPage.css';
+import './PersonalResultSection.css';
 
-/** Kết quả tự đánh giá (biểu đồ đa giác, điểm theo nhóm) và làm bài, trên cùng một trang */
-export const PersonalAssessmentPage: React.FC = () => {
-  const { session, profile } = useAuth();
-  const userId = session?.user.id;
-  const learner = isLearnerRole(profile?.role);
+export interface PersonalResultSectionProps {
+  userId: string;
+  /** Tăng lên để đọc lại kết quả, ví dụ sau khi chốt kết quả 360 */
+  reloadKey?: number;
+}
+
+/** Kết quả tổng thể (biểu đồ đa giác, điểm theo nhóm), làm bài đánh giá và gợi ý nghề khi đã có kết quả */
+export const PersonalResultSection: React.FC<PersonalResultSectionProps> = ({ userId, reloadKey = 0 }) => {
   const [result, setResult] = useState<AssessmentResultSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -28,7 +29,6 @@ export const PersonalAssessmentPage: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!userId || !learner) return;
     let active = true;
     setIsLoading(true);
     setHasError(false);
@@ -47,20 +47,13 @@ export const PersonalAssessmentPage: React.FC = () => {
     return () => {
       active = false;
     };
-  }, [userId, learner]);
+  }, [userId, reloadKey]);
 
-  if (!learner) {
-    return (
-      <>
-        <h1 className="page-title">Đánh giá cá nhân</h1>
-        <Alert variant="info">Bài tự đánh giá dành cho học sinh và sinh viên.</Alert>
-      </>
-    );
-  }
+  const continuePath = inProgressId ? `/danh-gia-ca-nhan/${inProgressId}` : null;
 
-  const resultSection = (
-    <section className="personal-section" aria-label="Kết quả">
-
+  return (
+    <section className="personal-section" aria-label="Kết quả tổng thể">
+      <h2 className="section-title">Kết quả tổng thể</h2>
       {isLoading && <ResultSkeleton />}
       {!isLoading && hasError && <Alert variant="danger">Không tải được kết quả đánh giá</Alert>}
       {!isLoading && !hasError && !result && (
@@ -69,32 +62,32 @@ export const PersonalAssessmentPage: React.FC = () => {
           cover={
             <Button
               size="lg"
-              onClick={() => (inProgressId ? navigate(`/danh-gia-ca-nhan/${inProgressId}`) : setRetakeOpen(true))}
+              onClick={() => (continuePath ? navigate(continuePath) : setRetakeOpen(true))}
               rightIcon={<ArrowRight size={18} />}
             >
-              {inProgressId ? 'Tiếp tục bài đang làm dở' : 'Làm bài đánh giá'}
+              {continuePath ? 'Tiếp tục bài đang làm dở' : 'Làm bài đánh giá'}
             </Button>
           }
         />
       )}
-      {!isLoading && !hasError && result && <ResultView
-          result={result}
-          onRetake={() => setRetakeOpen(true)}
-          onContinue={inProgressId ? () => navigate(`/danh-gia-ca-nhan/${inProgressId}`) : undefined}
-        />}
-      {!isLoading && !hasError && result && userId && <ResultInsightsPanel userId={userId} isOwner />}
+      {!isLoading && !hasError && result && (
+        <>
+          <ResultView
+            result={result}
+            onRetake={() => setRetakeOpen(true)}
+            onContinue={continuePath ? () => navigate(continuePath) : undefined}
+          />
+          <div className="personal-career-cta">
+            <Button variant="cartoon" size="lg" onClick={() => navigate('/nghe')} leftIcon={<Compass size={20} />} rightIcon={<ArrowRight size={18} />}>
+              Gợi ý nghề nghiệp phù hợp
+            </Button>
+          </div>
+          <ResultInsightsPanel userId={userId} isOwner />
+        </>
+      )}
+      <Modal wide open={retakeOpen} title="Làm bài đánh giá" onClose={() => setRetakeOpen(false)}>
+        <AssessmentStartPanel showDisclaimer={!result} showTitle={false} />
+      </Modal>
     </section>
-  );
-
-  return (
-    <>
-      <h1 className="page-title">Đánh giá cá nhân</h1>
-      <div className="personal-layout">
-        {resultSection}
-        <Modal wide open={retakeOpen} title="Làm bài đánh giá" onClose={() => setRetakeOpen(false)}>
-          <AssessmentStartPanel showDisclaimer={!result} showTitle={false} />
-        </Modal>
-      </div>
-    </>
   );
 };

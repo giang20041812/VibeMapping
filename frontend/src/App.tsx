@@ -20,7 +20,6 @@ import { NotFoundPage } from './modules/not_found/NotFoundPage';
 import { HomePage } from './modules/home/HomePage';
 import { ProfilePage } from './modules/profile/pages/ProfilePage';
 import { CompleteProfilePage } from './modules/profile/pages/CompleteProfilePage';
-import { PersonalAssessmentPage } from './modules/personal_assessment/pages/PersonalAssessmentPage';
 import { GuestTestPage } from './modules/personal_assessment/pages/GuestTestPage';
 import { SchoolExplorerPage } from './modules/school_explorer/pages/SchoolExplorerPage';
 import { MajorExplorerPage } from './modules/major_explorer/pages/MajorExplorerPage';
@@ -114,7 +113,6 @@ export const App: React.FC = () => (
           <Route element={<AppLayout />}>
             <Route path="/ho-so" element={<ProfilePage />} />
             <Route element={<RequireCompleteProfile />}>
-              <Route path="/danh-gia-ca-nhan" element={<PersonalAssessmentPage />} />
               <Route path="/danh-gia-360" element={<Assessment360Page />} />
               <Route path="/nghe" element={<CareerListPage />} />
               <Route path="/nghe/so-sanh" element={<CareerComparePage />} />
@@ -161,9 +159,10 @@ export const App: React.FC = () => (
         </Route>
 
         {/* Đường dẫn cũ đã gộp trang */}
-        <Route path="/danh-gia" element={<Navigate to="/danh-gia-ca-nhan" replace />} />
+        <Route path="/danh-gia" element={<Navigate to="/danh-gia-360" replace />} />
+        <Route path="/danh-gia-ca-nhan" element={<Navigate to="/danh-gia-360" replace />} />
         <Route path="/danh-gia/:sessionId" element={<LegacySessionRedirect />} />
-        <Route path="/ket-qua" element={<Navigate to="/danh-gia-ca-nhan" replace />} />
+        <Route path="/ket-qua" element={<Navigate to="/danh-gia-360" replace />} />
         <Route path="/moi-danh-gia" element={<Navigate to="/danh-gia-360" replace />} />
         <Route path="/bai-danh-gia" element={<Navigate to="/danh-gia-360" replace />} />
 

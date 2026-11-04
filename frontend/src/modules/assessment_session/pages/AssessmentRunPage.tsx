@@ -60,7 +60,7 @@ export const AssessmentRunPage: React.FC = () => {
   const { session: authSession, profile, isGuest } = useAuth();
   const navigate = useNavigate();
   /* Đọc qua ref để vòng tải dữ liệu không chạy lại mỗi khi hồ sơ được nạp xong */
-  const afterTestPath = useRef('/danh-gia-ca-nhan');
+  const afterTestPath = useRef('/danh-gia-360');
   afterTestPath.current = pathAfterTest(isGuest, profile);
 
   const [session, setSession] = useState<AssessmentSession | null>(null);

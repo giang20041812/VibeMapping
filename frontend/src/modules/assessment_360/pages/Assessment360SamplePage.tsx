@@ -49,6 +49,7 @@ export const Assessment360SamplePage: React.FC = () => {
     revoke: noop,
     recreate: noop,
     turnOff: noop,
+    reload: async () => undefined,
   };
 
   const visible = filter === 'all' ? ROWS : ROWS.filter((r) => r.group === filter);

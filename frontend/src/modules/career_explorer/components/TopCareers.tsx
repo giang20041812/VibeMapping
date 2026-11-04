@@ -51,7 +51,7 @@ export const TopCareers: React.FC<Props> = ({ picked = [], onToggleCompare, onBr
       <div className="fit-empty">
         <Sparkles size={28} aria-hidden="true" />
         <h2>Chưa có kết quả đánh giá</h2>
-        {!readOnly && <Button onClick={() => navigate('/danh-gia-ca-nhan')}>Làm bài đánh giá</Button>}
+        {!readOnly && <Button onClick={() => navigate('/danh-gia-360')}>Làm bài đánh giá</Button>}
       </div>
     );
   }

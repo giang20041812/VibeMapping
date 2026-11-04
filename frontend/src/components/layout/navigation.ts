@@ -15,7 +15,7 @@ import {
   Shield,
   SlidersHorizontal,
 } from 'lucide-react';
-import { Globe360Icon, HomeIcon, PersonalIcon, type NavIconProps } from './NavIcons';
+import { Globe360Icon, HomeIcon, type NavIconProps } from './NavIcons';
 import type { UserRole } from '../../modules/auth/auth.types';
 
 export interface NavItem {
@@ -34,7 +34,6 @@ const ADMIN_ROLES: UserRole[] = ['system_admin'];
 /** Mục điều hướng chính của thanh bên trái; hồ sơ, đổi mật khẩu, thông báo nằm trong menu avatar */
 export const NAV_ITEMS: NavItem[] = [
   { to: '/', label: 'Trang chủ', icon: HomeIcon, roles: HOME_ROLES, end: true },
-  { to: '/danh-gia-ca-nhan', label: 'Đánh giá cá nhân', icon: PersonalIcon, roles: ['student', 'university_student'] },
   { to: '/danh-gia-360', label: 'Đánh giá 360', icon: Globe360Icon, roles: ['student', 'university_student'] },
   { to: '/lop-hoc', label: 'Lớp học', icon: GraduationCap, roles: ['student', 'university_student', 'teacher', 'school_admin'] },
   { to: '/nghe', label: 'Nghề nghiệp', icon: Compass, roles: ['student', 'university_student', 'parent', 'teacher', 'mentor', 'school_admin'] },
@@ -67,7 +66,7 @@ export interface TopbarItem {
 
 /** Mục điều hướng của thanh trên cùng: trang giới thiệu, khám phá trường và khi khách làm bài test */
 export const TOPBAR_ITEMS: TopbarItem[] = [
-  { to: '/danh-gia-ca-nhan', label: 'Tổng quan', requiresAccount: true },
+  { to: '/danh-gia-360', label: 'Tổng quan', requiresAccount: true },
   { to: '/', label: 'Giới thiệu', end: true },
   { to: '/nganh-nghe', label: 'Ngành nghề' },
   { to: '/danh-muc-nghe', label: 'Nghề nghiệp' },

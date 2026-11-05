@@ -4,7 +4,7 @@ import { Bookmark, BookmarkCheck, GitCompare, Target } from 'lucide-react';
 import { Alert, Badge, Breadcrumb, Button, Skeleton } from '../../../components/common';
 import { PolygonChart } from '../../../components/charts/PolygonChart/PolygonChart';
 import type { PolygonAxis } from '../../../components/charts/PolygonChart/PolygonChart';
-import { careerCompareReady, readCareerCompare, toggleCareerCompare } from '../../../lib/selectionCart';
+import { readCareerCompare, toggleCareerCompare } from '../../../lib/selectionCart';
 import { GROUP_ICONS, GROUP_SHORT_LABELS } from '../../assessment_result/assessmentResult.constants';
 import { useAuth } from '../../auth/AuthContext';
 import {
@@ -25,6 +25,7 @@ import {
   formatScore,
   interestLabel,
 } from '../careerFit.constants';
+import { CompareSidebar } from '../components/CompareSidebar';
 import { CareerProfile } from '../components/CareerProfile';
 import { CriterionExplanation } from '../components/CriterionExplanation';
 import { FitBars } from '../components/FitBars';
@@ -96,6 +97,7 @@ export const CareerDetailPage: React.FC = () => {
   const [marks, setMarks] = useState<Set<CareerBookmarkKind>>(new Set());
   const [busy, setBusy] = useState(false);
   const [picked, setPicked] = useState(() => readCareerCompare());
+  const [compareOpen, setCompareOpen] = useState(false);
   const isLearner = !subjectUserId && (profile?.role === 'student' || profile?.role === 'university_student');
 
   const reloadMarks = useCallback(async () => {
@@ -194,13 +196,12 @@ export const CareerDetailPage: React.FC = () => {
               onClick={() => {
                 const next = toggleCareerCompare(careerId);
                 setPicked(next.ids);
-                const text = next.message ?? (careerCompareReady(next.ids) ? null : `Đã chọn ${next.ids.length}/4 nghề.`);
-                setNotice(text ? { tone: 'info', text } : null);
+                if (next.message) setNotice({ tone: 'info', text: next.message });
+                if (next.ids.includes(careerId)) setCompareOpen(true);
               }}
             >
               {picked.includes(careerId) ? 'Bỏ so sánh' : 'So sánh'}
             </Button>
-            {careerCompareReady(picked) && <Link className="compare-tray-go" to={`/nghe/so-sanh?ids=${picked.join(',')}`}>So sánh ngay</Link>}
           </div>
         )}
       </header>
@@ -246,7 +247,7 @@ export const CareerDetailPage: React.FC = () => {
       ) : (
         <div className="fit-empty">
           <h2>{subjectUserId ? 'Chưa có kết quả đánh giá' : 'Làm bài kiểm tra đánh giá để mở khóa % phù hợp của bạn với nghề này'}</h2>
-          {!subjectUserId && <Link className="compare-tray-go" to="/danh-gia-360">Làm bài đánh giá</Link>}
+          {!subjectUserId && <Link className="compare-side-go" to="/danh-gia-360">Làm bài đánh giá</Link>}
         </div>
       )}
 
@@ -273,6 +274,18 @@ export const CareerDetailPage: React.FC = () => {
       <CareerProfile careerId={careerId} />
 
       <p className="explain-note">{FIT_DISCLAIMER}</p>
+      {isLearner && (
+        <CompareSidebar
+          picked={picked}
+          open={compareOpen}
+          onOpenChange={setCompareOpen}
+          onRemove={(id) => setPicked(toggleCareerCompare(id).ids)}
+          onClear={() => {
+            picked.forEach((id) => toggleCareerCompare(id));
+            setPicked(readCareerCompare());
+          }}
+        />
+      )}
     </div>
   );
 };

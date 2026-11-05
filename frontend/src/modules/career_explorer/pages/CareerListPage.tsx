@@ -4,7 +4,7 @@ import { Bookmark, GitCompare, Compass, SlidersHorizontal, Sparkles, Target } fr
 import { Alert, Badge, Button, Pagination, Skeleton } from '../../../components/common';
 import { FilterSearch } from '../../../components/filters/FilterSearch/FilterSearch';
 import { SearchableSelect } from '../../../components/filters/SearchableSelect/SearchableSelect';
-import { careerCompareReady, readCareerCompare, toggleCareerCompare } from '../../../lib/selectionCart';
+import { readCareerCompare, toggleCareerCompare } from '../../../lib/selectionCart';
 import { useAuth } from '../../auth/AuthContext';
 import {
   careerIdsMatchingFilters,
@@ -22,6 +22,7 @@ import {
 } from '../career.service';
 import { interestLabel } from '../careerFit.constants';
 import { TopCareers } from '../components/TopCareers';
+import { CompareSidebar } from '../components/CompareSidebar';
 import './CareerPages.css';
 import './CareerFit.css';
 
@@ -46,11 +47,13 @@ export const CareerListPage: React.FC<{ publicCatalog?: boolean }> = ({ publicCa
   const [error, setError] = useState<string | null>(null);
   const [picked, setPicked] = useState<string[]>(() => readCareerCompare());
   const [notice, setNotice] = useState<string | null>(null);
+  const [compareOpen, setCompareOpen] = useState(false);
 
   const toggleCompare = (id: string) => {
     const next = toggleCareerCompare(id);
     setPicked(next.ids);
     setNotice(next.message ?? null);
+    if (next.ids.includes(id)) setCompareOpen(true);
   };
 
   useEffect(() => {
@@ -239,14 +242,8 @@ export const CareerListPage: React.FC<{ publicCatalog?: boolean }> = ({ publicCa
       )}
         </>
       )}
-      {view !== 'gate' && isLearner && picked.length > 0 && (
-        <div className="compare-tray" role="status">
-          <span>Đã chọn {picked.length}/4 nghề</span>
-          <Button size="sm" variant="ghost" onClick={clearPicked}>Bỏ chọn</Button>
-          <Link className="compare-tray-go" to={careerCompareReady(picked) ? `/nghe/so-sanh?ids=${picked.join(',')}` : '#'} aria-disabled={!careerCompareReady(picked)}>
-            {careerCompareReady(picked) ? 'So sánh ngay' : 'Chọn thêm nghề'}
-          </Link>
-        </div>
+      {view !== 'gate' && isLearner && (
+        <CompareSidebar picked={picked} open={compareOpen} onOpenChange={setCompareOpen} onRemove={toggleCompare} onClear={clearPicked} />
       )}
     </div>
   );

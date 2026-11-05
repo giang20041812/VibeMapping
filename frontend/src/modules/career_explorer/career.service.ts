@@ -710,3 +710,12 @@ export async function loadCareerProfileInfo(careerId: string): Promise<CareerPro
     .sort((a, b) => Number(b.direct) - Number(a.direct) || a.name.localeCompare(b.name, 'vi'));
   return { sections, majors };
 }
+
+/** Tên nghề theo danh sách id, giữ đúng thứ tự đã chọn */
+export async function loadCareerNames(ids: string[]): Promise<{ id: string; career_name: string }[]> {
+  if (ids.length === 0) return [];
+  const { data, error } = await supabase.from('careers').select('id, career_name').in('id', ids);
+  if (error) throw error;
+  const byId = new Map((data ?? []).map((row: { id: string; career_name: string }) => [row.id, row.career_name]));
+  return ids.filter((id) => byId.has(id)).map((id) => ({ id, career_name: byId.get(id) as string }));
+}

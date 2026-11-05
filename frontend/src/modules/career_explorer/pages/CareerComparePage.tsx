@@ -67,7 +67,7 @@ export const CareerComparePage: React.FC = () => {
             <table className="explain-table compare-table">
               <thead>
                 <tr>
-                  <th>Thông tin</th>
+                  <th aria-label="Thông tin" />
                   {rows.map((row) => (
                     <th key={row.id}><Link to={`/nghe/${row.id}`}>{row.career_name}</Link></th>
                   ))}

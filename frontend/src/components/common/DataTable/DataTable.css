@@ -3,15 +3,11 @@
   min-width: 0;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  background: var(--color-bg-surface);
-  border: 1px solid var(--surface-border);
-  border-radius: var(--radius-lg);
 }
 
 .app-table {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
+  border-collapse: collapse;
   font-size: var(--font-size-base);
   color: var(--color-text-main);
 }
@@ -33,23 +29,18 @@
 }
 
 .app-table th {
-  background: linear-gradient(180deg, var(--brand-ice), var(--brand-mist));
-  border-bottom-color: var(--brand-soft);
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--color-primary-active);
+  background-color: var(--color-bg-subtle);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
   white-space: nowrap;
 }
-.app-table tbody tr:nth-child(even) td { background-color: color-mix(in srgb, var(--brand-ice) 45%, var(--color-bg-surface)); }
-.app-table tbody tr:last-child td { border-bottom: 0; }
 
 .app-table .align-center { text-align: center; }
 .app-table .align-right { text-align: right; }
 .app-table td.is-nowrap { white-space: nowrap; }
 
-.app-table tbody tr:hover td { background-color: var(--color-primary-light); }
+.app-table tbody tr:hover { background-color: var(--color-primary-light); }
 .app-table tbody tr.is-clickable { cursor: pointer; }
 
 .app-table td .app-table-skeleton-action { margin-left: auto; }
@@ -61,3 +52,20 @@
   text-align: center;
   color: var(--color-text-muted);
 }
+
+/* Phía học sinh: bảng kiểu hình dán, viền mực dày, đầu bảng vàng phẳng */
+[data-ui='cartoon'] .app-table-scroll {
+  background: var(--color-bg-surface);
+  border: var(--cartoon-stroke) solid var(--cartoon-ink);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--cartoon-pop);
+}
+[data-ui='cartoon'] .app-table th {
+  background: var(--brand-gold);
+  color: var(--cartoon-ink);
+  font-weight: 800;
+  border-bottom: var(--cartoon-stroke) solid var(--cartoon-ink);
+}
+[data-ui='cartoon'] .app-table td { border-bottom: var(--cartoon-stroke-thin) dashed var(--cartoon-line); }
+[data-ui='cartoon'] .app-table tbody tr:last-child td { border-bottom: 0; }
+[data-ui='cartoon'] .app-table tbody tr:hover { background-color: var(--tone-yellow-bg); }

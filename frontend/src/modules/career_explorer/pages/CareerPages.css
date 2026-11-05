@@ -81,49 +81,51 @@
 
 .explain-stack { display: flex; flex-direction: column; gap: var(--space-5); min-width: 0; }
 
-/* Ba phần: thẻ điểm nhấn thay cho bảng */
-.explain-parts { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(calc(200 * var(--px)), 1fr)); gap: var(--space-4); }
+/* Kiểu hình dán: viền mực dày, bóng đặc lệch xuống, màu phẳng, nhô lên khi rê chuột */
+.explain-parts { list-style: none; margin: 0; padding: 0 0 var(--space-1); display: grid; grid-template-columns: repeat(auto-fit, minmax(calc(200 * var(--px)), 1fr)); gap: var(--space-4); }
 .explain-part {
-  --part-accent: var(--brand-blue);
-  --part-accent-2: var(--soft-cyan);
-  position: relative;
+  --part-fill: var(--brand-blue);
+  --part-bg: var(--brand-ice);
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: baseline;
   gap: var(--space-2) var(--space-3);
-  padding: var(--space-4) var(--space-4) var(--space-4) var(--space-5);
+  padding: var(--space-4) var(--space-5);
   min-width: 0;
-  background: var(--color-bg-surface);
-  border: 1px solid var(--surface-border);
+  color: var(--cartoon-ink);
+  background: var(--part-bg);
+  border: var(--cartoon-stroke) solid var(--cartoon-ink);
   border-radius: var(--radius-lg);
-  box-shadow: var(--surface-shadow);
-  overflow: hidden;
+  box-shadow: var(--cartoon-pop);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
-.explain-part::before { content: ''; position: absolute; inset: 0 auto 0 0; width: 4px; background: linear-gradient(180deg, var(--part-accent), var(--part-accent-2)); }
-.explain-part-g6 { --part-accent: var(--soft-violet); --part-accent-2: var(--soft-magenta); }
-.explain-part-g7 { --part-accent: var(--soft-gold); --part-accent-2: var(--soft-coral); }
-.explain-part-label { font-weight: 700; color: var(--color-text-main); }
-.explain-part-score { font-size: var(--font-size-3xl); font-weight: 800; line-height: 1; color: var(--color-text-main); font-variant-numeric: tabular-nums; }
-.explain-part-score small { margin-left: var(--space-1); font-size: var(--font-size-xs); font-weight: 600; color: var(--color-text-muted); }
+.explain-part:hover { transform: translateY(-2px); box-shadow: var(--cartoon-pop-hover); }
+.explain-part-g6 { --part-fill: var(--soft-magenta); --part-bg: var(--tone-plum-bg); }
+.explain-part-g7 { --part-fill: var(--soft-gold); --part-bg: var(--tone-yellow-bg); }
+.explain-part-label { font-weight: 800; }
+.explain-part-score { font-size: var(--font-size-3xl); font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.explain-part-score small { margin-left: var(--space-1); font-size: var(--font-size-xs); font-weight: 700; color: var(--color-text-secondary); }
 .explain-part .explain-meter { grid-column: 1 / -1; }
-.explain-part-meta { grid-column: 1 / -1; display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-1) var(--space-3); font-size: var(--font-size-sm); color: var(--color-text-secondary); }
-.explain-part-meta b { color: var(--color-text-main); font-variant-numeric: tabular-nums; }
+.explain-part-meta { grid-column: 1 / -1; display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-1) var(--space-3); font-size: var(--font-size-sm); font-weight: 600; color: var(--color-text-secondary); }
+.explain-part-meta b { color: var(--cartoon-ink); font-weight: 800; font-variant-numeric: tabular-nums; }
 
-.explain-meter { display: block; height: 8px; min-width: calc(56 * var(--px)); background: var(--color-bg-subtle); border-radius: var(--radius-full); overflow: hidden; }
-.explain-meter > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--part-accent, var(--brand-blue)), var(--part-accent-2, var(--soft-cyan))); transition: width var(--transition-slow); }
-.explain-cell-meter { display: flex; align-items: center; gap: var(--space-2); min-width: calc(120 * var(--px)); }
+.explain-meter { display: block; height: 14px; min-width: calc(56 * var(--px)); background: var(--color-bg-surface); border: var(--cartoon-stroke-thin) solid var(--cartoon-ink); border-radius: var(--radius-full); overflow: hidden; }
+.explain-meter > span { display: block; height: 100%; background: var(--part-fill, var(--brand-gold)); border-right: var(--cartoon-stroke-thin) solid var(--cartoon-ink); transition: width var(--transition-slow); }
+.explain-meter > span[style*='width: 0%'] { border-right: 0; }
+.explain-cell-meter { display: flex; align-items: center; gap: var(--space-2); min-width: calc(130 * var(--px)); }
 .explain-cell-meter .explain-meter { flex: 1; }
-.explain-cell-meter b { min-width: 3.2em; text-align: right; font-variant-numeric: tabular-nums; }
+.explain-cell-meter b { min-width: 3.2em; text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
 
-/* Bảng dữ liệu: khung bo tròn, đầu bảng chuyển sắc, dòng sọc nhẹ, rê chuột nổi dòng */
+/* Bảng dữ liệu dạng hình dán: khung viền mực, đầu bảng vàng phẳng */
 .explain-table-wrap {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   min-width: 0;
+  margin-bottom: var(--space-1);
   background: var(--color-bg-surface);
-  border: 1px solid var(--surface-border);
+  border: var(--cartoon-stroke) solid var(--cartoon-ink);
   border-radius: var(--radius-lg);
-  box-shadow: var(--surface-shadow);
+  box-shadow: var(--cartoon-pop);
 }
 
 .explain-table {
@@ -131,7 +133,7 @@
   border-collapse: separate;
   border-spacing: 0;
   font-size: var(--font-size-base);
-  color: var(--color-text-main);
+  color: var(--cartoon-ink);
 }
 
 .explain-table th,
@@ -139,25 +141,22 @@
   padding: var(--space-3) var(--space-4);
   text-align: left;
   vertical-align: middle;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: var(--cartoon-stroke-thin) dashed var(--cartoon-line);
   white-space: nowrap;
 }
 .explain-table thead th {
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--color-primary-active);
-  background: linear-gradient(180deg, var(--brand-ice), var(--brand-mist));
-  border-bottom: 1px solid var(--brand-soft);
+  font-size: var(--font-size-sm);
+  font-weight: 800;
+  color: var(--cartoon-ink);
+  background: var(--brand-gold);
+  border-bottom: var(--cartoon-stroke) solid var(--cartoon-ink);
 }
-.explain-table tbody th { font-weight: 600; color: var(--color-text-main); }
-.explain-table tbody tr:nth-child(even) > * { background-color: color-mix(in srgb, var(--brand-ice) 45%, var(--color-bg-surface)); }
-.explain-table tbody tr:hover > * { background-color: var(--brand-ice); }
+.explain-table tbody th { font-weight: 800; }
+.explain-table tbody tr:hover > * { background-color: var(--tone-yellow-bg); }
 .explain-table tbody tr:last-child > * { border-bottom: 0; }
-.explain-table .is-num { font-variant-numeric: tabular-nums; color: var(--color-text-secondary); }
-.explain-table .is-strong { font-weight: 700; color: var(--color-text-main); }
-.explain-table .is-penalty { font-weight: 700; color: var(--color-danger-text); }
+.explain-table .is-num { font-weight: 600; font-variant-numeric: tabular-nums; color: var(--color-text-secondary); }
+.explain-table .is-strong { font-weight: 800; color: var(--cartoon-ink); }
+.explain-table .is-penalty { font-weight: 800; color: var(--color-danger); }
 
 .explain-note {
   color: var(--color-text-secondary);
@@ -171,31 +170,32 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-3) var(--space-4);
-  background: var(--color-bg-subtle);
-  border: 1px solid transparent;
+  background: var(--color-bg-surface);
+  border: var(--cartoon-stroke-thin) solid var(--cartoon-ink);
   border-radius: var(--radius-md);
-  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+  box-shadow: var(--cartoon-drop);
+  transition: transform var(--transition-fast), background-color var(--transition-fast);
 }
-.module-list li:hover { background: var(--brand-ice); border-color: var(--brand-soft); }
-.module-list li > span:first-child { color: var(--color-text-secondary); font-size: var(--font-size-sm); font-weight: 600; }
-.module-list li > span:last-child { font-weight: 600; color: var(--color-text-main); text-align: right; }
+.module-list li:hover { transform: translateY(-1px); background: var(--tone-yellow-bg); }
+.module-list li > span:first-child { color: var(--color-text-secondary); font-size: var(--font-size-sm); font-weight: 700; }
+.module-list li > span:last-child { font-weight: 800; color: var(--cartoon-ink); text-align: right; }
 
-/* So sánh nghề: cột nhãn dính trái, tên nghề là đầu cột nổi bật, hàng khác biệt có vạch nhấn */
+/* So sánh nghề: cột nhãn dính trái, hàng khác biệt tô vàng nhạt có vạch mực bên trái */
 .compare-table th,
 .compare-table td { white-space: normal; min-width: calc(180 * var(--px)); line-height: 1.5; vertical-align: top; }
-.compare-table thead th { text-transform: none; letter-spacing: 0; font-size: var(--font-size-md); }
-.compare-table thead th a { color: var(--color-primary-active); font-weight: 800; text-decoration: none; }
-.compare-table thead th a:hover { text-decoration: underline; }
+.compare-table thead th a { color: var(--cartoon-ink); font-weight: 800; text-decoration: none; }
+.compare-table thead th a:hover { text-decoration: underline; text-decoration-thickness: 2px; }
 .compare-table tbody th {
   position: sticky; left: 0; z-index: 1;
   min-width: calc(150 * var(--px));
-  font-size: var(--font-size-sm); font-weight: 700; color: var(--color-text-secondary);
-  background: var(--color-bg-surface);
+  font-size: var(--font-size-sm);
+  background: var(--brand-mist);
+  border-right: var(--cartoon-stroke-thin) solid var(--cartoon-ink);
 }
 .compare-table tbody th .app-badge { margin-left: var(--space-2); }
-.compare-table tbody td { color: var(--color-text-main); }
-.compare-diff > * { background-color: color-mix(in srgb, var(--brand-violet) 7%, var(--color-bg-surface)) !important; }
-.compare-diff > th { box-shadow: inset 3px 0 0 var(--brand-violet); }
+.compare-table tbody td { font-weight: 600; }
+.compare-diff > td { background-color: var(--tone-yellow-bg); }
+.compare-diff > th { background-color: var(--brand-gold); box-shadow: inset 5px 0 0 var(--cartoon-ink); padding-left: var(--space-5); }
 
 /* Form lọc nghề trong hộp thoại: các ô xếp dọc, chiếm hết chiều ngang hộp */
 .career-filter-form { display: flex; flex-direction: column; gap: var(--space-4); }

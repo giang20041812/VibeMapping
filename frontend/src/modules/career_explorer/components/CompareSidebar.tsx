@@ -67,12 +67,12 @@ export const CompareSidebar: React.FC<Props> = ({ picked, open, onOpenChange, on
             </button>
           </li>
         ))}
-        {Array.from({ length: Math.max(0, SLOTS - picked.length) }, (_, i) => (
-          <li key={`empty-${i}`} className="compare-side-item is-empty">
+        {picked.length < SLOTS && (
+          <li className="compare-side-item is-empty">
             <span className="compare-side-index"><Plus size={14} aria-hidden="true" /></span>
             <span>Chọn thêm nghề</span>
           </li>
-        ))}
+        )}
       </ol>
       <footer className="compare-side-foot">
         <Button variant="ghost" onClick={onClear}>Bỏ chọn</Button>

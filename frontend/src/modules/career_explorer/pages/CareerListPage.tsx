@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Bookmark, GitCompare, SlidersHorizontal, Target } from 'lucide-react';
-import { Alert, Badge, Button, Modal, Pagination, Skeleton } from '../../../components/common';
+import { Bookmark, GitCompare, SlidersHorizontal, Sparkles, Target } from 'lucide-react';
+import { Alert, Badge, Button, Pagination, Skeleton } from '../../../components/common';
 import { FilterSearch } from '../../../components/filters/FilterSearch/FilterSearch';
 import { SearchableSelect } from '../../../components/filters/SearchableSelect/SearchableSelect';
 import { careerCompareReady, readCareerCompare, toggleCareerCompare } from '../../../lib/selectionCart';
@@ -21,6 +21,7 @@ import {
   type SavedCareer,
 } from '../career.service';
 import { interestLabel } from '../careerFit.constants';
+import { TopCareers } from '../components/TopCareers';
 import './CareerPages.css';
 import './CareerFit.css';
 
@@ -31,7 +32,7 @@ interface AppliedFilter { query: string; fieldId: string; filters: typeof EMPTY_
 export const CareerListPage: React.FC<{ publicCatalog?: boolean }> = ({ publicCatalog = false }) => {
   const { profile } = useAuth();
   const isLearner = profile?.role === 'student' || profile?.role === 'university_student';
-  const [filterOpen, setFilterOpen] = useState(true);
+  const [view, setView] = useState<'gate' | 'catalog' | 'fit'>('gate');
   const [applied, setApplied] = useState<AppliedFilter | null>(null);
   const [draft, setDraft] = useState('');
   const [fields, setFields] = useState<CareerFieldNode[]>([]);
@@ -106,7 +107,7 @@ export const CareerListPage: React.FC<{ publicCatalog?: boolean }> = ({ publicCa
   };
   const applyFilter = () => {
     setApplied({ query: draft.trim(), fieldId, filters });
-    setFilterOpen(false);
+    setView('catalog');
   };
   const activeCount = applied ? [applied.query, applied.fieldId, ...Object.values(applied.filters)].filter(Boolean).length : 0;
   const careerHref = (id: string) => (publicCatalog ? `/danh-muc-nghe/${id}` : `/nghe/${id}`);
@@ -140,7 +141,7 @@ export const CareerListPage: React.FC<{ publicCatalog?: boolean }> = ({ publicCa
   const catalog = (
     <>
       <div className="career-filter-summary">
-        <Button variant="outline" leftIcon={<SlidersHorizontal size={16} />} onClick={() => setFilterOpen(true)}>
+        <Button variant="outline" leftIcon={<SlidersHorizontal size={16} />} onClick={() => setView('gate')}>
           {activeCount > 0 ? `Bộ lọc (${activeCount})` : 'Bộ lọc'}
         </Button>
         {!loading && <span className="career-muted">{rows.length} nghề</span>}
@@ -158,7 +159,7 @@ export const CareerListPage: React.FC<{ publicCatalog?: boolean }> = ({ publicCa
       ) : rows.length === 0 ? (
         <div className="fit-empty">
           <h2>Không có nghề khớp bộ lọc</h2>
-          <Button variant="outline" onClick={() => setFilterOpen(true)}>Đổi bộ lọc</Button>
+          <Button variant="outline" onClick={() => setView('gate')}>Đổi bộ lọc</Button>
         </div>
       ) : (
         <>
@@ -183,17 +184,41 @@ export const CareerListPage: React.FC<{ publicCatalog?: boolean }> = ({ publicCa
     </>
   );
 
+  const gate = (
+    <div className="career-gate">
+      <form className="career-gate-card" onSubmit={(event) => { event.preventDefault(); applyFilter(); }}>
+        <h1>Khám phá ngành nghề</h1>
+        <div className="career-filter-form">
+          <FilterSearch placeholder="Tên nghề" value={draft} onChange={setDraft} />
+          <SearchableSelect label="Lĩnh vực" options={fieldOptions} value={fieldId} onChange={setFieldId} />
+          <SearchableSelect label="Thang lương" options={toOptions(choices.salaries)} value={filters.salary} onChange={(value) => setFilters((c) => ({ ...c, salary: value }))} />
+          <SearchableSelect label="Mức tăng trưởng" options={toOptions(choices.growth)} value={filters.growth} onChange={(value) => setFilters((c) => ({ ...c, growth: value }))} />
+          <SearchableSelect label="Trình độ học vấn" options={toOptions(choices.education)} value={filters.education} onChange={(value) => setFilters((c) => ({ ...c, education: value }))} />
+          <SearchableSelect label="Môi trường làm việc" options={toOptions(choices.environments)} value={filters.environment} onChange={(value) => setFilters((c) => ({ ...c, environment: value }))} />
+        </div>
+        <div className="career-gate-actions">
+          {isLearner && <Button type="button" variant="outline" leftIcon={<Sparkles size={16} />} onClick={() => setView('fit')}>Nghề phù hợp</Button>}
+          <Button type="button" variant="ghost" onClick={resetDraft}>Đặt lại</Button>
+          <Button type="submit">Áp dụng</Button>
+        </div>
+      </form>
+    </div>
+  );
+
   return (
     <div className="module-page career-page">
+      {view === 'gate' ? gate : (
+        <>
       <h1>Nghề nghiệp</h1>
       {notice && <Alert variant="info">{notice}</Alert>}
-      {applied ? catalog : (
-        <div className="fit-empty">
-          <SlidersHorizontal size={28} aria-hidden="true" />
-          <h2>Chọn bộ lọc để xem nghề</h2>
-          <Button onClick={() => setFilterOpen(true)}>Chọn bộ lọc</Button>
-        </div>
-      )}
+      {view === 'fit' ? (
+        <>
+          <div className="career-filter-summary">
+            <Button variant="outline" leftIcon={<SlidersHorizontal size={16} />} onClick={() => setView('gate')}>Bộ lọc</Button>
+          </div>
+          <TopCareers picked={picked} onToggleCompare={toggleCompare} onBrowse={() => setView('gate')} />
+        </>
+      ) : catalog}
       {isLearner && (
         <section className="career-mine">
           <h2>Nghề của tôi</h2>
@@ -209,27 +234,9 @@ export const CareerListPage: React.FC<{ publicCatalog?: boolean }> = ({ publicCa
           </div>
         </section>
       )}
-      <Modal
-        open={filterOpen}
-        title="Bộ lọc nghề"
-        onClose={() => setFilterOpen(false)}
-        actions={
-          <>
-            <Button variant="ghost" onClick={resetDraft}>Đặt lại</Button>
-            <Button onClick={applyFilter}>Áp dụng</Button>
-          </>
-        }
-      >
-        <form className="career-filter-form" onSubmit={(event) => { event.preventDefault(); applyFilter(); }}>
-          <FilterSearch placeholder="Tên nghề" value={draft} onChange={setDraft} />
-          <SearchableSelect label="Lĩnh vực" options={fieldOptions} value={fieldId} onChange={setFieldId} />
-          <SearchableSelect label="Thang lương" options={toOptions(choices.salaries)} value={filters.salary} onChange={(value) => setFilters((c) => ({ ...c, salary: value }))} />
-          <SearchableSelect label="Mức tăng trưởng" options={toOptions(choices.growth)} value={filters.growth} onChange={(value) => setFilters((c) => ({ ...c, growth: value }))} />
-          <SearchableSelect label="Trình độ học vấn" options={toOptions(choices.education)} value={filters.education} onChange={(value) => setFilters((c) => ({ ...c, education: value }))} />
-          <SearchableSelect label="Môi trường làm việc" options={toOptions(choices.environments)} value={filters.environment} onChange={(value) => setFilters((c) => ({ ...c, environment: value }))} />
-        </form>
-      </Modal>
-      {isLearner && picked.length > 0 && (
+        </>
+      )}
+      {view !== 'gate' && isLearner && picked.length > 0 && (
         <div className="compare-tray" role="status">
           <span>Đã chọn {picked.length}/4 nghề</span>
           <Button size="sm" variant="ghost" onClick={clearPicked}>Bỏ chọn</Button>

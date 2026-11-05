@@ -106,7 +106,9 @@ export const CareerComparePage: React.FC = () => {
 
 const CompareRow: React.FC<{ label: string; values: string[]; highlight: boolean }> = ({ label, values, highlight }) => (
   <tr className={highlight ? 'compare-diff' : undefined}>
-    <th>{label}{highlight && <Badge>Khác</Badge>}</th>
-    {values.map((value, index) => <td key={`${label}-${index}`}>{value}</td>)}
+    <th><span className="compare-label">{label}{highlight && <Badge>Khác</Badge>}</span></th>
+    {values.map((value, index) => (
+      <td key={`${label}-${index}`} className={value === MISSING || value === 'Chưa có kết quả đánh giá' ? 'is-missing' : label.startsWith('%') ? 'is-fit' : undefined}>{value}</td>
+    ))}
   </tr>
 );

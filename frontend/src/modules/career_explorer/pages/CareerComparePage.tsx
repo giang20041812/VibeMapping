@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Alert, Badge, Card, Spinner } from '../../../components/common';
+import { Alert, Badge, Breadcrumb, Card, Spinner } from '../../../components/common';
 import { careerCompareReady, readCareerCompare } from '../../../lib/selectionCart';
 import { useAuth } from '../../auth/AuthContext';
 import { loadCareerCompareRows, type CareerCompareFacts } from '../career.service';
@@ -46,6 +46,7 @@ export const CareerComparePage: React.FC = () => {
   if (!careerCompareReady(ids)) {
     return (
       <div className="module-page">
+        <Breadcrumb items={[{ label: 'Danh sách nghề', to: '/nghe' }, { label: 'So sánh nghề' }]} />
         <h1>So sánh nghề</h1>
         <Alert variant="info">Chọn từ 2 đến 4 nghề khác nhau ở danh sách nghề, rồi mở lại trang này.</Alert>
         <Link to="/nghe">Chọn nghề</Link>
@@ -55,7 +56,7 @@ export const CareerComparePage: React.FC = () => {
 
   return (
     <div className="module-page">
-      <p><Link to="/nghe">Danh sách nghề</Link></p>
+      <Breadcrumb items={[{ label: 'Danh sách nghề', to: '/nghe' }, { label: 'So sánh nghề' }]} />
       <h1>So sánh nghề</h1>
       {error && <Alert variant="danger">{error}</Alert>}
       {rows === null && <Spinner />}

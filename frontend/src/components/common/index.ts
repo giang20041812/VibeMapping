@@ -18,3 +18,5 @@ export { Checkbox } from './Checkbox/Checkbox';
 export { DataTable } from './DataTable/DataTable';
 export type { DataTableColumn } from './DataTable/DataTable';
 export { Pagination } from './Pagination/Pagination';
+export { Breadcrumb } from './Breadcrumb/Breadcrumb';
+export type { BreadcrumbItem } from './Breadcrumb/Breadcrumb';

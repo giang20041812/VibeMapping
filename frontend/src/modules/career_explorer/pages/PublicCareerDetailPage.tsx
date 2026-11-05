@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Alert, Badge, Button, Skeleton } from '../../../components/common';
+import { Alert, Badge, Breadcrumb, Button, Skeleton } from '../../../components/common';
 import { db } from '../../../lib/rpc';
 import { CareerProfile } from '../components/CareerProfile';
 import './CareerPages.css';
@@ -51,7 +51,7 @@ export const PublicCareerDetailPage: React.FC = () => {
 
   return (
     <div className="module-page career-detail">
-      <Link to="/danh-muc-nghe" className="career-back">← Danh mục nghề</Link>
+      <Breadcrumb items={[{ label: 'Danh mục nghề', to: '/danh-muc-nghe' }, { label: row.career_name }]} />
       <header className="career-detail-head">
         <div className="career-detail-title">
           <h1>{row.career_name}</h1>

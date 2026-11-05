@@ -157,8 +157,6 @@
 }
 
 /* Chi tiết nghề */
-.career-back { color: var(--color-text-secondary); text-decoration: none; font-weight: 600; }
-.career-back:hover { color: var(--color-primary); }
 .career-detail-head {
   display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4) var(--space-5);
   padding: var(--space-5) var(--space-6);

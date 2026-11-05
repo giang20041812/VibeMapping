@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { Bookmark, BookmarkCheck, GitCompare, Target } from 'lucide-react';
-import { Alert, Badge, Button, Skeleton } from '../../../components/common';
+import { Alert, Badge, Breadcrumb, Button, Skeleton } from '../../../components/common';
 import { PolygonChart } from '../../../components/charts/PolygonChart/PolygonChart';
 import type { PolygonAxis } from '../../../components/charts/PolygonChart/PolygonChart';
 import { careerCompareReady, readCareerCompare, toggleCareerCompare } from '../../../lib/selectionCart';
@@ -157,7 +157,7 @@ export const CareerDetailPage: React.FC = () => {
   const backHref = subjectUserId ? `/bao-cao-con/${subjectUserId}` : '/nghe';
   return (
     <div className="module-page career-detail">
-      <Link to={backHref} className="career-back">{subjectUserId ? '← Kết quả được chia sẻ' : '← Danh sách nghề'}</Link>
+      <Breadcrumb items={[{ label: subjectUserId ? 'Kết quả được chia sẻ' : 'Danh sách nghề', to: backHref }, { label: detail.career.career_name }]} />
       <header className="career-detail-head">
         {showFit && <FitRing percent={fit} size={104} />}
         <div className="career-detail-title">

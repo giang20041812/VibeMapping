@@ -20,7 +20,6 @@ export interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ open, onToggle, onClose }) => {
   const { profile } = useAuth();
   const items = navItemsFor(profile?.role);
-
   useEffect(() => {
     if (!open) return;
     const onKey = (event: KeyboardEvent) => {

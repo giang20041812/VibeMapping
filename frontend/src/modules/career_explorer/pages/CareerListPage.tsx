@@ -1,11 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Bookmark, GitCompare, Target } from 'lucide-react';
-import { Alert, Badge, Button, Pagination, Skeleton } from '../../../components/common';
-import { FilterBar } from '../../../components/filters/FilterBar/FilterBar';
+import { Bookmark, GitCompare, SlidersHorizontal, Target } from 'lucide-react';
+import { Alert, Badge, Button, Modal, Pagination, Skeleton } from '../../../components/common';
 import { FilterSearch } from '../../../components/filters/FilterSearch/FilterSearch';
 import { SearchableSelect } from '../../../components/filters/SearchableSelect/SearchableSelect';
-import { useDebounce } from '../../../hooks/useDebounce';
 import { careerCompareReady, readCareerCompare, toggleCareerCompare } from '../../../lib/selectionCart';
 import { useAuth } from '../../auth/AuthContext';
 import {
@@ -23,20 +21,19 @@ import {
   type SavedCareer,
 } from '../career.service';
 import { interestLabel } from '../careerFit.constants';
-import { TopCareers } from '../components/TopCareers';
 import './CareerPages.css';
 import './CareerFit.css';
 
 const PAGE_SIZE = 24;
 const EMPTY_FILTERS = { salary: '', growth: '', education: '', environment: '' };
-type Tab = 'fit' | 'catalog';
+interface AppliedFilter { query: string; fieldId: string; filters: typeof EMPTY_FILTERS }
 
 export const CareerListPage: React.FC<{ publicCatalog?: boolean }> = ({ publicCatalog = false }) => {
   const { profile } = useAuth();
   const isLearner = profile?.role === 'student' || profile?.role === 'university_student';
-  const [tab, setTab] = useState<Tab>('fit');
+  const [filterOpen, setFilterOpen] = useState(true);
+  const [applied, setApplied] = useState<AppliedFilter | null>(null);
   const [draft, setDraft] = useState('');
-  const query = useDebounce(draft.trim(), 300);
   const [fields, setFields] = useState<CareerFieldNode[]>([]);
   const [fieldId, setFieldId] = useState('');
   const [filters, setFilters] = useState(EMPTY_FILTERS);
@@ -48,7 +45,6 @@ export const CareerListPage: React.FC<{ publicCatalog?: boolean }> = ({ publicCa
   const [error, setError] = useState<string | null>(null);
   const [picked, setPicked] = useState<string[]>(() => readCareerCompare());
   const [notice, setNotice] = useState<string | null>(null);
-  const showFit = isLearner && tab === 'fit';
 
   const toggleCompare = (id: string) => {
     const next = toggleCareerCompare(id);
@@ -75,6 +71,8 @@ export const CareerListPage: React.FC<{ publicCatalog?: boolean }> = ({ publicCa
   }, [isLearner]);
 
   useEffect(() => {
+    if (!applied) return;
+    const { query, fieldId, filters } = applied;
     let active = true;
     setLoading(true);
     const inField = (row: CareerListItem) => !fieldId || fieldAndDescendants(fields, fieldId).has(row.career_field_id);
@@ -94,18 +92,23 @@ export const CareerListPage: React.FC<{ publicCatalog?: boolean }> = ({ publicCa
     return () => {
       active = false;
     };
-  }, [query, fieldId, fields, filters]);
+  }, [applied, fields]);
 
   const fieldOptions = useMemo(
     () => [{ value: '', label: 'Tất cả lĩnh vực' }, ...fields.filter((f) => !f.parent_field_id).map((f) => ({ value: f.id, label: f.field_name }))],
     [fields],
   );
   const toOptions = (values: string[]) => [{ value: '', label: 'Tất cả' }, ...values.map((value) => ({ value, label: value }))];
-  const reset = () => {
+  const resetDraft = () => {
     setDraft('');
     setFieldId('');
     setFilters(EMPTY_FILTERS);
   };
+  const applyFilter = () => {
+    setApplied({ query: draft.trim(), fieldId, filters });
+    setFilterOpen(false);
+  };
+  const activeCount = applied ? [applied.query, applied.fieldId, ...Object.values(applied.filters)].filter(Boolean).length : 0;
   const careerHref = (id: string) => (publicCatalog ? `/danh-muc-nghe/${id}` : `/nghe/${id}`);
   const visible = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const targets = saved.filter((item) => item.kind === 'target');
@@ -136,14 +139,12 @@ export const CareerListPage: React.FC<{ publicCatalog?: boolean }> = ({ publicCa
 
   const catalog = (
     <>
-      <FilterBar onReset={reset} totalResults={rows.length} isLoading={loading}>
-        <FilterSearch placeholder="Tên nghề" value={draft} onChange={setDraft} />
-        <SearchableSelect label="Lĩnh vực" options={fieldOptions} value={fieldId} onChange={setFieldId} />
-        <SearchableSelect label="Thang lương" options={toOptions(choices.salaries)} value={filters.salary} onChange={(value) => setFilters((c) => ({ ...c, salary: value }))} />
-        <SearchableSelect label="Mức tăng trưởng" options={toOptions(choices.growth)} value={filters.growth} onChange={(value) => setFilters((c) => ({ ...c, growth: value }))} />
-        <SearchableSelect label="Trình độ học vấn" options={toOptions(choices.education)} value={filters.education} onChange={(value) => setFilters((c) => ({ ...c, education: value }))} />
-        <SearchableSelect label="Môi trường làm việc" options={toOptions(choices.environments)} value={filters.environment} onChange={(value) => setFilters((c) => ({ ...c, environment: value }))} />
-      </FilterBar>
+      <div className="career-filter-summary">
+        <Button variant="outline" leftIcon={<SlidersHorizontal size={16} />} onClick={() => setFilterOpen(true)}>
+          {activeCount > 0 ? `Bộ lọc (${activeCount})` : 'Bộ lọc'}
+        </Button>
+        {!loading && <span className="career-muted">{rows.length} nghề</span>}
+      </div>
       {error && <Alert variant="danger">{error}</Alert>}
       {loading ? (
         <ul className="career-grid">
@@ -157,7 +158,7 @@ export const CareerListPage: React.FC<{ publicCatalog?: boolean }> = ({ publicCa
       ) : rows.length === 0 ? (
         <div className="fit-empty">
           <h2>Không có nghề khớp bộ lọc</h2>
-          <Button variant="outline" onClick={reset}>Đặt lại bộ lọc</Button>
+          <Button variant="outline" onClick={() => setFilterOpen(true)}>Đổi bộ lọc</Button>
         </div>
       ) : (
         <>
@@ -186,39 +187,48 @@ export const CareerListPage: React.FC<{ publicCatalog?: boolean }> = ({ publicCa
     <div className="module-page career-page">
       <h1>Nghề nghiệp</h1>
       {notice && <Alert variant="info">{notice}</Alert>}
-      {isLearner && (
-        <div className="career-tabs" role="tablist" aria-label="Nghề nghiệp">
-          {([['fit', 'Phù hợp với bạn'], ['catalog', 'Danh mục nghề']] as const).map(([key, label]) => (
-            <button key={key} type="button" role="tab" aria-selected={tab === key} className={`career-tab ${tab === key ? 'is-active' : ''}`} onClick={() => setTab(key)}>
-              {label}
-            </button>
-          ))}
+      {applied ? catalog : (
+        <div className="fit-empty">
+          <SlidersHorizontal size={28} aria-hidden="true" />
+          <h2>Chọn bộ lọc để xem nghề</h2>
+          <Button onClick={() => setFilterOpen(true)}>Chọn bộ lọc</Button>
         </div>
       )}
-      {showFit ? (
-        <>
-          <TopCareers picked={picked} onToggleCompare={toggleCompare} onBrowse={() => setTab('catalog')} />
-          <section className="career-mine">
-            <h2>Nghề của tôi</h2>
-            <div className="career-mine-grid">
-              <div className="career-mine-block">
-                <h3><Target size={16} aria-hidden="true" /> Nghề mục tiêu</h3>
-                {targets.length === 0 ? <p className="career-muted">Chưa chọn nghề mục tiêu</p> : (
-                  mineList(targets, 'target')
-                )}
-              </div>
-              <div className="career-mine-block">
-                <h3><Bookmark size={16} aria-hidden="true" /> Nghề quan tâm</h3>
-                {interested.length === 0 ? <p className="career-muted">Chưa lưu nghề nào</p> : (
-                  mineList(interested, 'saved')
-                )}
-              </div>
+      {isLearner && (
+        <section className="career-mine">
+          <h2>Nghề của tôi</h2>
+          <div className="career-mine-grid">
+            <div className="career-mine-block">
+              <h3><Target size={16} aria-hidden="true" /> Nghề mục tiêu</h3>
+              {targets.length === 0 ? <p className="career-muted">Chưa chọn nghề mục tiêu</p> : mineList(targets, 'target')}
             </div>
-          </section>
-        </>
-      ) : (
-        catalog
+            <div className="career-mine-block">
+              <h3><Bookmark size={16} aria-hidden="true" /> Nghề quan tâm</h3>
+              {interested.length === 0 ? <p className="career-muted">Chưa lưu nghề nào</p> : mineList(interested, 'saved')}
+            </div>
+          </div>
+        </section>
       )}
+      <Modal
+        open={filterOpen}
+        title="Bộ lọc nghề"
+        onClose={() => setFilterOpen(false)}
+        actions={
+          <>
+            <Button variant="ghost" onClick={resetDraft}>Đặt lại</Button>
+            <Button onClick={applyFilter}>Áp dụng</Button>
+          </>
+        }
+      >
+        <form className="career-filter-form" onSubmit={(event) => { event.preventDefault(); applyFilter(); }}>
+          <FilterSearch placeholder="Tên nghề" value={draft} onChange={setDraft} />
+          <SearchableSelect label="Lĩnh vực" options={fieldOptions} value={fieldId} onChange={setFieldId} />
+          <SearchableSelect label="Thang lương" options={toOptions(choices.salaries)} value={filters.salary} onChange={(value) => setFilters((c) => ({ ...c, salary: value }))} />
+          <SearchableSelect label="Mức tăng trưởng" options={toOptions(choices.growth)} value={filters.growth} onChange={(value) => setFilters((c) => ({ ...c, growth: value }))} />
+          <SearchableSelect label="Trình độ học vấn" options={toOptions(choices.education)} value={filters.education} onChange={(value) => setFilters((c) => ({ ...c, education: value }))} />
+          <SearchableSelect label="Môi trường làm việc" options={toOptions(choices.environments)} value={filters.environment} onChange={(value) => setFilters((c) => ({ ...c, environment: value }))} />
+        </form>
+      </Modal>
       {isLearner && picked.length > 0 && (
         <div className="compare-tray" role="status">
           <span>Đã chọn {picked.length}/4 nghề</span>

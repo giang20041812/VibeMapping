@@ -134,6 +134,7 @@
 
 /* Đa giác dữ liệu nở ra sau khi hình đã nhún vào */
 .feature-visual .polygon-chart.is-visible .polygon-svg-data { animation: none; }
+.feature-visual .polygon-chart .polygon-stage { opacity: 1; animation: none; }
 .feature.is-visible .feature-visual .polygon-chart .polygon-svg-data {
   animation:
     polygon-grow 900ms var(--ease-spring) calc(var(--pop-step) * 4) both,

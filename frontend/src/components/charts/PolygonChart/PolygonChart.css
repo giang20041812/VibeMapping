@@ -84,9 +84,11 @@
 }
 .polygon-spoke.is-active { stroke-opacity: 1; stroke-width: 2.4px; }
 
-/* Đa giác dữ liệu: hiện ra một lần kiểu "boing", sau đó đứng yên */
+/* Cả biểu đồ nhún vào, rồi đa giác dữ liệu nở ra kiểu "boing", sau đó đứng yên */
+.polygon-stage { opacity: 0; }
+.polygon-chart.is-visible .polygon-stage { animation: polygon-stage-pop 620ms var(--ease-spring) both; }
 .polygon-svg-data { opacity: 0; transform: scale(0.15); transform-origin: 50% 50%; }
-.polygon-chart.is-visible .polygon-svg-data { animation: polygon-grow 750ms var(--ease-spring) 120ms both; }
+.polygon-chart.is-visible .polygon-svg-data { animation: polygon-grow 900ms var(--ease-spring) 300ms both; }
 
 /* Bóng đặc của đa giác, lệch xuống như hình dán */
 .polygon-shadow {
@@ -110,14 +112,20 @@
 }
 .polygon-wedge.is-active { fill-opacity: var(--chart-wedge-active); }
 
+/* Đường mục tiêu: nét vàng liền bọc viền mực, nằm trên đa giác và bật ra sau khi đa giác đã nở */
 .polygon-reference {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+}
+.polygon-chart.is-visible .polygon-reference { animation: polygon-target-pop 700ms var(--ease-spring) 1050ms both; }
+.polygon-reference-casing,
+.polygon-reference-line {
   fill: none;
-  stroke: var(--chart-ink);
-  stroke-width: 2px;
-  stroke-dasharray: 6 5;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
 }
+.polygon-reference-casing { stroke: var(--chart-ink); stroke-width: 8px; }
+.polygon-reference-line { stroke: var(--brand-gold); stroke-width: 4px; }
 
 .polygon-edge {
   fill: none;
@@ -280,6 +288,17 @@
   60% { opacity: 1; transform: scale(1.07) rotate(2deg); }
   100% { opacity: 1; transform: scale(1) rotate(0deg); }
 }
+@keyframes polygon-stage-pop {
+  0% { opacity: 0; scale: 0.4; translate: 0 28px; }
+  55% { opacity: 1; scale: 1.08; translate: 0 -6px; }
+  100% { opacity: 1; scale: 1; translate: 0 0; }
+}
+@keyframes polygon-target-pop {
+  0% { opacity: 0; transform: scale(0.6); }
+  55% { opacity: 1; transform: scale(1.12); }
+  80% { transform: scale(0.97); }
+  100% { opacity: 1; transform: scale(1); }
+}
 @keyframes polygon-wiggle {
   0% { transform: rotate(0) scale(1); }
   30% { transform: rotate(-10deg) scale(1.12); }
@@ -303,6 +322,7 @@
 @media (prefers-reduced-motion: reduce) {
   .polygon-chart .polygon-svg-data,
   .polygon-chart.is-visible .polygon-svg-data { opacity: 1; transform: none; animation: none; }
+  .polygon-chart .polygon-stage { opacity: 1; }
   .polygon-chart *,
   .polygon-chart *::after { animation: none; transition: none; }
 }

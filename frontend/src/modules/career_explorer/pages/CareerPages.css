@@ -221,7 +221,7 @@
 .career-filter-form > * { width: 100%; min-width: 0; max-width: none; }
 .career-filter-summary { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
 
-.career-gate { display: flex; justify-content: center; align-items: flex-start; padding: var(--space-6) 0; }
-.career-gate-card { width: 100%; max-width: calc(34 * var(--px)); display: flex; flex-direction: column; gap: var(--space-4); }
+.career-gate { width: 100%; min-width: 0; display: flex; justify-content: center; align-items: flex-start; padding: var(--space-6) 0; }
+.career-gate-card { width: 100%; min-width: 0; max-width: calc(34 * var(--px)); display: flex; flex-direction: column; gap: var(--space-4); }
 .career-gate-card h1 { margin: 0; }
 .career-gate-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-2); }

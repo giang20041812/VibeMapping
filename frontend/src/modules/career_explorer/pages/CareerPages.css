@@ -204,11 +204,11 @@
 .compare-table tbody th {
   position: sticky; left: 0; z-index: 1;
   font-size: var(--font-size-sm);
-  background: var(--brand-mist);
+  background: var(--color-bg-subtle);
+  color: var(--cartoon-ink);
 }
 .compare-table tbody td { font-weight: 600; background: var(--color-bg-surface); }
-.compare-table tbody tr:nth-child(even) > td { background: var(--cartoon-wash); }
-.compare-table tbody tr:hover > td { background: var(--tone-yellow-bg); }
+.compare-table tbody tr:hover > td { background: var(--color-bg-app); }
 .compare-table tbody tr:hover > th { background: var(--brand-mist); }
 .compare-table tbody tr:last-child > * { border-bottom: 0; }
 .compare-label { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2); }

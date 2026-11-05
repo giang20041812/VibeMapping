@@ -1,0 +1,180 @@
+/* Sắc của thẻ: màu nhấn đặc và nền nhạt đi kèm */
+.sticker-tone-blue { --sticker-accent: var(--brand-blue); --sticker-bg: var(--brand-ice); }
+.sticker-tone-violet { --sticker-accent: var(--brand-violet); --sticker-bg: var(--tone-purple-bg); }
+.sticker-tone-magenta { --sticker-accent: var(--soft-magenta); --sticker-bg: var(--tone-plum-bg); }
+.sticker-tone-gold { --sticker-accent: var(--brand-gold); --sticker-bg: var(--tone-yellow-bg); }
+.sticker-tone-teal { --sticker-accent: var(--soft-teal); --sticker-bg: var(--tone-green-bg); }
+.sticker-tone-coral { --sticker-accent: var(--soft-coral); --sticker-bg: var(--tone-red-bg); }
+
+.sticker-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 var(--space-2);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(260 * var(--px)), 1fr));
+  gap: var(--space-5);
+}
+
+.sticker-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: calc(var(--space-4) + 8px) var(--space-5) var(--space-4);
+  color: var(--cartoon-ink);
+  background: var(--color-bg-surface);
+  border: var(--cartoon-stroke) solid var(--cartoon-ink);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--cartoon-pop);
+  overflow: hidden;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  animation: sticker-card-in 520ms var(--ease-spring) both;
+}
+/* Dải màu đầu thẻ */
+.sticker-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 8px;
+  background: var(--sticker-accent, var(--brand-soft));
+  border-bottom: var(--cartoon-stroke-thin) solid var(--cartoon-ink);
+}
+.sticker-card:hover { transform: translateY(-3px) rotate(-0.4deg); box-shadow: var(--cartoon-pop-hover); }
+.sticker-card:nth-child(2n):hover { transform: translateY(-3px) rotate(0.4deg); }
+
+/* Nhún vào lần lượt */
+.sticker-card:nth-child(2) { animation-delay: 40ms; }
+.sticker-card:nth-child(3) { animation-delay: 80ms; }
+.sticker-card:nth-child(4) { animation-delay: 120ms; }
+.sticker-card:nth-child(5) { animation-delay: 160ms; }
+.sticker-card:nth-child(6) { animation-delay: 200ms; }
+.sticker-card:nth-child(7) { animation-delay: 240ms; }
+.sticker-card:nth-child(8) { animation-delay: 280ms; }
+.sticker-card:nth-child(n + 9) { animation-delay: 320ms; }
+
+.sticker-card-head { display: flex; align-items: flex-start; gap: var(--space-3); min-width: 0; }
+.sticker-card-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: calc(44 * var(--px));
+  height: calc(44 * var(--px));
+  color: var(--cartoon-ink);
+  background: var(--sticker-bg, var(--color-bg-subtle));
+  border: var(--cartoon-stroke-thin) solid var(--cartoon-ink);
+  border-radius: var(--radius-md);
+  box-shadow: var(--cartoon-drop);
+  transition: transform var(--transition-normal);
+}
+.sticker-card:hover .sticker-card-icon { transform: rotate(-8deg) scale(1.06); }
+.sticker-card-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  align-self: center;
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.sticker-card-title a { color: inherit; text-decoration: none; }
+.sticker-card-title a:hover { color: var(--color-primary); }
+/* Cả thẻ bấm được khi tiêu đề là liên kết */
+.sticker-card-title a::after { content: ''; position: absolute; inset: 0; z-index: 0; }
+.sticker-card-corner,
+.sticker-card-body,
+.sticker-card-footer { position: relative; z-index: 1; }
+.sticker-card-corner { flex: none; display: flex; align-items: center; gap: var(--space-1); }
+.sticker-card-body { display: flex; flex-wrap: wrap; gap: var(--space-2); flex: 1 1 auto; align-content: flex-start; }
+.sticker-card-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: var(--cartoon-stroke-thin) dashed var(--cartoon-line);
+}
+
+.sticker-fact {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+  padding: var(--space-0-5) var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-subtle);
+  border-radius: var(--radius-sm);
+}
+.sticker-fact.is-strong { color: var(--cartoon-ink); background: var(--sticker-bg, var(--color-bg-subtle)); font-weight: 800; }
+.sticker-fact-icon { display: inline-flex; flex: none; }
+
+/* Liên kết hành động ở chân thẻ */
+.sticker-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--touch-target);
+  font-weight: 800;
+  color: var(--cartoon-ink);
+  text-decoration: none;
+}
+.sticker-link svg { transition: transform var(--transition-fast); }
+.sticker-link:hover { color: var(--color-primary); }
+.sticker-link:hover svg { transform: translateX(3px); }
+
+/* Thẻ giữ chỗ */
+.sticker-card.is-skeleton { animation: none; box-shadow: var(--cartoon-drop); border-color: var(--cartoon-line); }
+.sticker-card.is-skeleton:hover { transform: none; }
+.sticker-card.is-skeleton::before { border-bottom-color: var(--cartoon-line); }
+.sticker-card.is-skeleton .sticker-card-icon { border-color: var(--cartoon-line); box-shadow: none; }
+.sticker-skeleton-line,
+.sticker-skeleton-chip {
+  display: block;
+  height: 1em;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-subtle);
+  animation: sticker-pulse 1.2s ease-in-out infinite;
+}
+.sticker-skeleton-line { flex: 1; align-self: center; height: 1.2em; }
+.sticker-skeleton-chip { width: 35%; }
+
+/* Trạng thái không có kết quả */
+.sticker-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-10) var(--space-5);
+  text-align: center;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-surface);
+  border: var(--cartoon-stroke-thin) dashed var(--cartoon-line);
+  border-radius: var(--radius-xl);
+}
+.sticker-empty svg { color: var(--brand-light); }
+
+@keyframes sticker-card-in {
+  0% { opacity: 0; transform: translateY(18px) scale(0.94); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes sticker-pulse { 50% { opacity: 0.5; } }
+@media (prefers-reduced-motion: reduce) {
+  .sticker-card,
+  .sticker-skeleton-line,
+  .sticker-skeleton-chip { animation: none; }
+  .sticker-card:hover,
+  .sticker-card:nth-child(2n):hover { transform: none; }
+}
+
+/* Thanh phân trang dưới lưới thẻ */
+.sticker-pagination { margin-top: var(--space-5); }
+.sticker-pagination .app-pagination {
+  background: var(--color-bg-surface);
+  border: var(--cartoon-stroke-thin) solid var(--cartoon-ink);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--cartoon-drop);
+}

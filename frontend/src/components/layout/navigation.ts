@@ -25,6 +25,8 @@ export interface NavItem {
   /** Chỉ hiện cho các vai trò này; bỏ trống là hiện cho mọi vai trò */
   roles?: UserRole[];
   end?: boolean;
+  /** Đường dẫn con có mục menu riêng: không đánh dấu mục này là đang chọn khi đang ở đó */
+  excludePrefix?: string;
 }
 
 /** Giáo viên vào thẳng lớp học, quản trị hệ thống vào thẳng khu quản trị: cả hai không dùng trang chủ */
@@ -36,7 +38,8 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/', label: 'Trang chủ', icon: HomeIcon, roles: HOME_ROLES, end: true },
   { to: '/danh-gia-360', label: 'Đánh giá 360', icon: Globe360Icon, roles: ['student', 'university_student'] },
   { to: '/lop-hoc', label: 'Lớp học', icon: GraduationCap, roles: ['student', 'university_student', 'teacher', 'school_admin'] },
-  { to: '/nghe', label: 'Nghề nghiệp', icon: Compass, roles: ['student', 'university_student', 'parent', 'teacher', 'mentor', 'school_admin'] },
+  { to: '/nghe', label: 'Nghề nghiệp', icon: Compass, roles: ['student', 'university_student', 'parent', 'teacher', 'mentor', 'school_admin'], excludePrefix: '/nghe/so-sanh' },
+  { to: '/nghe/so-sanh', label: 'So sánh nghề', icon: Layers, roles: ['student', 'university_student'] },
   { to: '/so-sanh', label: 'So sánh phương án', icon: Scale, roles: ['student', 'university_student'] },
   { to: '/bao-cao-duoc-chia-se', label: 'Báo cáo của con', icon: FileText, roles: ['parent'] },
   { to: '/lo-trinh', label: 'Lộ trình', icon: MapIcon, roles: ['student', 'university_student'] },

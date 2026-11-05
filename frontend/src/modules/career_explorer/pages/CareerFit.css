@@ -20,6 +20,7 @@
 
 .fit-section { display: flex; flex-direction: column; gap: var(--space-4); }
 .fit-hero {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--space-6);
@@ -71,6 +72,12 @@
 .fit-card-body { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2); min-width: 0; }
 .fit-card-title { font-weight: 700; color: var(--color-text-main); text-decoration: none; }
 .fit-card-title:hover { color: var(--color-primary); }
+/* Cả thẻ là vùng bấm: liên kết tiêu đề phủ kín thẻ, nút So sánh nổi lên trên */
+.fit-card-title::after { content: ''; position: absolute; inset: 0; border-radius: inherit; }
+.fit-hero, .fit-card { transition: transform var(--transition-base, 0.2s), box-shadow var(--transition-base, 0.2s), border-color var(--transition-base, 0.2s); }
+.fit-hero:hover, .fit-card:hover { transform: translateY(-2px); border-color: var(--color-primary); }
+.fit-hero:has(.fit-card-title:focus-visible), .fit-card:has(.fit-card-title:focus-visible) { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.fit-hero .fit-actions .btn, .fit-card > .btn { position: relative; z-index: 1; }
 
 .fit-completeness { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); font-size: var(--font-size-sm); color: var(--color-text-secondary); }
 .fit-completeness .fit-bar-track { width: calc(180 * var(--px)); max-width: 100%; }

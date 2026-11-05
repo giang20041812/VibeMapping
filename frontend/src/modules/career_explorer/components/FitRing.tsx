@@ -8,7 +8,7 @@ export const FitRing: React.FC<{ percent: number; size?: number; label?: string 
   const circumference = 2 * Math.PI * radius;
   const value = Math.max(0, Math.min(100, percent));
   return (
-    <div className="fit-ring" style={{ width: size, height: size }} role="img" aria-label={label ?? `Phù hợp ${Math.round(value)}%`}>
+    <div className="fit-ring" style={{ width: size, height: size, fontSize: size * 0.2 }} role="img" aria-label={label ?? `Phù hợp ${Math.round(value)}%`}>
       <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size}>
         <defs>
           <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">

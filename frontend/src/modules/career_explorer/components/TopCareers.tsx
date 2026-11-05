@@ -100,7 +100,7 @@ export const TopCareers: React.FC<Props> = ({ picked = [], onToggleCompare, onBr
             <FitRing percent={top.fitPercent} size={132} />
             <div className="fit-hero-body">
               <span className="fit-eyebrow">{top.nearThreshold ? 'Gần phù hợp nhất' : 'Phù hợp nhất'}</span>
-              <h2>{top.careerName}</h2>
+              <h2><Link to={careerHref(top.careerId)} className="fit-card-title">{top.careerName}</Link></h2>
               <div className="career-chips">
                 {top.nearThreshold && <Badge variant="warning">Nghề gần đạt</Badge>}
                 {top.isTarget && <Badge variant="success">Mục tiêu</Badge>}

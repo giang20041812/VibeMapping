@@ -21,7 +21,7 @@ export const Alert: React.FC<AlertProps> = ({ variant = 'info', title, children,
   const Icon = ICONS[variant];
   return (
     <div className={`app-alert alert-${variant} ${className}`} role={variant === 'danger' ? 'alert' : 'status'}>
-      <Icon className="alert-icon" size={18} aria-hidden="true" />
+      <Icon className="alert-icon" size={14} aria-hidden="true" />
       <div className="alert-content">
         {title && <strong className="alert-title">{title}</strong>}
         {children && <div className="alert-text">{children}</div>}

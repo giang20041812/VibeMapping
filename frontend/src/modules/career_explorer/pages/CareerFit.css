@@ -211,4 +211,4 @@
 
 /* Thông báo lỗi gọn, vừa nội dung thay vì kéo ngang cả trang */
 .fit-error { display: flex; justify-content: center; }
-.fit-error .app-alert { width: fit-content; max-width: 100%; }
+

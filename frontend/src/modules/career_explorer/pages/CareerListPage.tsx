@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Bookmark, GitCompare, SlidersHorizontal, Sparkles, Target } from 'lucide-react';
+import { Bookmark, GitCompare, Compass, SlidersHorizontal, Sparkles, Target } from 'lucide-react';
 import { Alert, Badge, Button, Pagination, Skeleton } from '../../../components/common';
 import { FilterSearch } from '../../../components/filters/FilterSearch/FilterSearch';
 import { SearchableSelect } from '../../../components/filters/SearchableSelect/SearchableSelect';
@@ -187,7 +187,10 @@ export const CareerListPage: React.FC<{ publicCatalog?: boolean }> = ({ publicCa
   const gate = (
     <div className="career-gate">
       <form className="career-gate-card" onSubmit={(event) => { event.preventDefault(); applyFilter(); }}>
-        <h1>Khám phá ngành nghề</h1>
+        <div className="career-gate-head">
+          <span className="career-gate-icon" aria-hidden="true"><Compass size={28} /></span>
+          <h1>Khám phá ngành nghề</h1>
+        </div>
         <div className="career-filter-form">
           <FilterSearch placeholder="Tên nghề" value={draft} onChange={setDraft} />
           <SearchableSelect label="Lĩnh vực" options={fieldOptions} value={fieldId} onChange={setFieldId} />

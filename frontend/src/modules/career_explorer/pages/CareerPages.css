@@ -112,9 +112,9 @@
 .explain-meter { display: block; height: 14px; min-width: calc(56 * var(--px)); background: var(--color-bg-surface); border: var(--cartoon-stroke-thin) solid var(--cartoon-ink); border-radius: var(--radius-full); overflow: hidden; }
 .explain-meter > span { display: block; height: 100%; background: var(--part-fill, var(--brand-gold)); border-right: var(--cartoon-stroke-thin) solid var(--cartoon-ink); transition: width var(--transition-slow); }
 .explain-meter > span[style*='width: 0%'] { border-right: 0; }
-.explain-cell-meter { display: flex; align-items: center; gap: var(--space-2); min-width: calc(130 * var(--px)); }
+.explain-cell-meter { display: flex; align-items: center; justify-content: center; gap: var(--space-2); min-width: calc(130 * var(--px)); }
 .explain-cell-meter .explain-meter { flex: 1; }
-.explain-cell-meter b { min-width: 3.2em; text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
+.explain-cell-meter b { min-width: 3.2em; text-align: center; font-weight: 800; font-variant-numeric: tabular-nums; }
 
 /* Bảng dữ liệu dạng hình dán: khung viền mực, đầu bảng vàng phẳng */
 .explain-table-wrap {
@@ -139,7 +139,7 @@
 .explain-table th,
 .explain-table td {
   padding: var(--space-3) var(--space-4);
-  text-align: left;
+  text-align: center;
   vertical-align: middle;
   border-bottom: var(--cartoon-stroke-thin) dashed var(--cartoon-line);
   white-space: nowrap;

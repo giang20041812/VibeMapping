@@ -69,3 +69,6 @@
 [data-ui='cartoon'] .app-table td { border-bottom: var(--cartoon-stroke-thin) dashed var(--cartoon-line); }
 [data-ui='cartoon'] .app-table tbody tr:last-child td { border-bottom: 0; }
 [data-ui='cartoon'] .app-table tbody tr:hover { background-color: var(--tone-yellow-bg); }
+[data-ui='cartoon'] .app-table th,
+[data-ui='cartoon'] .app-table td { text-align: center; }
+[data-ui='cartoon'] .app-table .align-right { text-align: center; }

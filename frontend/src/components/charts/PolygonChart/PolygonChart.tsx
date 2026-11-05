@@ -12,7 +12,7 @@ export interface PolygonAxis {
   shortLabel?: string;
   /** Điểm 0–100; null là chưa đủ dữ liệu */
   value: number | null;
-  /** Điểm so sánh (ví dụ tự đánh giá), vẽ bằng đường nét đứt */
+  /** Điểm so sánh (ví dụ yêu cầu nghề), vẽ bằng đường liền nổi bật phía trên đa giác */
   reference?: number | null;
   icon: LucideIcon;
 }
@@ -148,9 +148,14 @@ const DataPlate = memo(function DataPlate({ geometry, activeIndex, keys, filled,
           );
         })}
 
-        {reference && geometry.referencePath && <path d={geometry.referencePath} className="polygon-reference" />}
-
         <path d={geometry.dataPath} className="polygon-edge" />
+
+        {reference && geometry.referencePath && (
+          <g className="polygon-reference">
+            <path d={geometry.referencePath} className="polygon-reference-casing" />
+            <path d={geometry.referencePath} className="polygon-reference-line" />
+          </g>
+        )}
 
         {data.map((point, i) => (
           <circle

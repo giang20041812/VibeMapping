@@ -108,18 +108,6 @@ export const ResultView: React.FC<ResultViewProps> = ({ result, onRetake, onCont
         </div>
 
         <Card className="result-groups-card">
-          {header}
-          {progress !== null && (
-            <div className="result-progress">
-              <div className="result-progress-head">
-                <span>Bài đánh giá đã chấp nhận</span>
-                <strong>
-                  {result.acceptedCount}/{result.expectedCount}
-                </strong>
-              </div>
-              <ProgressBar value={progress} label="Tiến độ đánh giá 360°" />
-            </div>
-          )}
           {(result.thinDataFlag || result.insufficientBasisWarning) && (
             <div className="result-notes">
               {result.thinDataFlag && (
@@ -134,6 +122,18 @@ export const ResultView: React.FC<ResultViewProps> = ({ result, onRetake, onCont
                   Thiếu dữ liệu đánh giá
                 </span>
               )}
+            </div>
+          )}
+          {header}
+          {progress !== null && (
+            <div className="result-progress">
+              <div className="result-progress-head">
+                <span>Bài đánh giá đã chấp nhận</span>
+                <strong>
+                  {result.acceptedCount}/{result.expectedCount}
+                </strong>
+              </div>
+              <ProgressBar value={progress} label="Tiến độ đánh giá 360°" />
             </div>
           )}
           <ul className="group-list">

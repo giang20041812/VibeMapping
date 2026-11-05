@@ -54,7 +54,8 @@
 
 .result-retake { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-5); }
 
-.result-notes { display: flex; flex-wrap: wrap; gap: var(--space-2); padding: 0 var(--space-4); margin-bottom: var(--space-2); }
+/* Nhãn cảnh báo nằm góc phải trên của thẻ điểm, cùng màu với hộp thông báo */
+.result-notes { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-2); padding: 0 var(--space-4); margin-bottom: var(--space-2); }
 .result-note {
   display: inline-flex;
   align-items: center;
@@ -63,10 +64,11 @@
   font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--color-warning-text);
-  background: var(--color-warning-bg);
-  border: 1px solid var(--color-warning-border);
+  background: var(--alert-warning-bg);
+  border: 1px solid var(--alert-warning-border);
   border-radius: var(--radius-full, 999px);
 }
+.result-note svg { color: var(--alert-warning-icon); }
 
 /* Danh sách điểm nhóm: tự chia cột theo bề rộng còn lại */
 .group-list {

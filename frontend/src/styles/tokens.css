@@ -96,6 +96,20 @@
   --color-info-border: var(--brand-mist);
   --color-info-text: #2b2775;
 
+  /* Hộp thông báo (Alert): nền và viền đậm hơn nhãn trạng thái để dễ thấy */
+  --alert-info-bg: var(--brand-pale);
+  --alert-info-border: var(--brand-light);
+  --alert-info-icon: var(--brand-blue);
+  --alert-success-bg: #cdeedf;
+  --alert-success-border: #7fd0ae;
+  --alert-success-icon: var(--color-success);
+  --alert-warning-bg: #fde9b8;
+  --alert-warning-border: #f0c262;
+  --alert-warning-icon: #c27c05;
+  --alert-danger-bg: #fbd5da;
+  --alert-danger-border: #ee9aa4;
+  --alert-danger-icon: var(--color-danger);
+
   /* Màu nhấn cho trực quan hóa (biểu đồ ngũ giác, quả địa cầu, nền trang chủ).
      Chỉ dùng cho hình minh họa, không dùng cho nút bấm, chữ hay trạng thái. */
   --accent-cyan: #22d3ee;

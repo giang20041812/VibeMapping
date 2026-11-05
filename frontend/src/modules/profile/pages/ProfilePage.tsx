@@ -99,12 +99,6 @@ export const ProfilePage: React.FC = () => {
 
       <Card className="profile-card">
         <form className="profile-form" onSubmit={handleSubmit} noValidate>
-          {learner && (
-            <div className="profile-group">
-              <Badge variant="info">Nhóm: {groupLabel(profile.role)}</Badge>
-            </div>
-          )}
-
           {needsGuardian && (
             <Alert variant="warning">
               Bạn dưới 16 tuổi: cần người giám hộ xác nhận trước khi mời người khác đánh giá.
@@ -112,6 +106,12 @@ export const ProfilePage: React.FC = () => {
           )}
           {saved && <Alert variant="success">Đã lưu hồ sơ.</Alert>}
           {formError && <Alert variant="danger">{formError}</Alert>}
+
+          {learner && (
+            <div className="profile-group">
+              <Badge variant="info">Nhóm: {groupLabel(profile.role)}</Badge>
+            </div>
+          )}
 
           <div className="profile-grid">
             <Input

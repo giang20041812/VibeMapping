@@ -842,6 +842,7 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
           </>
         }
       >
+        <Alert variant="warning">Sau khi nộp, không sửa được điểm của học sinh đã nộp.</Alert>
         {blockedReasons.map((reason) => (
           <Alert key={reason} variant="danger">{reason}</Alert>
         ))}
@@ -850,7 +851,6 @@ export const ClassGradeTable: React.FC<ClassGradeTableProps> = ({
             {pendingCount} học sinh chưa nộp · {gradedStudents}/{grid.students.length} học sinh đã chấm đủ
           </p>
         )}
-        <Alert variant="warning">Sau khi nộp, không sửa được điểm của học sinh đã nộp.</Alert>
       </Modal>
 
       {openStudent && (

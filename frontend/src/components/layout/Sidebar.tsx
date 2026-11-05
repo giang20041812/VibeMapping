@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { LogoMark } from '../common';
 import { useAuth } from '../../modules/auth/AuthContext';
@@ -20,8 +20,6 @@ export interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ open, onToggle, onClose }) => {
   const { profile } = useAuth();
   const items = navItemsFor(profile?.role);
-  const { pathname } = useLocation();
-
   useEffect(() => {
     if (!open) return;
     const onKey = (event: KeyboardEvent) => {
@@ -63,10 +61,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onToggle, onClose }) => 
                 key={item.to}
                 to={item.to}
                 end={item.end}
-                className={({ isActive }) => {
-                  const excluded = item.excludePrefix !== undefined && pathname.startsWith(item.excludePrefix);
-                  return `sidebar-link ${isActive && !excluded ? 'is-active' : ''}`;
-                }}
+                className={({ isActive }) => `sidebar-link ${isActive ? 'is-active' : ''}`}
                 onClick={onClose}
               >
                 <span className="sidebar-link-icon">

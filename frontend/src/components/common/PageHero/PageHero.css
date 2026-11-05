@@ -1,0 +1,77 @@
+.page-hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  min-width: 0;
+  margin-bottom: var(--space-6);
+}
+.page-hero-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: calc(64 * var(--px));
+  height: calc(64 * var(--px));
+  color: var(--color-text-inverse);
+  background: var(--sticker-accent);
+  border: var(--cartoon-stroke) solid var(--cartoon-ink);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--cartoon-pop);
+  animation: page-hero-icon-in 800ms var(--ease-spring) both;
+}
+.page-hero-icon svg { width: 55%; height: 55%; }
+.page-hero-text {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.page-hero-title {
+  margin: 0;
+  min-width: 0;
+  font-size: var(--font-size-4xl);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--cartoon-ink);
+  animation: page-hero-rise 520ms var(--ease-out) 80ms both;
+}
+.page-hero-count {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--cartoon-ink);
+  background: var(--sticker-bg);
+  border: var(--cartoon-stroke-thin) solid var(--cartoon-ink);
+  border-radius: var(--radius-full);
+  box-shadow: var(--cartoon-drop);
+  rotate: -2deg;
+  animation: page-hero-rise 520ms var(--ease-spring) 180ms both;
+}
+.page-hero-count b { font-size: var(--font-size-lg); font-weight: 800; font-variant-numeric: tabular-nums; }
+.page-hero-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-left: auto; }
+
+@keyframes page-hero-icon-in {
+  from { opacity: 0; transform: rotate(-90deg) scale(0.4); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes page-hero-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (max-width: 640px) {
+  .page-hero { gap: var(--space-3); margin-bottom: var(--space-4); }
+  .page-hero-icon { width: calc(48 * var(--px)); height: calc(48 * var(--px)); }
+  .page-hero-title { font-size: var(--font-size-3xl); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-hero-icon,
+  .page-hero-title,
+  .page-hero-count { animation: none; }
+}

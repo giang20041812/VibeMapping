@@ -2,23 +2,17 @@
   margin-bottom: var(--space-4);
 }
 
-.school-explorer-name {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-width: 0;
-  font-weight: 600;
-  color: var(--color-text);
-}
-
-.school-explorer-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+.school-explorer-web {
+  display: grid;
+  place-items: center;
+  width: var(--touch-target);
+  height: var(--touch-target);
+  margin: calc(-1 * var(--space-2)) calc(-1 * var(--space-2)) 0 0;
   color: var(--color-text-muted);
+  border-radius: var(--radius-md);
 }
 
-.school-explorer-link:hover {
-  color: var(--color-primary);
+.school-explorer-web:hover {
+  color: var(--cartoon-ink);
+  background: var(--sticker-bg);
 }

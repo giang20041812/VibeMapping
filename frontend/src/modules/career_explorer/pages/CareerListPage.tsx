@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Bookmark, GitCompare, Compass, SlidersHorizontal, Sparkles, Target } from 'lucide-react';
-import { Alert, Badge, Button, Pagination, Skeleton } from '../../../components/common';
+import { Bookmark, Briefcase, GitCompare, Compass, SearchX, SlidersHorizontal, Sparkles, Target } from 'lucide-react';
+import { Alert, Button, PageHero, Pagination, SkeletonRegion, StickerCard, StickerCardSkeleton, StickerFact, StickerGrid, stickerToneAt } from '../../../components/common';
 import { FilterSearch } from '../../../components/filters/FilterSearch/FilterSearch';
 import { SearchableSelect } from '../../../components/filters/SearchableSelect/SearchableSelect';
 import { readCareerCompare, toggleCareerCompare } from '../../../lib/selectionCart';
@@ -147,41 +147,42 @@ export const CareerListPage: React.FC<{ publicCatalog?: boolean }> = ({ publicCa
         <Button variant="outline" leftIcon={<SlidersHorizontal size={16} />} onClick={() => setView('gate')}>
           {activeCount > 0 ? `Bộ lọc (${activeCount})` : 'Bộ lọc'}
         </Button>
-        {!loading && <span className="career-muted">{rows.length} nghề</span>}
       </div>
       {error && <Alert variant="danger">{error}</Alert>}
       {loading ? (
-        <ul className="career-grid">
-          {Array.from({ length: 8 }, (_, i) => (
-            <li key={i} className="career-card">
-              <Skeleton shape="title" width={70} />
-              <Skeleton shape="chip" width={40} />
-            </li>
-          ))}
-        </ul>
+        <SkeletonRegion>
+          <StickerGrid>
+            {Array.from({ length: 8 }, (_, i) => <StickerCardSkeleton key={i} />)}
+          </StickerGrid>
+        </SkeletonRegion>
       ) : rows.length === 0 ? (
-        <div className="fit-empty">
-          <h2>Không có nghề khớp bộ lọc</h2>
+        <div className="sticker-empty">
+          <SearchX size={40} aria-hidden="true" />
+          Không có nghề khớp bộ lọc
           <Button variant="outline" onClick={() => setView('gate')}>Đổi bộ lọc</Button>
         </div>
       ) : (
         <>
-          <ul className="career-grid">
-            {visible.map((row) => (
-              <li key={row.id} className="career-card">
-                <Link to={careerHref(row.id)} className="career-card-title">{row.career_name}</Link>
-                <div className="career-card-meta">
-                  {row.holland_top3 && <Badge variant="info" size="sm">{interestLabel(row.holland_top3)}</Badge>}
-                </div>
-                {isLearner && (
+          <StickerGrid label="Danh sách nghề">
+            {visible.map((row, index) => (
+              <StickerCard
+                key={row.id}
+                tone={stickerToneAt(index)}
+                icon={<Briefcase size={22} />}
+                title={<Link to={careerHref(row.id)}>{row.career_name}</Link>}
+                footer={isLearner ? (
                   <Button size="sm" variant={picked.includes(row.id) ? 'primary' : 'outline'} leftIcon={<GitCompare size={14} />} onClick={() => toggleCompare(row.id)}>
                     {picked.includes(row.id) ? 'Bỏ so sánh' : 'So sánh'}
                   </Button>
-                )}
-              </li>
+                ) : undefined}
+              >
+                {row.holland_top3 && <StickerFact icon={<Sparkles size={14} />} strong>{interestLabel(row.holland_top3)}</StickerFact>}
+              </StickerCard>
             ))}
-          </ul>
+          </StickerGrid>
+          <div className="sticker-pagination">
           <Pagination page={page} pageSize={PAGE_SIZE} total={rows.length} onChange={setPage} />
+          </div>
         </>
       )}
     </>
@@ -215,7 +216,7 @@ export const CareerListPage: React.FC<{ publicCatalog?: boolean }> = ({ publicCa
     <div className="module-page career-page">
       {view === 'gate' ? gate : (
         <>
-      <h1>Nghề nghiệp</h1>
+      <PageHero title="Nghề nghiệp" icon={<Briefcase />} tone="blue" count={view === 'catalog' && !loading ? rows.length : null} countLabel="nghề" />
       {notice && <Alert variant="info">{notice}</Alert>}
       {view === 'fit' ? (
         <>

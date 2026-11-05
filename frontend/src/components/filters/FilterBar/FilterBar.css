@@ -119,3 +119,11 @@
 .filter-search-clear:hover {
   color: var(--color-text-main);
 }
+
+/* Kiểu hình dán cho các trang khám phá */
+.app-filter-bar.is-sticker {
+  border: var(--cartoon-stroke) solid var(--cartoon-ink);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--cartoon-pop);
+  margin-bottom: var(--space-6);
+}

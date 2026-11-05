@@ -20,3 +20,7 @@ export type { DataTableColumn } from './DataTable/DataTable';
 export { Pagination } from './Pagination/Pagination';
 export { Breadcrumb } from './Breadcrumb/Breadcrumb';
 export type { BreadcrumbItem } from './Breadcrumb/Breadcrumb';
+export { PageHero } from './PageHero/PageHero';
+export type { PageHeroProps } from './PageHero/PageHero';
+export { StickerCard, StickerCardSkeleton, StickerGrid, StickerFact, STICKER_TONES, stickerToneAt } from './StickerCard/StickerCard';
+export type { StickerCardProps, StickerTone } from './StickerCard/StickerCard';

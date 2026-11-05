@@ -10,6 +10,8 @@ export interface FilterBarProps {
   onSubmit?: (e: React.FormEvent) => void;
   isLoading?: boolean;
   totalResults?: number;
+  /** Kiểu hình dán cho các trang khám phá; mặc định là khung phẳng của trang quản trị */
+  variant?: 'plain' | 'sticker';
 }
 
 export const FilterBar: React.FC<FilterBarProps> = ({
@@ -18,6 +20,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   onSubmit,
   isLoading = false,
   totalResults,
+  variant = 'plain',
 }) => {
   const [isMobileExpanded, setIsMobileExpanded] = useState(false);
 
@@ -29,7 +32,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   };
 
   return (
-    <form className="app-filter-bar filter-controls" onSubmit={handleSubmit}>
+    <form className={`app-filter-bar filter-controls${variant === 'sticker' ? ' is-sticker' : ''}`} onSubmit={handleSubmit}>
       <div className="filter-bar-header-mobile">
         <div className="filter-summary">
           {totalResults !== undefined && (

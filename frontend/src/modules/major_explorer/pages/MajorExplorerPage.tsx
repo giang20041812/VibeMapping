@@ -1,8 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Search } from 'lucide-react';
-import { Alert, Card, DataTable, Input, Pagination } from '../../../components/common';
-import type { DataTableColumn } from '../../../components/common';
+import { ArrowRight, BookOpen, GraduationCap, Layers, Search, SearchX } from 'lucide-react';
+import { Alert, Input, PageHero, Pagination, SkeletonRegion, StickerCard, StickerCardSkeleton, StickerFact, StickerGrid, stickerToneAt } from '../../../components/common';
 import { FilterBar } from '../../../components/filters/FilterBar/FilterBar';
 import { SearchableSelect } from '../../../components/filters/SearchableSelect/SearchableSelect';
 import type { FilterOption } from '../../../types/filter';
@@ -53,28 +52,9 @@ export const MajorExplorerPage: React.FC = () => {
     };
   }, [applied, page]);
 
-  const columns = useMemo<DataTableColumn<MajorRow>[]>(
-    () => [
-      { key: 'major_name', header: 'Ngành', render: (row) => <span className="major-explorer-name">{row.major_name}</span> },
-      { key: 'program_count', header: 'Chương trình', align: 'right', nowrap: true, render: (row) => row.program_count },
-      {
-        key: 'schools',
-        header: 'Trường đào tạo',
-        nowrap: true,
-        render: (row) => (
-          <Link className="major-explorer-link" to={`/kham-pha-truong?nganh=${row.id}`}>
-            Xem trường
-            <ArrowRight size={14} aria-hidden="true" />
-          </Link>
-        ),
-      },
-    ],
-    [],
-  );
-
   return (
     <>
-      <h1 className="page-title">Ngành nghề</h1>
+      <PageHero title="Ngành nghề" icon={<GraduationCap />} tone="magenta" count={isLoading ? null : total} countLabel="ngành" />
 
       {error && (
         <div className="major-explorer-alert">
@@ -82,7 +62,7 @@ export const MajorExplorerPage: React.FC = () => {
         </div>
       )}
 
-      <FilterBar onReset={reset} onSubmit={apply} isLoading={isLoading} totalResults={total}>
+      <FilterBar variant="sticker" onReset={reset} onSubmit={apply} isLoading={isLoading} totalResults={total}>
         <div className="filter-item-search">
           <Input
             label="Tìm kiếm"
@@ -96,10 +76,46 @@ export const MajorExplorerPage: React.FC = () => {
         <SearchableSelect label="Tỉnh/thành" placeholder="Tất cả" options={cities} value={draft.city} onChange={(value) => patch({ city: value })} />
       </FilterBar>
 
-      <Card noPadding>
-        <DataTable columns={columns} rows={rows} rowKey={(row) => row.id} isLoading={isLoading} emptyText="Không có ngành phù hợp" caption="Danh sách ngành" />
-        <Pagination page={page} pageSize={MAJOR_PAGE_SIZE} total={total} onChange={setPage} disabled={isLoading} />
-      </Card>
+      {isLoading ? (
+        <SkeletonRegion>
+          <StickerGrid>
+            {Array.from({ length: 8 }, (_, i) => <StickerCardSkeleton key={i} />)}
+          </StickerGrid>
+        </SkeletonRegion>
+      ) : rows.length === 0 ? (
+        <div className="sticker-empty">
+          <SearchX size={40} aria-hidden="true" />
+          Không có ngành phù hợp
+        </div>
+      ) : (
+        <StickerGrid label="Danh sách ngành">
+          {rows.map((row, index) => (
+            <StickerCard
+              key={row.id}
+              tone={stickerToneAt(index)}
+              icon={<BookOpen size={22} />}
+              title={row.major_name}
+              footer={
+                <>
+                  <StickerFact icon={<Layers size={14} />} strong>
+                    {row.program_count} chương trình
+                  </StickerFact>
+                  <Link className="sticker-link" to={`/kham-pha-truong?nganh=${row.id}`}>
+                    Xem trường
+                    <ArrowRight size={16} aria-hidden="true" />
+                  </Link>
+                </>
+              }
+            />
+          ))}
+        </StickerGrid>
+      )}
+
+      {total > 0 && (
+        <div className="sticker-pagination">
+          <Pagination page={page} pageSize={MAJOR_PAGE_SIZE} total={total} onChange={setPage} disabled={isLoading} />
+        </div>
+      )}
     </>
   );
 };

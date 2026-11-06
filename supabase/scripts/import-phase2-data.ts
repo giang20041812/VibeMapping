@@ -538,6 +538,54 @@ function parseSemesterTuition(text: string | null): [number, number] | null {
   return null;
 }
 
+type TuitionBasis = 'semester' | 'year' | 'total';
+interface TuitionRange { min: number; max: number; basis: TuitionBasis }
+
+/** "29,5 triệu" -> 29_500_000; "8.050.000 đồng" -> 8_050_000 */
+function moneyToDong(amount: string, unit: string): number {
+  const value = numberFromVietnamese(amount);
+  return /^(triệu|tr)$/i.test(unit) ? Math.round(value * 1_000_000) : Math.round(value);
+}
+const MONEY = String.raw`([\d.,]+)\s*(?:[–-]\s*[≈~]?\s*([\d.,]+))?\s*(triệu|tr|đồng|đ|vnđ|vnd)\b`;
+
+/**
+ * Học phí mỗi kỳ ghi rõ được ưu tiên; sau đó học phí theo năm (chia 2 kỳ) và tổng khóa (chia số năm × 2).
+ * Không quy đổi học phí theo tín chỉ hoặc theo tháng (thiếu số tín chỉ, số tháng); không lấy khi ghi miễn học phí.
+ */
+function parseTuition(text: string | null, studyYears: number | null): TuitionRange | null {
+  if (!text) return null;
+  const semester = parseSemesterTuition(text);
+  if (semester) return { min: semester[0], max: semester[1], basis: 'semester' };
+  if (/miễn học phí/i.test(text)) return null;
+  const range = (match: RegExpExecArray, divisor: number, basis: TuitionBasis): TuitionRange | null => {
+    const low = moneyToDong(match[1], match[3]);
+    const high = match[2] ? moneyToDong(match[2], match[3]) : low;
+    if (!Number.isFinite(low) || !Number.isFinite(high) || low <= 0 || high <= 0) return null;
+    const result = { min: Math.round(Math.min(low, high) / divisor), max: Math.round(Math.max(low, high) / divisor), basis };
+    // Học phí một kỳ ngoài khoảng 1–100 triệu gần như chắc chắn là nhầm đơn vị
+    return result.min >= 1_000_000 && result.max <= 100_000_000 ? result : null;
+  };
+  // 1 kỳ tính bằng đồng: "Học phí 1 kỳ học: 21.025.000 đồng", "7.950.000 đ/kỳ"; bỏ giá theo tháng, theo tín chỉ
+  const perTerm = new RegExp(String.raw`học phí\s*(?:1|một)\s*(?:kỳ|học kỳ)[^:\n]*:\s*(?:khoảng\s*|từ\s*)?[≈~]?\s*${MONEY}(?!\s*\/\s*(?:tháng|tín|tc))`, 'i').exec(text);
+  if (perTerm) { const found = range(perTerm, 1, 'semester'); if (found) return found; }
+  const perYear = new RegExp(String.raw`học phí\s*(?:1|một)\s*năm[^:\n]*:\s*(?:khoảng\s*|từ\s*)?[≈~]?\s*${MONEY}(?!\s*\/\s*(?:tháng|tín|tc))`, 'i').exec(text);
+  if (perYear) { const found = range(perYear, 2, 'year'); if (found) return found; }
+  // "≈25 triệu đồng/năm" chỉ nhận khi văn bản có đúng một mức theo năm
+  const yearly = [...text.matchAll(new RegExp(String.raw`[≈~]?\s*([\d.,]+)\s*(?:[–-]\s*[≈~]?\s*([\d.,]+))?\s*(triệu|tr)\s*(?:đồng|đ)?\s*\/\s*năm`, 'gi'))];
+  if (yearly.length === 1) { const found = range(yearly[0] as RegExpExecArray, 2, 'year'); if (found) return found; }
+  const total = new RegExp(String.raw`tổng học phí[^:\n]*?(?:(\d+)\s*năm)?[^:\n]*:\s*(?:khoảng\s*)?[≈~]?\s*${MONEY}`, 'i').exec(text);
+  if (total) {
+    // nhóm 1 là số năm, các nhóm sau là số tiền: dựng lại theo thứ tự của range()
+    const years = total[1] ? Number(total[1]) : studyYears;
+    if (years && years > 0 && years <= 8) {
+      const shifted = [total[0], total[2], total[3], total[4]] as unknown as RegExpExecArray;
+      const found = range(shifted, years * 2, 'total');
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
 function parseStudyYears(text: string | null): number | null {
   const match = text ? /số năm đào tạo:\s*(\d+(?:[.,]\d+)?)/i.exec(text) : null;
   const value = match ? numberFromVietnamese(match[1]) : NaN;
@@ -658,7 +706,7 @@ interface InstitutionRow {
 interface ProgramRow {
   source_key: string; institution_key: string; major_key: string; faculty_name: string | null; specialization_name: string | null;
   program_type: string | null; degree_levels: string[] | null; program_qualifier: string | null; program_summary: string | null;
-  study_years: number | null; tuition_text: string | null; tuition_per_semester_min: number | null; tuition_per_semester_max: number | null;
+  study_years: number | null; tuition_text: string | null; tuition_per_semester_min: number | null; tuition_per_semester_max: number | null; tuition_basis: TuitionBasis | null;
   program_url: string | null; source_reference: string | null; research_status: ResearchStatus; researcher_name: string | null; research_note: string | null;
 }
 interface MajorRow { normalized_name: string; major_name: string }
@@ -703,13 +751,14 @@ function buildInstitutionsMajorsPrograms(rows: ResearchRow[]) {
     if (!majors.has(majorKey)) majors.set(majorKey, { normalized_name: majorKey, major_name: majorName });
 
     const sourceKey = [instKey, row.faculty, majorKey, row.specialization, row.program_type, qualifier].map((p) => fold(p ?? '')).join('|');
-    const tuition = parseSemesterTuition(row.tuition_text);
+    const studyYears = parseStudyYears(row.program_summary);
+    const tuition = parseTuition(row.tuition_text, studyYears);
     const program: ProgramRow = {
       source_key: sourceKey, institution_key: instKey, major_key: majorKey,
       faculty_name: row.faculty, specialization_name: row.specialization, program_type: row.program_type,
       degree_levels: parseDegreeLevels(row.program_type), program_qualifier: qualifier,
-      program_summary: row.program_summary, study_years: parseStudyYears(row.program_summary),
-      tuition_text: row.tuition_text, tuition_per_semester_min: tuition?.[0] ?? null, tuition_per_semester_max: tuition?.[1] ?? null,
+      program_summary: row.program_summary, study_years: studyYears,
+      tuition_text: row.tuition_text, tuition_per_semester_min: tuition?.min ?? null, tuition_per_semester_max: tuition?.max ?? null, tuition_basis: tuition?.basis ?? null,
       program_url: row.program_url, source_reference: row.source_reference, research_status: row.status,
       researcher_name: row.researcher, research_note: row.note,
     };
@@ -802,6 +851,7 @@ function report(args: {
   for (const status of Object.keys(STATUS_RANK) as ResearchStatus[]) {
     lines.push(`  - ${status}: ${count(programList, (p: ProgramRow) => p.research_status === status)}`);
   }
+  lines.push(`Học phí tách được theo cơ sở: mỗi kỳ ghi rõ ${count(programList, (p: ProgramRow) => p.tuition_basis === 'semester')}; chia từ học phí năm ${count(programList, (p: ProgramRow) => p.tuition_basis === 'year')}; chia từ tổng khóa ${count(programList, (p: ProgramRow) => p.tuition_basis === 'total')}`);
   lines.push(`Có số năm đào tạo: ${pct(count(programList, (p: ProgramRow) => p.study_years !== null), programList.length)}; có học phí/kỳ tách được: ${pct(count(programList, (p: ProgramRow) => p.tuition_per_semester_min !== null), programList.length)}; có cấp bằng nhận ra: ${pct(count(programList, (p: ProgramRow) => p.degree_levels !== null), programList.length)}`);
   const cities = new Set([...institutions.values()].map((i) => i.city).filter(Boolean));
   lines.push(`Tỉnh/thành khác nhau: ${cities.size}; trường chưa có tỉnh/thành: ${count([...institutions.values()], (i: InstitutionRow) => !i.city)}; chưa rõ công lập/tư thục: ${count([...institutions.values()], (i: InstitutionRow) => !i.ownership)}`);
@@ -1036,7 +1086,7 @@ const STEP_RUNNERS: Record<Step, (supabase: SupabaseClient, data: ImportData) =>
       faculty_name: p.faculty_name, specialization_name: p.specialization_name, program_type: p.program_type,
       degree_levels: p.degree_levels, program_qualifier: p.program_qualifier, program_summary: p.program_summary,
       study_years: p.study_years, tuition_text: p.tuition_text,
-      tuition_per_semester_min: p.tuition_per_semester_min, tuition_per_semester_max: p.tuition_per_semester_max,
+      tuition_per_semester_min: p.tuition_per_semester_min, tuition_per_semester_max: p.tuition_per_semester_max, tuition_basis: p.tuition_basis,
       program_url: p.program_url, source_reference: p.source_reference, research_status: p.research_status,
       researcher_name: p.researcher_name, research_note: p.research_note,
     })), 'source_key');

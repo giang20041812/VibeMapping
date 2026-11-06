@@ -108,10 +108,7 @@ export const JoinedClassesSection: React.FC<JoinedClassesSectionProps> = ({ user
   const closeLeave = useCallback(() => setLeaveTarget(null), []);
 
   return (
-    <section className="class-stack" aria-labelledby="class-joined-title">
-      <h3 id="class-joined-title" className="section-title">
-        Lớp học
-      </h3>
+    <section className="class-stack" aria-label="Lớp học">
       {error && <Alert variant="danger">{error}</Alert>}
       {notice && <Alert variant="success">{notice}</Alert>}
       <Alert variant="info">Giáo viên của lớp sẽ đánh giá hướng nghiệp của bạn. Tham gia lớp được coi là đồng ý.</Alert>

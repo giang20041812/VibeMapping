@@ -4,7 +4,7 @@ Cập nhật: 06/11/2026. Phạm vi: phần nghề, ngành – trường, so sá
 
 ## Tóm tắt
 
-- **Chưa nghề nào đủ chuẩn theo đúng chữ của SRS R08.** R08 yêu cầu nghề có mức yêu cầu cho đủ các tiêu chí, có Holland, có nguồn và ngày cập nhật. Trong 917 nghề có ma trận, nghề nhiều nhất mới có 23/25 tiêu chí G1–G5, G7; cả 2.176 nghề đều chưa có ngày kiểm tra dữ liệu. Hệ thống đang dùng một điều kiện "đủ chuẩn" nới lỏng (mục 1, dòng 1) nên 818 nghề đang được công bố và đưa vào gợi ý.
+- **Chưa nghề nào đủ chuẩn theo đúng chữ của SRS R08.** R08 yêu cầu nghề có mức yêu cầu cho đủ các tiêu chí, có Holland, có nguồn và ngày cập nhật. Trong 917 nghề có ma trận, nghề nhiều nhất mới có 23/25 tiêu chí G1–G5, G7; 1.169 nghề không có ngày nào trong cột Nguồn dữ liệu. Hệ thống đang dùng một điều kiện "đủ chuẩn" nới lỏng (mục 1, dòng 1) nên 818 nghề đang được công bố và đưa vào gợi ý. Cả 2.176 nghề nay có thể có ngày: 1.007 nghề có ngày (232 theo ngày kiểm tra, 775 theo ngày đăng tin).
 - **Dữ liệu JD không đủ cho P16 = 20 JD mỗi nghề.** Toàn bộ JD trong file đã được nạp, không còn JD nào bị bỏ sót. 808/818 nghề đang công bố dựa trên 1–4 JD; chỉ 2 nghề đạt từ 20 JD. Hệ thống đang hạ P16 xuống 1.
 - **Ba nhóm dữ liệu không có trong bất kỳ file nào của TEAM BA:** điểm chuẩn và chỉ tiêu tuyển sinh, mức tăng trưởng nghề, mô tả ngành. Các màn hình liên quan đang hiện "Chưa đủ dữ liệu".
 - **Thư viện nội dung gần như trống:** 0 gợi ý khóa học/dự án, 3 hoạt động lộ trình đã duyệt, danh sách từ khóa cấm của cộng đồng trống.
@@ -20,7 +20,7 @@ Cập nhật: 06/11/2026. Phạm vi: phần nghề, ngành – trường, so sá
 | 5 | Cách tính mức yêu cầu (Req) và trọng số (CW) từ JD | R16 chỉ nêu quy đổi cấp độ, không nêu cách gộp nhiều JD | Req = trung bình Required Level của các JD có gắn tiêu chí. CW = số JD có tiêu chí, chuẩn hóa tổng bằng 1 trong G1–G5 và trong G7. Vì JD L0–L2 có Required Level thấp nên Req thấp (nhiều nghề Req 1,0–2,0) |
 | 6 | Công thức RIASEC Match và dạng dữ liệu G6 của nghề (Top 3 hay hồ sơ sáu chiều) | R05 và mục 5.3 STT 10: chưa chốt, BLOCKED | Lưu cả hai. Hồ sơ sáu chiều = tỷ lệ JD có gắn D6.1–D6.6. Đang tính G6 bằng phương pháp Demo `profile_6d_demo`; kết quả vẫn chiếm 30% Career Fit và vào xếp hạng |
 | 7 | "Tiêu chí quan trọng của nghề" khi cảnh báo lệch góc nhìn | R21: cảnh báo khi chênh ≥ 25% (P28) ở tiêu chí quan trọng; không định nghĩa "quan trọng" | Tiêu chí có CW ≥ CW trung bình trong phần của nó |
-| 8 | Ngày kiểm tra dữ liệu nghề (P20) lấy từ đâu | R17: P20 = 6 tháng kể từ ngày kiểm tra JD mới nhất | Ngày nằm trong chữ tự do ở cột "Nguồn dữ liệu" nên chưa nạp; cả 2.176 nghề để trống. Cảnh báo "Quá hạn rà soát" chưa bao giờ hiện. Quản trị đổi trạng thái sang Đã công bố thì ngày được ghi là ngày hôm đó |
+| 8 | Ngày kiểm tra dữ liệu nghề (P20) lấy từ đâu | R17: P20 = 6 tháng kể từ ngày kiểm tra JD mới nhất | Script tách ngày từ chữ tự do ở cột "Nguồn dữ liệu": ngày "kiểm tra lại / research / cập nhật" (232 nghề); JD không có thì lấy ngày "đăng" (775 nghề, hiện nhãn "Đăng tin", là giả định của dev); 1.169 nghề không có ngày. Ngày của nghề là ngày mới nhất trong các JD. Công bố nghề không còn ghi ngày hôm đó. Cảnh báo "Quá hạn rà soát" dùng tham số 6 tháng |
 | 9 | Mức tăng trưởng nghề (bộ lọc FR04.01.04) | Có trong FR04.01.04; không file nào có dữ liệu | Có cột `growth_level`, cả 2.176 nghề trống; bộ lọc hiện "Chưa có dữ liệu" |
 | 10 | Ngưỡng nghề gần đạt P25 = 40% và số bài tối thiểu nhóm "Người khác" P27 | R20 và mục 5.3 STT 12: chưa được PO xác nhận | Dùng 40% và 2 bài, mức Demo |
 | 11 | Mã nhóm lĩnh vực nghề | R16 đề xuất đổi G1–G6 của file JD thành LV1–LV6 | Đã đổi thành LV1–LV6. Tên lĩnh vực cấp 1 lấy theo sheet CHIA NHÓM vì cột tương ứng trong file JD viết không thống nhất |
@@ -34,7 +34,7 @@ Cập nhật: 06/11/2026. Phạm vi: phần nghề, ngành – trường, so sá
 | 2 | Dữ liệu tuyển sinh: điểm chuẩn, chỉ tiêu, tổ hợp, phương thức theo năm | FR05.01.08, FR06.01.02. File research không có cột nào | Bảng `admission_data` có sẵn, 0 dòng. Trang chương trình và trang so sánh phương án hiện "Chưa đủ dữ liệu"; không tự sinh điểm chuẩn |
 | 3 | Mã ngành, mô tả ngành, nội dung đào tạo chính, yêu cầu nền tảng | FR05.01.02 | File chỉ có tên ngành. Mã ngành và hệ chương trình trong ngoặc được tách ra, lưu theo chương trình. Trang ngành hiện tên ngành, nghề liên quan và các trường đào tạo |
 | 4 | Giới thiệu trường | FR05.01.07 | Không có trong file. Trang trường hiện loại cơ sở, công lập/tư thục, địa chỉ, website và danh sách chương trình |
-| 5 | Học phí chưa công bố hoặc tính theo tín chỉ, theo năm | FR05.01.06 lọc theo khoảng học phí | 3.861/9.511 chương trình (40,6%) tách được học phí mỗi kỳ; số còn lại hiện chữ gốc và không lọc được theo khoảng học phí |
+| 5 | Học phí chưa công bố hoặc tính theo tín chỉ, theo năm | FR05.01.06 lọc theo khoảng học phí | 4.924/9.511 chương trình (51,8%) tách được học phí mỗi kỳ: 4.199 ghi rõ mỗi kỳ, 703 chia từ học phí năm, 22 chia từ tổng khóa (hai nhóm sau hiện "ước tính"). Học phí theo tín chỉ hoặc theo tháng không quy đổi vì thiếu số tín chỉ, số tháng; số còn lại hiện chữ gốc và không lọc được theo khoảng học phí |
 | 6 | Chương trình "Chưa xác minh" và "Cần bổ sung" có được hiển thị không | File ghi rõ dữ liệu chưa đối chiếu website | Hiển thị tất cả, giữ trạng thái research để lọc. 1.240 chương trình "Chưa xác minh", 440 "Cần bổ sung" |
 | 7 | Một trường chỉ có một lĩnh vực mạnh | File: mỗi trường xếp một Group ID | Mỗi trường một lĩnh vực mạnh; ngành không gắn lĩnh vực mà nối với nghề qua bảng liên kết |
 
@@ -46,7 +46,7 @@ Cập nhật: 06/11/2026. Phạm vi: phần nghề, ngành – trường, so sá
 | 2 | Ngưỡng Đạt / Gần đạt / Chưa đạt của hồ sơ năng lực | Mục 5.3 STT 5: đang để [x], [y] | Đạt khi Gap = 0; Gần đạt khi thiếu dưới 1 mức; Chưa đạt khi thiếu từ 1 mức |
 | 3 | Cách tính "Mức đạt tổng thể" so với vị trí | UI_08: công thức và trọng số theo mức ảnh hưởng (cần xác nhận) | Đếm số tiêu chí đạt trên tổng số tiêu chí của nghề, không trọng số |
 | 4 | So với JD chuẩn của vị trí hay ma trận nghề; có cho tải JD riêng | UI_08: MVP dùng JD chuẩn có sẵn; tải JD riêng (cần xác nhận) | So với ma trận của nghề đã lưu. Không có tải JD riêng |
-| 5 | Kỹ năng mềm lấy từ kết quả 360°: nhóm nào, quy đổi thế nào | UI_08: cột tiêu chí G2–G5; công thức quy đổi (cần xác nhận) | Lấy tiêu chí G1–G5 (gồm cả G1) từ kết quả Cuối cùng 360°, mức = điểm 1–5 làm tròn. Lấy lại thì ghi đè các mục đã xác thực |
+| 5 | Kỹ năng mềm lấy từ kết quả 360°: nhóm nào, quy đổi thế nào | UI_08: cột tiêu chí G2–G5; công thức quy đổi (cần xác nhận) | Lấy tiêu chí G2–G5 từ kết quả Cuối cùng 360°, mức = điểm 1–5 làm tròn. Lấy lại thì ghi đè các mục đã xác thực |
 | 6 | Sinh viên tự sửa mức có giữ nhãn Đã xác thực 360° không | UI_08 (cần xác nhận) | Hỏi xác nhận rồi gỡ nhãn |
 | 7 | Gợi ý thêm vào lộ trình được gán trụ cột nào | UI_08 (cần xác nhận quy tắc gán) | Luôn gán trụ Kiến thức, thêm vào lộ trình đang dùng |
 | 8 | Thư viện hoạt động lộ trình đã duyệt | F07.01: lộ trình sinh từ thư viện đã duyệt | 3 hoạt động. Lộ trình sinh ra rất ít mốc cho đến khi có thư viện |
@@ -126,13 +126,13 @@ Các số này đang chạy trên hệ thống thật. Mức "Demo" là số đ�
 | Bảng gán câu vào gói trống | Đã ghi 148 dòng theo quy tắc của hệ thống (31 + 46 + 71). Nhãn câu tình huống, chuyên sâu vẫn chưa có |
 | Ngân hàng không có câu mở | File "Bảng đánh giá định tính 360°" có câu mở theo 4 khía cạnh và câu Carkhuff. Người được mời trả lời các câu này; quản trị chấm EA, SOLO, Carkhuff bằng tay. Hiện chưa có bài nào. BA cần chốt người chấm (quản trị, chuyên gia hay AI) |
 
-## 9. Nhóm dev tự làm tiếp, không cần BA
+## 9. Nhóm dev đã làm, không cần BA
 
-- Trang quản trị nghề: hiện chỉ lọc và đổi trạng thái; chưa sửa được thông tin nghề, mức yêu cầu, Holland và nguồn.
-- Tách ngày kiểm tra từ cột "Nguồn dữ liệu" khi file có ngày rõ ràng.
-- Cho script nạp đọc tham số `career_matrix_include_l0` thay vì cố định.
-- Menu thả xuống danh mục nghề trên thanh điều hướng; chọn vai trò khi đăng ký.
-- Xem lịch sử quyết định (dữ liệu đã được lưu, chưa có màn hình) và chuyển phương án đã chọn thành mục tiêu lộ trình.
+- Trang quản trị nghề: danh sách có bộ lọc, trang chi tiết sửa thông tin, mức yêu cầu G1–G5 và G7, Holland; mỗi lần lưu mức yêu cầu tạo phiên bản ma trận mới (R18).
+- Ngày kiểm tra dữ liệu nghề (xem mục 1 dòng 8); script nạp đọc tham số `career_matrix_include_l0`; một hàm SQL chung quyết định nghề đủ chuẩn và nghề được tự công bố (có xét P16).
+- Danh mục nghề thả xuống trên thanh điều hướng; chọn vai trò khi đăng ký; lịch sử quyết định; chuyển phương án ưu tiên thành nghề mục tiêu.
+- Giả định của dev đã thêm: chưa chia sẻ báo cáo cho phụ huynh nào thì vẫn được chốt nghề mục tiêu (nếu đã chia sẻ thì cần phụ huynh đồng thuận).
+- Còn chưa làm: lưu trữ tệp lên kho riêng, gửi email, kiểm duyệt bằng dịch vụ ngoài (cần tài khoản và khóa dịch vụ).
 
 ## Cách kiểm tra
 

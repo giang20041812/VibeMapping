@@ -41,7 +41,7 @@ Mỗi lô lỗi mạng/timeout được thử lại 3 lần; JD ghi lô 100 dòn
 | `institutions` | Institution (+ 5 hệ thống đại học quốc gia/vùng) | RESEARCH NGÀNH NGHỀ TRƯỜNG | 339 + 5 |
 | `training_programs` | Training_Program | RESEARCH NGÀNH NGHỀ TRƯỜNG | 9.511 |
 
-Tất cả bật RLS. Người dùng đã đăng nhập đọc được danh mục (lĩnh vực, ngành, trường, chương trình); **nghề và mọi dữ liệu đi kèm chỉ đọc được khi nghề ở trạng thái `published`**; ghi chỉ `system_admin`. `anon` không đọc gì. Nghề nạp vào luôn ở `draft` theo SRS R16 (chỉ `published` mới vào Career Fit).
+Tất cả bật RLS. Người dùng đã đăng nhập đọc được danh mục (lĩnh vực, ngành, trường, chương trình); **nghề và mọi dữ liệu đi kèm chỉ đọc được khi nghề ở trạng thái `published`**; ghi chỉ `system_admin`. `anon` không đọc gì. Nghề mới nạp ở `draft`; hàm `auto_publish_careers()` công bố nghề đủ chuẩn và đủ số JD tối thiểu P16 (hiện P16 = 1) ngay sau bước `matrix`, không đụng nghề `hidden` hoặc `review`. Chỉ `published` mới vào Career Fit (SRS R16).
 
 Script idempotent: chạy lại không đổi `status` nghề đã công bố; ma trận và liên kết nghề–ngành sinh tự động được dựng lại, dòng đã nâng `verification_level` lên mức chuyên gia hoặc liên kết `manual`/`is_verified` được giữ.
 
@@ -58,7 +58,9 @@ Script idempotent: chạy lại không đổi `status` nghề đã công bố; m
   - `career_weight` = số JD có tiêu chí đó, chuẩn hóa để tổng bằng 1 trong từng thành phần (G1–G5 chung, G7 riêng).
   - Hồ sơ Holland = tỷ lệ JD đủ điều kiện có gắn D6.1–D6.6 (R, I, A, S, E, C); `holland_top3` lấy ba chữ có JD nhiều nhất.
   - `verification_level = per_jd_data` ("Theo dữ liệu JD").
-- `is_standard_complete` = có yêu cầu thuộc G1–G5 **và** G7 **và** có Holland.
+- `is_standard_complete` do hàm SQL `refresh_career_standard()` tính từ DB: có yêu cầu CW > 0 thuộc G1–G5 **và** G7 trong ma trận hiện hành **và** có hồ sơ Holland (dòng quản trị sửa tay cũng được tính).
+- Ngày kiểm tra dữ liệu (`data_checked_at`): ngày sau "kiểm tra lại / research / cập nhật" trong cột Nguồn dữ liệu (445 JD); JD không có thì lấy ngày sau "đăng" (775 nghề, `data_checked_kind = posted`, giả định của dev). Ngày của nghề = ngày mới nhất trong các JD, ưu tiên ngày kiểm tra.
+- Tham số `career_matrix_include_l0` được script nạp đọc từ DB (dữ liệu hiện chưa có JD cấp L0 nên chưa đổi kết quả).
 
 ### Trường – Ngành
 - Mọi sheet có cột "Tên trường" được đọc (trừ danh sách đại học chủ quản). Các sheet chia dòng rời nhau gần như hoàn toàn (9.731 dòng hợp lệ, 220 dòng trùng khóa được gộp, giữ dòng có trạng thái research cao hơn).
@@ -79,7 +81,7 @@ File research không có bảng nghề ↔ ngành. Liên kết sinh tự động
 3. **Cách gộp Req/CW** (trung bình, đếm JD) và việc chỉ dùng JD L0–L2 do dev đặt mặc định; JD L0–L2 thường có Required Level thấp nên Req cũng thấp (nghề kiểm thử có Req từ 1,0 đến 2,0).
 4. **Công thức Holland/RIASEC Match vẫn BLOCKED** (SRS R05); chỉ mới có dữ liệu đầu vào (hồ sơ sáu chiều + Top 3).
 5. **106 JD có Required Level trống/"N / A"** nên không vào ma trận.
-6. **Học phí và số năm**: 40,6% chương trình tách được học phí mỗi kỳ (phần còn lại ghi "chưa công bố", theo tín chỉ hoặc theo năm); 76% có số năm đào tạo.
+6. **Học phí và số năm**: 51,8% chương trình tách được học phí mỗi kỳ (4.199 ghi rõ mỗi kỳ, 703 chia từ học phí năm, 22 chia từ tổng khóa; hai nhóm sau hiện "ước tính"; cột `tuition_basis`). Phần còn lại ghi "chưa công bố", theo tín chỉ hoặc theo tháng; 76% có số năm đào tạo.
 7. **Chất lượng research**: 1.240 chương trình "Chưa xác minh", 440 "Cần bổ sung" (file ghi rõ chưa đối chiếu website). Trạng thái được giữ ở `research_status` để giao diện/lọc dùng.
 8. **Liên kết nghề–ngành tự dò chưa kiểm duyệt**: 1.437/2.176 nghề có ít nhất một ngành, nhưng chỉ 324/1.078 ngành có nghề; ngành chung chung ("Kinh tế", "Luật") gắn rất nhiều nghề. Cần BA rà hoặc cung cấp bảng ngành ↔ nghề chính thức.
 9. Một số dòng nguồn lệch cột (tên trường nằm trong ô tỉnh/thành, ví dụ dòng cuối sheet thành viên) bị bỏ và liệt kê ở cảnh báo của dry-run; 2 trường chưa rõ công lập/tư thục. Tên lĩnh vực cấp 1 lấy cứng theo sheet CHIA NHÓM vì cột tương ứng trong file JD viết không thống nhất.
@@ -88,7 +90,6 @@ File research không có bảng nghề ↔ ngành. Liên kết sinh tự động
 - `Admission_Data` (điểm chuẩn, chỉ tiêu, tổ hợp xét tuyển): file research không có.
 - `User_Saved_Career` và các thực thể ENT-05/06: thuộc tính năng.
 - Hàm tính Career Fit / Gap / xếp hạng (R06–R08, R20), trang quản trị nghề (công bố, sửa ma trận), giao diện tra cứu.
-- `data_checked_at` (P20) chưa điền vì ngày kiểm tra JD nằm trong chữ tự do ở cột "Nguồn dữ liệu".
 - `supabase/all-migrations.sql` đã cũ (dừng ở migration 9); sau khi áp migration lên Supabase thật nên chạy `npm run supabase:types` để sinh lại type.
 
 ## 5. Cách đã kiểm tra
@@ -102,7 +103,7 @@ File research không có bảng nghề ↔ ngành. Liên kết sinh tự động
 - `frontend/src/modules/school_explorer/`: `school_explorer.service.ts`, `.types.ts`, `.constants.ts`, trang `/kham-pha-truong` với bộ lọc (tìm tên không phân biệt dấu, ngành, tỉnh/thành, lĩnh vực, loại hình, loại cơ sở), bảng và phân trang 24 dòng.
 - Type các bảng mới được ghép vào `frontend/src/types/supabase.ts`. Không sinh lại cả file vì schema cục bộ lệch với Supabase thật ở phần phase 1.
 - Đã xem trang ở 1440 px và 390 px bằng Edge với server giả đọc từ Postgres cục bộ: không tràn ngang trang. **Chưa chạy với Supabase thật** (bảng mới chưa được áp lên đó).
-- Chưa làm: trang chi tiết trường (danh sách ngành/chương trình, học phí), bấm dòng để mở.
+- Trang chi tiết trường, ngành, chương trình đã có sau đó (`/kham-pha-truong/truong/:id`, `/nganh/:id`, `/chuong-trinh/:id`).
 
 ## 7. Gợi ý nghề tính trên máy chủ (2026-11-05)
 
@@ -120,3 +121,11 @@ File research không có bảng nghề ↔ ngành. Liên kết sinh tự động
 - Thông báo `career_ranking_changed` chỉ gửi khi Top đổi, nêu nghề mới vào, nghề rời danh sách, nghề biến động nhiều nhất; bấm mở `/nghe`. Email chưa gửi (chưa có dịch vụ thư).
 - Nghề mục tiêu ngoài Top vẫn trả về trong `targets`. Lệch góc nhìn chỉ xét tiêu chí có CW ≥ trung bình trong phần (giả định của dev, chờ BA chốt "tiêu chí quan trọng").
 - Điểm bị trừ tầng 2 = (1 − Fit) × CW ÷ ΣCW các tiêu chí đã có điểm trong phần × tỷ trọng sau chia lại; điểm góp + điểm bị trừ của một phần = tỷ trọng phần đó.
+
+## 8. Quản trị nghề và các việc làm tiếp (2026-11-06)
+
+- `/quan-tri/nghe`: danh sách lọc (từ khóa không dấu, trạng thái, lĩnh vực, thành phần, rà soát), phân trang. `/quan-tri/nghe/:id` và `/quan-tri/nghe/moi`: thông tin nghề, mức yêu cầu G1–G5 và G7, Holland, JD nguồn, lịch sử.
+- RPC `admin_save_career`, `admin_save_career_requirements`, `admin_save_career_holland` (chỉ `system_admin`). Lưu mức yêu cầu tạo phiên bản ma trận mới `NGHE-1.(y+1)` (R18); CW được chuẩn hóa về tổng 1 trong G1–G5 và trong G7; dòng ở mức "Chuyên gia duyệt". Script nạp lại không dựng lại ma trận của nghề đã sửa tay.
+- Trang nghề của người dùng ưu tiên nội dung quản trị nhập (tóm tắt, kỹ năng, lương, lộ trình) thay cho phần tổng hợp từ JD cùng loại.
+- Thanh điều hướng công khai có danh mục nghề thả xuống; đăng ký chọn được vai trò; trang so sánh phương án có lịch sử quyết định và nút "Đặt làm mục tiêu" (`set_decision_goal`: cần phương án ưu tiên có nghề, cần phụ huynh đồng thuận nếu đã chia sẻ báo cáo, tối đa 2 nghề mục tiêu); kỹ năng mềm lấy từ 360° chỉ gồm G2–G5.
+- Kiểm thử: `supabase/tests/phase2_career_publish.sql`, `phase2_career_admin.sql`, `phase3_decision_goal.sql`.

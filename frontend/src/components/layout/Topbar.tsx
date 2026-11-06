@@ -3,6 +3,7 @@ import { Link, NavLink } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { LogoMark } from '../common';
 import { useAuth } from '../../modules/auth/AuthContext';
+import { CareerCatalogMenu } from './CareerCatalogMenu';
 import { topbarItemsFor } from './navigation';
 import { TopActions } from './TopActions';
 import './Topbar.css';
@@ -47,7 +48,9 @@ export const Topbar: React.FC<TopbarProps> = ({ open, onToggle, onClose }) => {
           </Link>
 
           <nav id="topbar-links" className="topbar-links" aria-label="Điều hướng chính">
-            {topbarItemsFor(isGuest).map((item) => (
+            {topbarItemsFor(isGuest).map((item) => item.to === '/danh-muc-nghe' ? (
+              <CareerCatalogMenu key={item.to} label={item.label} onNavigate={onClose} />
+            ) : (
               <NavLink
                 key={item.to}
                 to={item.to}

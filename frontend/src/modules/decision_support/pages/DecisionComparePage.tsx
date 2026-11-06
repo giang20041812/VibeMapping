@@ -32,6 +32,8 @@ interface SavedPlan {
   report: { id: string; include_finance: boolean; owner_confirmed_at: string | null; shares: { user_id: string; consensus_at: string | null; comment: string | null }[] } | null;
 }
 
+interface HistoryEntry { plan_id: string; action: string; note: string | null; created_at: string }
+
 const ELIGIBILITY_LABEL = { MET: 'Đáp ứng', NOT_MET: 'Chưa đáp ứng', UNKNOWN: 'Chưa đủ dữ liệu' } as const;
 const ELIGIBILITY_VARIANT = { MET: 'success', NOT_MET: 'danger', UNKNOWN: 'default' } as const;
 
@@ -85,6 +87,8 @@ export const DecisionComparePage: React.FC = () => {
   const [title, setTitle] = useState('');
   const [plans, setPlans] = useState<SavedPlan[]>([]);
   const [parents, setParents] = useState<{ user_id: string; name: string }[]>([]);
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [historyPlanId, setHistoryPlanId] = useState<string | null>(null);
   const [preferring, setPreferring] = useState<{ planId: string; optionId: string; reason: string } | null>(null);
   const [message, setMessage] = useState<{ tone: 'success' | 'danger' | 'info'; text: string } | null>(null);
   const [hasCart, setHasCart] = useState(() => readProgramCompare().length > 0);
@@ -96,6 +100,8 @@ export const DecisionComparePage: React.FC = () => {
     ]);
     setPlans(list ?? []);
     setParents(connections?.parents ?? []);
+    const { data: entries } = await db.from('decision_history').select('plan_id, action, note, created_at').order('created_at', { ascending: false });
+    setHistory((entries ?? []) as HistoryEntry[]);
   }, []);
 
   useEffect(() => {
@@ -229,7 +235,7 @@ export const DecisionComparePage: React.FC = () => {
       await callRpc('save_decision_plan', {
         p_title: title,
         p_career_ids: options.map((o) => o.careerId).filter(Boolean),
-        p_options: inputs,
+        p_options: inputs.map((input, index) => ({ ...input, careerId: options[index]?.careerId || null })),
         p_weights: weights,
         p_budget: num(budget),
         p_learner_score: num(learnerScore),
@@ -241,6 +247,38 @@ export const DecisionComparePage: React.FC = () => {
     } catch {
       setMessage({ tone: 'danger', text: 'Chưa lưu được. Cần 2–4 phương án và tên bộ phương án.' });
     }
+  };
+
+  const setGoal = async (planId: string) => {
+    setMessage(null);
+    try {
+      const careerId = await callRpc<string>('set_decision_goal', { p_plan_id: planId });
+      const plan = plans.find((p) => p.id === planId);
+      const program = plan?.preferred_option_id && /^[0-9a-f-]{36}$/i.test(plan.preferred_option_id) ? `&chuong-trinh=${plan.preferred_option_id}` : '';
+      navigate(`/lo-trinh?nghe=${careerId}${program}`);
+    } catch (caught) {
+      const text = String((caught as { message?: string })?.message ?? '');
+      const known: Record<string, string> = {
+        no_preferred_option: 'Chọn phương án ưu tiên trước.',
+        option_without_career: 'Phương án ưu tiên chưa gắn nghề.',
+        consensus_required: 'Cần phụ huynh đồng thuận trước khi chốt mục tiêu.',
+        target_career_limit: 'Chỉ đặt được tối đa 2 nghề mục tiêu.',
+      };
+      const key = Object.keys(known).find((code) => text.includes(code));
+      setMessage({ tone: 'danger', text: key ? known[key] : 'Chưa đặt được mục tiêu.' });
+    }
+  };
+
+  const historyLabel = (entry: HistoryEntry, plan: SavedPlan | undefined): string => {
+    if (entry.action === 'created') return 'Tạo bộ phương án';
+    if (entry.action.startsWith('preferred:')) {
+      const title = plan?.ranking.find((r) => r.id === entry.action.slice('preferred:'.length))?.title;
+      return `Chọn phương án ưu tiên${title ? `: ${title}` : ''}${entry.note ? ` (${entry.note})` : ''}`;
+    }
+    if (entry.action === 'report_created') return 'Tạo báo cáo';
+    if (entry.action === 'consensus_confirmed') return `Phụ huynh đồng thuận${entry.note ? `: ${entry.note}` : ''}`;
+    if (entry.action === 'goal_set') return `Đặt nghề mục tiêu${entry.note ? `: ${entry.note}` : ''}`;
+    return entry.action;
   };
 
   const act = async (fn: () => Promise<unknown>, ok: string) => {
@@ -491,6 +529,14 @@ export const DecisionComparePage: React.FC = () => {
                   Lập lộ trình
                 </Button>
               )}
+              {plan.preferred_option_id && (
+                <Button type="button" size="sm" variant="outline" onClick={() => void setGoal(plan.id)}>
+                  Đặt làm mục tiêu
+                </Button>
+              )}
+              <Button type="button" size="sm" variant="ghost" onClick={() => setHistoryPlanId(plan.id)}>
+                Lịch sử
+              </Button>
               <Button type="button" size="sm" variant="ghost" onClick={() => setPreferring({ planId: plan.id, optionId: plan.preferred_option_id ?? plan.ranking[0]?.id ?? '', reason: plan.preferred_reason ?? '' })}>
                 Chọn phương án ưu tiên
               </Button>
@@ -533,6 +579,26 @@ export const DecisionComparePage: React.FC = () => {
             />
             <Textarea label="Lý do" value={preferring.reason} onChange={(e) => setPreferring({ ...preferring, reason: e.target.value })} />
           </div>
+        )}
+      </Modal>
+
+      <Modal
+        open={historyPlanId !== null}
+        title="Lịch sử quyết định"
+        onClose={() => setHistoryPlanId(null)}
+        actions={<Button type="button" onClick={() => setHistoryPlanId(null)}>Đóng</Button>}
+      >
+        {history.filter((entry) => entry.plan_id === historyPlanId).length === 0 ? (
+          <p className="career-muted">Chưa có thay đổi</p>
+        ) : (
+          <ul className="module-list">
+            {history.filter((entry) => entry.plan_id === historyPlanId).map((entry) => (
+              <li key={`${entry.created_at}-${entry.action}`}>
+                <span>{new Date(entry.created_at).toLocaleString('vi-VN')}</span>
+                <span>{historyLabel(entry, plans.find((p) => p.id === historyPlanId))}</span>
+              </li>
+            ))}
+          </ul>
         )}
       </Modal>
     </div>

@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Mail, Phone, User } from 'lucide-react';
-import { Alert, Button, Input, PasswordInput } from '../../../components/common';
-import { parseVietnameseDate } from '../../profile/profile.logic';
+import { Alert, Button, Input, PasswordInput, Select } from '../../../components/common';
+import { isLearnerRole, parseVietnameseDate } from '../../profile/profile.logic';
 import { describeAuthError, registerWithEmail } from '../auth.service';
-import type { LearnerInfo, LearnerInfoErrors } from '../auth.types';
+import type { LearnerInfo, LearnerInfoErrors, RegisterableRole } from '../auth.types';
 import { validateEmail, validateFullName, validateLearnerInfo, validatePassword, validatePhone } from '../auth.validation';
 import { AuthHomeLink } from '../components/AuthHomeLink';
 import { LearnerInfoFields } from '../components/LearnerInfoFields';
@@ -18,10 +18,18 @@ interface FieldErrors {
   password?: string;
 }
 
+const ROLE_OPTIONS: { value: RegisterableRole; label: string }[] = [
+  { value: 'student', label: 'Học sinh' },
+  { value: 'university_student', label: 'Sinh viên' },
+  { value: 'parent', label: 'Phụ huynh' },
+  { value: 'teacher', label: 'Giáo viên' },
+  { value: 'mentor', label: 'Người hướng dẫn' },
+];
 const EMPTY_LEARNER_INFO: LearnerInfo = { date_of_birth: '', display_name: '', school_name: '', grade_or_major: '' };
 
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
+  const [role, setRole] = useState<RegisterableRole>('student');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -44,13 +52,13 @@ export const RegisterPage: React.FC = () => {
       phone: validatePhone(phone),
       password: validatePassword(password),
     };
-    const nextLearnerErrors: LearnerInfoErrors = validateLearnerInfo(learnerInfo);
+    const nextLearnerErrors: LearnerInfoErrors = isLearnerRole(role) ? validateLearnerInfo(learnerInfo) : {};
     setErrors(nextErrors);
     setLearnerErrors(nextLearnerErrors);
     setFormError(null);
     if (Object.values(nextErrors).some(Boolean) || Object.values(nextLearnerErrors).some(Boolean)) return;
 
-    const dateOfBirth = parseVietnameseDate(learnerInfo.date_of_birth);
+    const dateOfBirth = isLearnerRole(role) ? parseVietnameseDate(learnerInfo.date_of_birth) : null;
     setIsSubmitting(true);
     sessionStorage.setItem('pending-otp-phone', phone.trim());
     try {
@@ -58,7 +66,7 @@ export const RegisterPage: React.FC = () => {
         fullName: fullName.trim(),
         email: email.trim(),
         password,
-        role: 'student',
+        role,
         learnerInfo:
           dateOfBirth
             ? {
@@ -100,7 +108,10 @@ export const RegisterPage: React.FC = () => {
             error={errors.fullName}
             required
           />
-          <LearnerInfoFields role="student" values={learnerInfo} errors={learnerErrors} onChange={handleLearnerInfoChange} />
+          <Select label="Vai trò" name="role" options={ROLE_OPTIONS} value={role} onChange={(value) => setRole(value as RegisterableRole)} required />
+          {isLearnerRole(role) && (
+            <LearnerInfoFields role={role} values={learnerInfo} errors={learnerErrors} onChange={handleLearnerInfoChange} />
+          )}
         </div>
         <div className="auth-divider">Tài khoản</div>
         <div className="auth-grid">

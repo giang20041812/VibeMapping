@@ -44,6 +44,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/cong-dong', label: 'Cộng đồng', icon: MessagesSquare, roles: ['student', 'university_student', 'parent', 'teacher', 'mentor', 'school_admin'] },
   { to: '/quyen-rieng-tu', label: 'Quyền riêng tư', icon: Shield, roles: ['student', 'university_student', 'parent', 'teacher', 'mentor', 'school_admin'] },
   { to: '/quan-tri/cham-dinh-tinh', label: 'Chấm định tính', icon: ClipboardList, roles: ADMIN_ROLES },
+  { to: '/quan-tri/nghe', label: 'Quản lý nghề', icon: Compass, roles: ADMIN_ROLES },
   { to: '/quan-tri/thu-vien', label: 'Thư viện gợi ý', icon: Library, roles: ADMIN_ROLES },
   { to: '/quan-tri/cong-dong', label: 'Kiểm duyệt cộng đồng', icon: MessagesSquare, roles: ADMIN_ROLES },
   { to: '/quan-tri/truong', label: 'Trường học', icon: School, roles: ADMIN_ROLES },

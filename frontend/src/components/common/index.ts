@@ -28,3 +28,5 @@ export { Tabs } from './Tabs/Tabs';
 export type { TabItem, TabsProps } from './Tabs/Tabs';
 export { StatTile } from './StatTile/StatTile';
 export type { StatTileProps } from './StatTile/StatTile';
+export { useConfirm, useAskText } from './ConfirmDialog/ConfirmDialog';
+export type { ConfirmOptions, AskTextOptions } from './ConfirmDialog/ConfirmDialog';

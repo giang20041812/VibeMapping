@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Alert, Badge, Button, Card, Input } from '../../../components/common';
+import { Alert, Badge, Button, Card, Input, useConfirm } from '../../../components/common';
 import { callRpc } from '../../../lib/rpc';
 import { useAuth } from '../../auth/AuthContext';
 import { ageOf, GUARDIAN_AGE } from '../../profile/profile.logic';
@@ -28,6 +28,7 @@ function errorText(caught: unknown, fallback: string): string {
 
 export const PrivacyPage: React.FC = () => {
   const { profile, refreshProfile } = useAuth();
+  const { confirm, dialog: confirmDialog } = useConfirm();
   const [connections, setConnections] = useState<Connections | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [parentCode, setParentCode] = useState<string | null>(null);
@@ -197,8 +198,8 @@ export const PrivacyPage: React.FC = () => {
               Hủy yêu cầu xóa tài khoản
             </Button>
           ) : (
-            <Button type="button" variant="danger" onClick={() => {
-              if (!window.confirm('Tài khoản sẽ bị xóa sau 14 ngày. Bạn có thể hủy trong thời gian này. Tiếp tục?')) return;
+            <Button type="button" variant="danger" onClick={async () => {
+              if (!(await confirm({ title: 'Yêu cầu xóa tài khoản?', message: 'Tài khoản sẽ bị xóa sau 14 ngày. Bạn có thể hủy trong thời gian này.', confirmLabel: 'Yêu cầu xóa', danger: true }))) return;
               void run(() => callRpc('request_account_deletion', { p_cancel: false }), 'Đã ghi nhận yêu cầu xóa. Tài khoản sẽ bị xóa sau 14 ngày.', 'Không gửi được yêu cầu.');
             }}>
               Yêu cầu xóa tài khoản
@@ -209,6 +210,7 @@ export const PrivacyPage: React.FC = () => {
           <Alert variant="warning">Đã yêu cầu xóa lúc {new Date(connections.deletion_requested_at).toLocaleString('vi-VN')}.</Alert>
         )}
       </Card>
+      {confirmDialog}
     </div>
   );
 };

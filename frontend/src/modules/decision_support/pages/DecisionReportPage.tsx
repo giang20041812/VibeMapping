@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { FileText, Printer } from 'lucide-react';
-import { Alert, Badge, Breadcrumb, Button, Card, PageHero, Spinner, Textarea } from '../../../components/common';
+import { FileText, Printer, SearchX } from 'lucide-react';
+import { Alert, Badge, Breadcrumb, Button, Card, PageHero, Spinner, StickerCard, StickerFact, StickerGrid, Textarea, stickerToneAt } from '../../../components/common';
 import { callRpc } from '../../../lib/rpc';
 import { printDecisionReport } from '../../../lib/printProfile';
 import '../../career_explorer/pages/CareerPages.css';
@@ -127,19 +127,30 @@ export const SharedReportsPage: React.FC = () => {
   }, []);
   return (
     <div className="module-page">
-      <h1>Báo cáo quyết định được chia sẻ</h1>
+      <PageHero title="Báo cáo quyết định được chia sẻ" icon={<FileText />} tone="violet" count={rows?.length ?? null} countLabel="báo cáo" />
       {error && <Alert variant="danger">{error}</Alert>}
       {!error && rows === null && <Spinner />}
-      {rows && rows.length === 0 && <p>Chưa có báo cáo nào được chia sẻ với bạn.</p>}
-      <ul className="module-list">
-        {(rows ?? []).map((r) => (
-          <li key={r.id}>
-            <Link to={`/bao-cao-quyet-dinh/${r.id}`}>{r.title}</Link>
-            <span>{r.owner_name}</span>
-            <Badge variant={r.consensus_at ? 'success' : 'default'}>{r.consensus_at ? 'Đã đồng thuận' : 'Chờ xác nhận'}</Badge>
-          </li>
-        ))}
-      </ul>
+      {rows && rows.length === 0 && (
+        <div className="sticker-empty">
+          <SearchX size={40} aria-hidden="true" />
+          Chưa có báo cáo nào được chia sẻ với bạn
+        </div>
+      )}
+      {rows && rows.length > 0 && (
+        <StickerGrid label="Báo cáo được chia sẻ">
+          {rows.map((r, index) => (
+            <StickerCard
+              key={r.id}
+              tone={stickerToneAt(index)}
+              icon={<FileText size={22} />}
+              title={<Link to={`/bao-cao-quyet-dinh/${r.id}`}>{r.title}</Link>}
+              footer={<Badge variant={r.consensus_at ? 'success' : 'default'}>{r.consensus_at ? 'Đã đồng thuận' : 'Chờ xác nhận'}</Badge>}
+            >
+              <StickerFact>{r.owner_name}</StickerFact>
+            </StickerCard>
+          ))}
+        </StickerGrid>
+      )}
     </div>
   );
 };

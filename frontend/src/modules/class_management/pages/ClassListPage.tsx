@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { LogOut, Plus, UserPlus } from 'lucide-react';
-import { Alert, Button, Card, DataTable, Input } from '../../../components/common';
+import { Alert, Button, Card, DataTable, Input, useConfirm } from '../../../components/common';
 import type { DataTableColumn } from '../../../components/common';
 import { FilterBar } from '../../../components/filters/FilterBar/FilterBar';
 import { FilterSearch } from '../../../components/filters/FilterSearch/FilterSearch';
@@ -28,6 +28,7 @@ const EMPTY_FILTER = { keyword: '' };
 const TEACHER_ONLY_OPTION = [{ value: 'teacher', label: 'Giáo viên' }];
 
 const StudentClasses: React.FC<{ userId: string }> = ({ userId }) => {
+  const { confirm, dialog: confirmDialog } = useConfirm();
   const [classes, setClasses] = useState<JoinedClass[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -75,7 +76,7 @@ const StudentClasses: React.FC<{ userId: string }> = ({ userId }) => {
 
   const handleLeave = useCallback(
     async (row: JoinedClass) => {
-      if (!window.confirm(`Rời lớp ${row.class_name}?`)) return;
+      if (!(await confirm({ title: `Rời lớp ${row.class_name}?`, confirmLabel: 'Rời lớp', danger: true }))) return;
       try {
         const memberId = await findMyMemberId(row.id, userId);
         if (memberId) await leaveClass(memberId);
@@ -84,7 +85,7 @@ const StudentClasses: React.FC<{ userId: string }> = ({ userId }) => {
         setError('Không rời được lớp. Thử lại sau.');
       }
     },
-    [userId],
+    [userId, confirm],
   );
 
   const columns = useMemo<DataTableColumn<JoinedClass>[]>(
@@ -133,6 +134,7 @@ const StudentClasses: React.FC<{ userId: string }> = ({ userId }) => {
           <DataTable columns={columns} rows={classes} rowKey={(row) => row.id} isLoading={isLoading} emptyText="Chưa tham gia lớp nào" caption="Lớp đã tham gia" />
         </Card>
       </div>
+      {confirmDialog}
     </>
   );
 };

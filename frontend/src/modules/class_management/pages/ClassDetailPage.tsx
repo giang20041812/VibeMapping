@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Copy, Download, QrCode, Trash2, Upload, UserPlus } from 'lucide-react';
-import { Alert, Badge, Button, Card, DataTable, Modal } from '../../../components/common';
+import { Alert, Badge, Button, Card, DataTable, Modal, useConfirm } from '../../../components/common';
 import type { DataTableColumn } from '../../../components/common';
 import { FilterSearch } from '../../../components/filters/FilterSearch/FilterSearch';
 import { useDebounce } from '../../../hooks/useDebounce';
@@ -37,6 +37,7 @@ function joinLink(classCode: string): string {
 
 export const ClassDetailPage: React.FC = () => {
   const { classId = '' } = useParams();
+  const { confirm, dialog: confirmDialog } = useConfirm();
   const { profile } = useAuth();
   const [keyword, setKeyword] = useState('');
   const appliedKeyword = useDebounce(keyword, 300);
@@ -129,7 +130,7 @@ export const ClassDetailPage: React.FC = () => {
 
   const handleRemove = useCallback(
     async (member: ClassMember) => {
-      if (!window.confirm(`Xóa ${member.full_name || 'thành viên này'} khỏi lớp?`)) return;
+      if (!(await confirm({ title: `Xóa ${member.full_name || 'thành viên này'} khỏi lớp?`, confirmLabel: 'Xóa', danger: true }))) return;
       try {
         await removeClassMember(member.member_id);
         reload();
@@ -137,7 +138,7 @@ export const ClassDetailPage: React.FC = () => {
         setError('Không xóa được thành viên. Thử lại sau.');
       }
     },
-    [reload],
+    [reload, confirm],
   );
 
   const handleCopy = async () => {
@@ -325,6 +326,7 @@ export const ClassDetailPage: React.FC = () => {
           reload();
         }}
       />
+      {confirmDialog}
     </>
   );
 };

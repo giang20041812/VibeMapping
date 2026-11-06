@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Alert, Badge, Button, Card, Input, Select, Spinner } from '../../../components/common';
+import { Alert, Badge, Button, Card, Input, Select, Spinner, useConfirm } from '../../../components/common';
 import { callRpc, db } from '../../../lib/rpc';
 import { useAuth } from '../../auth/AuthContext';
 import { loadCareerDetail, listSavedCareers, type CareerDetail } from '../../career_explorer/career.service';
@@ -38,6 +38,7 @@ const gapStatus = (gap: number) => (gap <= 0 ? 'Đạt' : gap < 1 ? 'Gần đạ
 /** M08: hồ sơ năng lực của sinh viên, nhãn Đã xác thực 360°, khoảng cách với yêu cầu JD, gợi ý khóa học/dự án */
 export const PortfolioPage: React.FC = () => {
   const { session } = useAuth();
+  const { confirm, dialog: confirmDialog } = useConfirm();
   const [items, setItems] = useState<SkillItem[] | null>(null);
   const [targets, setTargets] = useState<{ career_id: string; career_name: string }[]>([]);
   const [careerId, setCareerId] = useState('');
@@ -95,7 +96,7 @@ export const PortfolioPage: React.FC = () => {
   };
 
   const updateLevel = async (item: SkillItem, level: number) => {
-    if (item.verified_360 && !window.confirm('Tự sửa mức sẽ gỡ nhãn Đã xác thực 360°. Tiếp tục?')) return;
+    if (item.verified_360 && !(await confirm({ title: 'Tự sửa mức sẽ gỡ nhãn Đã xác thực 360°. Tiếp tục?', confirmLabel: 'Tiếp tục' }))) return;
     await db.from('skill_profile_items').update({ self_level: level }).eq('id', item.id);
     await reload();
   };
@@ -198,6 +199,7 @@ export const PortfolioPage: React.FC = () => {
           </ul>
         )}
       </Card>
+      {confirmDialog}
     </div>
   );
 };

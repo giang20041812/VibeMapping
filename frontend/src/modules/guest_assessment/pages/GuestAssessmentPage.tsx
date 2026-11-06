@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { AlertTriangle, ArrowLeft, ArrowRight, Check, CheckCircle2 } from 'lucide-react';
-import { Alert, Badge, Button, Card, Input, Modal, ProgressBar, Textarea } from '../../../components/common';
+import { Alert, Badge, Button, Card, Input, Modal, ProgressBar, Textarea, useConfirm } from '../../../components/common';
 import { isAnswered } from '../../assessment_session/assessmentScores';
 import type { AnswerMap } from '../../assessment_session/assessmentSession.types';
 import { QuestionCard } from '../../assessment_session/components/QuestionCard';
@@ -83,6 +83,7 @@ const OPEN_PROMPTS = [
 
 export const GuestAssessmentPage: React.FC = () => {
   const { token } = useParams();
+  const { confirm, dialog: confirmDialog } = useConfirm();
 
   const [stage, setStage] = useState<Stage>({ kind: 'loading' });
   const [resume, setResume] = useState<string | null>(null);
@@ -451,7 +452,7 @@ export const GuestAssessmentPage: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={async () => {
-                if (!window.confirm('Xóa bài đánh giá bạn vừa nộp? Thao tác không hoàn tác được.')) return;
+                if (!(await confirm({ title: 'Xóa bài đánh giá bạn vừa nộp?', message: 'Thao tác không hoàn tác được.', confirmLabel: 'Xóa', danger: true }))) return;
                 try {
                   await eraseOwnSubmission(resume);
                   if (token) window.localStorage.removeItem(resumeKey(token));
@@ -466,6 +467,7 @@ export const GuestAssessmentPage: React.FC = () => {
           )}
           {submitFailure && <Alert variant="danger">{submitFailure}</Alert>}
         </div>
+        {confirmDialog}
       </Card>
     );
   }

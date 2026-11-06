@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Alert, Badge, Button, Card, Input, Spinner, Textarea } from '../../../components/common';
+import { Alert, Badge, Button, Card, Input, Spinner, Textarea, useAskText } from '../../../components/common';
 import { callRpc } from '../../../lib/rpc';
 import { useAuth } from '../../auth/AuthContext';
 import { EventForm } from '../../admin/pages/AdminModulesPages';
@@ -24,6 +24,7 @@ function errorText(caught: unknown, fallback: string): string {
 
 export const CommunityPage: React.FC = () => {
   const { profile } = useAuth();
+  const { ask, dialog: askDialog } = useAskText();
   const [rows, setRows] = useState<Community[] | null>(null);
   const [mentors, setMentors] = useState<Mentor[]>([]);
   const [events, setEvents] = useState<EventRow[]>([]);
@@ -133,8 +134,8 @@ export const CommunityPage: React.FC = () => {
                   <div className="top-career-head">
                     <strong>{post.author || 'Thành viên'}</strong>
                     <span className="explain-note">{new Date(post.created_at).toLocaleString('vi-VN')}</span>
-                    <button type="button" className="link-button" onClick={() => {
-                      const reason = window.prompt('Lý do báo cáo (ít nhất 8 ký tự)');
+                    <button type="button" className="link-button" onClick={async () => {
+                      const reason = await ask({ title: 'Báo cáo bài viết', label: 'Lý do báo cáo', confirmLabel: 'Gửi báo cáo', minLength: 8 });
                       if (reason) void run(() => callRpc('report_community_post', { p_post_id: post.id, p_reason: reason }), 'Đã gửi báo cáo.', 'Không gửi được báo cáo.');
                     }}>Báo cáo</button>
                   </div>
@@ -177,8 +178,9 @@ export const CommunityPage: React.FC = () => {
                 <strong>{m.name || 'Người hướng dẫn'}</strong>
                 <span>{m.headline}</span>
                 {isLearner && m.user_id !== profile?.id && (
-                  <Button type="button" size="sm" variant="outline" onClick={() => {
-                    const note = window.prompt('Lời nhắn gửi người hướng dẫn') ?? '';
+                  <Button type="button" size="sm" variant="outline" onClick={async () => {
+                    const note = await ask({ title: 'Kết nối người hướng dẫn', label: 'Lời nhắn' });
+                    if (note === null) return;
                     void run(() => callRpc('request_mentor_connection', { p_mentor_id: m.user_id, p_message: note }), 'Đã gửi yêu cầu kết nối.', 'Không gửi được yêu cầu.');
                   }}>Kết nối</Button>
                 )}
@@ -218,6 +220,7 @@ export const CommunityPage: React.FC = () => {
           </ul>
         </Card>
       )}
+      {askDialog}
     </div>
   );
 };

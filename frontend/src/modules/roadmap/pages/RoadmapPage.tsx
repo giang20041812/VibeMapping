@@ -203,7 +203,10 @@ export const RoadmapPage: React.FC = () => {
       targetDate,
       hoursPerWeek,
       templates,
-      scoresByCriterionId: learner ? Object.fromEntries(learner.scoreByCriterionId) : undefined,
+      // BR-026: kỹ năng mềm điểm thấp hoặc lệch được xếp lên đầu, nên hoạt động rèn chúng rơi vào giai đoạn 1
+      scoresByCriterionId: learner
+        ? { ...Object.fromEntries(learner.scoreByCriterionId), ...Object.fromEntries(softSkills.map((skill) => [skill.criteria_id, -1])) }
+        : undefined,
     });
     await callRpc<number>('add_roadmap_milestones_bulk', {
       p_roadmap_id: roadmapId,

@@ -52,3 +52,29 @@
     flex-direction: column;
   }
 }
+
+/* Chi tiết trường */
+.school-detail .page-hero { margin-bottom: 0; }
+.school-meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); min-width: 0; }
+.school-address { display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; font-weight: 700; color: var(--color-text-secondary); overflow-wrap: anywhere; }
+.school-address svg { flex: none; }
+.school-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(200 * var(--px))), 1fr)); gap: var(--space-4); }
+.school-facts .stat-tile-value b { font-size: var(--font-size-3xl); }
+
+.program-list { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
+.program-row-sub { margin-top: var(--space-1); font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+.program-compare-bar {
+  position: sticky;
+  bottom: calc(var(--space-4) + var(--safe-bottom));
+  z-index: var(--z-sticky);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-surface);
+  border: var(--cartoon-stroke) solid var(--cartoon-ink);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--cartoon-pop);
+}

@@ -1,7 +1,27 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ExternalLink } from 'lucide-react';
-import { Alert, Badge, Button, Card, Spinner } from '../../../components/common';
+import { BookMarked, Check, ExternalLink, GraduationCap, Landmark, Layers, MapPin, Plus, Search, Wallet } from 'lucide-react';
+import {
+  Alert,
+  Badge,
+  Breadcrumb,
+  Button,
+  Card,
+  DataTable,
+  Input,
+  PageHero,
+  Select,
+  Skeleton,
+  SkeletonRegion,
+  StatTile,
+  type DataTableColumn,
+} from '../../../components/common';
+import { FilterBar } from '../../../components/filters/FilterBar/FilterBar';
+import { SearchableSelect } from '../../../components/filters/SearchableSelect/SearchableSelect';
+import { normalizeSearchText } from '../../../lib/searchText';
+import { readProgramCompare } from '../../../lib/selectionCart';
+import type { FilterOption } from '../../../types/filter';
+import { useAdminFilter } from '../../admin/useAdminFilter';
 import { addProgramToDecisionCompare } from '../compareProgram';
 import { INSTITUTION_TYPE_LABEL, OWNERSHIP_LABEL } from '../school_explorer.constants';
 import { formatTuition, loadCareerMap, loadInstitution, loadMajor, loadProgram, programVariant, type ProgramSummary } from '../education.service';
@@ -32,62 +52,172 @@ function useLoad<T>(load: () => Promise<T>, deps: unknown[]) {
   return { data, error };
 }
 
+const DetailSkeleton: React.FC = () => (
+  <SkeletonRegion>
+    <Skeleton shape="title" width={40} />
+    <Skeleton shape="block" />
+    <Skeleton shape="block" />
+  </SkeletonRegion>
+);
+
+interface ProgramFilter {
+  keyword: string;
+  programType: string;
+  faculty: string;
+  city: string;
+  tuitionMax: string;
+}
+
+const EMPTY_PROGRAM_FILTER: ProgramFilter = { keyword: '', programType: '', faculty: '', city: '', tuitionMax: '' };
+const COMPARE_MAX = 4;
+
+const uniqueOptions = (values: (string | null)[]): FilterOption[] =>
+  [...new Set(values.filter((v): v is string => Boolean(v)))]
+    .sort((a, b) => a.localeCompare(b, 'vi'))
+    .map((value) => ({ value, label: value }));
+
+function matchesProgram(p: ProgramSummary, f: ProgramFilter, show: 'institution' | 'major'): boolean {
+  const key = normalizeSearchText(f.keyword);
+  const haystack = normalizeSearchText(`${show === 'institution' ? p.institutionName : p.majorName} ${programVariant(p)}`);
+  if (key && !haystack.includes(key)) return false;
+  if (f.programType && p.programType !== f.programType) return false;
+  if (f.faculty && p.faculty !== f.faculty) return false;
+  if (f.city && p.city !== f.city) return false;
+  const max = Number(f.tuitionMax.replace(',', '.'));
+  if (f.tuitionMax.trim() && max > 0 && (p.tuitionMin === null || p.tuitionMin > max * 1_000_000)) return false;
+  return true;
+}
+
 const ProgramList: React.FC<{ programs: ProgramSummary[]; show: 'institution' | 'major'; careerId?: string }> = ({ programs, show, careerId }) => {
+  const { draft, applied, patch, apply, reset } = useAdminFilter<ProgramFilter>(EMPTY_PROGRAM_FILTER);
+  const [added, setAdded] = useState<string[]>(() => readProgramCompare().map((item) => item.programId));
   const [notice, setNotice] = useState<string | null>(null);
-  if (programs.length === 0) return <p>Đang cập nhật chương trình đào tạo.</p>;
+
+  const typeOptions = useMemo(() => uniqueOptions(programs.map((p) => p.programType)), [programs]);
+  const facultyOptions = useMemo(() => uniqueOptions(programs.map((p) => p.faculty)), [programs]);
+  const cityOptions = useMemo(() => uniqueOptions(programs.map((p) => p.city)), [programs]);
+  const rows = useMemo(() => programs.filter((p) => matchesProgram(p, applied, show)), [programs, applied, show]);
+
+  const add = (p: ProgramSummary) => {
+    const next = addProgramToDecisionCompare(p, { careerId });
+    setAdded(next.items.map((item) => item.programId));
+    setNotice(next.message ?? null);
+  };
+
+  const columns: DataTableColumn<ProgramSummary>[] = [
+    {
+      key: 'name',
+      header: show === 'institution' ? 'Trường' : 'Ngành',
+      render: (p) => (
+        <>
+          <Link to={`/kham-pha-truong/chuong-trinh/${p.id}`}>{show === 'institution' ? p.institutionName : p.majorName}</Link>
+          {programVariant(p) && <div className="program-row-sub">{programVariant(p)}</div>}
+        </>
+      ),
+    },
+    ...(show === 'institution' ? [{ key: 'city', header: 'Tỉnh/thành', nowrap: true, render: (p: ProgramSummary) => p.city ?? '–' }] : []),
+    { key: 'type', header: 'Hệ đào tạo', nowrap: true, render: (p) => p.programType ?? '–' },
+    { key: 'tuition', header: 'Học phí', nowrap: true, render: (p) => formatTuition(p) },
+    {
+      key: 'status',
+      header: 'Dữ liệu',
+      nowrap: true,
+      render: (p) => <Badge variant={p.researchStatus === 'verified' ? 'success' : 'default'}>{RESEARCH_LABEL[p.researchStatus] ?? p.researchStatus}</Badge>,
+    },
+    {
+      key: 'compare',
+      header: '',
+      nowrap: true,
+      render: (p) =>
+        added.includes(p.id) ? (
+          <Button type="button" size="sm" variant="secondary" disabled leftIcon={<Check size={14} />}>Đã thêm</Button>
+        ) : (
+          <Button type="button" size="sm" variant="outline" leftIcon={<Plus size={14} />} onClick={() => add(p)}>So sánh</Button>
+        ),
+    },
+  ];
+
   return (
-    <>
+    <div className="program-list">
+      <FilterBar variant="sticker" onReset={reset} onSubmit={apply} totalResults={rows.length}>
+        <div className="filter-item-search">
+          <Input
+            label="Tìm kiếm"
+            placeholder={show === 'institution' ? 'Tên trường' : 'Tên ngành'}
+            leftIcon={<Search size={16} />}
+            value={draft.keyword}
+            onChange={(event) => patch({ keyword: event.target.value })}
+          />
+        </div>
+        {typeOptions.length > 1 && <Select label="Hệ đào tạo" emptyLabel="Tất cả" options={typeOptions} value={draft.programType} onChange={(value) => patch({ programType: value })} />}
+        {facultyOptions.length > 1 && <SearchableSelect label="Khoa" placeholder="Tất cả" options={facultyOptions} value={draft.faculty} onChange={(value) => patch({ faculty: value })} />}
+        {show === 'institution' && cityOptions.length > 1 && <SearchableSelect label="Tỉnh/thành" placeholder="Tất cả" options={cityOptions} value={draft.city} onChange={(value) => patch({ city: value })} />}
+        <Input label="Học phí tối đa (triệu/kỳ)" inputMode="decimal" value={draft.tuitionMax} onChange={(event) => patch({ tuitionMax: event.target.value })} />
+      </FilterBar>
+
       {notice && <Alert variant="info">{notice}</Alert>}
-      <ul className="module-list">
-        {programs.map((p) => (
-          <li key={p.id}>
-            <Link to={`/kham-pha-truong/chuong-trinh/${p.id}`}>{show === 'institution' ? p.institutionName : p.majorName}</Link>
-            {programVariant(p) && <span>{programVariant(p)}</span>}
-            {p.programType && <span>{p.programType}</span>}
-            {show === 'institution' && p.city && <span>{p.city}</span>}
-            <span>{formatTuition(p)}</span>
-            <Badge variant={p.researchStatus === 'verified' ? 'success' : 'default'}>{RESEARCH_LABEL[p.researchStatus] ?? p.researchStatus}</Badge>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                const next = addProgramToDecisionCompare(p, { careerId });
-                setNotice(next.message ?? `Đã thêm. Mở so sánh phương án khi đủ 2 chương trình (${next.items.length}/4).`);
-              }}
-            >
-              Thêm vào so sánh
-            </Button>
-          </li>
-        ))}
-      </ul>
-      <p className="explain-note"><Link to="/so-sanh">Mở so sánh phương án</Link></p>
-    </>
+      <DataTable
+        columns={columns}
+        rows={rows}
+        rowKey={(p) => p.id}
+        emptyText={programs.length === 0 ? 'Đang cập nhật chương trình đào tạo' : 'Không có chương trình phù hợp'}
+      />
+
+      {added.length > 0 && (
+        <div className="program-compare-bar" role="region" aria-label="Phương án so sánh">
+          <span><b>{added.length}/{COMPARE_MAX}</b> phương án đã chọn</span>
+          <Link className="app-button btn-primary btn-md" to="/so-sanh"><span className="btn-text">Mở so sánh phương án</span></Link>
+        </div>
+      )}
+    </div>
   );
+};
+
+const tuitionRange = (programs: ProgramSummary[]): string => {
+  const lows = programs.map((p) => p.tuitionMin).filter((v): v is number => v !== null);
+  if (lows.length === 0) return 'Đang cập nhật';
+  const fmt = (v: number) => (v / 1_000_000).toLocaleString('vi-VN', { maximumFractionDigits: 1 });
+  const low = Math.min(...lows);
+  const high = Math.max(...programs.map((p) => p.tuitionMax ?? p.tuitionMin ?? 0));
+  return low === high ? `${fmt(low)} triệu` : `${fmt(low)}–${fmt(high)} triệu`;
 };
 
 export const InstitutionDetailPage: React.FC = () => {
   const { id = '' } = useParams();
   const { data, error } = useLoad(() => loadInstitution(id), [id]);
   if (error) return <Alert variant="danger">{error}</Alert>;
-  if (!data) return <Spinner />;
+  if (!data) return <DetailSkeleton />;
   if (!data.institution) return <Alert variant="info">Không tìm thấy trường.</Alert>;
   const inst = data.institution;
+  const majorCount = new Set(data.programs.map((p) => p.majorId)).size;
+  const address = [inst.address, inst.city].filter(Boolean).join(', ');
   return (
-    <div className="module-page">
-      <p><Link to="/kham-pha-truong">Danh sách trường</Link></p>
-      <h1>{inst.institution_name}</h1>
-      <Card title="Thông tin trường">
-        <div className="module-actions">
-          <Badge variant="info">{INSTITUTION_TYPE_LABEL[inst.institution_type as keyof typeof INSTITUTION_TYPE_LABEL] ?? inst.institution_type}</Badge>
-          {inst.ownership && <Badge>{OWNERSHIP_LABEL[inst.ownership as keyof typeof OWNERSHIP_LABEL] ?? inst.ownership}</Badge>}
-        </div>
-        <p>{[inst.address, inst.city].filter(Boolean).join(', ') || 'Địa chỉ đang cập nhật'}</p>
-        {inst.website_url && (
-          <a href={inst.website_url} target="_blank" rel="noopener noreferrer">Website <ExternalLink size={14} aria-hidden="true" /></a>
-        )}
-      </Card>
-      <Card title={`Chương trình đào tạo (${data.programs.length})`}>
+    <div className="module-page school-detail">
+      <Breadcrumb items={[{ label: 'Khám phá trường', to: '/kham-pha-truong' }, { label: inst.institution_name }]} />
+      <PageHero
+        title={inst.institution_name}
+        icon={<Landmark />}
+        tone="teal"
+        actions={
+          inst.website_url ? (
+            <a className="app-button btn-outline btn-md" href={inst.website_url} target="_blank" rel="noopener noreferrer">
+              <span className="btn-icon-left"><ExternalLink size={16} aria-hidden="true" /></span>
+              <span className="btn-text">Website</span>
+            </a>
+          ) : undefined
+        }
+      />
+      <div className="school-meta">
+        <Badge variant="info">{INSTITUTION_TYPE_LABEL[inst.institution_type as keyof typeof INSTITUTION_TYPE_LABEL] ?? inst.institution_type}</Badge>
+        {inst.ownership && <Badge>{OWNERSHIP_LABEL[inst.ownership as keyof typeof OWNERSHIP_LABEL] ?? inst.ownership}</Badge>}
+        <span className="school-address"><MapPin size={16} aria-hidden="true" />{address || 'Địa chỉ đang cập nhật'}</span>
+      </div>
+      <div className="school-facts">
+        <StatTile label="Chương trình" tone="blue" icon={<Layers />} value={data.programs.length} />
+        <StatTile label="Ngành" tone="violet" icon={<BookMarked />} value={majorCount} />
+        <StatTile label="Học phí mỗi kỳ" tone="gold" icon={<Wallet />} value={tuitionRange(data.programs)} />
+      </div>
+      <Card title="Chương trình đào tạo">
         <ProgramList programs={data.programs} show="major" />
       </Card>
     </div>
@@ -98,11 +228,12 @@ export const MajorDetailPage: React.FC = () => {
   const { id = '' } = useParams();
   const { data, error } = useLoad(() => loadMajor(id), [id]);
   if (error) return <Alert variant="danger">{error}</Alert>;
-  if (!data) return <Spinner />;
+  if (!data) return <DetailSkeleton />;
   if (!data.major) return <Alert variant="info">Không tìm thấy ngành.</Alert>;
   return (
     <div className="module-page">
-      <h1>Ngành {data.major.major_name}</h1>
+      <Breadcrumb items={[{ label: 'Khám phá trường', to: '/kham-pha-truong' }, { label: data.major.major_name }]} />
+      <PageHero title={`Ngành ${data.major.major_name}`} icon={<GraduationCap />} tone="violet" />
       <Card title="Nghề liên quan">
         {data.careers.length === 0 ? <p>Đang cập nhật liên kết nghề.</p> : (
           <ul className="module-list">
@@ -112,7 +243,7 @@ export const MajorDetailPage: React.FC = () => {
           </ul>
         )}
       </Card>
-      <Card title={`Trường đào tạo (${data.programs.length})`}>
+      <Card title="Trường đào tạo">
         <ProgramList programs={data.programs} show="institution" />
       </Card>
     </div>
@@ -123,16 +254,28 @@ export const ProgramDetailPage: React.FC = () => {
   const { id = '' } = useParams();
   const { data, error } = useLoad(() => loadProgram(id), [id]);
   if (error) return <Alert variant="danger">{error}</Alert>;
-  if (data === undefined) return <Spinner />;
+  if (data === undefined) return <DetailSkeleton />;
   if (data === null) return <Alert variant="info">Không tìm thấy chương trình.</Alert>;
   const p = data.program;
   return (
     <div className="module-page">
-      <p>
-        <Link to={`/kham-pha-truong/truong/${p.institutionId}`}>{p.institutionName}</Link> ·{' '}
-        <Link to={`/kham-pha-truong/nganh/${p.majorId}`}>Ngành {p.majorName}</Link>
-      </p>
-      <h1>{p.majorName}{p.specialization ? ` – ${p.specialization}` : ''}</h1>
+      <Breadcrumb
+        items={[
+          { label: 'Khám phá trường', to: '/kham-pha-truong' },
+          { label: p.institutionName, to: `/kham-pha-truong/truong/${p.institutionId}` },
+          { label: p.majorName },
+        ]}
+      />
+      <PageHero
+        title={`${p.majorName}${p.specialization ? ` – ${p.specialization}` : ''}`}
+        icon={<GraduationCap />}
+        tone="violet"
+        actions={
+          <Link className="app-button btn-outline btn-md" to={`/kham-pha-truong/nganh/${p.majorId}`}>
+            <span className="btn-text">Xem ngành {p.majorName}</span>
+          </Link>
+        }
+      />
       <Card title="Chương trình">
         <ul className="module-list">
           <li><span>Hệ đào tạo</span><span>{p.programType ?? 'Đang cập nhật'}</span></li>
@@ -183,7 +326,7 @@ export const CareerEducationMapPage: React.FC = () => {
   const [pick, setPick] = useState<MapPick | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   if (error) return <Alert variant="danger">{error}</Alert>;
-  if (!data) return <Spinner />;
+  if (!data) return <DetailSkeleton />;
   if (!data.career) return <Alert variant="info">Không tìm thấy nghề hoặc nghề chưa được công bố.</Alert>;
   return (
     <div className="module-page">

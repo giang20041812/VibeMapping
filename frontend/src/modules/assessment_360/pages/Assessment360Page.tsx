@@ -36,7 +36,7 @@ export const Assessment360Page: React.FC = () => {
       <h1 className="page-title">Đánh giá 360</h1>
       {learner && userId ? (
         <div className="assessment-page">
-          <Assessment360View invite={invite} review={review} />
+          <Assessment360View invite={invite} review={review} userId={userId} />
           <PersonalResultSection userId={userId} reloadKey={resultKey} />
         </div>
       ) : (

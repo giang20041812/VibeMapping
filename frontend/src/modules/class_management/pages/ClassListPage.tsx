@@ -1,143 +1,27 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { LogOut, Plus, UserPlus } from 'lucide-react';
-import { Alert, Button, Card, DataTable, Input, useConfirm } from '../../../components/common';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Plus, UserPlus } from 'lucide-react';
+import { Alert, Button, Card, DataTable } from '../../../components/common';
 import type { DataTableColumn } from '../../../components/common';
 import { FilterBar } from '../../../components/filters/FilterBar/FilterBar';
 import { FilterSearch } from '../../../components/filters/FilterSearch/FilterSearch';
 import { useAdminFilter } from '../../admin/useAdminFilter';
 import { useAuth } from '../../auth/AuthContext';
-import { JOIN_ERROR_TEXT, STAFF_ERROR_TEXT } from '../class_management.constants';
+import { STAFF_ERROR_TEXT } from '../class_management.constants';
 import {
   addSchoolStaff,
   confirmSchoolAdmin,
-  findMyMemberId,
-  joinClassByCode,
-  leaveClass,
   listClasses,
-  listJoinedClasses,
   listMySchoolInvitations,
   listSchools,
 } from '../class_management.service';
-import type { ClassRow, JoinedClass, School, SchoolInvitation } from '../class_management.types';
+import type { ClassRow, School, SchoolInvitation } from '../class_management.types';
 import { ClassFormModal } from '../components/ClassFormModal';
 import { EmailRoleModal } from '../components/EmailRoleModal';
 import '../ClassManagement.css';
 
 const EMPTY_FILTER = { keyword: '' };
 const TEACHER_ONLY_OPTION = [{ value: 'teacher', label: 'Giáo viên' }];
-
-const StudentClasses: React.FC<{ userId: string }> = ({ userId }) => {
-  const { confirm, dialog: confirmDialog } = useConfirm();
-  const [classes, setClasses] = useState<JoinedClass[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
-  const [searchParams] = useSearchParams();
-  const [classCode, setClassCode] = useState(searchParams.get('ma') ?? '');
-  const [studentCode, setStudentCode] = useState('');
-  const [isJoining, setIsJoining] = useState(false);
-  const [reloadKey, setReloadKey] = useState(0);
-
-  useEffect(() => {
-    let active = true;
-    setIsLoading(true);
-    listJoinedClasses(userId)
-      .then((list) => active && setClasses(list))
-      .catch(() => active && setError('Không tải được danh sách lớp.'))
-      .finally(() => active && setIsLoading(false));
-    return () => {
-      active = false;
-    };
-  }, [userId, reloadKey]);
-
-  const handleJoin = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!classCode.trim()) return;
-    setIsJoining(true);
-    setError(null);
-    setNotice(null);
-    try {
-      const result = await joinClassByCode(classCode, studentCode);
-      if (result.ok) {
-        setNotice(`Đã tham gia lớp ${result.class_name ?? ''}.`);
-        setClassCode('');
-        setStudentCode('');
-        setReloadKey((value) => value + 1);
-      } else {
-        setError(JOIN_ERROR_TEXT[result.reason ?? ''] ?? 'Không tham gia được lớp.');
-      }
-    } catch {
-      setError('Không tham gia được lớp. Thử lại sau.');
-    } finally {
-      setIsJoining(false);
-    }
-  };
-
-  const handleLeave = useCallback(
-    async (row: JoinedClass) => {
-      if (!(await confirm({ title: `Rời lớp ${row.class_name}?`, confirmLabel: 'Rời lớp', danger: true }))) return;
-      try {
-        const memberId = await findMyMemberId(row.id, userId);
-        if (memberId) await leaveClass(memberId);
-        setReloadKey((value) => value + 1);
-      } catch {
-        setError('Không rời được lớp. Thử lại sau.');
-      }
-    },
-    [userId, confirm],
-  );
-
-  const columns = useMemo<DataTableColumn<JoinedClass>[]>(
-    () => [
-      { key: 'class_name', header: 'Tên lớp', render: (row) => row.class_name },
-      { key: 'grade', header: 'Khối', align: 'center', nowrap: true, render: (row) => row.grade ?? '—' },
-      { key: 'school_year', header: 'Năm học', nowrap: true, render: (row) => row.school_year },
-      {
-        key: 'actions',
-        header: '',
-        align: 'right',
-        nowrap: true,
-        render: (row) => (
-          <Button type="button" size="sm" variant="outline" leftIcon={<LogOut size={14} />} onClick={() => void handleLeave(row)}>
-            Rời lớp
-          </Button>
-        ),
-      },
-    ],
-    [handleLeave],
-  );
-
-  return (
-    <>
-      <div className="class-page-header">
-        <h1 className="page-title">Lớp học</h1>
-      </div>
-      {(error || notice) && (
-        <div className="class-alert-slot">
-          {error && <Alert variant="danger">{error}</Alert>}
-          {notice && <Alert variant="success">{notice}</Alert>}
-        </div>
-      )}
-      <div className="class-stack">
-        <Card title="Tham gia lớp">
-          <Alert variant="info">Giáo viên của lớp sẽ đánh giá hướng nghiệp của bạn. Tham gia lớp được coi là đồng ý.</Alert>
-          <form className="class-join-form" onSubmit={handleJoin}>
-            <Input label="Mã lớp" value={classCode} onChange={(event) => setClassCode(event.target.value)} required />
-            <Input label="Mã học sinh" value={studentCode} onChange={(event) => setStudentCode(event.target.value)} />
-            <Button type="submit" isLoading={isJoining} disabled={!classCode.trim()}>
-              Tham gia
-            </Button>
-          </form>
-        </Card>
-        <Card noPadding>
-          <DataTable columns={columns} rows={classes} rowKey={(row) => row.id} isLoading={isLoading} emptyText="Chưa tham gia lớp nào" caption="Lớp đã tham gia" />
-        </Card>
-      </div>
-      {confirmDialog}
-    </>
-  );
-};
 
 const StaffClasses: React.FC<{ isSchoolAdmin: boolean }> = ({ isSchoolAdmin }) => {
   const navigate = useNavigate();
@@ -283,9 +167,11 @@ const StaffClasses: React.FC<{ isSchoolAdmin: boolean }> = ({ isSchoolAdmin }) =
 
 export const ClassListPage: React.FC = () => {
   const { profile } = useAuth();
+  const { search } = useLocation();
   if (!profile) return null;
   if (profile.role === 'teacher' || profile.role === 'school_admin' || profile.role === 'system_admin') {
     return <StaffClasses isSchoolAdmin={profile.role === 'school_admin'} />;
   }
-  return <StudentClasses userId={profile.id} />;
+  // Học sinh, sinh viên tham gia lớp trong phần Ai đánh giá; giữ mã lớp của đường dẫn và mã QR cũ
+  return <Navigate to={`/danh-gia-360${search}`} replace />;
 };

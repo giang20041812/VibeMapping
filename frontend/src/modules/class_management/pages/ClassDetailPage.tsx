@@ -32,7 +32,7 @@ const TEACHER_ROLE_OPTIONS = [
 ];
 
 function joinLink(classCode: string): string {
-  return `${window.location.origin}/lop-hoc?ma=${encodeURIComponent(classCode)}`;
+  return `${window.location.origin}/danh-gia-360?ma=${encodeURIComponent(classCode)}`;
 }
 
 export const ClassDetailPage: React.FC = () => {

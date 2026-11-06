@@ -1,16 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Clock, Flag, History, ListChecks, Map as MapIcon, Pencil, Route, ShieldCheck, Target } from 'lucide-react';
+import { ArrowLeft, History, Map as MapIcon, Pencil, Route } from 'lucide-react';
 import {
   Alert,
   Button,
   Input,
   Modal,
   PageHero,
-  Select,
   Skeleton,
   SkeletonRegion,
-  StatTile,
   Tabs,
   type TabItem,
 } from '../../../components/common';
@@ -20,30 +18,25 @@ import { callRpc, db } from '../../../lib/rpc';
 import { listPublishedCareers, loadLearnerProfile, recommendCareers, listSavedCareers } from '../../career_explorer/career.service';
 import { useAuth } from '../../auth/AuthContext';
 import type { FilterOption } from '../../../types/filter';
-import { RoadmapAlerts } from '../components/RoadmapAlerts';
-import { RoadmapCheckpoints } from '../components/RoadmapCheckpoints';
-import { RoadmapMap } from '../components/RoadmapMap';
-import { RoadmapProgress } from '../components/RoadmapProgress';
+import { RoadmapAddDialog, type AddInitial, type AddInput } from '../components/RoadmapAddDialog';
+import { RoadmapHistory } from '../components/RoadmapHistory';
+import { RoadmapPlan } from '../components/RoadmapPlan';
 import { RoadmapSetup, type CareerChoice } from '../components/RoadmapSetup';
 import {
   EMPTY_SETUP,
-  PILLAR_LABEL,
-  PILLAR_ORDER,
   buildStages,
-  currentStage,
   monthEndFromInput,
   monthsLeft,
   originFromProfile,
-  progressOf,
   validateSetup,
 } from '../roadmap.logic';
-import type { Roadmap, RoadmapPillar, SetupErrors, SetupValues, SoftSkill, Stage } from '../roadmap.types';
+import type { Roadmap, SetupErrors, SetupValues, SoftSkill } from '../roadmap.types';
 import './RoadmapPage.css';
 
-type TabKey = 'thiet-lap' | 'lo-trinh' | 'cot-moc' | 'tien-do' | 'canh-bao';
-const TAB_KEYS: TabKey[] = ['thiet-lap', 'lo-trinh', 'cot-moc', 'tien-do', 'canh-bao'];
-
-const PILLAR_OPTIONS = PILLAR_ORDER.map((value) => ({ value, label: PILLAR_LABEL[value] }));
+type TabKey = 'thiet-lap' | 'lo-trinh' | 'lich-su';
+const TAB_KEYS: TabKey[] = ['thiet-lap', 'lo-trinh', 'lich-su'];
+/** Đường dẫn cũ từ khi lộ trình còn năm mục: cột mốc, tiến độ và cảnh báo nay nằm trong mục Lộ trình */
+const LEGACY_TABS: Record<string, TabKey> = { 'cot-moc': 'lo-trinh', 'tien-do': 'lo-trinh', 'canh-bao': 'lo-trinh' };
 
 function generationError(caught: unknown): string {
   const text = String((caught as { message?: string })?.message ?? caught);
@@ -85,7 +78,7 @@ export const RoadmapPage: React.FC = () => {
   const [suggestOpen, setSuggestOpen] = useState(false);
   const [hours, setHours] = useState('8');
   const [softSkills, setSoftSkills] = useState<SoftSkill[]>([]);
-  const [adding, setAdding] = useState<{ stage: Stage; pillar: RoadmapPillar; title: string } | null>(null);
+  const [adding, setAdding] = useState<AddInitial | null>(null);
 
   const reload = useCallback(async () => {
     const value = await callRpc<Roadmap[]>('list_my_roadmaps');
@@ -131,7 +124,8 @@ export const RoadmapPage: React.FC = () => {
   const shown = viewing ?? active;
   const readOnly = Boolean(viewing);
 
-  const requested = params.get('tab') as TabKey | null;
+  const rawTab = params.get('tab');
+  const requested = rawTab ? (LEGACY_TABS[rawTab] ?? (rawTab as TabKey)) : null;
   const tab: TabKey = !active ? 'thiet-lap' : requested && TAB_KEYS.includes(requested) ? requested : 'lo-trinh';
   const setTab = (next: string) => {
     setNotice(null);
@@ -144,9 +138,6 @@ export const RoadmapPage: React.FC = () => {
   };
 
   const stages = useMemo(() => (shown ? buildStages(shown.milestones) : []), [shown]);
-  const progress = useMemo(() => (shown ? progressOf(shown) : null), [shown]);
-  const focus = currentStage(stages);
-  const checkpoints = useMemo(() => shown?.milestones.filter((m) => m.is_checkpoint) ?? [], [shown]);
 
   const careerName = useCallback(
     (id: string) => choices.find((c) => c.id === id)?.name ?? catalog.find((c) => c.value === id)?.label ?? '',
@@ -314,7 +305,7 @@ export const RoadmapPage: React.FC = () => {
   const applyDue = (id: string, due: string) =>
     run(() => callRpc('update_roadmap_milestone_due', { p_milestone_id: id, p_due_date: due, p_apply: true }), 'Không đổi được hạn. Thử lại sau.');
 
-  const addMilestone = (input: { title: string; due: string; pillar: RoadmapPillar; checkpoint: boolean; passCriteria?: string }) =>
+  const addMilestone = (input: AddInput) =>
     active
       ? run(
           () =>
@@ -332,11 +323,8 @@ export const RoadmapPage: React.FC = () => {
       : Promise.resolve();
 
   const tabs: TabItem[] = [
-    { value: 'thiet-lap', label: 'Thiết lập', icon: <Pencil /> },
     { value: 'lo-trinh', label: 'Lộ trình', icon: <Route /> },
-    { value: 'cot-moc', label: 'Cột mốc', icon: <Flag /> },
-    { value: 'tien-do', label: 'Tiến độ', icon: <ListChecks /> },
-    { value: 'canh-bao', label: 'Cảnh báo', icon: <ShieldCheck />, alert: Boolean(progress?.offTrack) && !readOnly },
+    { value: 'lich-su', label: 'Lịch sử', icon: <History /> },
   ];
 
   if (roadmaps === null) {
@@ -373,28 +361,7 @@ export const RoadmapPage: React.FC = () => {
       {notice && <Alert variant="success">{notice}</Alert>}
       {viewing && <Alert variant="info">Đang xem lộ trình đã lưu trữ: {viewing.title}</Alert>}
 
-      {active && shown && progress && (
-        <>
-          <div className="roadmap-stats">
-            <StatTile label="Hoàn thành" tone="teal" icon={<ListChecks />} value={Math.round(progress.actualPercent)} unit="%" />
-            <StatTile label="Kế hoạch đến hôm nay" tone="blue" icon={<Target />} value={Math.round(progress.plannedPercent)} unit="%" />
-            <StatTile
-              label="Còn lại"
-              tone="violet"
-              icon={<Clock />}
-              value={dayLeft !== null && dayLeft < 0 ? 'Quá hạn' : left ?? '—'}
-              unit={dayLeft !== null && dayLeft >= 0 ? 'tháng' : undefined}
-            />
-            <StatTile
-              label="Trạng thái"
-              tone={progress.offTrack ? 'coral' : 'gold'}
-              icon={<History />}
-              value={progress.offTrack ? 'Chệch hướng' : 'Đúng hướng'}
-            />
-          </div>
-          <Tabs items={tabs} value={tab} onChange={setTab} label="Các mục của lộ trình" />
-        </>
-      )}
+      {active && tab !== 'thiet-lap' && <Tabs items={tabs} value={tab} onChange={setTab} label="Các mục của lộ trình" />}
 
       {tab === 'thiet-lap' && (
         <RoadmapSetup
@@ -414,47 +381,29 @@ export const RoadmapPage: React.FC = () => {
       )}
 
       {shown && tab === 'lo-trinh' && (
-        <RoadmapMap
-          roadmap={shown}
-          stages={stages}
-          readOnly={readOnly}
-          softSkills={softSkills}
-          onSuggest={() => setSuggestOpen(true)}
-          onAddToStage={(stage, pillar) => setAdding({ stage, pillar, title: '' })}
-        />
-      )}
-
-      {shown && tab === 'cot-moc' && (
-        <RoadmapCheckpoints
-          checkpoints={checkpoints}
-          readOnly={readOnly}
-          busy={busy}
-          activities={shown.milestones}
-          onPreviewDue={previewDue}
-          onApplyDue={applyDue}
-          onAdd={(input) => addMilestone({ ...input, checkpoint: true })}
-        />
-      )}
-
-      {shown && tab === 'tien-do' && (
-        <RoadmapProgress
+        <RoadmapPlan
           key={shown.id}
           roadmap={shown}
           stages={stages}
-          focusKey={focus?.key ?? stages[0]?.key ?? ''}
+          softSkills={softSkills}
           readOnly={readOnly}
           busy={busy}
+          monthsLeft={left}
+          daysLeft={dayLeft}
           onSave={saveProgress}
+          onSuggest={() => setSuggestOpen(true)}
+          onAdd={setAdding}
+          onPreviewDue={previewDue}
+          onApplyDue={applyDue}
+          onRegenerate={openSetup}
         />
       )}
 
-      {active && progress && tab === 'canh-bao' && (
-        <RoadmapAlerts
+      {active && tab === 'lich-su' && (
+        <RoadmapHistory
           roadmap={active}
           history={history}
-          progress={progressOf(active)}
           viewingId={viewingId}
-          onRegenerate={openSetup}
           onView={(id) => {
             setViewingId(id);
             setTab('lo-trinh');
@@ -501,44 +450,13 @@ export const RoadmapPage: React.FC = () => {
         />
       </Modal>
 
-      <Modal
-        open={Boolean(adding)}
-        title="Thêm hoạt động"
+      <RoadmapAddDialog
+        key={adding ? `${adding.kind}-${adding.pillar}-${adding.due}` : 'closed'}
+        initial={adding}
+        busy={busy}
         onClose={() => setAdding(null)}
-        locked={busy}
-        actions={
-          <>
-            <Button variant="outline" onClick={() => setAdding(null)}>Hủy</Button>
-            <Button
-              isLoading={busy}
-              disabled={!adding?.title.trim()}
-              onClick={() => {
-                if (!adding) return;
-                void addMilestone({
-                  title: adding.title,
-                  due: adding.stage.endIso ?? '',
-                  pillar: adding.pillar,
-                  checkpoint: false,
-                }).then(() => setAdding(null));
-              }}
-            >
-              Thêm
-            </Button>
-          </>
-        }
-      >
-        {adding && (
-          <div className="roadmap-fields is-single">
-            <Select
-              label="Trụ cột"
-              options={PILLAR_OPTIONS}
-              value={adding.pillar}
-              onChange={(value) => setAdding({ ...adding, pillar: value as RoadmapPillar })}
-            />
-            <Input label="Nội dung" value={adding.title} onChange={(event) => setAdding({ ...adding, title: event.target.value })} />
-          </div>
-        )}
-      </Modal>
+        onSubmit={addMilestone}
+      />
     </div>
   );
 };

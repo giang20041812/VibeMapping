@@ -79,7 +79,7 @@ export const RoadmapMap: React.FC<Props> = ({ roadmap, stages, readOnly, onSugge
         <li className="roadmap-node is-goal">
           <span className="roadmap-node-dot" aria-hidden="true"><Flag size={14} /></span>
           <b>Mục tiêu</b>
-          <small>{[roadmap.career_name, roadmap.target_date ? formatDate(roadmap.target_date) : null].filter(Boolean).join(' · ')}</small>
+          <small>{[roadmap.career_name, roadmap.program_title, roadmap.target_date ? formatDate(roadmap.target_date) : null].filter(Boolean).join(' · ')}</small>
         </li>
       </ol>
 

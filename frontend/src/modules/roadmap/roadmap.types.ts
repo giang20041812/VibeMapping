@@ -15,6 +15,8 @@ export interface Roadmap {
   title: string;
   career_id: string | null;
   career_name: string | null;
+  training_program_id: string | null;
+  program_title: string | null;
   is_active: boolean;
   target_date: string | null;
   created_at: string;

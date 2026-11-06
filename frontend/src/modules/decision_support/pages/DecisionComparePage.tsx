@@ -486,6 +486,11 @@ export const DecisionComparePage: React.FC = () => {
                   {plan.preferred_option_id === r.id ? 'Ưu tiên: ' : ''}{r.title}
                 </StickerFact>
               ))}
+              {plan.preferred_option_id && /^[0-9a-f-]{36}$/i.test(plan.preferred_option_id) && (
+                <Button type="button" size="sm" variant="outline" onClick={() => navigate(`/lo-trinh?chuong-trinh=${plan.preferred_option_id}`)}>
+                  Lập lộ trình
+                </Button>
+              )}
               <Button type="button" size="sm" variant="ghost" onClick={() => setPreferring({ planId: plan.id, optionId: plan.preferred_option_id ?? plan.ranking[0]?.id ?? '', reason: plan.preferred_reason ?? '' })}>
                 Chọn phương án ưu tiên
               </Button>

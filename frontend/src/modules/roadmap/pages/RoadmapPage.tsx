@@ -67,6 +67,10 @@ const RoadmapSkeleton: React.FC = () => (
 export const RoadmapPage: React.FC = () => {
   const { session, profile } = useAuth();
   const [params, setParams] = useSearchParams();
+  const [programId] = useState(() => {
+    const raw = params.get('chuong-trinh') ?? '';
+    return /^[0-9a-f-]{36}$/i.test(raw) ? raw : null;
+  });
   const [roadmaps, setRoadmaps] = useState<Roadmap[] | null>(null);
   const [choices, setChoices] = useState<CareerChoice[]>([]);
   const [catalog, setCatalog] = useState<FilterOption[]>([]);
@@ -224,6 +228,7 @@ export const RoadmapPage: React.FC = () => {
         p_title: `${careerName(values.careerId)} · ${values.targetMonth.trim()}`,
         p_target_date: targetDate,
       });
+      if (programId) await callRpc('set_roadmap_program', { p_roadmap_id: createdId, p_training_program_id: programId });
       await callRpc('save_roadmap_origin', {
         p_roadmap_id: createdId,
         p_education_level: values.educationLevel,

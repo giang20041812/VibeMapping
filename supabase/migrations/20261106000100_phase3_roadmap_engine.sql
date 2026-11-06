@@ -127,7 +127,7 @@ BEGIN
 
   SELECT COALESCE(round(avg(p.pct), 1), 0) INTO v_actual
     FROM (
-      SELECT sum(weight) FILTER (WHERE done) / NULLIF(sum(weight), 0) * 100 AS pct
+      SELECT COALESCE(sum(weight) FILTER (WHERE done), 0) / NULLIF(sum(weight), 0) * 100 AS pct
         FROM public.roadmap_milestones WHERE roadmap_id = p_roadmap_id GROUP BY pillar
     ) p WHERE p.pct IS NOT NULL;
 

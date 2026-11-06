@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { CalendarClock, ChevronDown, Flag, MapPinned, Plus, Sparkles } from 'lucide-react';
 import { Alert, Badge, Button, ProgressBar } from '../../../components/common';
-import { PILLAR_LABEL, PILLAR_ORDER, formatDate } from '../roadmap.logic';
-import type { Roadmap, RoadmapPillar, Stage, StageStatus } from '../roadmap.types';
+import { ACTIVITY_TYPE_LABEL, PILLAR_LABEL, PILLAR_ORDER, formatDate } from '../roadmap.logic';
+import type { Roadmap, RoadmapPillar, SoftSkill, Stage, StageStatus } from '../roadmap.types';
 import { PillarBadge } from './PillarBadge';
 
 const STATUS_LABEL: Record<StageStatus, string> = {
@@ -21,16 +21,21 @@ const STATUS_VARIANT: Record<StageStatus, 'success' | 'info' | 'danger' | 'defau
 /** Số giai đoạn hiển thị sẵn; các giai đoạn còn lại thu gọn sau khung nét đứt */
 const VISIBLE_STAGES = 3;
 
+/** Kết quả kỳ vọng của giai đoạn: gộp kết quả của các hoạt động trong giai đoạn */
+const expectedOf = (stage: Stage) =>
+  [...new Set(stage.items.map((i) => i.expected_result).filter(Boolean))].join('; ');
+
 interface Props {
   roadmap: Roadmap;
   stages: Stage[];
   readOnly: boolean;
+  softSkills: SoftSkill[];
   onSuggest: () => void;
   onAddToStage: (stage: Stage, pillar: RoadmapPillar) => void;
 }
 
 /** Bản đồ đường đi: xuất phát → các giai đoạn → mục tiêu, cùng thẻ giai đoạn và cân đối ba trụ cột */
-export const RoadmapMap: React.FC<Props> = ({ roadmap, stages, readOnly, onSuggest, onAddToStage }) => {
+export const RoadmapMap: React.FC<Props> = ({ roadmap, stages, readOnly, softSkills, onSuggest, onAddToStage }) => {
   const [expanded, setExpanded] = useState(false);
 
   const pillarShare = useMemo(() => {
@@ -101,6 +106,8 @@ export const RoadmapMap: React.FC<Props> = ({ roadmap, stages, readOnly, onSugge
                   <li key={item.id} className={item.done ? 'is-done' : undefined}>
                     <PillarBadge pillar={item.pillar} />
                     <span className="roadmap-activity-title">{item.title}</span>
+                    {item.activity_type && <Badge size="sm">{ACTIVITY_TYPE_LABEL[item.activity_type]}</Badge>}
+                    {item.is_partner && <Badge variant="warning" size="sm">Quảng cáo/Đối tác</Badge>}
                     {item.is_checkpoint && (
                       <Badge variant="warning" size="sm">Cột mốc</Badge>
                     )}
@@ -108,6 +115,11 @@ export const RoadmapMap: React.FC<Props> = ({ roadmap, stages, readOnly, onSugge
                   </li>
                 ))}
               </ul>
+              {expectedOf(stage) && (
+                <p className="roadmap-expected">
+                  <b>Kết quả kỳ vọng:</b> {expectedOf(stage)}
+                </p>
+              )}
               {!readOnly && stage.missingPillars.length > 0 && stage.status !== 'done' && (
                 <div className="roadmap-missing">
                   <Alert variant="warning">
@@ -153,6 +165,27 @@ export const RoadmapMap: React.FC<Props> = ({ roadmap, stages, readOnly, onSugge
               ))}
             </ul>
           </section>
+          {softSkills.length > 0 && (
+            <section className="roadmap-block roadmap-tone-gold">
+              <h2 className="roadmap-block-title">Kỹ năng mềm cần rèn</h2>
+              <ul className="roadmap-balance">
+                {softSkills.slice(0, 5).map((skill) => (
+                  <li key={skill.criteria_id}>
+                    <div className="roadmap-balance-head">
+                      <strong>{skill.name}</strong>
+                      <b>{skill.score_percent === null ? '—' : `${Math.round(skill.score_percent)}%`}</b>
+                    </div>
+                    <ProgressBar value={skill.score_percent} label={`Điểm ${skill.name}`} tone="accent" />
+                    <small className="roadmap-skill-reason">
+                      {skill.reasons.includes('low') && 'Điểm thấp'}
+                      {skill.reasons.length > 1 && ' · '}
+                      {skill.reasons.includes('gap') && `Lệch ${Math.round(skill.gap ?? 0)} điểm giữa tự đánh giá và người khác`}
+                    </small>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
           {!readOnly && (
             <Button variant="outline" leftIcon={<Sparkles size={16} />} onClick={onSuggest}>
               Gợi ý hoạt động

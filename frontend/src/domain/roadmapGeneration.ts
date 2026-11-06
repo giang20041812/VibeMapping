@@ -10,6 +10,9 @@ export interface ApprovedActivityTemplate {
   hours: number;
   criteriaId: string | null;
   repeatable: boolean;
+  activityType?: 'course' | 'book' | 'exercise' | 'project' | null;
+  isPartner?: boolean;
+  expectedResult?: string | null;
 }
 
 export interface GeneratedMilestone {
@@ -19,6 +22,9 @@ export interface GeneratedMilestone {
   weight: number;
   isCheckpoint: boolean;
   activityId: string;
+  activityType: 'course' | 'book' | 'exercise' | 'project' | null;
+  isPartner: boolean;
+  expectedResult: string | null;
 }
 
 const PILLARS: RoadmapPillar[] = ['knowledge', 'experience', 'exploration'];
@@ -99,6 +105,9 @@ export function generateRoadmapFromLibrary(input: {
         weight: Number(Math.max(1, candidate.hours / 6).toFixed(2)),
         isCheckpoint: false,
         activityId: candidate.id,
+        activityType: candidate.activityType ?? null,
+        isPartner: candidate.isPartner ?? false,
+        expectedResult: candidate.expectedResult ?? null,
       });
     }
 

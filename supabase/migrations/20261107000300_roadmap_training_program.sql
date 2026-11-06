@@ -1,4 +1,5 @@
 -- Lộ trình gắn với chương trình đào tạo đã chọn ở so sánh phương án
+-- Chạy sau 20261106000100_phase3_roadmap_engine.sql: list_my_roadmaps ở đây gồm cả các trường của bản đó
 ALTER TABLE public.roadmaps
   ADD COLUMN IF NOT EXISTS training_program_id uuid REFERENCES public.training_programs(id) ON DELETE SET NULL;
 
@@ -27,9 +28,17 @@ RETURNS jsonb LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $
     'is_active', r.is_active, 'target_date', r.target_date, 'created_at', r.created_at,
     'education_level', r.education_level, 'school_year', r.school_year,
     'current_skills', r.current_skills, 'certificates', r.certificates, 'extracurricular', r.extracurricular,
+    'hours_per_week', r.hours_per_week, 'regenerate_reason', r.regenerate_reason, 'previous_roadmap_id', r.previous_roadmap_id,
+    'careers', COALESCE((
+      SELECT jsonb_agg(jsonb_build_object('id', tc.career_id, 'name', k.career_name) ORDER BY tc.sort_order)
+        FROM public.roadmap_target_careers tc JOIN public.careers k ON k.id = tc.career_id WHERE tc.roadmap_id = r.id
+    ), '[]'::jsonb),
     'milestones', COALESCE((
       SELECT jsonb_agg(jsonb_build_object('id', ms.id, 'pillar', ms.pillar, 'title', ms.title, 'done', ms.done,
-               'due_date', ms.due_date, 'weight', ms.weight, 'is_checkpoint', ms.is_checkpoint) ORDER BY ms.due_date NULLS LAST, ms.created_at)
+               'due_date', ms.due_date, 'weight', ms.weight, 'is_checkpoint', ms.is_checkpoint,
+               'note', ms.note, 'done_at', ms.done_at, 'source', ms.source,
+               'pass_criteria', ms.pass_criteria, 'fail_criteria', ms.fail_criteria,
+               'activity_type', ms.activity_type, 'is_partner', ms.is_partner, 'expected_result', ms.expected_result) ORDER BY ms.due_date NULLS LAST, ms.created_at)
         FROM public.roadmap_milestones ms WHERE ms.roadmap_id = r.id
     ), '[]'::jsonb)
   ) ORDER BY r.is_active DESC, r.created_at DESC), '[]'::jsonb)

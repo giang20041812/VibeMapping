@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { ListChecks, Save } from 'lucide-react';
-import { Alert, Button, Checkbox, DataTable, ProgressBar, Select, type DataTableColumn } from '../../../components/common';
+import { Alert, Button, Checkbox, DataTable, ProgressBar, Select, Textarea, type DataTableColumn } from '../../../components/common';
 import { PILLAR_LABEL, formatDate, progressOf } from '../roadmap.logic';
 import type { Roadmap, Stage } from '../roadmap.types';
 import { PillarBadge } from './PillarBadge';
@@ -11,7 +11,7 @@ interface Props {
   focusKey: string;
   readOnly: boolean;
   busy: boolean;
-  onSave: (changes: Record<string, boolean>) => Promise<void>;
+  onSave: (changes: Record<string, { done?: boolean; note?: string }>) => Promise<void>;
 }
 
 const signed = (n: number) => (n > 0 ? `+${n}` : String(n));
@@ -19,26 +19,29 @@ const signed = (n: number) => (n > 0 ? `+${n}` : String(n));
 /** Tiến độ: tick hoàn thành nhiều hoạt động rồi lưu một lần; so sánh kế hoạch với thực tế theo giai đoạn */
 export const RoadmapProgress: React.FC<Props> = ({ roadmap, stages, focusKey, readOnly, busy, onSave }) => {
   const [stageKey, setStageKey] = useState(focusKey);
-  const [pending, setPending] = useState<Record<string, boolean>>({});
+  const [pending, setPending] = useState<Record<string, { done?: boolean; note?: string }>>({});
   const [saved, setSaved] = useState<{ from: number; to: number } | null>(null);
 
   const progress = useMemo(() => progressOf(roadmap), [roadmap]);
   const stage = stages.find((s) => s.key === stageKey) ?? stages[0];
   const pendingCount = Object.keys(pending).length;
 
-  const toggle = (id: string, done: boolean, original: boolean) => {
+  const change = (id: string, patch: { done?: boolean; note?: string }, original: { done: boolean; note: string | null }) => {
     setSaved(null);
     setPending((prev) => {
+      const merged = { ...prev[id], ...patch };
       const next = { ...prev };
-      if (done === original) delete next[id];
-      else next[id] = done;
+      const sameDone = merged.done === undefined || merged.done === original.done;
+      const sameNote = merged.note === undefined || merged.note === (original.note ?? '');
+      if (sameDone && sameNote) delete next[id];
+      else next[id] = merged;
       return next;
     });
   };
 
   const save = async () => {
     const from = progress.actualPercent;
-    const to = progressOf(roadmap, pending).actualPercent;
+    const to = progressOf(roadmap, Object.fromEntries(Object.entries(pending).filter(([, v]) => v.done !== undefined).map(([id, v]) => [id, v.done as boolean]))).actualPercent;
     await onSave(pending);
     setPending({});
     setSaved({ from: Math.round(from), to: Math.round(to) });
@@ -77,17 +80,28 @@ export const RoadmapProgress: React.FC<Props> = ({ roadmap, stages, focusKey, re
             />
             <ul className="roadmap-checklist">
               {stage.items.map((item) => {
-                const checked = pending[item.id] ?? item.done;
+                const checked = pending[item.id]?.done ?? item.done;
+                const note = pending[item.id]?.note ?? item.note ?? '';
                 return (
                   <li key={item.id} className={checked ? 'is-done' : undefined}>
                     <Checkbox
                       label={item.title}
                       checked={checked}
                       disabled={readOnly || busy}
-                      onChange={(value) => toggle(item.id, value, item.done)}
+                      onChange={(value) => change(item.id, { done: value }, item)}
                     />
                     <PillarBadge pillar={item.pillar} />
                     {item.due_date && <span className="roadmap-activity-due">Hạn {formatDate(item.due_date)}</span>}
+                    {checked && (
+                      <Textarea
+                        className="roadmap-note"
+                        label="Ghi chú kết quả"
+                        rows={2}
+                        value={note}
+                        disabled={readOnly || busy}
+                        onChange={(event) => change(item.id, { note: event.target.value }, item)}
+                      />
+                    )}
                   </li>
                 );
               })}

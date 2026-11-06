@@ -1,5 +1,5 @@
 import { evaluateRoadmapProgress } from '../../domain/assessmentRules';
-import type { Milestone, Roadmap, RoadmapPillar, SetupErrors, SetupValues, Stage } from './roadmap.types';
+import type { ActivityType, Milestone, RegenerateReason, Roadmap, RoadmapPillar, SetupErrors, SetupValues, Stage } from './roadmap.types';
 
 export const PILLAR_ORDER: RoadmapPillar[] = ['knowledge', 'experience', 'exploration'];
 
@@ -10,7 +10,8 @@ export const PILLAR_LABEL: Record<RoadmapPillar, string> = {
 };
 
 export const EMPTY_SETUP: SetupValues = {
-  careerId: '',
+  careerIds: [],
+  reason: '',
   educationLevel: '',
   schoolYear: '',
   skills: '',
@@ -59,9 +60,24 @@ export function monthInputFromIso(iso: string | null): string {
   return iso ? `${iso.slice(5, 7)}/${iso.slice(0, 4)}` : '';
 }
 
-export function validateSetup(values: SetupValues, todayIso = new Date().toISOString().slice(0, 10)): SetupErrors {
+export const REASON_OPTIONS: { value: RegenerateReason; label: string }[] = [
+  { value: 'off_track', label: 'Chệch hướng so với kế hoạch' },
+  { value: 'circumstances', label: 'Hoàn cảnh thay đổi' },
+  { value: 'career_changed', label: 'Đổi nghề mục tiêu' },
+  { value: 'not_admitted', label: 'Không trúng tuyển' },
+];
+
+export const ACTIVITY_TYPE_LABEL: Record<ActivityType, string> = {
+  course: 'Khóa học',
+  book: 'Sách',
+  exercise: 'Bài tập',
+  project: 'Dự án nhỏ',
+};
+
+export function validateSetup(values: SetupValues, requireReason = false, todayIso = new Date().toISOString().slice(0, 10)): SetupErrors {
   const errors: SetupErrors = {};
-  if (!values.careerId) errors.careerId = 'Chọn nghề mục tiêu.';
+  if (requireReason && !values.reason) errors.reason = 'Chọn lý do tạo lại.';
+  if (values.careerIds.length === 0) errors.careerIds = 'Chọn nghề mục tiêu.';
   if (!values.educationLevel) errors.educationLevel = 'Chọn cấp học.';
   if (!values.schoolYear) errors.schoolYear = 'Chọn năm học hoặc lớp.';
   const end = monthEndFromInput(values.targetMonth);

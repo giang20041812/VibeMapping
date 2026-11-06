@@ -269,6 +269,20 @@
 .roadmap-more:hover { color: var(--cartoon-ink); border-color: var(--cartoon-ink); }
 .roadmap-more:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 
+.roadmap-swap { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; }
+.roadmap-swap-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.roadmap-expected {
+  margin: 0;
+  padding: var(--space-3);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-main);
+  background: var(--brand-cream);
+  border: var(--cartoon-stroke-thin) solid var(--cartoon-line);
+  border-radius: var(--radius-md);
+}
+.roadmap-skill-reason { font-weight: 700; color: var(--color-text-secondary); }
+.roadmap-note { flex: 1 1 100%; min-width: 0; }
+
 /* Cân đối và tiến độ theo trụ cột */
 .roadmap-balance { display: flex; flex-direction: column; gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
 .roadmap-balance li { display: flex; flex-direction: column; gap: var(--space-2); }

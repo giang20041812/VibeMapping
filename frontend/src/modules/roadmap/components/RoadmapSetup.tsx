@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Check, Clock, Compass, MapPin, Target, UserRound } from 'lucide-react';
-import { Badge, Button, Input, Select, Textarea } from '../../../components/common';
+import { Alert, Badge, Button, Input, Select, Textarea } from '../../../components/common';
 import { SearchableSelect } from '../../../components/filters/SearchableSelect/SearchableSelect';
 import type { FilterOption } from '../../../types/filter';
-import { EDUCATION_LEVELS, schoolYearOptions } from '../roadmap.logic';
+import { EDUCATION_LEVELS, REASON_OPTIONS, schoolYearOptions } from '../roadmap.logic';
 import type { SetupErrors, SetupValues } from '../roadmap.types';
 
 export interface CareerChoice {
@@ -19,6 +19,9 @@ interface Props {
   catalog: FilterOption[];
   submitting: boolean;
   submitLabel: string;
+  /** Tạo lại lộ trình: bắt buộc chọn lý do */
+  askReason: boolean;
+  nameOf: (id: string) => string;
   onChange: (patch: Partial<SetupValues>) => void;
   onFillFromProfile: () => void;
   onSubmit: () => void;
@@ -33,12 +36,28 @@ export const RoadmapSetup: React.FC<Props> = ({
   catalog,
   submitting,
   submitLabel,
+  askReason,
+  nameOf,
   onChange,
   onFillFromProfile,
   onSubmit,
   onCancel,
 }) => {
-  const outsideChoice = values.careerId && !choices.some((c) => c.id === values.careerId);
+  const [thirdPick, setThirdPick] = useState<string | null>(null);
+  const shownChoices: CareerChoice[] = [
+    ...choices,
+    ...values.careerIds.filter((id) => !choices.some((c) => c.id === id)).map((id) => ({ id, name: nameOf(id), from360: false })),
+  ];
+  const toggle = (id: string) => {
+    if (!id) return;
+    if (values.careerIds.includes(id)) onChange({ careerIds: values.careerIds.filter((x) => x !== id) });
+    else if (values.careerIds.length < 2) onChange({ careerIds: [...values.careerIds, id] });
+    else setThirdPick(id);
+  };
+  const replaceWith = (index: number) => {
+    if (thirdPick) onChange({ careerIds: values.careerIds.map((x, i) => (i === index ? thirdPick : x)) });
+    setThirdPick(null);
+  };
   return (
     <form
       className="roadmap-setup"
@@ -53,18 +72,18 @@ export const RoadmapSetup: React.FC<Props> = ({
           <span className="roadmap-block-icon" aria-hidden="true"><Target /></span>
           Nghề mục tiêu
         </h2>
-        {choices.length > 0 && (
-          <div className="roadmap-career-grid" role="radiogroup" aria-label="Nghề gợi ý">
-            {choices.map((choice) => {
-              const selected = values.careerId === choice.id;
+        {shownChoices.length > 0 && (
+          <div className="roadmap-career-grid" role="group" aria-label="Nghề gợi ý">
+            {shownChoices.map((choice) => {
+              const selected = values.careerIds.includes(choice.id);
               return (
                 <button
                   key={choice.id}
                   type="button"
-                  role="radio"
+                  role="checkbox"
                   aria-checked={selected}
                   className={`roadmap-career-option${selected ? ' is-selected' : ''}`}
-                  onClick={() => onChange({ careerId: choice.id })}
+                  onClick={() => toggle(choice.id)}
                 >
                   <span className="roadmap-career-check" aria-hidden="true">{selected && <Check size={14} />}</span>
                   <span className="roadmap-career-name">{choice.name}</span>
@@ -74,16 +93,31 @@ export const RoadmapSetup: React.FC<Props> = ({
             })}
           </div>
         )}
+        {thirdPick && (
+          <div className="roadmap-swap">
+            <Alert variant="warning">Bạn đã chọn đủ 2 nghề mục tiêu. Chọn thêm nghề thứ 3 sẽ thay thế một nghề cũ.</Alert>
+            <div className="roadmap-swap-actions">
+              {values.careerIds.map((id, index) => (
+                <Button key={id} type="button" size="sm" variant="outline" onClick={() => replaceWith(index)}>
+                  Thay {nameOf(id)}
+                </Button>
+              ))}
+              <Button type="button" size="sm" variant="ghost" onClick={() => setThirdPick(null)}>
+                Giữ nguyên lựa chọn
+              </Button>
+            </div>
+          </div>
+        )}
         <div className="roadmap-field-row">
           <SearchableSelect
             label="Hoặc chọn nghề từ danh sách"
             placeholder="Chọn nghề"
             options={catalog}
-            value={outsideChoice ? values.careerId : ''}
-            onChange={(value) => onChange({ careerId: value })}
+            value=""
+            onChange={toggle}
           />
         </div>
-        {errors.careerId && <p className="roadmap-field-error" role="alert">{errors.careerId}</p>}
+        {errors.careerIds && <p className="roadmap-field-error" role="alert">{errors.careerIds}</p>}
       </section>
 
       <section className="roadmap-block roadmap-tone-blue">
@@ -165,6 +199,23 @@ export const RoadmapSetup: React.FC<Props> = ({
           />
         </div>
       </section>
+
+      {askReason && (
+        <section className="roadmap-block roadmap-tone-violet">
+          <h2 className="roadmap-block-title">Lý do tạo lại</h2>
+          <div className="roadmap-fields">
+            <Select
+              label="Lý do tạo lại"
+              required
+              emptyLabel="Chọn lý do"
+              options={REASON_OPTIONS}
+              value={values.reason}
+              error={errors.reason}
+              onChange={(value) => onChange({ reason: value as typeof values.reason })}
+            />
+          </div>
+        </section>
+      )}
 
       <div className="roadmap-form-actions">
         {onCancel && (

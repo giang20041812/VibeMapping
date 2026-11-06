@@ -1,5 +1,9 @@
 export type RoadmapPillar = 'knowledge' | 'experience' | 'exploration';
 
+export type ActivityType = 'course' | 'book' | 'exercise' | 'project';
+
+export type RegenerateReason = 'off_track' | 'circumstances' | 'career_changed' | 'not_admitted';
+
 export interface Milestone {
   id: string;
   pillar: RoadmapPillar;
@@ -8,6 +12,14 @@ export interface Milestone {
   due_date: string | null;
   weight: number;
   is_checkpoint: boolean;
+  note: string | null;
+  done_at: string | null;
+  source: 'system' | 'user';
+  pass_criteria: string | null;
+  fail_criteria: string | null;
+  activity_type: ActivityType | null;
+  is_partner: boolean;
+  expected_result: string | null;
 }
 
 export interface Roadmap {
@@ -17,6 +29,9 @@ export interface Roadmap {
   career_name: string | null;
   training_program_id: string | null;
   program_title: string | null;
+  careers: { id: string; name: string }[];
+  hours_per_week: number | null;
+  regenerate_reason: RegenerateReason | null;
   is_active: boolean;
   target_date: string | null;
   created_at: string;
@@ -42,8 +57,20 @@ export interface Stage {
   status: StageStatus;
 }
 
+export interface SoftSkill {
+  criteria_id: string;
+  name: string;
+  group_name: string;
+  score_percent: number | null;
+  self_percent: number | null;
+  others_percent: number | null;
+  gap: number | null;
+  reasons: ('low' | 'gap')[];
+}
+
 export interface SetupValues {
-  careerId: string;
+  careerIds: string[];
+  reason: RegenerateReason | '';
   educationLevel: string;
   schoolYear: string;
   skills: string;

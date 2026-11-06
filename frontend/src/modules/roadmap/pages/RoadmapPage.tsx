@@ -37,7 +37,7 @@ import {
   progressOf,
   validateSetup,
 } from '../roadmap.logic';
-import type { Roadmap, RoadmapPillar, SetupErrors, SetupValues, Stage } from '../roadmap.types';
+import type { Roadmap, RoadmapPillar, SetupErrors, SetupValues, SoftSkill, Stage } from '../roadmap.types';
 import './RoadmapPage.css';
 
 type TabKey = 'thiet-lap' | 'lo-trinh' | 'cot-moc' | 'tien-do' | 'canh-bao';
@@ -74,7 +74,7 @@ export const RoadmapPage: React.FC = () => {
   const [roadmaps, setRoadmaps] = useState<Roadmap[] | null>(null);
   const [choices, setChoices] = useState<CareerChoice[]>([]);
   const [catalog, setCatalog] = useState<FilterOption[]>([]);
-  const [values, setValues] = useState<SetupValues>(() => ({ ...EMPTY_SETUP, careerId: params.get('nghe') ?? '' }));
+  const [values, setValues] = useState<SetupValues>(() => ({ ...EMPTY_SETUP, careerIds: params.get('nghe') ? [params.get('nghe') as string] : [] }));
   const [errors, setErrors] = useState<SetupErrors>({});
   const [viewingId, setViewingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -84,6 +84,7 @@ export const RoadmapPage: React.FC = () => {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [suggestOpen, setSuggestOpen] = useState(false);
   const [hours, setHours] = useState('8');
+  const [softSkills, setSoftSkills] = useState<SoftSkill[]>([]);
   const [adding, setAdding] = useState<{ stage: Stage; pillar: RoadmapPillar; title: string } | null>(null);
 
   const reload = useCallback(async () => {
@@ -99,9 +100,11 @@ export const RoadmapPage: React.FC = () => {
       listSavedCareers().catch(() => []),
       recommendCareers().catch(() => null),
       listPublishedCareers().catch(() => []),
+      callRpc<SoftSkill[]>('get_roadmap_soft_skills').catch(() => []),
     ])
-      .then(([, saved, recs, all]) => {
+      .then(([, saved, recs, all, skills]) => {
         if (!alive) return;
+        setSoftSkills(skills ?? []);
         const map = new Map<string, CareerChoice>();
         for (const item of recs?.items.slice(0, 5) ?? []) map.set(item.careerId, { id: item.careerId, name: item.careerName, from360: true });
         for (const t of saved.filter((s) => s.kind === 'target')) {
@@ -154,14 +157,15 @@ export const RoadmapPage: React.FC = () => {
   const openSetup = () => {
     if (active) {
       setValues({
-        careerId: active.career_id ?? '',
+        careerIds: active.careers.length > 0 ? active.careers.map((c) => c.id) : active.career_id ? [active.career_id] : [],
+        reason: '',
         educationLevel: active.education_level ?? '',
         schoolYear: active.school_year ?? '',
         skills: active.current_skills ?? '',
         certificates: active.certificates ?? '',
         extracurricular: active.extracurricular ?? '',
         targetMonth: '',
-        hoursPerWeek: hours,
+        hoursPerWeek: String(active.hours_per_week ?? hours),
       });
     }
     setErrors({});
@@ -180,6 +184,7 @@ export const RoadmapPage: React.FC = () => {
     const templates: ApprovedActivityTemplate[] = ((data ?? []) as Array<{
       id: string; pillar: ApprovedActivityTemplate['pillar']; title: string;
       duration_weeks: number; hours: number; criteria_id: string | null; repeatable: boolean;
+      activity_type: ApprovedActivityTemplate['activityType']; is_partner: boolean; expected_result: string | null;
     }>).map((row) => ({
       id: row.id,
       pillar: row.pillar,
@@ -188,6 +193,9 @@ export const RoadmapPage: React.FC = () => {
       hours: Number(row.hours),
       criteriaId: row.criteria_id,
       repeatable: row.repeatable,
+      activityType: row.activity_type,
+      isPartner: row.is_partner,
+      expectedResult: row.expected_result,
     }));
     const learner = session?.user.id ? await loadLearnerProfile(session.user.id).catch(() => null) : null;
     const generated = generateRoadmapFromLibrary({
@@ -205,12 +213,17 @@ export const RoadmapPage: React.FC = () => {
         due_date: item.dueDate,
         weight: item.weight,
         is_checkpoint: item.isCheckpoint,
+        activity_type: item.activityType,
+        is_partner: item.isPartner,
+        expected_result: item.expectedResult,
+        pass_criteria: item.isCheckpoint ? 'Hoàn thành mọi hoạt động của giai đoạn' : null,
+        fail_criteria: item.isCheckpoint ? 'Còn hoạt động chưa xong khi đến hạn' : null,
       })),
     });
   };
 
   const submitSetup = async () => {
-    const found = validateSetup(values);
+    const found = validateSetup(values, Boolean(active));
     setErrors(found);
     if (Object.keys(found).length > 0) return;
     if (active && !confirmOpen) {
@@ -224,10 +237,13 @@ export const RoadmapPage: React.FC = () => {
     let createdId: string | null = null;
     try {
       createdId = await callRpc<string>('create_roadmap', {
-        p_career_id: values.careerId,
-        p_title: `${careerName(values.careerId)} · ${values.targetMonth.trim()}`,
+        p_career_id: values.careerIds[0],
+        p_title: `${values.careerIds.map(careerName).join(' + ')} · ${values.targetMonth.trim()}`,
         p_target_date: targetDate,
+        p_hours_per_week: Number(values.hoursPerWeek),
+        p_reason: active ? values.reason : null,
       });
+      if (values.careerIds.length > 1) await callRpc('set_roadmap_careers', { p_roadmap_id: createdId, p_career_ids: values.careerIds });
       if (programId) await callRpc('set_roadmap_program', { p_roadmap_id: createdId, p_training_program_id: programId });
       await callRpc('save_roadmap_origin', {
         p_roadmap_id: createdId,
@@ -279,13 +295,23 @@ export const RoadmapPage: React.FC = () => {
     }
   };
 
-  const saveProgress = (changes: Record<string, boolean>) =>
+  const saveProgress = (changes: Record<string, { done?: boolean; note?: string }>) =>
     run(
-      () => Promise.all(Object.entries(changes).map(([id, done]) => callRpc('toggle_roadmap_milestone', { p_milestone_id: id, p_done: done }))),
+      () => callRpc('save_roadmap_progress', { p_items: Object.entries(changes).map(([id, change]) => ({ id, ...change })) }),
       'Không lưu được cập nhật. Thử lại sau.',
     );
 
-  const addMilestone = (input: { title: string; due: string; pillar: RoadmapPillar; checkpoint: boolean }) =>
+  const previewDue = (id: string, due: string) =>
+    callRpc<{ conflicts: { id: string; title: string; due_date: string }[] }>('update_roadmap_milestone_due', {
+      p_milestone_id: id,
+      p_due_date: due,
+      p_apply: false,
+    });
+
+  const applyDue = (id: string, due: string) =>
+    run(() => callRpc('update_roadmap_milestone_due', { p_milestone_id: id, p_due_date: due, p_apply: true }), 'Không đổi được hạn. Thử lại sau.');
+
+  const addMilestone = (input: { title: string; due: string; pillar: RoadmapPillar; checkpoint: boolean; passCriteria?: string }) =>
     active
       ? run(
           () =>
@@ -296,6 +322,7 @@ export const RoadmapPage: React.FC = () => {
               p_due_date: input.due || null,
               p_weight: 1,
               p_is_checkpoint: input.checkpoint,
+              p_pass_criteria: input.passCriteria || null,
             }),
           'Không thêm được. Nhập nội dung và hạn.',
         )
@@ -374,6 +401,8 @@ export const RoadmapPage: React.FC = () => {
           catalog={catalog}
           submitting={submitting}
           submitLabel={active ? 'Tạo lại lộ trình' : 'Tạo lộ trình'}
+          askReason={Boolean(active)}
+          nameOf={careerName}
           onChange={(patch) => setValues((prev) => ({ ...prev, ...patch }))}
           onFillFromProfile={fillFromProfile}
           onSubmit={() => void submitSetup()}
@@ -386,6 +415,7 @@ export const RoadmapPage: React.FC = () => {
           roadmap={shown}
           stages={stages}
           readOnly={readOnly}
+          softSkills={softSkills}
           onSuggest={() => setSuggestOpen(true)}
           onAddToStage={(stage, pillar) => setAdding({ stage, pillar, title: '' })}
         />
@@ -396,6 +426,9 @@ export const RoadmapPage: React.FC = () => {
           checkpoints={checkpoints}
           readOnly={readOnly}
           busy={busy}
+          activities={shown.milestones}
+          onPreviewDue={previewDue}
+          onApplyDue={applyDue}
           onAdd={(input) => addMilestone({ ...input, checkpoint: true })}
         />
       )}

@@ -1,7 +1,7 @@
 import React from 'react';
 import { History, RefreshCw, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { Badge, Button, DataTable, type DataTableColumn } from '../../../components/common';
-import { formatDate } from '../roadmap.logic';
+import { REASON_OPTIONS, formatDate } from '../roadmap.logic';
 import type { Roadmap } from '../roadmap.types';
 
 interface Props {
@@ -34,6 +34,12 @@ export const RoadmapAlerts: React.FC<Props> = ({ roadmap, history, progress, vie
       key: 'status',
       header: 'Trạng thái',
       render: (r) => (r.is_active ? <Badge variant="info">Đang thực hiện</Badge> : <Badge>Đã lưu trữ</Badge>),
+    },
+    {
+      key: 'reason',
+      header: 'Lý do tạo lại',
+      align: 'left',
+      render: (r) => REASON_OPTIONS.find((o) => o.value === r.regenerate_reason)?.label ?? '',
     },
     {
       key: 'progress',

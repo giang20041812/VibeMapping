@@ -106,6 +106,10 @@ export type Database = {
           repeatable: boolean;
           is_active: boolean;
           created_at: string;
+          activity_type: string | null;
+          is_partner: boolean;
+          source_url: string | null;
+          expected_result: string | null;
         };
         Insert: {
           id?: string;
@@ -117,6 +121,10 @@ export type Database = {
           repeatable?: boolean;
           is_active?: boolean;
           created_at?: string;
+          activity_type?: string | null;
+          is_partner?: boolean;
+          source_url?: string | null;
+          expected_result?: string | null;
         };
         Update: {
           id?: string;
@@ -128,6 +136,10 @@ export type Database = {
           repeatable?: boolean;
           is_active?: boolean;
           created_at?: string;
+          activity_type?: string | null;
+          is_partner?: boolean;
+          source_url?: string | null;
+          expected_result?: string | null;
         };
         Relationships: [
           {
@@ -921,6 +933,137 @@ export type Database = {
           },
         ];
       };
+      career_fit_results: {
+        Row: {
+          id: string;
+          result_id: string;
+          user_id: string;
+          career_id: string;
+          matrix_version_id: string;
+          match_g1_g5: number | null;
+          match_g6: number | null;
+          match_g7: number | null;
+          applied_weight_g1_g5: number | null;
+          applied_weight_g6: number | null;
+          applied_weight_g7: number | null;
+          riasec_method: string;
+          career_fit_raw: number;
+          component_completeness: number;
+          rank_band: number;
+          highest_weight_gap: number;
+          unmet_criteria_count: number;
+          calculated_at: string;
+        };
+        Insert: {
+          id?: string;
+          result_id: string;
+          user_id: string;
+          career_id: string;
+          matrix_version_id: string;
+          match_g1_g5?: number | null;
+          match_g6?: number | null;
+          match_g7?: number | null;
+          applied_weight_g1_g5?: number | null;
+          applied_weight_g6?: number | null;
+          applied_weight_g7?: number | null;
+          riasec_method: string;
+          career_fit_raw: number;
+          component_completeness: number;
+          rank_band: number;
+          highest_weight_gap?: number;
+          unmet_criteria_count?: number;
+          calculated_at?: string;
+        };
+        Update: {
+          id?: string;
+          result_id?: string;
+          user_id?: string;
+          career_id?: string;
+          matrix_version_id?: string;
+          match_g1_g5?: number | null;
+          match_g6?: number | null;
+          match_g7?: number | null;
+          applied_weight_g1_g5?: number | null;
+          applied_weight_g6?: number | null;
+          applied_weight_g7?: number | null;
+          riasec_method?: string;
+          career_fit_raw?: number;
+          component_completeness?: number;
+          rank_band?: number;
+          highest_weight_gap?: number;
+          unmet_criteria_count?: number;
+          calculated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "career_fit_results_career_id_fkey";
+            columns: ["career_id"];
+            isOneToOne: false;
+            referencedRelation: "careers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "career_fit_results_matrix_version_id_fkey";
+            columns: ["matrix_version_id"];
+            isOneToOne: false;
+            referencedRelation: "career_matrix_versions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "career_fit_results_result_id_fkey";
+            columns: ["result_id"];
+            isOneToOne: false;
+            referencedRelation: "assessment_results";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "career_fit_results_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      career_fit_runs: {
+        Row: {
+          result_id: string;
+          user_id: string;
+          fingerprint: string;
+          reason: string;
+          calculated_at: string;
+        };
+        Insert: {
+          result_id: string;
+          user_id: string;
+          fingerprint: string;
+          reason: string;
+          calculated_at?: string;
+        };
+        Update: {
+          result_id?: string;
+          user_id?: string;
+          fingerprint?: string;
+          reason?: string;
+          calculated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "career_fit_runs_result_id_fkey";
+            columns: ["result_id"];
+            isOneToOne: true;
+            referencedRelation: "assessment_results";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "career_fit_runs_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       career_holland_profiles: {
         Row: {
           id: string;
@@ -1051,6 +1194,8 @@ export type Database = {
           data_source: string | null;
           created_at: string;
           updated_at: string;
+          data_checked_at: string | null;
+          data_checked_kind: string | null;
         };
         Insert: {
           id?: string;
@@ -1091,6 +1236,8 @@ export type Database = {
           data_source?: string | null;
           created_at?: string;
           updated_at?: string;
+          data_checked_at?: string | null;
+          data_checked_kind?: string | null;
         };
         Update: {
           id?: string;
@@ -1131,6 +1278,8 @@ export type Database = {
           data_source?: string | null;
           created_at?: string;
           updated_at?: string;
+          data_checked_at?: string | null;
+          data_checked_kind?: string | null;
         };
         Relationships: [
           {
@@ -1335,6 +1484,7 @@ export type Database = {
           created_at: string;
           updated_at: string;
           growth_level: string | null;
+          data_checked_kind: string | null;
         };
         Insert: {
           id?: string;
@@ -1350,6 +1500,7 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
           growth_level?: string | null;
+          data_checked_kind?: string | null;
         };
         Update: {
           id?: string;
@@ -1365,6 +1516,7 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
           growth_level?: string | null;
+          data_checked_kind?: string | null;
         };
         Relationships: [
           {
@@ -3075,6 +3227,57 @@ export type Database = {
           },
         ];
       };
+      roadmap_alerts: {
+        Row: {
+          id: string;
+          roadmap_id: string;
+          user_id: string;
+          reasons: Json;
+          delay_percent: number;
+          last_slot: string | null;
+          created_at: string;
+          cleared_at: string | null;
+          clear_reason: string | null;
+        };
+        Insert: {
+          id?: string;
+          roadmap_id: string;
+          user_id: string;
+          reasons?: Json;
+          delay_percent?: number;
+          last_slot?: string | null;
+          created_at?: string;
+          cleared_at?: string | null;
+          clear_reason?: string | null;
+        };
+        Update: {
+          id?: string;
+          roadmap_id?: string;
+          user_id?: string;
+          reasons?: Json;
+          delay_percent?: number;
+          last_slot?: string | null;
+          created_at?: string;
+          cleared_at?: string | null;
+          clear_reason?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "roadmap_alerts_roadmap_id_fkey";
+            columns: ["roadmap_id"];
+            isOneToOne: false;
+            referencedRelation: "roadmaps";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "roadmap_alerts_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       roadmap_milestones: {
         Row: {
           id: string;
@@ -3086,6 +3289,14 @@ export type Database = {
           due_date: string | null;
           weight: number;
           is_checkpoint: boolean;
+          note: string | null;
+          done_at: string | null;
+          source: string;
+          pass_criteria: string | null;
+          fail_criteria: string | null;
+          activity_type: string | null;
+          is_partner: boolean;
+          expected_result: string | null;
         };
         Insert: {
           id?: string;
@@ -3097,6 +3308,14 @@ export type Database = {
           due_date?: string | null;
           weight?: number;
           is_checkpoint?: boolean;
+          note?: string | null;
+          done_at?: string | null;
+          source?: string;
+          pass_criteria?: string | null;
+          fail_criteria?: string | null;
+          activity_type?: string | null;
+          is_partner?: boolean;
+          expected_result?: string | null;
         };
         Update: {
           id?: string;
@@ -3108,10 +3327,51 @@ export type Database = {
           due_date?: string | null;
           weight?: number;
           is_checkpoint?: boolean;
+          note?: string | null;
+          done_at?: string | null;
+          source?: string;
+          pass_criteria?: string | null;
+          fail_criteria?: string | null;
+          activity_type?: string | null;
+          is_partner?: boolean;
+          expected_result?: string | null;
         };
         Relationships: [
           {
             foreignKeyName: "roadmap_milestones_roadmap_id_fkey";
+            columns: ["roadmap_id"];
+            isOneToOne: false;
+            referencedRelation: "roadmaps";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      roadmap_target_careers: {
+        Row: {
+          roadmap_id: string;
+          career_id: string;
+          sort_order: number;
+        };
+        Insert: {
+          roadmap_id: string;
+          career_id: string;
+          sort_order?: number;
+        };
+        Update: {
+          roadmap_id?: string;
+          career_id?: string;
+          sort_order?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "roadmap_target_careers_career_id_fkey";
+            columns: ["career_id"];
+            isOneToOne: false;
+            referencedRelation: "careers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "roadmap_target_careers_roadmap_id_fkey";
             columns: ["roadmap_id"];
             isOneToOne: false;
             referencedRelation: "roadmaps";
@@ -3133,6 +3393,9 @@ export type Database = {
           current_skills: string | null;
           certificates: string | null;
           extracurricular: string | null;
+          hours_per_week: number | null;
+          regenerate_reason: string | null;
+          previous_roadmap_id: string | null;
         };
         Insert: {
           id?: string;
@@ -3147,6 +3410,9 @@ export type Database = {
           current_skills?: string | null;
           certificates?: string | null;
           extracurricular?: string | null;
+          hours_per_week?: number | null;
+          regenerate_reason?: string | null;
+          previous_roadmap_id?: string | null;
         };
         Update: {
           id?: string;
@@ -3161,6 +3427,9 @@ export type Database = {
           current_skills?: string | null;
           certificates?: string | null;
           extracurricular?: string | null;
+          hours_per_week?: number | null;
+          regenerate_reason?: string | null;
+          previous_roadmap_id?: string | null;
         };
         Relationships: [
           {
@@ -3175,6 +3444,13 @@ export type Database = {
             columns: ["owner_id"];
             isOneToOne: false;
             referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "roadmaps_previous_roadmap_id_fkey";
+            columns: ["previous_roadmap_id"];
+            isOneToOne: false;
+            referencedRelation: "roadmaps";
             referencedColumns: ["id"];
           },
         ];
@@ -3305,6 +3581,45 @@ export type Database = {
           {
             foreignKeyName: "skill_profile_items_owner_id_fkey";
             columns: ["owner_id"];
+            isOneToOne: false;
+            referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      target_career_history: {
+        Row: {
+          id: string;
+          user_id: string;
+          career_id: string;
+          action: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          career_id: string;
+          action: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          career_id?: string;
+          action?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "target_career_history_career_id_fkey";
+            columns: ["career_id"];
+            isOneToOne: false;
+            referencedRelation: "careers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "target_career_history_user_id_fkey";
+            columns: ["user_id"];
             isOneToOne: false;
             referencedRelation: "user_profiles";
             referencedColumns: ["id"];
@@ -3557,7 +3872,7 @@ export type Database = {
         Returns: string;
       };
       add_roadmap_milestone: {
-        Args: { p_roadmap_id: string; p_pillar: string; p_title: string; p_due_date?: string; p_weight?: number; p_is_checkpoint?: boolean };
+        Args: { p_roadmap_id: string; p_pillar: string; p_title: string; p_due_date?: string; p_weight?: number; p_is_checkpoint?: boolean; p_pass_criteria?: string };
         Returns: string;
       };
       add_roadmap_milestones_bulk: {
@@ -3584,6 +3899,10 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: number;
       };
+      auto_publish_careers: {
+        Args: Record<PropertyKey, never>;
+        Returns: number;
+      };
       build_group_report: {
         Args: { p_student_ids: string[] };
         Returns: Json;
@@ -3595,6 +3914,38 @@ export type Database = {
       can_view_result_of: {
         Args: { p_owner: string };
         Returns: boolean;
+      };
+      career_fit_compute: {
+        Args: { p_result_id: string; p_career_ids?: string[] };
+        Returns: unknown[];
+      };
+      career_fit_criteria: {
+        Args: { p_result_id: string; p_career_ids?: string[] };
+        Returns: unknown[];
+      };
+      career_fit_ensure: {
+        Args: { p_result_id: string };
+        Returns: undefined;
+      };
+      career_fit_fingerprint: {
+        Args: Record<PropertyKey, never>;
+        Returns: string;
+      };
+      career_fit_learner_scores: {
+        Args: { p_result_id: string };
+        Returns: unknown[];
+      };
+      career_fit_policy: {
+        Args: Record<PropertyKey, never>;
+        Returns: Json;
+      };
+      career_fit_ranked: {
+        Args: { p_result_id: string };
+        Returns: unknown[];
+      };
+      clear_roadmap_alert: {
+        Args: { p_roadmap_id: string; p_reason: string };
+        Returns: undefined;
       };
       complete_self_assessment: {
         Args: { p_session_id: string; p_invite_enabled?: boolean };
@@ -3641,7 +3992,7 @@ export type Database = {
         Returns: string;
       };
       create_roadmap: {
-        Args: { p_career_id: string; p_title: string; p_target_date?: string };
+        Args: { p_career_id: string; p_title: string; p_target_date?: string; p_hours_per_week?: number; p_reason?: string };
         Returns: string;
       };
       current_user_role: {
@@ -3680,6 +4031,18 @@ export type Database = {
         Args: { p_resume_token: string };
         Returns: Json;
       };
+      get_career_fit_detail: {
+        Args: { p_career_id: string; p_user_id?: string };
+        Returns: Json;
+      };
+      get_career_fit_many: {
+        Args: { p_career_ids: string[] };
+        Returns: Json;
+      };
+      get_career_recommendations: {
+        Args: { p_user_id?: string };
+        Returns: Json;
+      };
       get_class_dominant_groups: {
         Args: { p_class_id: string };
         Returns: Json;
@@ -3704,6 +4067,10 @@ export type Database = {
         Args: { p_token: string };
         Returns: Json;
       };
+      get_my_roadmap_status: {
+        Args: Record<PropertyKey, never>;
+        Returns: Json;
+      };
       get_my_school_invitations: {
         Args: Record<PropertyKey, never>;
         Returns: Json;
@@ -3718,6 +4085,10 @@ export type Database = {
       };
       get_qualitative_case: {
         Args: { p_submission_id: string };
+        Returns: Json;
+      };
+      get_roadmap_soft_skills: {
+        Args: Record<PropertyKey, never>;
         Returns: Json;
       };
       get_school_report: {
@@ -3868,8 +4239,20 @@ export type Database = {
         Args: { p_submission_id: string; p_ea: number[]; p_solo: number[]; p_carkhuff: number };
         Returns: number;
       };
+      refresh_career_ranking: {
+        Args: { p_result_id: string; p_reason?: string };
+        Returns: undefined;
+      };
+      refresh_career_standard: {
+        Args: { p_career_ids?: string[] };
+        Returns: number;
+      };
       register_career_event: {
         Args: { p_event_id: string; p_register?: boolean };
+        Returns: undefined;
+      };
+      remove_career_bookmark: {
+        Args: { p_career_id: string; p_kind: string };
         Returns: undefined;
       };
       remove_class_member: {
@@ -3907,6 +4290,14 @@ export type Database = {
       revoke_result_share: {
         Args: { p_user_id: string };
         Returns: undefined;
+      };
+      roadmap_param: {
+        Args: { p_code: string; p_default: number };
+        Returns: number;
+      };
+      roadmap_status: {
+        Args: { p_roadmap_id: string };
+        Returns: Json;
       };
       save_360_answers: {
         Args: { p_resume_token: string; p_answers: Json };
@@ -3948,6 +4339,14 @@ export type Database = {
         Args: { p_roadmap_id: string; p_education_level: string; p_school_year: string; p_skills: string; p_certificates: string; p_extracurricular: string };
         Returns: undefined;
       };
+      save_roadmap_progress: {
+        Args: { p_items: Json };
+        Returns: Json;
+      };
+      scan_roadmap_alerts: {
+        Args: Record<PropertyKey, never>;
+        Returns: number;
+      };
       set_career_fit_weights: {
         Args: { p_competency: number; p_interest: number; p_motivation: number };
         Returns: undefined;
@@ -3970,6 +4369,10 @@ export type Database = {
       };
       set_preferred_option: {
         Args: { p_plan_id: string; p_option_id: string; p_reason: string };
+        Returns: undefined;
+      };
+      set_roadmap_careers: {
+        Args: { p_roadmap_id: string; p_career_ids: string[] };
         Returns: undefined;
       };
       share_decision_report: {
@@ -4007,6 +4410,10 @@ export type Database = {
       toggle_roadmap_milestone: {
         Args: { p_milestone_id: string; p_done: boolean };
         Returns: undefined;
+      };
+      update_roadmap_milestone_due: {
+        Args: { p_milestone_id: string; p_due_date: string; p_apply?: boolean };
+        Returns: Json;
       };
       verify_mentor: {
         Args: { p_user_id: string; p_verified: boolean };

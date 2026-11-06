@@ -73,7 +73,7 @@ SELECT public.add_roadmap_milestones_bulk((SELECT v FROM ids WHERE k = 'r1'), js
   jsonb_build_object('pillar', 'experience', 'title', 'Làm B', 'due_date', current_date - 3, 'weight', 1, 'is_checkpoint', true, 'pass_criteria', 'Có sản phẩm'),
   jsonb_build_object('pillar', 'exploration', 'title', 'Gặp C', 'due_date', current_date + 60, 'weight', 1, 'is_checkpoint', false)));
 SELECT public.t_assert((SELECT count(*) FROM roadmap_milestones WHERE source = 'system' AND roadmap_id = (SELECT v FROM ids WHERE k = 'r1')) = 3, 'hoạt động sinh từ hệ thống');
-SELECT public.t_assert((public.roadmap_status((SELECT v FROM ids WHERE k = 'r1'))->>'off_track')::boolean, 'quá hạn cột mốc quan trọng là chệch hướng');
+SELECT public.t_assert((public.get_my_roadmap_status()->>'off_track')::boolean, 'quá hạn cột mốc quan trọng là chệch hướng');
 
 -- Lưu nhiều hoạt động một lần, có ghi chú; hoàn thành cột mốc → hết lý do cảnh báo
 INSERT INTO ids SELECT 'm_a', id FROM roadmap_milestones WHERE title = 'Học A';
@@ -85,8 +85,8 @@ SELECT public.t_assert(
   'lưu tiến độ nhiều hoạt động');
 SELECT public.t_assert((SELECT note = 'Xong tốt' AND done_at IS NOT NULL FROM roadmap_milestones WHERE id = (SELECT v FROM ids WHERE k = 'm_a')), 'ghi chú và thời điểm xong');
 -- trung bình 3 trụ: knowledge 100, experience 100, exploration 0 → 66.7
-SELECT public.t_assert((public.roadmap_status((SELECT v FROM ids WHERE k = 'r1'))->>'actual_percent')::numeric = 66.7, 'tiến độ tổng thể là trung bình ba trụ cột');
-SELECT public.t_assert(NOT (public.roadmap_status((SELECT v FROM ids WHERE k = 'r1'))->>'off_track')::boolean, 'không còn chệch hướng sau khi cập nhật');
+SELECT public.t_assert((public.get_my_roadmap_status()->>'actual_percent')::numeric = 66.7, 'tiến độ tổng thể là trung bình ba trụ cột');
+SELECT public.t_assert(NOT (public.get_my_roadmap_status()->>'off_track')::boolean, 'không còn chệch hướng sau khi cập nhật');
 
 -- Sửa hạn: cột mốc nằm giữa hạn cũ và hạn mới bị liệt kê, p_apply = false không ghi
 INSERT INTO ids SELECT 'm_c', id FROM roadmap_milestones WHERE title = 'Gặp C';

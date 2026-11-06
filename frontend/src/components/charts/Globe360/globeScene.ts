@@ -49,8 +49,6 @@ const REST_PITCH = 0.42;
 const RING_TILT = -0.3;
 const RING_RADIUS = 1.5;
 const RING_STEPS = 120;
-const ARC_STEPS = 32;
-const ARC_COUNT = 5;
 const MERIDIANS = 6;
 const MERIDIAN_STEPS = 40;
 const PARALLEL_STEPS = 56;
@@ -130,88 +128,6 @@ function readPalette(element: HTMLElement): Palette {
     shadeAlpha: num('--globe-shade-alpha', 0.22),
     gridAlpha: num('--globe-grid-alpha', 0.5),
   };
-}
-
-/* ---------- Bề mặt: điểm Fibonacci, mỗi điểm biết mình nằm trên đất liền hay biển ---------- */
-
-interface Surface {
-  count: number;
-  x: Float32Array;
-  y: Float32Array;
-  z: Float32Array;
-  land: Uint8Array;
-}
-
-const surfaceCache = new Map<number, Surface>();
-
-function buildSurface(count: number): Surface {
-  const cached = surfaceCache.get(count);
-  if (cached) return cached;
-  const x = new Float32Array(count);
-  const y = new Float32Array(count);
-  const z = new Float32Array(count);
-  const land = new Uint8Array(count);
-  const landMask = getLandMask();
-  const golden = Math.PI * (3 - Math.sqrt(5));
-  for (let i = 0; i < count; i++) {
-    const yy = 1 - (2 * (i + 0.5)) / count;
-    const r = Math.sqrt(1 - yy * yy);
-    const phi = i * golden;
-    x[i] = Math.cos(phi) * r;
-    y[i] = yy;
-    z[i] = Math.sin(phi) * r;
-    land[i] = isLandAt(landMask, x[i], yy, z[i]) ? 1 : 0;
-  }
-  const surface = { count, x, y, z, land };
-  surfaceCache.set(count, surface);
-  return surface;
-}
-
-function mulberry32(seed: number) {
-  let a = seed;
-  return () => {
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-interface Arc {
-  points: Float32Array;
-  tone: GlobeTone;
-  offset: number;
-}
-
-/** Cung nối hai điểm trên đất liền, nhô lên khỏi bề mặt */
-function buildArcs(surface: Surface, tones: GlobeTone[]): Arc[] {
-  const rng = mulberry32(2026);
-  const lands: number[] = [];
-  for (let i = 0; i < surface.count; i++) if (surface.land[i]) lands.push(i);
-  const arcs: Arc[] = [];
-  if (lands.length < 2) return arcs;
-
-  for (let attempt = 0; attempt < 120 && arcs.length < ARC_COUNT; attempt++) {
-    const a = lands[Math.floor(rng() * lands.length)];
-    const b = lands[Math.floor(rng() * lands.length)];
-    const dot = surface.x[a] * surface.x[b] + surface.y[a] * surface.y[b] + surface.z[a] * surface.z[b];
-    const omega = Math.acos(Math.max(-1, Math.min(1, dot)));
-    if (omega < 0.7 || omega > 1.7) continue;
-
-    const points = new Float32Array((ARC_STEPS + 1) * 3);
-    const sinOmega = Math.sin(omega);
-    for (let s = 0; s <= ARC_STEPS; s++) {
-      const t = s / ARC_STEPS;
-      const k1 = Math.sin((1 - t) * omega) / sinOmega;
-      const k2 = Math.sin(t * omega) / sinOmega;
-      const lift = 1 + 0.2 * Math.sin(Math.PI * t) * (omega / 1.5);
-      points[s * 3] = (surface.x[a] * k1 + surface.x[b] * k2) * lift;
-      points[s * 3 + 1] = (surface.y[a] * k1 + surface.y[b] * k2) * lift;
-      points[s * 3 + 2] = (surface.z[a] * k1 + surface.z[b] * k2) * lift;
-    }
-    arcs.push({ points, tone: tones[arcs.length % tones.length], offset: rng() });
-  }
-  return arcs;
 }
 
 /* ---------- Dữ liệu hình học tính sẵn (không phụ thuộc kích thước) ---------- */
@@ -300,14 +216,11 @@ export function createGlobeScene(canvas: HTMLCanvasElement, nodes: SceneNode[], 
   const context = ctx;
 
   const palette = readPalette(canvas);
-  const toneList = nodes.map((n) => n.tone);
   const iconPaths = nodes.map((n) => (n.icon ? new Path2D(n.icon) : null));
 
   let quality = Math.max(0, Math.min(2, Math.round(initialQuality)));
   let size = 0;
   let deviceRatio = 1;
-  let surface = buildSurface(0);
-  let arcs: Arc[] = [];
   let landBuffer: LandBuffer | null = null;
 
   let yaw = 0.7;
@@ -324,16 +237,12 @@ export function createGlobeScene(canvas: HTMLCanvasElement, nodes: SceneNode[], 
   const nodeState: NodeState[] = nodes.map(() => ({ x: 0, y: 0, z: 0, dx: 0, dy: 0, dz: 0 }));
   const P = { x: 0, y: 0, z: 0 };
   const widthCache = new Map<string, number>();
-  const arcProjected = new Float32Array((ARC_STEPS + 1) * 3);
 
   function applySize() {
     const dpr = Math.min(deviceRatio, MAX_DPR[quality]);
     canvas.width = Math.round(size * dpr);
     canvas.height = Math.round(size * dpr);
     context.setTransform(dpr, 0, 0, dpr, 0, 0);
-    /* Các điểm bề mặt chỉ còn dùng để chọn đầu mút cung nối */
-    surface = buildSurface(400);
-    arcs = buildArcs(surface, toneList);
     landBuffer = null;
   }
 
@@ -465,7 +374,7 @@ export function createGlobeScene(canvas: HTMLCanvasElement, nodes: SceneNode[], 
       st.dz = rz;
     }
 
-    /* Vành: nửa trước là dải màu viền mực, nửa sau là nét đứt mờ */
+    /* Vành: cả hai nửa là nét liền, dải màu viền mực */
     const ringWidth = Math.max(2, 3 * s);
     const drawRing = (front: boolean) => {
       context.beginPath();
@@ -480,20 +389,12 @@ export function createGlobeScene(canvas: HTMLCanvasElement, nodes: SceneNode[], 
           }
         } else pen = false;
       }
-      if (front) {
-        context.strokeStyle = rgba(ink, 1);
-        context.lineWidth = ringWidth + inkWidth * 1.6;
-        context.stroke();
-        context.strokeStyle = rgba(palette.ring, 1);
-        context.lineWidth = ringWidth;
-        context.stroke();
-      } else {
-        context.setLineDash([7 * s, 6 * s]);
-        context.strokeStyle = rgba(palette.ring, 0.55);
-        context.lineWidth = ringWidth * 0.8;
-        context.stroke();
-        context.setLineDash([]);
-      }
+      context.strokeStyle = rgba(ink, 1);
+      context.lineWidth = ringWidth + inkWidth * 1.6;
+      context.stroke();
+      context.strokeStyle = rgba(palette.ring, 1);
+      context.lineWidth = ringWidth;
+      context.stroke();
     };
 
     const badgeRadius = Math.max(11, 12 * s);
@@ -508,8 +409,6 @@ export function createGlobeScene(canvas: HTMLCanvasElement, nodes: SceneNode[], 
 
       const depth = 0.85 + 0.15 * (st.z / ringR);
       const radius = badgeRadius * (active ? 1.3 : 1) * depth;
-      context.globalAlpha = front ? 1 : 0.5;
-
       if (front) {
         /* Tia nối từ nút xuống bề mặt: nét đứt mực, chân tia là một chấm màu nhóm */
         project(st.dx * R, st.dy * R, st.dz * R);
@@ -577,7 +476,6 @@ export function createGlobeScene(canvas: HTMLCanvasElement, nodes: SceneNode[], 
         context.arc(st.x, st.y, radius * 0.4, 0, TAU);
         context.fill();
       }
-      context.globalAlpha = 1;
     };
 
     /* Lớp sau: nửa vành phía sau và các nút phía sau */
@@ -665,34 +563,6 @@ export function createGlobeScene(canvas: HTMLCanvasElement, nodes: SceneNode[], 
     context.beginPath();
     context.arc(cx, cy, R, 0, TAU);
     context.stroke();
-
-    /* Các cung kết nối trên bề mặt: nét đứt màu nhóm, đứng yên */
-    context.setLineDash([5 * s, 4 * s]);
-    context.lineWidth = Math.max(1.2, 1.8 * s);
-    for (let a = 0; a < arcs.length; a++) {
-      const arc = arcs[a];
-      const pts = arc.points;
-      for (let i = 0; i <= ARC_STEPS; i++) {
-        surfacePoint(pts[i * 3], pts[i * 3 + 1], pts[i * 3 + 2]);
-        arcProjected[i * 3] = P.x;
-        arcProjected[i * 3 + 1] = P.y;
-        arcProjected[i * 3 + 2] = P.z;
-      }
-      context.strokeStyle = rgba(tones[arc.tone], 1);
-      context.beginPath();
-      let pen = false;
-      for (let i = 0; i <= ARC_STEPS; i++) {
-        if (arcProjected[i * 3 + 2] > 0.03) {
-          if (pen) context.lineTo(arcProjected[i * 3], arcProjected[i * 3 + 1]);
-          else {
-            context.moveTo(arcProjected[i * 3], arcProjected[i * 3 + 1]);
-            pen = true;
-          }
-        } else pen = false;
-      }
-      context.stroke();
-    }
-    context.setLineDash([]);
 
     /* Lớp trước: nửa vành phía trước và các nút phía trước */
     drawRing(true);

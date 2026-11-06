@@ -9,6 +9,9 @@ export interface ProgramSummary {
   majorName: string;
   programType: string | null;
   specialization: string | null;
+  faculty: string | null;
+  /** Phần trong ngoặc của tên ngành mô tả chương trình */
+  qualifier: string | null;
   tuitionText: string | null;
   tuitionMin: number | null;
   tuitionMax: number | null;
@@ -28,7 +31,7 @@ export interface AdmissionRow {
 }
 
 const PROGRAM_SELECT =
-  'id, institution_id, major_id, program_type, specialization_name, tuition_text, tuition_per_semester_min, tuition_per_semester_max, tuition_basis, research_status, institution:institutions(institution_name, city), major:majors(major_name)';
+  'id, institution_id, major_id, program_type, specialization_name, faculty_name, program_qualifier, tuition_text, tuition_per_semester_min, tuition_per_semester_max, tuition_basis, research_status, institution:institutions(institution_name, city), major:majors(major_name)';
 
 type RawProgram = {
   id: string;
@@ -36,6 +39,8 @@ type RawProgram = {
   major_id: string;
   program_type: string | null;
   specialization_name: string | null;
+  faculty_name: string | null;
+  program_qualifier: string | null;
   tuition_text: string | null;
   tuition_per_semester_min: number | null;
   tuition_per_semester_max: number | null;
@@ -55,6 +60,8 @@ function toProgram(row: RawProgram): ProgramSummary {
     majorName: row.major?.major_name ?? '',
     programType: row.program_type,
     specialization: row.specialization_name,
+    faculty: row.faculty_name,
+    qualifier: row.program_qualifier,
     tuitionText: row.tuition_text,
     tuitionMin: row.tuition_per_semester_min,
     tuitionMax: row.tuition_per_semester_max,
@@ -104,7 +111,7 @@ export async function loadProgram(id: string) {
   const [{ data: program, error }, { data: admissions, error: admissionError }] = await Promise.all([
     db
       .from('training_programs')
-      .select(`${PROGRAM_SELECT}, faculty_name, program_summary, study_years, degree_levels, program_url, source_reference, research_note`)
+      .select(`${PROGRAM_SELECT}, program_summary, study_years, degree_levels, program_url, source_reference, research_note`)
       .eq('id', id)
       .maybeSingle(),
     db
@@ -117,7 +124,6 @@ export async function loadProgram(id: string) {
   if (admissionError) throw admissionError;
   if (!program) return null;
   const raw = program as unknown as RawProgram & {
-    faculty_name: string | null;
     program_summary: string | null;
     study_years: number | null;
     degree_levels: string[] | null;
@@ -181,4 +187,9 @@ export function formatTuition(p: Pick<ProgramSummary, 'tuitionMin' | 'tuitionMax
   if (p.tuitionMin !== null && p.tuitionMax !== null && p.tuitionMin !== p.tuitionMax) return `${fmt(p.tuitionMin)}–${fmt(p.tuitionMax)}/học kỳ${estimate}`;
   if (p.tuitionMin !== null) return `${fmt(p.tuitionMin)}/học kỳ${estimate}`;
   return p.tuitionText ?? 'Đang cập nhật';
+}
+
+/** Phần phân biệt các chương trình cùng trường, cùng ngành: chuyên ngành, phần trong ngoặc, khoa */
+export function programVariant(p: Pick<ProgramSummary, 'specialization' | 'qualifier' | 'faculty'>): string {
+  return [p.specialization, p.qualifier, p.faculty].filter(Boolean).join(' · ');
 }

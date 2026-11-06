@@ -4,7 +4,7 @@ import { ExternalLink } from 'lucide-react';
 import { Alert, Badge, Button, Card, Spinner } from '../../../components/common';
 import { addProgramToDecisionCompare } from '../compareProgram';
 import { INSTITUTION_TYPE_LABEL, OWNERSHIP_LABEL } from '../school_explorer.constants';
-import { formatTuition, loadCareerMap, loadInstitution, loadMajor, loadProgram, type ProgramSummary } from '../education.service';
+import { formatTuition, loadCareerMap, loadInstitution, loadMajor, loadProgram, programVariant, type ProgramSummary } from '../education.service';
 import '../../career_explorer/pages/CareerPages.css';
 import './EducationDetailPages.css';
 
@@ -42,6 +42,7 @@ const ProgramList: React.FC<{ programs: ProgramSummary[]; show: 'institution' | 
         {programs.map((p) => (
           <li key={p.id}>
             <Link to={`/kham-pha-truong/chuong-trinh/${p.id}`}>{show === 'institution' ? p.institutionName : p.majorName}</Link>
+            {programVariant(p) && <span>{programVariant(p)}</span>}
             {p.programType && <span>{p.programType}</span>}
             {show === 'institution' && p.city && <span>{p.city}</span>}
             <span>{formatTuition(p)}</span>

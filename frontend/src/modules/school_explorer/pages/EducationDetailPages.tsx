@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { BookMarked, Check, ExternalLink, GraduationCap, Landmark, Layers, MapPin, Plus, Search, Wallet } from 'lucide-react';
+import { BookMarked, Check, ChevronDown, ExternalLink, GraduationCap, Landmark, Layers, MapPin, Plus, Search, Wallet } from 'lucide-react';
 import {
   Alert,
   Badge,
@@ -88,21 +88,102 @@ function matchesProgram(p: ProgramSummary, f: ProgramFilter, show: 'institution'
   return true;
 }
 
-const ProgramList: React.FC<{ programs: ProgramSummary[]; show: 'institution' | 'major'; careerId?: string }> = ({ programs, show, careerId }) => {
-  const { draft, applied, patch, apply, reset } = useAdminFilter<ProgramFilter>(EMPTY_PROGRAM_FILTER);
+function useProgramCompare(careerId?: string) {
   const [added, setAdded] = useState<string[]>(() => readProgramCompare().map((item) => item.programId));
   const [notice, setNotice] = useState<string | null>(null);
-
-  const typeOptions = useMemo(() => uniqueOptions(programs.map((p) => p.programType)), [programs]);
-  const facultyOptions = useMemo(() => uniqueOptions(programs.map((p) => p.faculty)), [programs]);
-  const cityOptions = useMemo(() => uniqueOptions(programs.map((p) => p.city)), [programs]);
-  const rows = useMemo(() => programs.filter((p) => matchesProgram(p, applied, show)), [programs, applied, show]);
-
   const add = (p: ProgramSummary) => {
     const next = addProgramToDecisionCompare(p, { careerId });
     setAdded(next.items.map((item) => item.programId));
     setNotice(next.message ?? null);
   };
+  return { added, notice, add };
+}
+
+const CompareButton: React.FC<{ program: ProgramSummary; added: string[]; onAdd: (p: ProgramSummary) => void }> = ({ program, added, onAdd }) =>
+  added.includes(program.id) ? (
+    <Button type="button" size="sm" variant="secondary" disabled leftIcon={<Check size={14} />}>Đã thêm</Button>
+  ) : (
+    <Button type="button" size="sm" variant="outline" leftIcon={<Plus size={14} />} onClick={() => onAdd(program)}>So sánh</Button>
+  );
+
+const CompareBar: React.FC<{ count: number }> = ({ count }) =>
+  count > 0 ? (
+    <div className="program-compare-bar" role="region" aria-label="Phương án so sánh">
+      <span><b>{count}/{COMPARE_MAX}</b> phương án đã chọn</span>
+      <Link className="app-button btn-primary btn-md" to="/so-sanh"><span className="btn-text">Mở so sánh phương án</span></Link>
+    </div>
+  ) : null;
+
+interface MajorGroup {
+  majorId: string;
+  majorName: string;
+  programs: ProgramSummary[];
+}
+
+const groupByMajor = (programs: ProgramSummary[]): MajorGroup[] => {
+  const groups = new Map<string, MajorGroup>();
+  for (const p of programs) {
+    const group = groups.get(p.majorId) ?? { majorId: p.majorId, majorName: p.majorName, programs: [] };
+    group.programs.push(p);
+    groups.set(p.majorId, group);
+  }
+  return [...groups.values()].sort((a, b) => a.majorName.localeCompare(b.majorName, 'vi'));
+};
+
+const variantLabel = (p: ProgramSummary): string => [p.specialization, p.qualifier].filter(Boolean).join(' · ');
+
+const MajorProgramRow: React.FC<{ program: ProgramSummary; added: string[]; onAdd: (p: ProgramSummary) => void }> = ({ program, added, onAdd }) => (
+  <li className="major-program-row">
+    <div className="major-program-main">
+      <Link to={`/kham-pha-truong/chuong-trinh/${program.id}`}>{variantLabel(program) || 'Chương trình chung'}</Link>
+      {program.faculty && <div className="program-row-sub">{program.faculty}</div>}
+    </div>
+    <div className="major-program-meta">
+      {program.programType && <Badge>{program.programType}</Badge>}
+      <span className="major-program-tuition">{formatTuition(program)}</span>
+    </div>
+    <CompareButton program={program} added={added} onAdd={onAdd} />
+  </li>
+);
+
+/** Mỗi ngành chỉ xuất hiện một lần; chuyên ngành nằm gọn trong thẻ của ngành */
+const MajorGroupList: React.FC<{ programs: ProgramSummary[] }> = ({ programs }) => {
+  const { added, notice, add } = useProgramCompare();
+  const groups = useMemo(() => groupByMajor(programs), [programs]);
+  if (groups.length === 0) return <p className="explain-note">Đang cập nhật chương trình đào tạo</p>;
+  return (
+    <div className="program-list">
+      {notice && <Alert variant="info">{notice}</Alert>}
+      <ul className="major-group-list">
+        {groups.map((group, index) => (
+          <li key={group.majorId} className={`major-group major-group-tone-${index % 4}`}>
+            <details>
+              <summary className="major-group-head">
+                <span className="major-group-icon" aria-hidden="true"><BookMarked size={18} /></span>
+                <span className="major-group-name">{group.majorName}</span>
+                <Badge variant="info">{group.programs.length} chương trình</Badge>
+                <ChevronDown className="major-group-chevron" size={18} aria-hidden="true" />
+              </summary>
+              <ul className="major-program-list">
+                {group.programs.map((p) => <MajorProgramRow key={p.id} program={p} added={added} onAdd={add} />)}
+              </ul>
+            </details>
+          </li>
+        ))}
+      </ul>
+      <CompareBar count={added.length} />
+    </div>
+  );
+};
+
+const ProgramList: React.FC<{ programs: ProgramSummary[]; show: 'institution' | 'major'; careerId?: string }> = ({ programs, show, careerId }) => {
+  const { draft, applied, patch, apply, reset } = useAdminFilter<ProgramFilter>(EMPTY_PROGRAM_FILTER);
+  const { added, notice, add } = useProgramCompare(careerId);
+
+  const typeOptions = useMemo(() => uniqueOptions(programs.map((p) => p.programType)), [programs]);
+  const facultyOptions = useMemo(() => uniqueOptions(programs.map((p) => p.faculty)), [programs]);
+  const cityOptions = useMemo(() => uniqueOptions(programs.map((p) => p.city)), [programs]);
+  const rows = useMemo(() => programs.filter((p) => matchesProgram(p, applied, show)), [programs, applied, show]);
 
   const columns: DataTableColumn<ProgramSummary>[] = [
     {
@@ -128,12 +209,7 @@ const ProgramList: React.FC<{ programs: ProgramSummary[]; show: 'institution' | 
       key: 'compare',
       header: '',
       nowrap: true,
-      render: (p) =>
-        added.includes(p.id) ? (
-          <Button type="button" size="sm" variant="secondary" disabled leftIcon={<Check size={14} />}>Đã thêm</Button>
-        ) : (
-          <Button type="button" size="sm" variant="outline" leftIcon={<Plus size={14} />} onClick={() => add(p)}>So sánh</Button>
-        ),
+      render: (p) => <CompareButton program={p} added={added} onAdd={add} />,
     },
   ];
 
@@ -163,12 +239,7 @@ const ProgramList: React.FC<{ programs: ProgramSummary[]; show: 'institution' | 
         emptyText={programs.length === 0 ? 'Đang cập nhật chương trình đào tạo' : 'Không có chương trình phù hợp'}
       />
 
-      {added.length > 0 && (
-        <div className="program-compare-bar" role="region" aria-label="Phương án so sánh">
-          <span><b>{added.length}/{COMPARE_MAX}</b> phương án đã chọn</span>
-          <Link className="app-button btn-primary btn-md" to="/so-sanh"><span className="btn-text">Mở so sánh phương án</span></Link>
-        </div>
-      )}
+      <CompareBar count={added.length} />
     </div>
   );
 };
@@ -218,7 +289,7 @@ export const InstitutionDetailPage: React.FC = () => {
         <StatTile label="Học phí mỗi kỳ" tone="gold" icon={<Wallet />} value={tuitionRange(data.programs)} />
       </div>
       <Card title="Chương trình đào tạo">
-        <ProgramList programs={data.programs} show="major" />
+        <MajorGroupList programs={data.programs} />
       </Card>
     </div>
   );

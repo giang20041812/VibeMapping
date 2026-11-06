@@ -854,7 +854,7 @@ export function evaluateRoadmapProgress(
     const dueWeight = milestones.filter((m) => m.dueDate && m.dueDate <= todayIso).reduce((s, m) => s + weightOf(m), 0);
     plannedPercent = totalWeight > 0 ? Number(((dueWeight / totalWeight) * 100).toFixed(1)) : 0;
   }
-  const delayPercent = Number(Math.max(0, plannedPercent - actualPercent).toFixed(1));
+  const delayPercent = milestones.length === 0 ? 0 : Number(Math.max(0, plannedPercent - actualPercent).toFixed(1));
   const missedCheckpoints = milestones.filter((m) => m.isCheckpoint && !m.done && m.dueDate && m.dueDate < todayIso);
   const offTrack = delayPercent > 20 || missedCheckpoints.length > 0;
   return { actualPercent, plannedPercent, delayPercent, offTrack, missedCheckpoints, byPillar };

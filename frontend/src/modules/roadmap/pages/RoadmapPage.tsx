@@ -1,341 +1,502 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { CalendarClock, Map as MapIcon, Plus, RefreshCw, Sparkles } from 'lucide-react';
+import { ArrowLeft, Clock, Flag, History, ListChecks, Map as MapIcon, Pencil, Route, ShieldCheck, Target } from 'lucide-react';
 import {
-  Alert, Badge, Button, Card, Checkbox, Input, Modal, PageHero, ProgressBar, Select, Skeleton, StickerCard, StickerFact, StickerGrid, stickerToneAt,
+  Alert,
+  Button,
+  Input,
+  Modal,
+  PageHero,
+  Select,
+  Skeleton,
+  SkeletonRegion,
+  StatTile,
+  Tabs,
+  type TabItem,
 } from '../../../components/common';
-import { evaluateRoadmapProgress } from '../../../domain/assessmentRules';
+import { daysUntil } from '../../../domain/assessmentRules';
 import { generateRoadmapFromLibrary, type ApprovedActivityTemplate } from '../../../domain/roadmapGeneration';
 import { callRpc, db } from '../../../lib/rpc';
-import { listSavedCareers, loadLearnerProfile } from '../../career_explorer/career.service';
+import { listPublishedCareers, loadLearnerProfile, recommendCareers, listSavedCareers } from '../../career_explorer/career.service';
 import { useAuth } from '../../auth/AuthContext';
-import '../../career_explorer/pages/CareerPages.css';
+import type { FilterOption } from '../../../types/filter';
+import { RoadmapAlerts } from '../components/RoadmapAlerts';
+import { RoadmapCheckpoints } from '../components/RoadmapCheckpoints';
+import { RoadmapMap } from '../components/RoadmapMap';
+import { RoadmapProgress } from '../components/RoadmapProgress';
+import { RoadmapSetup, type CareerChoice } from '../components/RoadmapSetup';
+import {
+  EMPTY_SETUP,
+  PILLAR_LABEL,
+  PILLAR_ORDER,
+  buildStages,
+  currentStage,
+  monthEndFromInput,
+  monthsLeft,
+  originFromProfile,
+  progressOf,
+  validateSetup,
+} from '../roadmap.logic';
+import type { Roadmap, RoadmapPillar, SetupErrors, SetupValues, Stage } from '../roadmap.types';
 import './RoadmapPage.css';
 
-interface Milestone {
-  id: string;
-  pillar: 'knowledge' | 'experience' | 'exploration';
-  title: string;
-  done: boolean;
-  due_date: string | null;
-  weight: number;
-  is_checkpoint: boolean;
-}
-interface Roadmap {
-  id: string;
-  title: string;
-  career_name: string | null;
-  is_active: boolean;
-  target_date: string | null;
-  created_at: string;
-  education_level: string | null;
-  school_year: string | null;
-  current_skills: string | null;
-  certificates: string | null;
-  extracurricular: string | null;
-  milestones: Milestone[];
+type TabKey = 'thiet-lap' | 'lo-trinh' | 'cot-moc' | 'tien-do' | 'canh-bao';
+const TAB_KEYS: TabKey[] = ['thiet-lap', 'lo-trinh', 'cot-moc', 'tien-do', 'canh-bao'];
+
+const PILLAR_OPTIONS = PILLAR_ORDER.map((value) => ({ value, label: PILLAR_LABEL[value] }));
+
+function generationError(caught: unknown): string {
+  const text = String((caught as { message?: string })?.message ?? caught);
+  if (text.includes('library_incomplete')) return 'Chưa có đủ hoạt động gợi ý cho cả ba trụ cột.';
+  if (text.includes('horizon_invalid') || text.includes('hours_per_week')) return 'Thời hạn phải ở tương lai (tối đa 10 năm) và số giờ mỗi tuần lớn hơn 0.';
+  return 'Không gợi ý được hoạt động. Thử lại sau.';
 }
 
-const PILLARS = [
-  { value: 'knowledge', label: 'Kiến thức' },
-  { value: 'experience', label: 'Kinh nghiệm' },
-  { value: 'exploration', label: 'Trải nghiệm' },
-];
-const EDUCATION_LEVELS = [
-  { value: 'Trung học cơ sở', label: 'Trung học cơ sở' },
-  { value: 'Trung học phổ thông', label: 'Trung học phổ thông' },
-  { value: 'Cao đẳng', label: 'Cao đẳng' },
-  { value: 'Đại học', label: 'Đại học' },
-];
-const NO_DUE = 'none';
-const pillarLabel = (value: string) => PILLARS.find((p) => p.value === value)?.label ?? value;
-const phaseLabel = (key: string) => (key === NO_DUE ? 'Chưa có hạn' : `Tháng ${key.slice(5, 7)}/${key.slice(0, 4)}`);
-const phaseKey = (m: Milestone) => m.due_date?.slice(0, 7) ?? NO_DUE;
+const RoadmapSkeleton: React.FC = () => (
+  <SkeletonRegion className="roadmap-skeleton">
+    <Skeleton shape="title" width={40} />
+    <div className="roadmap-stats">
+      {Array.from({ length: 4 }, (_, i) => <Skeleton key={i} shape="block" />)}
+    </div>
+    <Skeleton shape="button-lg" width={60} />
+    <Skeleton shape="block" />
+  </SkeletonRegion>
+);
 
-type Dialog = 'create' | 'add' | 'suggest' | null;
-
-/** Lộ trình 3 trụ cột, một lộ trình kích hoạt, cảnh báo chệch hướng (chậm > 20% hoặc trễ cột mốc quan trọng) */
+/** Lộ trình phát triển: thiết lập, bản đồ đường đi, cột mốc, tiến độ, cảnh báo chệch hướng */
 export const RoadmapPage: React.FC = () => {
-  const { session } = useAuth();
+  const { session, profile } = useAuth();
+  const [params, setParams] = useSearchParams();
   const [roadmaps, setRoadmaps] = useState<Roadmap[] | null>(null);
-  const [targets, setTargets] = useState<{ career_id: string; career_name: string; kind: string }[]>([]);
-  const [params] = useSearchParams();
-  const [careerId, setCareerId] = useState(() => params.get('nghe') ?? '');
-  const [title, setTitle] = useState('');
-  const [targetDate, setTargetDate] = useState('');
-  const [form, setForm] = useState({ pillar: 'knowledge', title: '', due: '', checkpoint: false });
-  const [hours, setHours] = useState('8');
-  const [origin, setOrigin] = useState({ education: '', year: '', skills: '', certificates: '', extracurricular: '' });
-  const [dialog, setDialog] = useState<Dialog>(null);
+  const [choices, setChoices] = useState<CareerChoice[]>([]);
+  const [catalog, setCatalog] = useState<FilterOption[]>([]);
+  const [values, setValues] = useState<SetupValues>(() => ({ ...EMPTY_SETUP, careerId: params.get('nghe') ?? '' }));
+  const [errors, setErrors] = useState<SetupErrors>({});
+  const [viewingId, setViewingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [suggestOpen, setSuggestOpen] = useState(false);
+  const [hours, setHours] = useState('8');
+  const [adding, setAdding] = useState<{ stage: Stage; pillar: RoadmapPillar; title: string } | null>(null);
 
-  const reload = useCallback(() => callRpc<Roadmap[]>('list_my_roadmaps').then((value) => setRoadmaps(value ?? [])), []);
+  const reload = useCallback(async () => {
+    const value = await callRpc<Roadmap[]>('list_my_roadmaps');
+    setRoadmaps(value ?? []);
+    return value ?? [];
+  }, []);
 
   useEffect(() => {
-    Promise.all([reload(), listSavedCareers().then(setTargets)]).catch(() => setError('Không tải được lộ trình.'));
+    let alive = true;
+    Promise.all([
+      reload(),
+      listSavedCareers().catch(() => []),
+      recommendCareers().catch(() => null),
+      listPublishedCareers().catch(() => []),
+    ])
+      .then(([, saved, recs, all]) => {
+        if (!alive) return;
+        const map = new Map<string, CareerChoice>();
+        for (const item of recs?.items.slice(0, 5) ?? []) map.set(item.careerId, { id: item.careerId, name: item.careerName, from360: true });
+        for (const t of saved.filter((s) => s.kind === 'target')) {
+          if (!map.has(t.career_id)) map.set(t.career_id, { id: t.career_id, name: t.career_name, from360: false });
+        }
+        const wanted = params.get('nghe');
+        if (wanted && !map.has(wanted)) {
+          const found = all.find((c) => c.id === wanted);
+          if (found) map.set(wanted, { id: found.id, name: found.career_name, from360: false });
+        }
+        setChoices([...map.values()].slice(0, 6));
+        setCatalog(all.map((c) => ({ value: c.id, label: c.career_name })));
+      })
+      .catch(() => alive && setError('Không tải được lộ trình.'));
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reload]);
 
   const active = roadmaps?.find((r) => r.is_active) ?? null;
-  const history = roadmaps?.filter((r) => !r.is_active) ?? [];
-  const progress = active ? evaluateRoadmapProgress(active.milestones.map((m) => ({
-    id: m.id, pillar: m.pillar, title: m.title, done: m.done, weight: Number(m.weight), dueDate: m.due_date, isCheckpoint: m.is_checkpoint,
-  }))) : null;
-  const phases = useMemo(() => {
-    if (!active) return [];
-    const keys = [...new Set(active.milestones.map(phaseKey))].sort((a, b) => (a === NO_DUE ? 1 : b === NO_DUE ? -1 : a.localeCompare(b)));
-    return keys.map((key) => ({ key, items: active.milestones.filter((m) => phaseKey(m) === key) }));
-  }, [active]);
-  const targetCareers = targets.filter((t) => t.kind === 'target');
-  const showCreateInline = roadmaps !== null && !active;
+  const history = useMemo(() => roadmaps?.filter((r) => !r.is_active) ?? [], [roadmaps]);
+  const viewing = viewingId ? roadmaps?.find((r) => r.id === viewingId) ?? null : null;
+  const shown = viewing ?? active;
+  const readOnly = Boolean(viewing);
 
-  const create = async () => {
-    setError(null);
-    try {
-      const id = await callRpc<string>('create_roadmap', { p_career_id: careerId || null, p_title: title, p_target_date: targetDate || null });
-      await callRpc('save_roadmap_origin', {
-        p_roadmap_id: id,
-        p_education_level: origin.education,
-        p_school_year: origin.year,
-        p_skills: origin.skills,
-        p_certificates: origin.certificates,
-        p_extracurricular: origin.extracurricular,
-      });
-      setTitle('');
-      setDialog(null);
-      await reload();
-    } catch {
-      setError('Cần đặt tên lộ trình.');
-    }
+  const requested = params.get('tab') as TabKey | null;
+  const tab: TabKey = !active ? 'thiet-lap' : requested && TAB_KEYS.includes(requested) ? requested : 'lo-trinh';
+  const setTab = (next: string) => {
+    setNotice(null);
+    setParams((prev) => {
+      const copy = new URLSearchParams(prev);
+      copy.set('tab', next);
+      copy.delete('nghe');
+      return copy;
+    }, { replace: true });
   };
 
-  const add = async () => {
-    if (!active) return;
-    setError(null);
-    try {
-      await callRpc('add_roadmap_milestone', {
-        p_roadmap_id: active.id, p_pillar: form.pillar, p_title: form.title,
-        p_due_date: form.due || null, p_weight: 1, p_is_checkpoint: form.checkpoint,
-      });
-      setForm({ ...form, title: '', due: '' });
-      setDialog(null);
-      await reload();
-    } catch {
-      setError('Không thêm được hoạt động. Nhập nội dung hoạt động.');
-    }
-  };
+  const stages = useMemo(() => (shown ? buildStages(shown.milestones) : []), [shown]);
+  const progress = useMemo(() => (shown ? progressOf(shown) : null), [shown]);
+  const focus = currentStage(stages);
+  const checkpoints = useMemo(() => shown?.milestones.filter((m) => m.is_checkpoint) ?? [], [shown]);
 
-  const fillFromLibrary = async () => {
-    if (!active) return;
-    setError(null);
-    setDialog(null);
-    try {
-      const { data, error: loadError } = await db.from('approved_roadmap_activities').select('*').eq('is_active', true);
-      if (loadError) throw loadError;
-      const templates = ((data ?? []) as Array<{
-        id: string; pillar: ApprovedActivityTemplate['pillar']; title: string;
-        duration_weeks: number; hours: number; criteria_id: string | null; repeatable: boolean;
-      }>).map((row) => ({
-        id: row.id,
-        pillar: row.pillar,
-        title: row.title,
-        durationWeeks: Number(row.duration_weeks),
-        hours: Number(row.hours),
-        criteriaId: row.criteria_id,
-        repeatable: row.repeatable,
-      }));
-      const learner = session?.user.id ? await loadLearnerProfile(session.user.id).catch(() => null) : null;
-      const generated = generateRoadmapFromLibrary({
-        startDay: new Date().toISOString().slice(0, 10),
-        targetDate: active.target_date ?? targetDate,
-        hoursPerWeek: Number(hours) || 8,
-        templates,
-        scoresByCriterionId: learner ? Object.fromEntries(learner.scoreByCriterionId) : undefined,
-      });
-      const count = await callRpc<number>('add_roadmap_milestones_bulk', {
-        p_roadmap_id: active.id,
-        p_items: generated.map((item) => ({
-          pillar: item.pillar,
-          title: item.title,
-          due_date: item.dueDate,
-          weight: item.weight,
-          is_checkpoint: item.isCheckpoint,
-        })),
-      });
-      await reload();
-      if (!count) setError('Chưa gợi ý được hoạt động.');
-    } catch (caught) {
-      const text = String((caught as { message?: string })?.message ?? caught);
-      if (text.includes('library_incomplete')) setError('Chưa đủ hoạt động đã duyệt cho cả 3 trụ cột.');
-      else if (text.includes('horizon_invalid') || text.includes('hours_per_week')) setError('Cần ngày mục tiêu trong tương lai (không quá 10 năm) và ít nhất 1 giờ mỗi tuần.');
-      else setError('Chưa gợi ý được hoạt động.');
-    }
-  };
-
-  const toggle = (m: Milestone) => {
-    callRpc('toggle_roadmap_milestone', { p_milestone_id: m.id, p_done: !m.done }).then(reload).catch(() => setError('Chưa cập nhật được hoạt động.'));
-  };
-
-  const createForm = (
-    <div className="module-form">
-      <Input label="Tên lộ trình" value={title} onChange={(e) => setTitle(e.target.value)} />
-      <Select label="Nghề mục tiêu" emptyLabel="Không gắn nghề" value={careerId}
-        options={targetCareers.map((t) => ({ value: t.career_id, label: t.career_name }))} onChange={setCareerId} />
-      <Input label="Thời điểm đạt mục tiêu" type="date" value={targetDate} onChange={(e) => setTargetDate(e.target.value)} />
-      <Select label="Cấp học" emptyLabel="Chưa chọn" value={origin.education} options={EDUCATION_LEVELS} onChange={(v) => setOrigin({ ...origin, education: v })} />
-      <Input label="Năm học / lớp" value={origin.year} onChange={(e) => setOrigin({ ...origin, year: e.target.value })} />
-      <Input label="Kỹ năng hiện có" value={origin.skills} onChange={(e) => setOrigin({ ...origin, skills: e.target.value })} />
-      <Input label="Chứng chỉ hiện có" value={origin.certificates} onChange={(e) => setOrigin({ ...origin, certificates: e.target.value })} />
-      <Input label="Hoạt động ngoại khóa" value={origin.extracurricular} onChange={(e) => setOrigin({ ...origin, extracurricular: e.target.value })} />
-    </div>
+  const careerName = useCallback(
+    (id: string) => choices.find((c) => c.id === id)?.name ?? catalog.find((c) => c.value === id)?.label ?? '',
+    [choices, catalog],
   );
 
+  /** Mở màn thiết lập: điền sẵn từ lộ trình hiện tại khi tạo lại */
+  const openSetup = () => {
+    if (active) {
+      setValues({
+        careerId: active.career_id ?? '',
+        educationLevel: active.education_level ?? '',
+        schoolYear: active.school_year ?? '',
+        skills: active.current_skills ?? '',
+        certificates: active.certificates ?? '',
+        extracurricular: active.extracurricular ?? '',
+        targetMonth: '',
+        hoursPerWeek: hours,
+      });
+    }
+    setErrors({});
+    setViewingId(null);
+    setTab('thiet-lap');
+  };
+
+  const fillFromProfile = () => {
+    const origin = originFromProfile(profile?.role, profile?.grade_or_major);
+    setValues((prev) => ({ ...prev, ...origin }));
+  };
+
+  const generateInto = async (roadmapId: string, targetDate: string, hoursPerWeek: number) => {
+    const { data, error: loadError } = await db.from('approved_roadmap_activities').select('*').eq('is_active', true);
+    if (loadError) throw loadError;
+    const templates: ApprovedActivityTemplate[] = ((data ?? []) as Array<{
+      id: string; pillar: ApprovedActivityTemplate['pillar']; title: string;
+      duration_weeks: number; hours: number; criteria_id: string | null; repeatable: boolean;
+    }>).map((row) => ({
+      id: row.id,
+      pillar: row.pillar,
+      title: row.title,
+      durationWeeks: Number(row.duration_weeks),
+      hours: Number(row.hours),
+      criteriaId: row.criteria_id,
+      repeatable: row.repeatable,
+    }));
+    const learner = session?.user.id ? await loadLearnerProfile(session.user.id).catch(() => null) : null;
+    const generated = generateRoadmapFromLibrary({
+      startDay: new Date().toISOString().slice(0, 10),
+      targetDate,
+      hoursPerWeek,
+      templates,
+      scoresByCriterionId: learner ? Object.fromEntries(learner.scoreByCriterionId) : undefined,
+    });
+    await callRpc<number>('add_roadmap_milestones_bulk', {
+      p_roadmap_id: roadmapId,
+      p_items: generated.map((item) => ({
+        pillar: item.pillar,
+        title: item.title,
+        due_date: item.dueDate,
+        weight: item.weight,
+        is_checkpoint: item.isCheckpoint,
+      })),
+    });
+  };
+
+  const submitSetup = async () => {
+    const found = validateSetup(values);
+    setErrors(found);
+    if (Object.keys(found).length > 0) return;
+    if (active && !confirmOpen) {
+      setConfirmOpen(true);
+      return;
+    }
+    setConfirmOpen(false);
+    setSubmitting(true);
+    setError(null);
+    const targetDate = monthEndFromInput(values.targetMonth)!;
+    let createdId: string | null = null;
+    try {
+      createdId = await callRpc<string>('create_roadmap', {
+        p_career_id: values.careerId,
+        p_title: `${careerName(values.careerId)} · ${values.targetMonth.trim()}`,
+        p_target_date: targetDate,
+      });
+      await callRpc('save_roadmap_origin', {
+        p_roadmap_id: createdId,
+        p_education_level: values.educationLevel,
+        p_school_year: values.schoolYear,
+        p_skills: values.skills,
+        p_certificates: values.certificates,
+        p_extracurricular: values.extracurricular,
+      });
+      setHours(values.hoursPerWeek);
+      await generateInto(createdId, targetDate, Number(values.hoursPerWeek));
+      setNotice('Đã tạo lộ trình mới. Lộ trình cũ được lưu vào lịch sử.');
+    } catch (caught) {
+      setError(createdId ? generationError(caught) : 'Không tạo được lộ trình. Thử lại sau.');
+    } finally {
+      await reload().catch(() => undefined);
+      setViewingId(null);
+      setSubmitting(false);
+      if (createdId) setTab('lo-trinh');
+    }
+  };
+
+  const suggest = async () => {
+    if (!active?.target_date) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await generateInto(active.id, active.target_date, Number(hours));
+      await reload();
+      setSuggestOpen(false);
+    } catch (caught) {
+      setError(generationError(caught));
+      setSuggestOpen(false);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const run = async (action: () => Promise<unknown>, failure: string) => {
+    setBusy(true);
+    setError(null);
+    try {
+      await action();
+      await reload();
+    } catch {
+      setError(failure);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const saveProgress = (changes: Record<string, boolean>) =>
+    run(
+      () => Promise.all(Object.entries(changes).map(([id, done]) => callRpc('toggle_roadmap_milestone', { p_milestone_id: id, p_done: done }))),
+      'Không lưu được cập nhật. Thử lại sau.',
+    );
+
+  const addMilestone = (input: { title: string; due: string; pillar: RoadmapPillar; checkpoint: boolean }) =>
+    active
+      ? run(
+          () =>
+            callRpc('add_roadmap_milestone', {
+              p_roadmap_id: active.id,
+              p_pillar: input.pillar,
+              p_title: input.title,
+              p_due_date: input.due || null,
+              p_weight: 1,
+              p_is_checkpoint: input.checkpoint,
+            }),
+          'Không thêm được. Nhập nội dung và hạn.',
+        )
+      : Promise.resolve();
+
+  const tabs: TabItem[] = [
+    { value: 'thiet-lap', label: 'Thiết lập', icon: <Pencil /> },
+    { value: 'lo-trinh', label: 'Lộ trình', icon: <Route /> },
+    { value: 'cot-moc', label: 'Cột mốc', icon: <Flag /> },
+    { value: 'tien-do', label: 'Tiến độ', icon: <ListChecks /> },
+    { value: 'canh-bao', label: 'Cảnh báo', icon: <ShieldCheck />, alert: Boolean(progress?.offTrack) && !readOnly },
+  ];
+
+  if (roadmaps === null) {
+    return error ? (
+      <Alert variant="danger">{error}</Alert>
+    ) : (
+      <RoadmapSkeleton />
+    );
+  }
+
+  const left = shown ? monthsLeft(shown.target_date) : null;
+  const dayLeft = shown?.target_date ? daysUntil(shown.target_date) : null;
+
   return (
-    <div className="module-page">
+    <div className="roadmap-page">
       <PageHero
-        title="Lộ trình phát triển"
+        title="Lộ trình"
         icon={<MapIcon />}
         tone="teal"
-        actions={active && (
-          <>
-            <Button type="button" variant="outline" leftIcon={<Plus size={16} />} onClick={() => setDialog('add')}>Thêm hoạt động</Button>
-            <Button type="button" variant="outline" leftIcon={<Sparkles size={16} />} onClick={() => setDialog('suggest')}>Gợi ý hoạt động</Button>
-            <Button type="button" variant="outline" leftIcon={<RefreshCw size={16} />} onClick={() => setDialog('create')}>Tạo lại lộ trình</Button>
-          </>
-        )}
+        actions={
+          viewing ? (
+            <Button variant="outline" leftIcon={<ArrowLeft size={16} />} onClick={() => setViewingId(null)}>
+              Về lộ trình hiện tại
+            </Button>
+          ) : active && tab !== 'thiet-lap' ? (
+            <Button variant="outline" leftIcon={<Pencil size={16} />} onClick={openSetup}>
+              Chỉnh thiết lập
+            </Button>
+          ) : undefined
+        }
       />
+
       {error && <Alert variant="danger">{error}</Alert>}
-      {roadmaps === null && !error && <Skeleton />}
+      {notice && <Alert variant="success">{notice}</Alert>}
+      {viewing && <Alert variant="info">Đang xem lộ trình đã lưu trữ: {viewing.title}</Alert>}
 
-      {showCreateInline && (
-        <Card title="Tạo lộ trình">
-          {targetCareers.length === 0 && <Alert variant="info">Bạn chưa đặt nghề mục tiêu. Đặt tối đa 2 nghề mục tiêu ở trang Nghề nghiệp.</Alert>}
-          {createForm}
-          <div className="module-actions roadmap-submit">
-            <Button type="button" disabled={!title.trim()} onClick={() => void create()}>Tạo</Button>
-          </div>
-        </Card>
-      )}
-
-      {active && progress && (
+      {active && shown && progress && (
         <>
-          <Card title={active.title}>
-            <div className="roadmap-meta">
-              {active.career_name && <StickerFact>{active.career_name}</StickerFact>}
-              {active.target_date && <StickerFact icon={<CalendarClock size={14} />}>Mục tiêu {new Date(active.target_date).toLocaleDateString('vi-VN')}</StickerFact>}
-              {(active.education_level || active.school_year) && <StickerFact>{[active.education_level, active.school_year].filter(Boolean).join(' · ')}</StickerFact>}
-            </div>
-            <ProgressBar value={progress.actualPercent} label="Tiến độ hoàn thành" />
-            <p className="explain-note">Hoàn thành {progress.actualPercent}% · Kế hoạch đến hôm nay {progress.plannedPercent}% · Chậm {progress.delayPercent}%</p>
-            {progress.offTrack && (
-              <Alert variant="warning" title="Lộ trình đang chệch hướng">
-                {progress.delayPercent > 20 && `Chậm ${progress.delayPercent}% so với phần việc đã đến hạn. `}
-                {progress.missedCheckpoints.map((m) => `Trễ cột mốc quan trọng: ${m.title}. `)}
-              </Alert>
-            )}
-          </Card>
-
-          <StickerGrid label="Tiến độ theo trụ cột">
-            {progress.byPillar.map((p, index) => (
-              <StickerCard key={p.pillar} tone={stickerToneAt(index)} title={pillarLabel(p.pillar)} corner={<strong>{p.percent}%</strong>}>
-                <ProgressBar value={p.percent} label={pillarLabel(p.pillar)} />
-                <StickerFact strong>{p.done}/{p.total} hoạt động</StickerFact>
-              </StickerCard>
-            ))}
-          </StickerGrid>
-
-          {phases.length === 0 ? (
-            <Card title="Các mốc">
-              <div className="module-actions">
-                <Button type="button" leftIcon={<Sparkles size={16} />} onClick={() => setDialog('suggest')}>Gợi ý hoạt động</Button>
-                <Button type="button" variant="outline" leftIcon={<Plus size={16} />} onClick={() => setDialog('add')}>Thêm hoạt động</Button>
-              </div>
-            </Card>
-          ) : (
-            <ol className="roadmap-timeline" aria-label="Các mốc theo tháng">
-              {phases.map((phase) => (
-                <li key={phase.key} className="roadmap-phase">
-                  <h2 className="roadmap-phase-title">{phaseLabel(phase.key)}</h2>
-                  <ul className="roadmap-items">
-                    {phase.items.map((m) => (
-                      <li key={m.id} className={m.done ? 'is-done' : undefined}>
-                        <Checkbox label={m.title} checked={m.done} onChange={() => toggle(m)} />
-                        <div className="roadmap-item-tags">
-                          <Badge>{pillarLabel(m.pillar)}</Badge>
-                          {m.is_checkpoint && <Badge variant="warning">Cột mốc</Badge>}
-                          {m.due_date && <span className="explain-note">Hạn {new Date(m.due_date).toLocaleDateString('vi-VN')}</span>}
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </li>
-              ))}
-            </ol>
-          )}
+          <div className="roadmap-stats">
+            <StatTile label="Hoàn thành" tone="teal" icon={<ListChecks />} value={Math.round(progress.actualPercent)} unit="%" />
+            <StatTile label="Kế hoạch đến hôm nay" tone="blue" icon={<Target />} value={Math.round(progress.plannedPercent)} unit="%" />
+            <StatTile
+              label="Còn lại"
+              tone="violet"
+              icon={<Clock />}
+              value={dayLeft !== null && dayLeft < 0 ? 'Quá hạn' : left ?? '—'}
+              unit={dayLeft !== null && dayLeft >= 0 ? 'tháng' : undefined}
+            />
+            <StatTile
+              label="Trạng thái"
+              tone={progress.offTrack ? 'coral' : 'gold'}
+              icon={<History />}
+              value={progress.offTrack ? 'Chệch hướng' : 'Đúng hướng'}
+            />
+          </div>
+          <Tabs items={tabs} value={tab} onChange={setTab} label="Các mục của lộ trình" />
         </>
       )}
 
-      {history.length > 0 && (
-        <Card title="Lịch sử lộ trình">
-          <ul className="module-list">
-            {history.map((r) => (
-              <li key={r.id}>
-                <span>{r.title}</span>
-                <span>{new Date(r.created_at).toLocaleDateString('vi-VN')} · {r.milestones.filter((m) => m.done).length}/{r.milestones.length} hoạt động</span>
-              </li>
-            ))}
-          </ul>
-        </Card>
+      {tab === 'thiet-lap' && (
+        <RoadmapSetup
+          values={values}
+          errors={errors}
+          choices={choices}
+          catalog={catalog}
+          submitting={submitting}
+          submitLabel={active ? 'Tạo lại lộ trình' : 'Tạo lộ trình'}
+          onChange={(patch) => setValues((prev) => ({ ...prev, ...patch }))}
+          onFillFromProfile={fillFromProfile}
+          onSubmit={() => void submitSetup()}
+          onCancel={active ? () => setTab('lo-trinh') : undefined}
+        />
+      )}
+
+      {shown && tab === 'lo-trinh' && (
+        <RoadmapMap
+          roadmap={shown}
+          stages={stages}
+          readOnly={readOnly}
+          onSuggest={() => setSuggestOpen(true)}
+          onAddToStage={(stage, pillar) => setAdding({ stage, pillar, title: '' })}
+        />
+      )}
+
+      {shown && tab === 'cot-moc' && (
+        <RoadmapCheckpoints
+          checkpoints={checkpoints}
+          readOnly={readOnly}
+          busy={busy}
+          onAdd={(input) => addMilestone({ ...input, checkpoint: true })}
+        />
+      )}
+
+      {shown && tab === 'tien-do' && (
+        <RoadmapProgress
+          key={shown.id}
+          roadmap={shown}
+          stages={stages}
+          focusKey={focus?.key ?? stages[0]?.key ?? ''}
+          readOnly={readOnly}
+          busy={busy}
+          onSave={saveProgress}
+        />
+      )}
+
+      {active && progress && tab === 'canh-bao' && (
+        <RoadmapAlerts
+          roadmap={active}
+          history={history}
+          progress={progressOf(active)}
+          viewingId={viewingId}
+          onRegenerate={openSetup}
+          onView={(id) => {
+            setViewingId(id);
+            setTab('lo-trinh');
+          }}
+          onBackToActive={() => setViewingId(null)}
+        />
       )}
 
       <Modal
-        open={dialog === 'create'}
+        open={confirmOpen}
         title="Tạo lại lộ trình"
-        wide
-        onClose={() => setDialog(null)}
+        onClose={() => setConfirmOpen(false)}
+        locked={submitting}
         actions={
           <>
-            <Button type="button" variant="ghost" onClick={() => setDialog(null)}>Hủy</Button>
-            <Button type="button" disabled={!title.trim()} onClick={() => void create()}>Tạo</Button>
+            <Button variant="outline" onClick={() => setConfirmOpen(false)}>Giữ lộ trình hiện tại</Button>
+            <Button isLoading={submitting} onClick={() => void submitSetup()}>Tạo lại lộ trình</Button>
           </>
         }
       >
-        <Alert variant="warning">Lộ trình hiện tại sẽ chuyển vào lịch sử.</Alert>
-        {createForm}
+        <p>Lộ trình cũ sẽ được lưu vào lịch sử. Chỉ có một lộ trình đang thực hiện tại một thời điểm.</p>
       </Modal>
 
       <Modal
-        open={dialog === 'add'}
-        title="Thêm hoạt động"
-        onClose={() => setDialog(null)}
-        actions={
-          <>
-            <Button type="button" variant="ghost" onClick={() => setDialog(null)}>Hủy</Button>
-            <Button type="button" disabled={!form.title.trim()} onClick={() => void add()}>Thêm</Button>
-          </>
-        }
-      >
-        <div className="career-filter-form">
-          <Select label="Trụ cột" value={form.pillar} options={PILLARS} onChange={(v) => setForm({ ...form, pillar: v })} />
-          <Input label="Nội dung" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
-          <Input label="Hạn" type="date" value={form.due} onChange={(e) => setForm({ ...form, due: e.target.value })} />
-          <Checkbox label="Cột mốc quan trọng" checked={form.checkpoint} onChange={(checked) => setForm({ ...form, checkpoint: checked })} />
-        </div>
-      </Modal>
-
-      <Modal
-        open={dialog === 'suggest'}
+        open={suggestOpen}
         title="Gợi ý hoạt động"
-        onClose={() => setDialog(null)}
+        onClose={() => setSuggestOpen(false)}
+        locked={busy}
         actions={
           <>
-            <Button type="button" variant="ghost" onClick={() => setDialog(null)}>Hủy</Button>
-            <Button type="button" onClick={() => void fillFromLibrary()}>Gợi ý</Button>
+            <Button variant="outline" onClick={() => setSuggestOpen(false)}>Hủy</Button>
+            <Button isLoading={busy} disabled={!(Number(hours) >= 1)} onClick={() => void suggest()}>Gợi ý</Button>
           </>
         }
       >
-        <div className="career-filter-form">
-          <Input label="Giờ mỗi tuần" value={hours} onChange={(e) => setHours(e.target.value)} inputMode="decimal" />
-        </div>
+        <Input
+          label="Số giờ mỗi tuần có thể đầu tư"
+          type="number"
+          min={1}
+          step={1}
+          inputMode="numeric"
+          value={hours}
+          onChange={(event) => setHours(event.target.value)}
+        />
+      </Modal>
+
+      <Modal
+        open={Boolean(adding)}
+        title="Thêm hoạt động"
+        onClose={() => setAdding(null)}
+        locked={busy}
+        actions={
+          <>
+            <Button variant="outline" onClick={() => setAdding(null)}>Hủy</Button>
+            <Button
+              isLoading={busy}
+              disabled={!adding?.title.trim()}
+              onClick={() => {
+                if (!adding) return;
+                void addMilestone({
+                  title: adding.title,
+                  due: adding.stage.endIso ?? '',
+                  pillar: adding.pillar,
+                  checkpoint: false,
+                }).then(() => setAdding(null));
+              }}
+            >
+              Thêm
+            </Button>
+          </>
+        }
+      >
+        {adding && (
+          <div className="roadmap-fields is-single">
+            <Select
+              label="Trụ cột"
+              options={PILLAR_OPTIONS}
+              value={adding.pillar}
+              onChange={(value) => setAdding({ ...adding, pillar: value as RoadmapPillar })}
+            />
+            <Input label="Nội dung" value={adding.title} onChange={(event) => setAdding({ ...adding, title: event.target.value })} />
+          </div>
+        )}
       </Modal>
     </div>
   );

@@ -814,46 +814,55 @@ export interface RoadmapMilestoneProgressInput {
   isCheckpoint?: boolean;
 }
 
-/** BR-027: Tính tiến độ 3 trụ cột và cảnh báo chệch hướng khi chậm > 20% hoặc trễ cột mốc quan trọng */
+const ROADMAP_PILLARS = ['knowledge', 'experience', 'exploration'] as const;
+const DAY_MS = 86400000;
+
+/**
+ * BR-027: % tổng thể là trung bình cộng các trụ cột có hoạt động (mỗi trụ nặng như nhau, trong trụ theo trọng số).
+ * Chệch hướng khi (% thời gian đã trôi − % hoàn thành) > 20 điểm hoặc quá hạn một cột mốc chính.
+ * Không có đích thì % thời gian lấy theo phần việc đã đến hạn.
+ */
 export function evaluateRoadmapProgress(
   milestones: readonly RoadmapMilestoneProgressInput[],
   todayIso = new Date().toISOString().slice(0, 10),
+  range?: { startIso: string; targetIso: string | null },
 ) {
-  const totalWeight = milestones.reduce((s, m) => s + (m.weight ?? 1), 0);
-  const completedWeight = milestones.filter((m) => m.done).reduce((s, m) => s + (m.weight ?? 1), 0);
-  const dueWeight = milestones
-    .filter((m) => m.dueDate && m.dueDate <= todayIso)
-    .reduce((s, m) => s + (m.weight ?? 1), 0);
-
-  const actualPercent = totalWeight > 0 ? Number(((completedWeight / totalWeight) * 100).toFixed(1)) : 0;
-  const plannedPercent = totalWeight > 0 ? Number(((dueWeight / totalWeight) * 100).toFixed(1)) : 0;
-  const delayPercent =
-    dueWeight > 0 ? Number(Math.max(0, ((dueWeight - completedWeight) / dueWeight) * 100).toFixed(1)) : 0;
-  const missedCheckpoints = milestones.filter(
-    (m) => m.isCheckpoint && !m.done && m.dueDate && m.dueDate < todayIso,
-  );
-
-  const byPillar = (['knowledge', 'experience', 'exploration'] as const).map((pillar) => {
+  const weightOf = (m: RoadmapMilestoneProgressInput) => m.weight ?? 1;
+  const byPillar = ROADMAP_PILLARS.map((pillar) => {
     const items = milestones.filter((m) => m.pillar === pillar);
-    const w = items.reduce((s, m) => s + (m.weight ?? 1), 0);
-    const doneW = items.filter((m) => m.done).reduce((s, m) => s + (m.weight ?? 1), 0);
+    const w = items.reduce((s, m) => s + weightOf(m), 0);
+    const doneW = items.filter((m) => m.done).reduce((s, m) => s + weightOf(m), 0);
     return {
       pillar,
       total: items.length,
       done: items.filter((m) => m.done).length,
-      percent: w > 0 ? Number(((doneW / w) * 100).toFixed(1)) : 0,
+      percent: w > 0 ? Number(((doneW / w) * 100).toFixed(1)) : (null as number | null),
     };
   });
+  const counted = byPillar.filter((p) => p.percent !== null);
+  const actualPercent =
+    counted.length > 0 ? Number((counted.reduce((s, p) => s + (p.percent ?? 0), 0) / counted.length).toFixed(1)) : 0;
 
+  let plannedPercent: number;
+  if (range?.targetIso) {
+    const start = Date.parse(range.startIso.slice(0, 10));
+    const end = Date.parse(range.targetIso.slice(0, 10));
+    const now = Date.parse(todayIso);
+    plannedPercent = end > start ? Number((Math.max(0, Math.min(1, (now - start) / (end - start))) * 100).toFixed(1)) : 100;
+  } else {
+    const totalWeight = milestones.reduce((s, m) => s + weightOf(m), 0);
+    const dueWeight = milestones.filter((m) => m.dueDate && m.dueDate <= todayIso).reduce((s, m) => s + weightOf(m), 0);
+    plannedPercent = totalWeight > 0 ? Number(((dueWeight / totalWeight) * 100).toFixed(1)) : 0;
+  }
+  const delayPercent = Number(Math.max(0, plannedPercent - actualPercent).toFixed(1));
+  const missedCheckpoints = milestones.filter((m) => m.isCheckpoint && !m.done && m.dueDate && m.dueDate < todayIso);
   const offTrack = delayPercent > 20 || missedCheckpoints.length > 0;
-  return {
-    actualPercent,
-    plannedPercent,
-    delayPercent,
-    offTrack,
-    missedCheckpoints,
-    byPillar,
-  };
+  return { actualPercent, plannedPercent, delayPercent, offTrack, missedCheckpoints, byPillar };
+}
+
+/** Số ngày còn lại tới đích (âm khi đã quá hạn) */
+export function daysUntil(targetIso: string, todayIso = new Date().toISOString().slice(0, 10)): number {
+  return Math.round((Date.parse(targetIso.slice(0, 10)) - Date.parse(todayIso)) / DAY_MS);
 }
 
 export function weightedMean(parts: Array<{ value: number; weight: number }>): number | null {

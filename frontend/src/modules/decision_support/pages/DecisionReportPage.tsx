@@ -1,9 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Alert, Badge, Button, Card, Spinner, Textarea } from '../../../components/common';
+import { FileText, Printer } from 'lucide-react';
+import { Alert, Badge, Breadcrumb, Button, Card, PageHero, Spinner, Textarea } from '../../../components/common';
 import { callRpc } from '../../../lib/rpc';
-import { downloadPdf } from '../../../lib/printProfile';
+import { printDecisionReport } from '../../../lib/printProfile';
 import '../../career_explorer/pages/CareerPages.css';
+import './DecisionPages.css';
 
 interface RankRow {
   id: string;
@@ -49,20 +51,40 @@ export const DecisionReportPage: React.FC = () => {
 
   return (
     <div className="module-page">
-      <p><Link to={report.is_owner ? '/so-sanh' : '/bao-cao-duoc-chia-se'}>Quay lại</Link></p>
-      <h1>Báo cáo quyết định: {report.title}</h1>
-      <Button type="button" variant="outline" onClick={() => downloadPdf('bao-cao-quyet-dinh.pdf', [
-        `Bao cao quyet dinh: ${report.title}`,
-        `Nguoi lap: ${report.owner_name}`,
-        report.include_finance && report.budget_per_year !== null ? `Ngan sach: ${report.budget_per_year}` : 'Tai chinh: an hoac chua khai',
-        ...report.ranking.map((row, index) => `${index + 1}. ${row.title} - ${ELIGIBILITY_LABEL[row.eligibility]}`),
-      ])}>Tải PDF</Button>
-      <p>Người lập: {report.owner_name} {report.is_owner ? '' : '· Chế độ chỉ đọc'}</p>
+      <Breadcrumb
+        items={[
+          report.is_owner ? { label: 'So sánh phương án', to: '/so-sanh' } : { label: 'Báo cáo được chia sẻ', to: '/bao-cao-duoc-chia-se' },
+          { label: report.title },
+        ]}
+      />
+      <PageHero
+        title={report.title}
+        icon={<FileText />}
+        tone="violet"
+        actions={
+          <Button type="button" variant="outline" leftIcon={<Printer size={16} />} onClick={() => printDecisionReport({
+            title: report.title,
+            ownerName: report.owner_name,
+            budget: report.include_finance && report.budget_per_year !== null ? `${report.budget_per_year} triệu/năm` : null,
+            rows: report.ranking.map((row, index) => ({
+              rank: index + 1,
+              title: row.title,
+              eligibility: ELIGIBILITY_LABEL[row.eligibility],
+              score: row.totalScore === null ? 'Chưa đủ dữ liệu' : String(row.totalScore),
+              fit: row.careerFitPercent === null ? 'Chưa có' : `${row.careerFitPercent.toFixed(1)}%`,
+            })),
+            preferred: preferred ? `${preferred.title}${report.preferred_reason ? ` – ${report.preferred_reason}` : ''}` : null,
+          })}>In / Lưu PDF</Button>
+        }
+      />
+      <p>Người lập: {report.owner_name}{report.is_owner ? '' : ' · Chỉ đọc'}</p>
       {!report.include_finance && !report.is_owner && <Alert variant="info">Học sinh đã ẩn thông tin tài chính trong báo cáo này.</Alert>}
       <Card title="Thứ hạng phương án">
-        <ol className="top-careers">
-          {report.ranking.map((r) => (
-            <li key={r.id}>
+        <ol className="decision-rank-list">
+          {report.ranking.map((r, index) => (
+            <li key={r.id} className={index === 0 ? 'is-first' : undefined}>
+              <span className="decision-rank-no" aria-hidden="true">{index + 1}</span>
+              <div className="decision-rank-body">
               <div className="top-career-head">
                 <strong>{r.title}</strong>
                 <Badge variant={r.eligibility === 'MET' ? 'success' : r.eligibility === 'NOT_MET' ? 'danger' : 'default'}>{ELIGIBILITY_LABEL[r.eligibility]}</Badge>
@@ -71,6 +93,7 @@ export const DecisionReportPage: React.FC = () => {
                 {r.tuitionPerYear !== undefined && r.tuitionPerYear !== null && <span>Học phí {r.tuitionPerYear} triệu/năm</span>}
               </div>
               <p className="explain-note">Phù hợp nghề {r.careerFitPercent === null ? 'chưa có' : `${r.careerFitPercent.toFixed(1)}%`}</p>
+              </div>
             </li>
           ))}
         </ol>

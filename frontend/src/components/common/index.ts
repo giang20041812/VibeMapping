@@ -24,3 +24,7 @@ export { PageHero } from './PageHero/PageHero';
 export type { PageHeroProps } from './PageHero/PageHero';
 export { StickerCard, StickerCardSkeleton, StickerGrid, StickerFact, STICKER_TONES, stickerToneAt } from './StickerCard/StickerCard';
 export type { StickerCardProps, StickerTone } from './StickerCard/StickerCard';
+export { Tabs } from './Tabs/Tabs';
+export type { TabItem, TabsProps } from './Tabs/Tabs';
+export { StatTile } from './StatTile/StatTile';
+export type { StatTileProps } from './StatTile/StatTile';

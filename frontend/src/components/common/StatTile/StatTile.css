@@ -1,0 +1,41 @@
+.stat-tile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-4);
+  background: var(--sticker-bg);
+  border: var(--cartoon-stroke) solid var(--cartoon-ink);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--cartoon-pop);
+}
+.stat-tile-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: 800;
+  color: var(--color-text-secondary);
+}
+.stat-tile-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: calc(26 * var(--px));
+  height: calc(26 * var(--px));
+  color: var(--color-text-inverse);
+  background: var(--sticker-accent);
+  border: var(--cartoon-stroke-thin) solid var(--cartoon-ink);
+  border-radius: var(--radius-md);
+}
+.stat-tile-icon svg { width: 60%; height: 60%; }
+.stat-tile-value { display: flex; align-items: baseline; gap: var(--space-1); min-width: 0; overflow-wrap: anywhere; }
+.stat-tile-value b {
+  font-size: var(--font-size-4xl);
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--cartoon-ink);
+  font-variant-numeric: tabular-nums;
+}
+.stat-tile-value span { font-size: var(--font-size-md); font-weight: 700; color: var(--color-text-secondary); }
+.stat-tile-extra { min-width: 0; font-size: var(--font-size-sm); font-weight: 700; color: var(--color-text-secondary); }

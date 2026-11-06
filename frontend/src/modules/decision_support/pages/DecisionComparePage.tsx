@@ -1,12 +1,17 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Alert, Badge, Button, Card, Input, Select } from '../../../components/common';
+import { Link, useNavigate } from 'react-router-dom';
+import { Plus, Scale, Search, SearchX, Settings2, Trash2 } from 'lucide-react';
+import {
+  Alert, Badge, Button, Card, Input, Modal, PageHero, Select, StickerCard, StickerFact, StickerGrid, Textarea, stickerToneAt,
+} from '../../../components/common';
+import { SearchableSelect } from '../../../components/filters/SearchableSelect/SearchableSelect';
 import { compareDecisionOptions, type DecisionOptionInput, type RankedDecisionOption } from '../../../domain/assessmentRules';
 import { callRpc, db } from '../../../lib/rpc';
 import { clearProgramCompare, readProgramCompare } from '../../../lib/selectionCart';
 import { useAuth } from '../../auth/AuthContext';
 import { recommendCareers, searchCareers, type CareerListItem } from '../../career_explorer/career.service';
 import '../../career_explorer/pages/CareerPages.css';
+import './DecisionPages.css';
 
 interface OptionDraft {
   id: string;
@@ -30,6 +35,27 @@ interface SavedPlan {
 const ELIGIBILITY_LABEL = { MET: 'Đáp ứng', NOT_MET: 'Chưa đáp ứng', UNKNOWN: 'Chưa đủ dữ liệu' } as const;
 const ELIGIBILITY_VARIANT = { MET: 'success', NOT_MET: 'danger', UNKNOWN: 'default' } as const;
 
+const LOCATION_OPTIONS = [
+  { value: '100', label: 'Rất thuận tiện' },
+  { value: '80', label: 'Thuận tiện' },
+  { value: '60', label: 'Bình thường' },
+  { value: '40', label: 'Hơi bất tiện' },
+  { value: '20', label: 'Bất tiện' },
+];
+const LEVEL_OPTIONS = [
+  { value: '1', label: 'Thấp' },
+  { value: '2', label: 'Vừa' },
+  { value: '3', label: 'Cao' },
+];
+const WEIGHT_FIELDS = [
+  { key: 'careerFit', label: 'Phù hợp nghề' },
+  { key: 'admission', label: 'Đáp ứng đầu vào' },
+  { key: 'finance', label: 'Tài chính' },
+  { key: 'location', label: 'Địa điểm' },
+] as const;
+const MAX_OPTIONS = 4;
+const MIN_OPTIONS = 2;
+
 const blank = (index: number): OptionDraft => ({
   id: `opt-${Date.now()}-${index}`,
   title: '',
@@ -48,16 +74,20 @@ const num = (value: string): number | null => {
 
 export const DecisionComparePage: React.FC = () => {
   const { session } = useAuth();
+  const navigate = useNavigate();
   const [careers, setCareers] = useState<CareerListItem[]>([]);
   const [fitByCareer, setFitByCareer] = useState<Map<string, number>>(new Map());
   const [options, setOptions] = useState<OptionDraft[]>([blank(0), blank(1)]);
   const [learnerScore, setLearnerScore] = useState('');
   const [budget, setBudget] = useState('');
-  const [weights, setWeights] = useState({ careerFit: '40', admission: '30', finance: '20', location: '10' });
+  const [weights, setWeights] = useState({ careerFit: '3', admission: '3', finance: '2', location: '1' });
+  const [weightsOpen, setWeightsOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [plans, setPlans] = useState<SavedPlan[]>([]);
   const [parents, setParents] = useState<{ user_id: string; name: string }[]>([]);
+  const [preferring, setPreferring] = useState<{ planId: string; optionId: string; reason: string } | null>(null);
   const [message, setMessage] = useState<{ tone: 'success' | 'danger' | 'info'; text: string } | null>(null);
+  const [hasCart, setHasCart] = useState(() => readProgramCompare().length > 0);
 
   const reload = useCallback(async () => {
     const [list, connections] = await Promise.all([
@@ -107,7 +137,7 @@ export const DecisionComparePage: React.FC = () => {
   }));
   const ranked = useMemo(
     () =>
-      options.length >= 2
+      options.length >= MIN_OPTIONS
         ? compareDecisionOptions(
             inputs,
             { careerFit: num(weights.careerFit) ?? 0, admission: num(weights.admission) ?? 0, finance: num(weights.finance) ?? 0, location: num(weights.location) ?? 0 },
@@ -117,10 +147,11 @@ export const DecisionComparePage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [JSON.stringify(inputs), weights, budget, options.length],
   );
+  const rankedById = useMemo(() => new Map(ranked.map((r) => [r.id, r])), [ranked]);
   const [admissionNotes, setAdmissionNotes] = useState<Record<string, string>>({});
   const [alternatives, setAlternatives] = useState<string[]>([]);
   const backups = ranked.filter((r) => r.eligibility !== 'NOT_MET' && !r.overBudget).slice(1, 4);
-  const needBackup = ranked.length > 0 && (ranked[0].eligibility === 'NOT_MET' || ranked[0].overBudget || ranked.some((r) => r.eligibility === 'NOT_MET' || r.overBudget));
+  const needBackup = ranked.length > 0 && ranked.some((r) => r.eligibility === 'NOT_MET' || r.overBudget);
 
   useEffect(() => {
     const ids = options.map((option) => option.id).filter((id) => /^[0-9a-f-]{36}$/i.test(id));
@@ -140,10 +171,10 @@ export const DecisionComparePage: React.FC = () => {
         for (const id of ids) {
           const rows = (data ?? []).filter((row) => row.training_program_id === id);
           const latest = rows.find((row) => row.cutoff_score !== null) ?? rows[0];
-          if (!latest) notes[id] = 'Chưa đủ dữ liệu: chưa có điều kiện theo năm và phương thức.';
-          else if (score === null || latest.cutoff_score === null) notes[id] = `Chưa đủ dữ liệu để kết luận. Bản ghi năm ${latest.admission_year ?? '–'}, phương thức ${latest.admission_method ?? 'không ghi'}.`;
-          else if (score >= Number(latest.cutoff_score)) notes[id] = `Đáp ứng: điểm ${score} đạt điểm chuẩn ${latest.cutoff_score} năm ${latest.admission_year}, phương thức ${latest.admission_method ?? 'không ghi'}.`;
-          else notes[id] = `Chưa đáp ứng: điểm ${score} thấp hơn điểm chuẩn ${latest.cutoff_score} năm ${latest.admission_year}, phương thức ${latest.admission_method ?? 'không ghi'}.`;
+          if (!latest) notes[id] = 'Chưa có điểm chuẩn theo năm và phương thức.';
+          else if (score === null || latest.cutoff_score === null) notes[id] = `Năm ${latest.admission_year ?? '–'}, ${latest.admission_method ?? 'chưa ghi phương thức'}.`;
+          else if (score >= Number(latest.cutoff_score)) notes[id] = `Điểm ${score} đạt điểm chuẩn ${latest.cutoff_score} (năm ${latest.admission_year}, ${latest.admission_method ?? 'chưa ghi phương thức'}).`;
+          else notes[id] = `Điểm ${score} thấp hơn điểm chuẩn ${latest.cutoff_score} (năm ${latest.admission_year}, ${latest.admission_method ?? 'chưa ghi phương thức'}).`;
         }
         setAdmissionNotes(notes);
       });
@@ -162,7 +193,7 @@ export const DecisionComparePage: React.FC = () => {
     db.from('training_programs').select('major_id').eq('id', lead.id).maybeSingle().then(async ({ data }) => {
       if (!active) return;
       if (!data?.major_id) {
-        setAlternatives(['Không tìm được nhóm ngành của phương án ưu tiên.']);
+        setAlternatives([]);
         return;
       }
       const { data: peers } = await db
@@ -180,9 +211,9 @@ export const DecisionComparePage: React.FC = () => {
         };
         const school = Array.isArray(row.institution) ? row.institution[0]?.institution_name : row.institution?.institution_name;
         const major = Array.isArray(row.major) ? row.major[0]?.major_name : row.major?.major_name;
-        return `${school ?? 'Trường'} – ${major ?? 'ngành'}${row.specialization_name ? ` (${row.specialization_name})` : ''}: cùng nhóm ngành, cần đối chiếu điểm chuẩn và học phí trước khi chọn.`;
+        return `${school ?? 'Trường'} – ${major ?? 'ngành'}${row.specialization_name ? ` (${row.specialization_name})` : ''}`;
       });
-      setAlternatives(lines.length > 0 ? lines : ['Không có phương án cùng nhóm ngành trong danh mục.']);
+      setAlternatives(lines);
     });
     return () => {
       active = false;
@@ -190,6 +221,7 @@ export const DecisionComparePage: React.FC = () => {
   }, [ranked]);
 
   const patch = (id: string, change: Partial<OptionDraft>) => setOptions((list) => list.map((o) => (o.id === id ? { ...o, ...change } : o)));
+  const careerOptions = useMemo(() => careers.map((c) => ({ value: c.id, label: c.career_name })), [careers]);
 
   const save = async () => {
     setMessage(null);
@@ -207,7 +239,7 @@ export const DecisionComparePage: React.FC = () => {
       setMessage({ tone: 'success', text: 'Đã lưu phương án.' });
       await reload();
     } catch {
-      setMessage({ tone: 'danger', text: 'Chưa lưu được. Cần 2–4 phương án và tên phương án.' });
+      setMessage({ tone: 'danger', text: 'Chưa lưu được. Cần 2–4 phương án và tên bộ phương án.' });
     }
   };
 
@@ -228,142 +260,276 @@ export const DecisionComparePage: React.FC = () => {
     }
   };
 
+  const saveFinance = () =>
+    callRpc('save_my_study_finance', {
+      p_latest_score: num(learnerScore),
+      p_subject_combination: null,
+      p_admission_method: null,
+      p_recorded_year: null,
+      p_budget_per_year: num(budget),
+      p_budget_note: null,
+    })
+      .then(() => setMessage({ tone: 'success', text: 'Đã lưu điểm và ngân sách vào hồ sơ.' }))
+      .catch(() => setMessage({ tone: 'danger', text: 'Chưa lưu được vào hồ sơ.' }));
+
+  const confirmPreferred = () => {
+    if (!preferring) return;
+    const current = preferring;
+    setPreferring(null);
+    void act(
+      () => callRpc('set_preferred_option', { p_plan_id: current.planId, p_option_id: current.optionId, p_reason: current.reason }),
+      'Đã đánh dấu phương án ưu tiên.',
+    );
+  };
+  const preferringPlan = plans.find((p) => p.id === preferring?.planId);
+
   return (
     <div className="module-page">
-      <h1>So sánh phương án</h1>
+      <PageHero
+        title="So sánh phương án"
+        icon={<Scale />}
+        tone="violet"
+        count={options.length}
+        countLabel={`/ ${MAX_OPTIONS} phương án`}
+        actions={
+          <>
+            <Button type="button" variant="outline" leftIcon={<Settings2 size={16} />} onClick={() => setWeightsOpen(true)}>Mức quan trọng</Button>
+            <Button type="button" variant="outline" leftIcon={<Search size={16} />} onClick={() => navigate('/kham-pha-truong')}>Chọn chương trình</Button>
+          </>
+        }
+      />
       {message && <Alert variant={message.tone}>{message.text}</Alert>}
-      <Card title="Thông tin học tập và ngân sách">
+
+      <Card title="Điểm và ngân sách">
         <div className="module-form">
           <Input label="Điểm xét tuyển của bạn" value={learnerScore} onChange={(e) => setLearnerScore(e.target.value)} inputMode="decimal" />
           <Input label="Ngân sách học phí mỗi năm (triệu đồng)" value={budget} onChange={(e) => setBudget(e.target.value)} inputMode="decimal" />
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => void callRpc('save_my_study_finance', {
-              p_latest_score: num(learnerScore),
-              p_subject_combination: null,
-              p_admission_method: null,
-              p_recorded_year: null,
-              p_budget_per_year: num(budget),
-              p_budget_note: null,
-            }).then(() => setMessage({ tone: 'success', text: 'Đã lưu hồ sơ học tập và ngân sách.' })).catch(() => setMessage({ tone: 'danger', text: 'Chưa lưu được hồ sơ. Chạy migration Phase 4 nếu chưa có bảng.' }))}
-          >
-            Lưu vào hồ sơ
-          </Button>
-        </div>
-        <p className="explain-note">Bỏ trống ngân sách thì tiêu chí tài chính được loại khỏi phép tính, không tính 0 điểm. Học phí chương trình thêm từ M05 là ước tính 2 học kỳ.</p>
-        {readProgramCompare().length > 0 && (
-          <Button type="button" variant="ghost" onClick={() => { clearProgramCompare(); setMessage({ tone: 'info', text: 'Đã xóa giỏ chương trình.' }); }}>
-            Xóa chương trình vừa thêm từ trang trường
-          </Button>
-        )}
-      </Card>
-
-      <Card title="Mức quan trọng của tiêu chí">
-        <div className="module-form">
-          <Input label="Phù hợp nghề" value={weights.careerFit} onChange={(e) => setWeights({ ...weights, careerFit: e.target.value })} />
-          <Input label="Đáp ứng đầu vào" value={weights.admission} onChange={(e) => setWeights({ ...weights, admission: e.target.value })} />
-          <Input label="Tài chính" value={weights.finance} onChange={(e) => setWeights({ ...weights, finance: e.target.value })} />
-          <Input label="Địa điểm" value={weights.location} onChange={(e) => setWeights({ ...weights, location: e.target.value })} />
-        </div>
-      </Card>
-
-      <Card title={`Phương án (${options.length}/4)`}>
-        {options.map((o, index) => (
-          <div key={o.id} className="decision-option">
-            <strong>Phương án {index + 1}</strong>
-            <div className="module-form">
-              <Input label="Tên (trường – ngành)" value={o.title} onChange={(e) => patch(o.id, { title: e.target.value })} />
-              <Select label="Nghề hướng tới" emptyLabel="Chưa chọn" value={o.careerId} options={careers.map((c) => ({ value: c.id, label: c.career_name }))} onChange={(v) => patch(o.id, { careerId: v })} />
-              <Input label="Ngưỡng điểm bắt buộc" value={o.admissionFloor} onChange={(e) => patch(o.id, { admissionFloor: e.target.value })} inputMode="decimal" />
-              <Input label="Học phí/năm (triệu)" value={o.tuitionPerYear} onChange={(e) => patch(o.id, { tuitionPerYear: e.target.value })} inputMode="decimal" />
-              <Input label="Điểm địa điểm (0–100)" value={o.locationScore} onChange={(e) => patch(o.id, { locationScore: e.target.value })} inputMode="decimal" />
-              {options.length > 2 && <Button type="button" variant="ghost" onClick={() => setOptions((list) => list.filter((x) => x.id !== o.id))}>Bỏ</Button>}
-            </div>
-            {admissionNotes[o.id] && <p className="explain-note">{admissionNotes[o.id]}</p>}
-          </div>
-        ))}
-        <Button type="button" variant="outline" disabled={options.length >= 4} onClick={() => setOptions((list) => [...list, blank(list.length)])}>
-          Thêm phương án
-        </Button>
-      </Card>
-
-      <Card title="Xếp hạng">
-        <ol className="top-careers">
-          {ranked.map((r) => (
-            <li key={r.id}>
-              <div className="top-career-head">
-                <strong>{r.title}</strong>
-                <Badge variant={ELIGIBILITY_VARIANT[r.eligibility]}>{ELIGIBILITY_LABEL[r.eligibility]}</Badge>
-                {r.overBudget && <Badge variant="warning">Vượt ngân sách</Badge>}
-                <span>Điểm tổng hợp: {r.totalScore ?? 'Chưa đủ dữ liệu'}</span>
-              </div>
-              <p className="explain-note">
-                Phù hợp nghề {r.careerFitPercent === null ? 'chưa có' : `${r.careerFitPercent.toFixed(1)}%`}
-                {r.scoreGap !== null && r.scoreGap > 0 ? ` · thiếu ${r.scoreGap} điểm so với ngưỡng` : ''}
-                {r.missingCriteria.length > 0 ? ` · thiếu dữ liệu: ${r.missingCriteria.join(', ')} (loại khỏi mẫu số)` : ''}
-              </p>
-            </li>
-          ))}
-        </ol>
-        <p className="explain-note">Phương án chưa đáp ứng điều kiện bắt buộc không bao giờ xếp trên phương án đáp ứng (BR-019). Công thức trọng số do bạn chọn, chưa được hội đồng chuyên môn phê duyệt.</p>
-        {needBackup && (
-          <Alert variant="info" title="Phương án dự phòng">
-            {backups.length > 0 ? `Trong các phương án đã nhập: ${backups.map((b) => b.title).join(', ')}.` : 'Trong các phương án đã nhập chưa có phương án vừa đạt điều kiện vừa trong ngân sách.'}
-            {alternatives.length > 0 && <ul>{alternatives.map((line) => <li key={line}>{line}</li>)}</ul>}
-          </Alert>
-        )}
-        <form className="module-form" onSubmit={(e) => { e.preventDefault(); void save(); }}>
-          <Input label="Tên bộ phương án" value={title} onChange={(e) => setTitle(e.target.value)} />
-          <Button type="submit" disabled={!title.trim()}>Lưu phương án</Button>
-        </form>
-      </Card>
-
-      <Card title="Phương án đã lưu và báo cáo gia đình">
-        {plans.length === 0 ? <p>Chưa có phương án nào.</p> : plans.map((plan) => (
-          <div key={plan.id} className="decision-option">
-            <div className="top-career-head">
-              <strong>{plan.title}</strong>
-              <span className="explain-note">{new Date(plan.created_at).toLocaleDateString('vi-VN')}</span>
-            </div>
-            <div className="module-actions">
-              {plan.ranking.map((r) => (
-                <Button key={r.id} type="button" size="sm" variant={plan.preferred_option_id === r.id ? 'primary' : 'outline'}
-                  onClick={() => {
-                    const reason = window.prompt('Lý do chọn phương án ưu tiên') ?? '';
-                    void act(() => callRpc('set_preferred_option', { p_plan_id: plan.id, p_option_id: r.id, p_reason: reason }), 'Đã đánh dấu phương án ưu tiên.');
-                  }}>
-                  {plan.preferred_option_id === r.id ? 'Ưu tiên: ' : ''}{r.title}
-                </Button>
-              ))}
-            </div>
-            {!plan.report ? (
-              <div className="module-actions">
-                <Button type="button" size="sm" onClick={() => void act(() => callRpc('create_decision_report', { p_plan_id: plan.id, p_include_finance: false }), 'Đã tạo báo cáo (ẩn tài chính).')}>Tạo báo cáo (ẩn tài chính)</Button>
-                <Button type="button" size="sm" variant="outline" onClick={() => void act(() => callRpc('create_decision_report', { p_plan_id: plan.id, p_include_finance: true }), 'Đã tạo báo cáo (hiện tài chính).')}>Tạo báo cáo (hiện tài chính)</Button>
-              </div>
-            ) : (
-              <div className="module-actions">
-                <Link to={`/bao-cao-quyet-dinh/${plan.report.id}`}>Xem báo cáo</Link>
-                {parents.map((p) => {
-                  const share = plan.report!.shares.find((s) => s.user_id === p.user_id);
-                  return share ? (
-                    <Badge key={p.user_id} variant={share.consensus_at ? 'success' : 'default'}>
-                      {p.name}: {share.consensus_at ? 'đã đồng thuận' : 'đã chia sẻ'}
-                    </Badge>
-                  ) : (
-                    <Button key={p.user_id} type="button" size="sm" variant="outline"
-                      onClick={() => void act(() => callRpc('share_decision_report', { p_report_id: plan.report!.id, p_parent_id: p.user_id }), 'Đã chia sẻ cho phụ huynh.')}>
-                      Chia sẻ cho {p.name || 'phụ huynh'}
-                    </Button>
-                  );
-                })}
-                {parents.length === 0 && <span className="explain-note">Chưa liên kết phụ huynh. <Link to="/quyen-rieng-tu">Liên kết</Link></span>}
-              </div>
+          <div className="module-actions">
+            <Button type="button" variant="outline" onClick={() => void saveFinance()}>Lưu vào hồ sơ</Button>
+            {hasCart && (
+              <Button type="button" variant="ghost" leftIcon={<Trash2 size={16} />} onClick={() => { clearProgramCompare(); setHasCart(false); setMessage({ tone: 'info', text: 'Đã xóa danh sách chương trình đã chọn.' }); }}>
+                Xóa chương trình đã chọn
+              </Button>
             )}
           </div>
-        ))}
+        </div>
       </Card>
+
+      <div className="decision-layout">
+        <section className="decision-main" aria-label="Bảng so sánh phương án">
+          <div className="explain-table-wrap">
+            <table className="explain-table compare-table decision-table">
+              <thead>
+                <tr>
+                  <th scope="col">Tiêu chí</th>
+                  {options.map((o, index) => (
+                    <th key={o.id} scope="col">
+                      <div className="decision-col-head">
+                        <span>Phương án {index + 1}</span>
+                        {options.length > MIN_OPTIONS && (
+                          <Button type="button" size="sm" variant="ghost" aria-label={`Bỏ phương án ${index + 1}`} onClick={() => setOptions((list) => list.filter((x) => x.id !== o.id))}>
+                            <Trash2 size={16} />
+                          </Button>
+                        )}
+                      </div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Trường – ngành</th>
+                  {options.map((o) => (
+                    <td key={o.id}><Input aria-label="Trường – ngành" value={o.title} onChange={(e) => patch(o.id, { title: e.target.value })} /></td>
+                  ))}
+                </tr>
+                <tr>
+                  <th scope="row">Nghề hướng tới</th>
+                  {options.map((o) => (
+                    <td key={o.id}>
+                      <SearchableSelect placeholder="Chưa chọn" options={careerOptions} value={o.careerId} onChange={(v) => patch(o.id, { careerId: v })} />
+                    </td>
+                  ))}
+                </tr>
+                <tr>
+                  <th scope="row">Ngưỡng điểm</th>
+                  {options.map((o) => (
+                    <td key={o.id}><Input aria-label="Ngưỡng điểm" value={o.admissionFloor} onChange={(e) => patch(o.id, { admissionFloor: e.target.value })} inputMode="decimal" /></td>
+                  ))}
+                </tr>
+                <tr>
+                  <th scope="row">Học phí mỗi năm (triệu)</th>
+                  {options.map((o) => (
+                    <td key={o.id}><Input aria-label="Học phí mỗi năm" value={o.tuitionPerYear} onChange={(e) => patch(o.id, { tuitionPerYear: e.target.value })} inputMode="decimal" /></td>
+                  ))}
+                </tr>
+                <tr>
+                  <th scope="row">Địa điểm</th>
+                  {options.map((o) => (
+                    <td key={o.id}>
+                      <Select aria-label="Địa điểm" emptyLabel="Chưa đánh giá" value={o.locationScore} options={LOCATION_OPTIONS} onChange={(v) => patch(o.id, { locationScore: v })} />
+                    </td>
+                  ))}
+                </tr>
+                <tr>
+                  <th scope="row">Đầu vào</th>
+                  {options.map((o) => {
+                    const r = rankedById.get(o.id);
+                    return (
+                      <td key={o.id}>
+                        {r && <Badge variant={ELIGIBILITY_VARIANT[r.eligibility]}>{ELIGIBILITY_LABEL[r.eligibility]}</Badge>}
+                        {r && r.scoreGap !== null && r.scoreGap > 0 && <p className="explain-note">Thiếu {r.scoreGap} điểm</p>}
+                        {admissionNotes[o.id] && <p className="explain-note">{admissionNotes[o.id]}</p>}
+                      </td>
+                    );
+                  })}
+                </tr>
+                <tr>
+                  <th scope="row">Điểm tổng hợp</th>
+                  {options.map((o) => {
+                    const r = rankedById.get(o.id);
+                    return (
+                      <td key={o.id} className={r?.rank === 1 ? 'is-fit' : undefined}>
+                        {r ? (r.totalScore ?? <span className="is-missing">Chưa đủ dữ liệu</span>) : null}
+                      </td>
+                    );
+                  })}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div className="module-actions">
+            <Button type="button" variant="outline" leftIcon={<Plus size={16} />} disabled={options.length >= MAX_OPTIONS} onClick={() => setOptions((list) => [...list, blank(list.length)])}>
+              Thêm phương án
+            </Button>
+          </div>
+        </section>
+
+        <aside className="decision-rank" aria-label="Xếp hạng">
+          <Card title="Xếp hạng">
+            <ol className="decision-rank-list">
+              {ranked.map((r) => (
+                <li key={r.id} className={r.rank === 1 ? 'is-first' : undefined}>
+                  <span className="decision-rank-no" aria-hidden="true">{r.rank}</span>
+                  <div className="decision-rank-body">
+                    <strong>{r.title}</strong>
+                    <div className="top-career-head">
+                      <Badge variant={ELIGIBILITY_VARIANT[r.eligibility]}>{ELIGIBILITY_LABEL[r.eligibility]}</Badge>
+                      {r.overBudget && <Badge variant="warning">Vượt ngân sách</Badge>}
+                    </div>
+                    <span className="explain-note">
+                      Điểm {r.totalScore ?? '–'} · Phù hợp nghề {r.careerFitPercent === null ? 'chưa có' : `${r.careerFitPercent.toFixed(1)}%`}
+                      {r.missingCriteria.length > 0 ? ` · Thiếu: ${r.missingCriteria.join(', ')}` : ''}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ol>
+            {needBackup && (
+              <Alert variant="info" title="Phương án dự phòng">
+                {backups.length > 0 ? backups.map((b) => b.title).join(', ') : 'Chưa có phương án vừa đạt điều kiện vừa trong ngân sách.'}
+                {alternatives.length > 0 && <ul>{alternatives.map((line) => <li key={line}>{line}</li>)}</ul>}
+              </Alert>
+            )}
+            <form className="decision-save" onSubmit={(e) => { e.preventDefault(); void save(); }}>
+              <Input label="Tên bộ phương án" value={title} onChange={(e) => setTitle(e.target.value)} />
+              <Button type="submit" disabled={!title.trim()}>Lưu phương án</Button>
+            </form>
+          </Card>
+        </aside>
+      </div>
+
+      <h2 className="decision-heading">Phương án đã lưu</h2>
+      {plans.length === 0 ? (
+        <div className="sticker-empty">
+          <SearchX size={40} aria-hidden="true" />
+          Chưa có phương án nào
+        </div>
+      ) : (
+        <StickerGrid label="Phương án đã lưu">
+          {plans.map((plan, index) => (
+            <StickerCard
+              key={plan.id}
+              tone={stickerToneAt(index)}
+              icon={<Scale size={22} />}
+              title={plan.title}
+              corner={<span className="explain-note">{new Date(plan.created_at).toLocaleDateString('vi-VN')}</span>}
+              footer={
+                !plan.report ? (
+                  <>
+                    <Button type="button" size="sm" onClick={() => void act(() => callRpc('create_decision_report', { p_plan_id: plan.id, p_include_finance: false }), 'Đã tạo báo cáo, ẩn tài chính.')}>Báo cáo ẩn tài chính</Button>
+                    <Button type="button" size="sm" variant="outline" onClick={() => void act(() => callRpc('create_decision_report', { p_plan_id: plan.id, p_include_finance: true }), 'Đã tạo báo cáo, hiện tài chính.')}>Báo cáo hiện tài chính</Button>
+                  </>
+                ) : (
+                  <>
+                    <Link className="sticker-link" to={`/bao-cao-quyet-dinh/${plan.report.id}`}>Xem báo cáo</Link>
+                    {parents.map((p) => {
+                      const share = plan.report!.shares.find((s) => s.user_id === p.user_id);
+                      return share ? (
+                        <Badge key={p.user_id} variant={share.consensus_at ? 'success' : 'default'}>
+                          {p.name}: {share.consensus_at ? 'đã đồng thuận' : 'đã chia sẻ'}
+                        </Badge>
+                      ) : (
+                        <Button key={p.user_id} type="button" size="sm" variant="outline"
+                          onClick={() => void act(() => callRpc('share_decision_report', { p_report_id: plan.report!.id, p_parent_id: p.user_id }), 'Đã chia sẻ cho phụ huynh.')}>
+                          Chia sẻ cho {p.name || 'phụ huynh'}
+                        </Button>
+                      );
+                    })}
+                    {parents.length === 0 && <Link className="sticker-link" to="/quyen-rieng-tu">Liên kết phụ huynh</Link>}
+                  </>
+                )
+              }
+            >
+              {plan.ranking.map((r) => (
+                <StickerFact key={r.id} strong={plan.preferred_option_id === r.id}>
+                  {plan.preferred_option_id === r.id ? 'Ưu tiên: ' : ''}{r.title}
+                </StickerFact>
+              ))}
+              <Button type="button" size="sm" variant="ghost" onClick={() => setPreferring({ planId: plan.id, optionId: plan.preferred_option_id ?? plan.ranking[0]?.id ?? '', reason: plan.preferred_reason ?? '' })}>
+                Chọn phương án ưu tiên
+              </Button>
+            </StickerCard>
+          ))}
+        </StickerGrid>
+      )}
+
+      <Modal
+        open={weightsOpen}
+        title="Mức quan trọng"
+        onClose={() => setWeightsOpen(false)}
+        actions={<Button type="button" onClick={() => setWeightsOpen(false)}>Xong</Button>}
+      >
+        <div className="career-filter-form">
+          {WEIGHT_FIELDS.map((field) => (
+            <Select key={field.key} label={field.label} options={LEVEL_OPTIONS} value={weights[field.key]} onChange={(v) => setWeights({ ...weights, [field.key]: v })} />
+          ))}
+        </div>
+      </Modal>
+
+      <Modal
+        open={preferring !== null}
+        title="Phương án ưu tiên"
+        onClose={() => setPreferring(null)}
+        actions={
+          <>
+            <Button type="button" variant="ghost" onClick={() => setPreferring(null)}>Hủy</Button>
+            <Button type="button" disabled={!preferring?.optionId} onClick={confirmPreferred}>Lưu</Button>
+          </>
+        }
+      >
+        {preferring && preferringPlan && (
+          <div className="career-filter-form">
+            <Select
+              label="Phương án"
+              options={preferringPlan.ranking.map((r) => ({ value: r.id, label: r.title }))}
+              value={preferring.optionId}
+              onChange={(v) => setPreferring({ ...preferring, optionId: v })}
+            />
+            <Textarea label="Lý do" value={preferring.reason} onChange={(e) => setPreferring({ ...preferring, reason: e.target.value })} />
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

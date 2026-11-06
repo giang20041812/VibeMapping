@@ -85,6 +85,38 @@ ${input.notes.map((n) => `<p class="note">${esc(n)}</p>`).join('')}
   page.print();
 }
 
+export interface DecisionPrintInput {
+  title: string;
+  ownerName: string;
+  budget: string | null;
+  rows: Array<{ rank: number; title: string; eligibility: string; score: string; fit: string }>;
+  preferred: string | null;
+}
+
+/** Bản in báo cáo quyết định bằng trình duyệt để giữ nguyên dấu tiếng Việt (chọn Lưu thành PDF) */
+export function printDecisionReport(input: DecisionPrintInput) {
+  const page = window.open('', '_blank', 'noopener,width=900,height=1100');
+  if (!page) return;
+  const rows = input.rows
+    .map((r) => `<tr><td>${r.rank}</td><td>${esc(r.title)}</td><td>${esc(r.eligibility)}</td><td>${esc(r.score)}</td><td>${esc(r.fit)}</td></tr>`)
+    .join('');
+  page.document.write(`<!doctype html><html lang="vi"><head><meta charset="utf-8"><title>${esc(input.title)}</title>
+<style>
+  body{font-family:Segoe UI,Arial,sans-serif;color:#122;margin:32px;line-height:1.45}
+  h1{font-size:22px;margin:0 0 8px}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px}
+  th,td{border:1px solid #ccd;padding:6px 8px;text-align:left}
+</style></head><body>
+<h1>${esc(input.title)}</h1>
+<p>Người lập: ${esc(input.ownerName)}${input.budget ? ` · Ngân sách: ${esc(input.budget)}` : ''}</p>
+<table><thead><tr><th>Hạng</th><th>Phương án</th><th>Đầu vào</th><th>Điểm tổng hợp</th><th>Phù hợp nghề</th></tr></thead><tbody>${rows}</tbody></table>
+${input.preferred ? `<p>Phương án ưu tiên: ${esc(input.preferred)}</p>` : ''}
+</body></html>`);
+  page.document.close();
+  page.focus();
+  page.print();
+}
+
 function esc(value: string): string {
   return value.replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch] ?? ch));
 }

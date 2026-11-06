@@ -693,9 +693,12 @@ function topItems(texts: string[], limit: number, wholeLines = false): string[] 
 /** Mô tả nghề tổng hợp từ các JD và các ngành liên quan */
 export async function loadCareerProfileInfo(careerId: string): Promise<CareerProfileInfo> {
   const columns = PROFILE_SECTIONS.map((s) => s.key).join(',');
-  const [jds, links] = await Promise.all([
+  const [jds, links, authored] = await Promise.all([
     supabase.from('career_job_descriptions').select(columns).eq('career_id', careerId).limit(60),
     supabase.from('career_major_links').select('major_id, link_level, majors(major_name)').eq('career_id', careerId).limit(40),
+    // Nội dung quản trị tự nhập (cột mới chưa có trong type sinh tự động)
+    supabase.from('careers')
+      .select('career_description, key_skills, salary_range_text, career_path_text').eq('id', careerId).maybeSingle(),
   ]);
   if (jds.error) throw jds.error;
   const rows = (jds.data ?? []) as unknown as Array<Record<string, string | null>>;
@@ -704,6 +707,22 @@ export async function loadCareerProfileInfo(careerId: string): Promise<CareerPro
     title,
     items: topItems(rows.map((row) => row[key] ?? '').filter(Boolean), key === 'salary_reference' ? 2 : 6, key === 'salary_reference'),
   })).filter((section) => section.items.length > 0);
+  // Nội dung quản trị nhập thay phần tổng hợp từ JD cùng loại
+  const written = (authored.data ?? {}) as Record<string, string | null>;
+  const lines = (text: string | null | undefined) => (text ?? '').split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  const override = (key: string, title: string, text: string | null | undefined) => {
+    const items = lines(text);
+    if (items.length === 0) return;
+    const at = sections.findIndex((section) => section.key === key);
+    if (at >= 0) sections[at] = { ...sections[at], items };
+    else sections.push({ key, title, items });
+  };
+  override('professional_skills', 'Kỹ năng chuyên môn', written.key_skills);
+  override('career_path', 'Lộ trình nghề nghiệp', written.career_path_text);
+  override('salary_reference', 'Mức lương tham khảo', written.salary_range_text);
+  if (lines(written.career_description).length > 0) {
+    sections.unshift({ key: 'career_description', title: 'Tóm tắt nghề', items: lines(written.career_description) });
+  }
   const majors = ((links.data ?? []) as unknown as Array<{ major_id: string; link_level: string; majors: { major_name: string } | null }>)
     .filter((row) => row.majors)
     .map((row) => ({ id: row.major_id, name: row.majors!.major_name, direct: row.link_level === 'direct' }))

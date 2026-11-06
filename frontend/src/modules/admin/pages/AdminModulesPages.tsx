@@ -1,71 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Alert, Badge, Button, Card, Input, Select, Spinner, Textarea } from '../../../components/common';
+import { Alert, Badge, Button, Card, Input, Select, Textarea } from '../../../components/common';
 import { callRpc, db } from '../../../lib/rpc';
-import { setCareerStatus } from '../../career_explorer/career.service';
 import '../../career_explorer/pages/CareerPages.css';
-
-const STATUS_OPTIONS = [
-  { value: 'draft', label: 'Bản nháp' },
-  { value: 'review', label: 'Đang rà soát' },
-  { value: 'published', label: 'Đã công bố' },
-  { value: 'hidden', label: 'Đã ẩn' },
-];
-
-/** R16: quản trị duyệt / công bố / ẩn nghề; người dùng chỉ đọc nghề đã công bố */
-export const CareerAdminPage: React.FC = () => {
-  const [query, setQuery] = useState('');
-  const [status, setStatus] = useState('');
-  const [rows, setRows] = useState<{ id: string; career_code: string; career_name: string; status: string; is_standard_complete: boolean; qualifying_jd_count: number; holland_top3: string | null; data_checked_at: string | null }[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const reload = useCallback(async () => {
-    let request = db.from('careers').select('id, career_code, career_name, status, is_standard_complete, qualifying_jd_count, holland_top3, data_checked_at').order('career_code').limit(200);
-    if (query.trim()) request = request.ilike('career_name', `%${query.trim()}%`);
-    if (status) request = request.eq('status', status);
-    const { data, error: e } = await request;
-    if (e) throw e;
-    setRows(data ?? []);
-  }, [query, status]);
-
-  useEffect(() => {
-    reload().catch(() => setError('Không tải được danh sách nghề.'));
-  }, [reload]);
-
-  return (
-    <div className="module-page">
-      <h1>Quản lý nghề</h1>
-      {error && <Alert variant="danger">{error}</Alert>}
-      <Card title="Lọc">
-        <div className="module-form">
-          <Input label="Tên nghề" value={query} onChange={(e) => setQuery(e.target.value)} />
-          <Select label="Trạng thái" emptyLabel="Tất cả" value={status} options={STATUS_OPTIONS} onChange={setStatus} />
-        </div>
-        <p className="explain-note">Nghề đủ 3 thành phần (G1–G5, G7 có CW &gt; 0 và Holland) được công bố tự động ở mức kiểm định theo dữ liệu JD. Hạn rà soát dữ liệu nghề 6 tháng (P20).</p>
-      </Card>
-      {rows === null ? <Spinner /> : (
-        <Card title={`${rows.length} nghề`}>
-          <ul className="module-list">
-            {rows.map((r) => {
-              const stale = r.data_checked_at && Date.now() - new Date(r.data_checked_at).getTime() > 183 * 86400000;
-              return (
-                <li key={r.id}>
-                  <Link to={`/nghe/${r.id}`}>{r.career_code} · {r.career_name}</Link>
-                  <span>{r.qualifying_jd_count} JD</span>
-                  {r.holland_top3 && <Badge>{r.holland_top3}</Badge>}
-                  <Badge variant={r.is_standard_complete ? 'success' : 'warning'}>{r.is_standard_complete ? 'Đủ 3 thành phần' : 'Thiếu thành phần'}</Badge>
-                  {stale && <Badge variant="danger">Quá hạn rà soát</Badge>}
-                  <Select label="Trạng thái" value={r.status} options={STATUS_OPTIONS}
-                    onChange={(v) => void setCareerStatus(r.id, v).then(reload).catch(() => setError('Không đổi được trạng thái.'))} />
-                </li>
-              );
-            })}
-          </ul>
-        </Card>
-      )}
-    </div>
-  );
-};
 
 /** M09: kiểm duyệt bài bị ẩn/báo cáo, xác minh người hướng dẫn, tạo sự kiện */
 export const CommunityAdminPage: React.FC = () => {

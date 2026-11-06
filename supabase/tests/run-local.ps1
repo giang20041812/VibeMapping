@@ -3,7 +3,7 @@
 param(
   [string]$PgBin = 'C:\Program Files\PostgreSQL\18\bin',
   [int]$Port = 55432,
-  [string[]]$Tests = @('phase3_behaviour.sql', 'phase2_career_fit.sql', 'phase2_career_publish.sql')
+  [string[]]$Tests = @('phase3_behaviour.sql', 'phase2_career_fit.sql', 'phase2_career_publish.sql', 'phase2_career_admin.sql')
 )
 $ErrorActionPreference = 'Continue'
 $env:PGCLIENTENCODING = 'UTF8'

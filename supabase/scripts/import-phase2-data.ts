@@ -979,12 +979,21 @@ const STEP_RUNNERS: Record<Step, (supabase: SupabaseClient, data: ImportData) =>
       const { error } = await (table === 'career_requirements' ? query.eq('matrix_version_id', matrixVersionId) : query);
       if (error) throw new Error(`Xóa ${table}: ${error.message}`);
     }
-    await upsertBatches(supabase, 'career_requirements', data.matrix.requirements.map((r) => ({
+    // Nghề quản trị đã sửa tay (Chuyên gia duyệt) giữ nguyên ma trận, không dựng lại từ JD
+    const manual = new Set<string>();
+    for (const table of ['career_requirements', 'career_holland_profiles']) {
+      for (const row of await fetchAll(supabase, table, 'career_id, verification_level')) {
+        if (row.verification_level === 'expert_reviewed' || row.verification_level === 'calibrated') manual.add(String(row.career_id));
+      }
+    }
+    const isManual = (careerCode: string) => manual.has(idOf(careerId, careerCode, 'nghề', 'careers'));
+    if (manual.size > 0) console.log(`  giữ nguyên ma trận của ${manual.size} nghề đã sửa tay`);
+    await upsertBatches(supabase, 'career_requirements', data.matrix.requirements.filter((r) => !isManual(r.career_code)).map((r) => ({
       career_id: idOf(careerId, r.career_code, 'nghề', 'careers'), criteria_id: idOf(criteriaId, r.dimension_code, 'tiêu chí', 'import:ba'),
       matrix_version_id: matrixVersionId, required_score: r.required_score, career_weight: r.career_weight, jd_count: r.jd_count,
       verification_level: 'per_jd_data',
     })), 'career_id,criteria_id,matrix_version_id', { ignoreDuplicates: true });
-    await upsertBatches(supabase, 'career_holland_profiles', data.matrix.holland.map((r) => ({
+    await upsertBatches(supabase, 'career_holland_profiles', data.matrix.holland.filter((r) => !isManual(r.career_code)).map((r) => ({
       career_id: idOf(careerId, r.career_code, 'nghề', 'careers'), holland_code: r.holland_code, strength: r.strength, jd_count: r.jd_count,
       verification_level: 'per_jd_data',
     })), 'career_id,holland_code', { ignoreDuplicates: true });

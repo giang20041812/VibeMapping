@@ -21,18 +21,20 @@
  *
  * Quy tắc tính ma trận nghề theo SRS R16:
  *   - Quy đổi Required Level (parseRequiredLevel): L0,L1 -> 1; L2 -> 2; L3 -> 3; L4 -> 4; L5–L7 -> 5.
- *   - Lọc cấp độ JD cho ma trận nghề HSSV: chỉ JD mức L1 và L2 (career_level === 1 || career_level === 2)
- *     có Required Level quy đổi được về thang 1–5 mới được đưa vào tính ma trận; JD mức L0 vẫn giữ nguyên
- *     trong bảng career_job_descriptions nhưng không tham gia tính ma trận (ghi chú: SRS R16 gọi L1 là
- *     "Thực tập, Mới ra trường" trong khi sheet CHIA NHÓM của Career Profile tách L0 = Intern, L1 = Fresher).
- *   - Req(d,c)  = trung bình Required Level của các JD L1–L2 có gắn tiêu chí d (G1–G5, G7);
- *   - CW(d,c)   = số JD L1–L2 có d, chuẩn hóa để tổng bằng 1 trong từng thành phần (G1–G5 | G7);
- *   - G6 không có Req: hồ sơ sáu chiều RIASEC = tỷ lệ JD L1–L2 có gắn D6.1–D6.6, kèm mã Holland Top 3.
+ *   - Lọc cấp độ JD cho ma trận nghề HSSV: JD mức L1 và L2, cộng L0 (Intern) khi tham số `career_matrix_include_l0` bật
+ *     (đọc từ operation_parameters; không kết nối được thì coi là bật), có Required Level quy đổi được về thang 1–5.
+ *     JD ngoài phạm vi vẫn giữ trong career_job_descriptions nhưng không tham gia tính ma trận
+ *     (SRS R16 vừa map L0 vừa ghi chỉ dùng L1–L2: đang chờ BA).
+ *   - Req(d,c)  = trung bình Required Level của các JD đủ điều kiện có gắn tiêu chí d (G1–G5, G7);
+ *   - CW(d,c)   = số JD đủ điều kiện có d, chuẩn hóa để tổng bằng 1 trong từng thành phần (G1–G5 | G7);
+ *   - G6 không có Req: hồ sơ sáu chiều RIASEC = tỷ lệ JD đủ điều kiện có gắn D6.1–D6.6, kèm mã Holland Top 3.
  *   - Không tự điền mức yêu cầu/trọng số giả cho tiêu chí không xuất hiện trong JD.
- *     is_standard_complete luôn false: giới hạn 6+2+1 trên từng JD, R06 (CW > 0) và R08 (31 tiêu chí)
- *     chưa được tài liệu gộp thành một điều kiện đủ chuẩn.
+ *   - Nghề đủ chuẩn (is_standard_complete) do hàm SQL refresh_career_standard() tính lại từ DB sau bước `matrix`;
+ *     nghề Nháp đủ chuẩn và đủ P16 được auto_publish_careers() công bố. Nghề Ẩn hoặc Đang duyệt giữ nguyên.
+ *   - Ngày kiểm tra dữ liệu: ngày "kiểm tra lại / research / cập nhật" trong cột Nguồn dữ liệu; không có thì lấy
+ *     ngày "đăng" (đánh dấu posted, giả định của dev). Ngày của nghề = ngày mới nhất trong các JD.
  *
- * Idempotent. Không đụng tới `status` của nghề đã có (admin đã công bố thì giữ nguyên);
+ * Idempotent. Không đụng tới `status` của nghề đã có;
  * ma trận và liên kết nghề–ngành sinh tự động được dựng lại, dòng do người sửa tay được giữ.
  * Service role key chỉ dùng ở script này, không bao giờ đưa vào frontend.
  */
@@ -153,6 +155,8 @@ interface JobDescription {
   career_level: number | null;
   required_level_raw: string | null;
   required_level: number | null;
+  checked_at: string | null;
+  checked_kind: 'checked' | 'posted' | null;
   text: Row;
   dimensions: { code: string; basis: string | null }[];
 }
@@ -178,6 +182,35 @@ function parseRequiredLevel(raw: string): number | null {
   if (levels.length === 0) return null;
   const lowest = Math.min(...levels);
   return lowest <= 1 ? 1 : lowest >= 5 ? 5 : lowest;
+}
+
+/** Ngày dd/mm/yyyy hợp lệ, không quá hôm nay -> yyyy-mm-dd */
+function isoDate(day: string, month: string, year: string): string | null {
+  const d = Number(day), m = Number(month), y = Number(year);
+  const date = new Date(Date.UTC(y, m - 1, d));
+  if (date.getUTCFullYear() !== y || date.getUTCMonth() !== m - 1 || date.getUTCDate() !== d) return null;
+  if (y < 2000 || date.getTime() > Date.now()) return null;
+  return date.toISOString().slice(0, 10);
+}
+
+/**
+ * Cột "Nguồn dữ liệu": "kiểm tra lại 28/09/2026", "research 25/09/2026", "cập nhật 17/06/2026" -> checked;
+ * không có thì "đăng 18/09/2026" -> posted. Bỏ "Hạn nộp/Hạn ứng tuyển" và ngày chỉ có tháng/năm.
+ */
+function parseCheckedDate(source: string | null): { date: string | null; kind: 'checked' | 'posted' | null } {
+  if (!source) return { date: null, kind: null };
+  const latest = (keywords: string) => {
+    const dates: string[] = [];
+    for (const m of source.matchAll(new RegExp(`(?:${keywords})[^0-9\\n]{0,20}(\\d{1,2})/(\\d{1,2})/(\\d{4})`, 'gi'))) {
+      const iso = isoDate(m[1], m[2], m[3]);
+      if (iso) dates.push(iso);
+    }
+    return dates.sort().at(-1) ?? null;
+  };
+  const checked = latest('kiểm tra(?: lại)?|research|cập nhật|truy cập');
+  if (checked) return { date: checked, kind: 'checked' };
+  const posted = latest('đăng');
+  return posted ? { date: posted, kind: 'posted' } : { date: null, kind: null };
 }
 
 const JD_TEXT_COLUMNS: [string, string][] = [
@@ -268,6 +301,10 @@ async function readJobDescriptions(dimensions: Dimension[]): Promise<JobDescript
       career_level: parseCareerLevel(levelRaw),
       required_level_raw: orNull(requiredRaw),
       required_level: parseRequiredLevel(requiredRaw),
+      ...(() => {
+        const found = parseCheckedDate((text.data_source as string | null) ?? null);
+        return { checked_at: found.date, checked_kind: found.kind };
+      })(),
       text,
       dimensions: dims,
     });
@@ -350,22 +387,30 @@ interface CareerMatrix {
       has_all_components: boolean;
       holland_top3: string | null;
       complete: boolean;
+      checked_at: string | null;
+      checked_kind: 'checked' | 'posted' | null;
     }
   >;
 }
 
-function buildMatrix(careers: CareerRow[], dimensions: Dimension[]): CareerMatrix {
+function buildMatrix(careers: CareerRow[], dimensions: Dimension[], includeL0: boolean): CareerMatrix {
   const groupOf = new Map(dimensions.map((d) => [d.code, d.group]));
   const requirements: RequirementRow[] = [];
   const holland: HollandRow[] = [];
   const summary: CareerMatrix['summary'] = new Map();
 
   for (const career of careers) {
-    // R16 & 06_CAREER_PROFILE: lấy JD đầu vào cho HSSV gồm L0 (Intern), L1 (Fresher) và L2 (Junior).
+    // R16 & 06_CAREER_PROFILE: JD đầu vào cho HSSV là L1 (Fresher), L2 (Junior), thêm L0 (Intern) khi tham số bật.
     const l0Count = career.jds.filter((jd) => jd.career_level === 0 && jd.required_level !== null).length;
     const qualifying = career.jds.filter(
-      (jd) => jd.career_level !== null && jd.career_level <= 2 && jd.required_level !== null,
+      (jd) => jd.career_level !== null && jd.career_level <= 2 && (includeL0 || jd.career_level >= 1) && jd.required_level !== null,
     );
+    // Ngày kiểm tra của nghề: ngày mới nhất, ưu tiên ngày kiểm tra hơn ngày đăng tin
+    const checkedDates = career.jds.filter((jd) => jd.checked_kind === 'checked').map((jd) => jd.checked_at!).sort();
+    const postedDates = career.jds.filter((jd) => jd.checked_kind === 'posted').map((jd) => jd.checked_at!).sort();
+    const careerChecked: { date: string | null; kind: 'checked' | 'posted' | null } = checkedDates.length > 0
+      ? { date: checkedDates[checkedDates.length - 1], kind: 'checked' }
+      : postedDates.length > 0 ? { date: postedDates[postedDates.length - 1], kind: 'posted' } : { date: null, kind: null };
     const stats = new Map<string, { count: number; sum: number }>();
     for (const jd of qualifying) {
       for (const { code } of jd.dimensions) {
@@ -420,6 +465,8 @@ function buildMatrix(careers: CareerRow[], dimensions: Dimension[]): CareerMatri
       has_all_components: hasAllComponents,
       holland_top3: top3 || null,
       complete: hasAllComponents,
+      checked_at: careerChecked.date,
+      checked_kind: careerChecked.kind,
     });
   }
   return { requirements, holland, summary };
@@ -717,7 +764,7 @@ function deriveLinks(careers: CareerRow[], majors: Map<string, MajorRow>): LinkR
 function report(args: {
   jds: JobDescription[]; careers: CareerRow[]; fieldCount: number; matrix: CareerMatrix;
   research: ResearchRow[]; institutions: Map<string, InstitutionRow>; majors: Map<string, MajorRow>;
-  programs: Map<string, ProgramRow>; links: LinkRow[];
+  programs: Map<string, ProgramRow>; links: LinkRow[]; includeL0: boolean;
 }) {
   const { jds, careers, matrix, research, institutions, majors, programs, links } = args;
   const lines: string[] = [];
@@ -733,11 +780,17 @@ function report(args: {
   const summaries = [...matrix.summary.values()];
   const withQualifying = count(summaries, (s: { qualifying: number }) => s.qualifying > 0);
   const totalL0 = summaries.reduce((acc, s) => acc + s.l0_count, 0);
-  lines.push(`JD mức L0 giữ ở bảng gốc nhưng loại khỏi ma trận nghề theo R16: ${totalL0}`);
-  lines.push(`Nghề có ít nhất 1 JD L1–L2 dùng được: ${withQualifying}/${careers.length}`);
-  lines.push(`Nghề đạt tối thiểu ${MIN_JD_PER_CAREER} JD L1–L2 dùng được (P16): ${count(summaries, (s: { qualifying: number }) => s.qualifying >= MIN_JD_PER_CAREER)}`);
+  lines.push(`JD mức L0 có Required Level: ${totalL0} (${args.includeL0 ? 'đang tính vào ma trận' : 'đang loại khỏi ma trận'}; career_matrix_include_l0 = ${args.includeL0})`);
+  lines.push(`Nghề có ít nhất 1 JD đủ điều kiện: ${withQualifying}/${careers.length}`);
+  lines.push(`Nghề đạt tối thiểu ${MIN_JD_PER_CAREER} JD đủ điều kiện (P16 đề xuất): ${count(summaries, (s: { qualifying: number }) => s.qualifying >= MIN_JD_PER_CAREER)}`);
+  const jdChecked = count(jds, (jd: JobDescription) => jd.checked_kind === 'checked');
+  const jdPosted = count(jds, (jd: JobDescription) => jd.checked_kind === 'posted');
+  lines.push(`JD có ngày kiểm tra: ${jdChecked}; chỉ có ngày đăng tin: ${jdPosted}; không có ngày: ${jds.length - jdChecked - jdPosted}`);
+  const careerChecked = count(summaries, (s: { checked_kind: string | null }) => s.checked_kind === 'checked');
+  const careerPosted = count(summaries, (s: { checked_kind: string | null }) => s.checked_kind === 'posted');
+  const cutoff = new Date(Date.now() - 183 * 86_400_000).toISOString().slice(0, 10);
+  lines.push(`Nghề có ngày kiểm tra: ${careerChecked}; theo ngày đăng tin: ${careerPosted}; không có: ${careers.length - careerChecked - careerPosted}; quá hạn 6 tháng (P20): ${count(summaries, (s: { checked_at: string | null }) => s.checked_at !== null && s.checked_at < cutoff)}`);
   lines.push(`Nghề có dữ liệu ở cả 3 thành phần (G1–G5, G7 và Holland, tính trên CW > 0 theo R06): ${count(summaries, (s: { has_all_components: boolean }) => s.has_all_components)}`);
-  lines.push('is_standard_complete không được gán: điều kiện đủ chuẩn nghề chưa chốt giữa giới hạn từng JD, R06 và R08.');
   lines.push(`Dòng ma trận yêu cầu (CW > 0): ${matrix.requirements.length}; dòng hồ sơ Holland: ${matrix.holland.length}`);
 
   lines.push('\n== Trường – Ngành ==');
@@ -873,7 +926,7 @@ const STEP_RUNNERS: Record<Step, (supabase: SupabaseClient, data: ImportData) =>
     })), 'field_code');
   },
 
-  // nghề: không gửi `status` để nghề đã công bố giữ nguyên trạng thái
+  // nghề: không gửi `status`; công bố do auto_publish_careers() sau bước matrix
   async careers(supabase, data) {
     const fieldId = idMap(await fetchAll(supabase, 'career_fields', 'id, field_code'), 'field_code');
     await upsertBatches(supabase, 'careers', data.careers.map((c) => {
@@ -882,7 +935,7 @@ const STEP_RUNNERS: Record<Step, (supabase: SupabaseClient, data: ImportData) =>
         career_code: c.career_code, career_field_id: idOf(fieldId, c.field_code, 'lĩnh vực', 'fields'), career_name: c.career_name,
         source_group_id: c.source_group_id, holland_top3: summary.holland_top3,
         qualifying_jd_count: summary.qualifying, is_standard_complete: summary.complete,
-        ...(summary.complete ? { status: 'published' } : {}),
+        data_checked_at: summary.checked_at, data_checked_kind: summary.checked_kind,
       };
     }), 'career_code');
   },
@@ -894,7 +947,8 @@ const STEP_RUNNERS: Record<Step, (supabase: SupabaseClient, data: ImportData) =>
     await upsertBatches(supabase, 'career_job_descriptions', data.jds.map((jd) => ({
       career_id: idOf(careerId, jdOwner.get(jd.source_id)!, 'nghề', 'careers'), source_id: jd.source_id, jd_code: jd.jd_code,
       career_level_raw: jd.career_level_raw, career_level: jd.career_level,
-      required_level_raw: jd.required_level_raw, required_level: jd.required_level, ...jd.text,
+      required_level_raw: jd.required_level_raw, required_level: jd.required_level,
+      data_checked_at: jd.checked_at, data_checked_kind: jd.checked_kind, ...jd.text,
     })), 'source_id', { batchSize: JD_BATCH_SIZE });
   },
 
@@ -934,6 +988,11 @@ const STEP_RUNNERS: Record<Step, (supabase: SupabaseClient, data: ImportData) =>
       career_id: idOf(careerId, r.career_code, 'nghề', 'careers'), holland_code: r.holland_code, strength: r.strength, jd_count: r.jd_count,
       verification_level: 'per_jd_data',
     })), 'career_id,holland_code', { ignoreDuplicates: true });
+    const refreshed = await supabase.rpc('refresh_career_standard');
+    if (refreshed.error) throw new Error(`refresh_career_standard: ${refreshed.error.message} (đã áp migration 20261107000200 chưa?)`);
+    const published = await supabase.rpc('auto_publish_careers');
+    if (published.error) throw new Error(`auto_publish_careers: ${published.error.message}`);
+    console.log(`  đủ chuẩn đổi: ${refreshed.data} nghề; tự công bố: ${published.data} nghề`);
   },
 
   async majors(supabase, data) {
@@ -1013,7 +1072,22 @@ async function apply(data: ImportData, steps: Step[]) {
   }
   const remaining = STEPS.filter((step) => !steps.includes(step));
   if (remaining.length > 0) console.log(`Xong các bước đã chọn. Không chạy lần này:${remaining.join(', ')}`);
-  else console.log('Hoàn tất. Nghề mới ở trạng thái draft: quản trị công bố từng nghề đủ chuẩn.');
+  else console.log('Hoàn tất.');
+}
+
+/** Tham số career_matrix_include_l0 trên DB; không kết nối được hoặc chưa có thì coi là bật (giá trị seed) */
+async function readIncludeL0(): Promise<boolean> {
+  const url = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceKey || serviceKey.includes('your_service_role_key')) return true;
+  try {
+    const supabase = createClient(url, serviceKey, { auth: { persistSession: false } });
+    const { data, error } = await supabase.from('operation_parameters').select('param_value').eq('param_code', 'career_matrix_include_l0').eq('is_current', true).maybeSingle();
+    if (error || !data) return true;
+    return data.param_value !== false;
+  } catch {
+    return true;
+  }
 }
 
 async function main() {
@@ -1023,12 +1097,13 @@ async function main() {
   const jds = await readJobDescriptions(dimensions);
   const { fields, fieldCodeOf } = buildFields(jds);
   const careers = buildCareers(jds, fieldCodeOf);
-  const matrix = buildMatrix(careers, dimensions);
+  const includeL0 = await readIncludeL0();
+  const matrix = buildMatrix(careers, dimensions, includeL0);
   const research = await readResearch();
   const { institutions, majors, programs } = buildInstitutionsMajorsPrograms(research);
   const links = deriveLinks(careers, majors);
 
-  report({ jds, careers, fieldCount: fields.length, matrix, research, institutions, majors, programs, links });
+  report({ jds, careers, fieldCount: fields.length, matrix, research, institutions, majors, programs, links, includeL0 });
   if (dryRun) {
     console.log(`\nDry-run: không ghi vào cơ sở dữ liệu. Các bước sẽ chạy: ${steps.join(' → ')}`);
     return;

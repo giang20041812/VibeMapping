@@ -8,18 +8,27 @@ import { SearchableSelect } from '../../../components/filters/SearchableSelect/S
 import { compareDecisionOptions, type DecisionOptionInput, type RankedDecisionOption } from '../../../domain/assessmentRules';
 import { callRpc, db } from '../../../lib/rpc';
 import { clearProgramCompare, readProgramCompare } from '../../../lib/selectionCart';
+import type { FilterOption } from '../../../types/filter';
 import { useAuth } from '../../auth/AuthContext';
 import { recommendCareers, searchCareers, type CareerListItem } from '../../career_explorer/career.service';
+import {
+  formatProgramOptionLabel,
+  formatTotalTuition,
+  formatYearlyTuition,
+  listInstitutionOptions,
+  loadProgramsByIds,
+  loadProgramsByInstitution,
+  type ProgramSummary,
+} from '../../school_explorer/education.service';
+import { listCityOptions } from '../../school_explorer/school_explorer.service';
 import '../../career_explorer/pages/CareerPages.css';
 import './DecisionPages.css';
 
 interface OptionDraft {
   id: string;
-  title: string;
+  institutionId: string;
+  programId: string;
   careerId: string;
-  admissionFloor: string;
-  tuitionPerYear: string;
-  locationScore: string;
 }
 
 interface SavedPlan {
@@ -34,16 +43,15 @@ interface SavedPlan {
 
 interface HistoryEntry { plan_id: string; action: string; note: string | null; created_at: string }
 
+interface CutoffInfo {
+  cutoff: number | null;
+  label: string;
+  note: string;
+}
+
 const ELIGIBILITY_LABEL = { MET: 'Đáp ứng', NOT_MET: 'Chưa đáp ứng', UNKNOWN: 'Chưa đủ dữ liệu' } as const;
 const ELIGIBILITY_VARIANT = { MET: 'success', NOT_MET: 'danger', UNKNOWN: 'default' } as const;
 
-const LOCATION_OPTIONS = [
-  { value: '100', label: 'Rất thuận tiện' },
-  { value: '80', label: 'Thuận tiện' },
-  { value: '60', label: 'Bình thường' },
-  { value: '40', label: 'Hơi bất tiện' },
-  { value: '20', label: 'Bất tiện' },
-];
 const LEVEL_OPTIONS = [
   { value: '1', label: 'Thấp' },
   { value: '2', label: 'Vừa' },
@@ -60,11 +68,9 @@ const MIN_OPTIONS = 2;
 
 const blank = (index: number): OptionDraft => ({
   id: `opt-${Date.now()}-${index}`,
-  title: '',
+  institutionId: '',
+  programId: '',
   careerId: '',
-  admissionFloor: '',
-  tuitionPerYear: '',
-  locationScore: '',
 });
 
 const num = (value: string): number | null => {
@@ -77,10 +83,18 @@ const num = (value: string): number | null => {
 export const DecisionComparePage: React.FC = () => {
   const { session } = useAuth();
   const navigate = useNavigate();
+  const [institutions, setInstitutions] = useState<FilterOption[]>([]);
+  const [cities, setCities] = useState<FilterOption[]>([]);
+  const [preferredCity, setPreferredCity] = useState('');
+  const [programsByInst, setProgramsByInst] = useState<Record<string, ProgramSummary[]>>({});
+  const [programsById, setProgramsById] = useState<Record<string, ProgramSummary>>({});
+  const [careersByMajor, setCareersByMajor] = useState<Record<string, { id: string; name: string }[]>>({});
   const [careers, setCareers] = useState<CareerListItem[]>([]);
   const [fitByCareer, setFitByCareer] = useState<Map<string, number>>(new Map());
   const [options, setOptions] = useState<OptionDraft[]>([blank(0), blank(1)]);
   const [learnerScore, setLearnerScore] = useState('');
+  const [learnerMethod, setLearnerMethod] = useState<string | null>(null);
+  const [learnerCombo, setLearnerCombo] = useState<string | null>(null);
   const [budget, setBudget] = useState('');
   const [weights, setWeights] = useState({ careerFit: '3', admission: '3', finance: '2', location: '1' });
   const [weightsOpen, setWeightsOpen] = useState(false);
@@ -92,6 +106,8 @@ export const DecisionComparePage: React.FC = () => {
   const [preferring, setPreferring] = useState<{ planId: string; optionId: string; reason: string } | null>(null);
   const [message, setMessage] = useState<{ tone: 'success' | 'danger' | 'info'; text: string } | null>(null);
   const [hasCart, setHasCart] = useState(() => readProgramCompare().length > 0);
+  const [cutoffByProgram, setCutoffByProgram] = useState<Record<string, CutoffInfo>>({});
+  const [alternatives, setAlternatives] = useState<string[]>([]);
 
   const reload = useCallback(async () => {
     const [list, connections] = await Promise.all([
@@ -105,89 +121,215 @@ export const DecisionComparePage: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    listInstitutionOptions()
+      .then((list) => setInstitutions(list.map((i) => ({ value: i.value, label: i.label }))))
+      .catch(() => undefined);
+    listCityOptions()
+      .then(setCities)
+      .catch(() => undefined);
     searchCareers('').then(setCareers).catch(() => undefined);
     reload().catch(() => setMessage({ tone: 'danger', text: 'Không tải được phương án đã lưu.' }));
     if (session?.user.id) {
       recommendCareers()
         .then((r) => setFitByCareer(new Map(r.items.map((i) => [i.careerId, i.fitPercent]))))
         .catch(() => undefined);
-      callRpc<{ latest_score: number | null; budget_per_year: number | null }>('get_my_study_finance')
+      callRpc<{
+        latest_score: number | null;
+        subject_combination: string | null;
+        admission_method: string | null;
+        budget_per_year: number | null;
+      }>('get_my_study_finance')
         .then((row) => {
           if (row?.latest_score != null) setLearnerScore(String(row.latest_score));
           if (row?.budget_per_year != null) setBudget(String(row.budget_per_year));
+          setLearnerMethod(row?.admission_method ?? null);
+          setLearnerCombo(row?.subject_combination ?? null);
         })
         .catch(() => undefined);
     }
     const cart = readProgramCompare();
     if (cart.length >= 1) {
-      const drafts = cart.map((item) => ({
-        id: item.programId,
-        title: item.title,
-        careerId: item.careerId,
-        admissionFloor: item.admissionFloor,
-        tuitionPerYear: item.tuitionPerYear,
-        locationScore: '',
-      }));
-      setOptions(drafts.length === 1 ? [...drafts, blank(1)] : drafts);
+      const ids = cart.map((c) => c.programId).filter((id) => /^[0-9a-f-]{36}$/i.test(id));
+      loadProgramsByIds(ids)
+        .then((loaded) => {
+          const byId: Record<string, ProgramSummary> = {};
+          for (const p of loaded) byId[p.id] = p;
+          setProgramsById((prev) => ({ ...prev, ...byId }));
+          const drafts: OptionDraft[] = cart.map((item, idx) => {
+            const p = byId[item.programId];
+            return {
+              id: `opt-cart-${idx}-${item.programId}`,
+              institutionId: p?.institutionId ?? item.institutionId ?? '',
+              programId: item.programId,
+              careerId: item.careerId ?? '',
+            };
+          });
+          setOptions(drafts.length === 1 ? [...drafts, blank(1)] : drafts);
+        })
+        .catch(() => undefined);
     }
   }, [reload, session?.user.id]);
 
-  const inputs: DecisionOptionInput[] = options.map((o) => ({
-    id: o.id,
-    title: o.title || careers.find((c) => c.id === o.careerId)?.career_name || 'Phương án',
-    admissionFloor: num(o.admissionFloor),
-    learnerScore: num(learnerScore),
-    tuitionPerYear: num(o.tuitionPerYear),
-    careerFitPercent: o.careerId ? fitByCareer.get(o.careerId) ?? null : null,
-    locationScore: num(o.locationScore),
-  }));
-  const ranked = useMemo(
-    () =>
-      options.length >= MIN_OPTIONS
-        ? compareDecisionOptions(
-            inputs,
-            { careerFit: num(weights.careerFit) ?? 0, admission: num(weights.admission) ?? 0, finance: num(weights.finance) ?? 0, location: num(weights.location) ?? 0 },
-            num(budget),
-          )
-        : [],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [JSON.stringify(inputs), weights, budget, options.length],
-  );
-  const rankedById = useMemo(() => new Map(ranked.map((r) => [r.id, r])), [ranked]);
-  const [admissionNotes, setAdmissionNotes] = useState<Record<string, string>>({});
-  const [alternatives, setAlternatives] = useState<string[]>([]);
-  const backups = ranked.filter((r) => r.eligibility !== 'NOT_MET' && !r.overBudget).slice(1, 4);
-  const needBackup = ranked.length > 0 && ranked.some((r) => r.eligibility === 'NOT_MET' || r.overBudget);
-
+  // Nạp danh sách chương trình khi người dùng chọn trường
   useEffect(() => {
-    const ids = options.map((option) => option.id).filter((id) => /^[0-9a-f-]{36}$/i.test(id));
-    if (ids.length === 0) {
-      setAdmissionNotes({});
+    const instIds = [...new Set(options.map((o) => o.institutionId).filter(Boolean))];
+    for (const instId of instIds) {
+      if (programsByInst[instId]) continue;
+      loadProgramsByInstitution(instId)
+        .then((list) => {
+          setProgramsByInst((prev) => ({ ...prev, [instId]: list }));
+          setProgramsById((prev) => {
+            const next = { ...prev };
+            for (const p of list) next[p.id] = p;
+            return next;
+          });
+        })
+        .catch(() => undefined);
+    }
+  }, [options, programsByInst]);
+
+  // Nạp các nghề liên kết với ngành của chương trình đã chọn
+  useEffect(() => {
+    const majorIds = [
+      ...new Set(
+        options
+          .map((o) => programsById[o.programId]?.majorId)
+          .filter((id): id is string => Boolean(id)),
+      ),
+    ];
+    for (const majorId of majorIds) {
+      if (careersByMajor[majorId]) continue;
+      db.from('career_major_links')
+        .select('career_id, career:careers(career_name)')
+        .eq('major_id', majorId)
+        .then(({ data }) => {
+          type RawLink = { career_id: string; career: { career_name: string } | { career_name: string }[] | null };
+          const list = ((data ?? []) as unknown as RawLink[])
+            .map((row) => {
+              const c = Array.isArray(row.career) ? row.career[0] : row.career;
+              return c ? { id: row.career_id, name: c.career_name } : null;
+            })
+            .filter((item): item is { id: string; name: string } => item !== null)
+            .sort((a, b) => a.name.localeCompare(b.name, 'vi'));
+          setCareersByMajor((prev) => ({ ...prev, [majorId]: list }));
+        });
+    }
+  }, [options, programsById, careersByMajor]);
+
+  // Tự động chọn nghề có độ phù hợp cao nhất trong các nghề liên kết với ngành khi chưa chọn nghề
+  useEffect(() => {
+    setOptions((current) => {
+      let changed = false;
+      const next = current.map((o) => {
+        if (!o.programId) return o;
+        const p = programsById[o.programId];
+        if (!p) return o;
+        const linked = careersByMajor[p.majorId];
+        if (!linked || linked.length === 0) return o;
+        const validCurrent = o.careerId && linked.some((c) => c.id === o.careerId);
+        if (validCurrent) return o;
+        const best = [...linked].sort(
+          (a, b) => (fitByCareer.get(b.id) ?? -1) - (fitByCareer.get(a.id) ?? -1) || a.name.localeCompare(b.name, 'vi'),
+        )[0];
+        if (!best) return o;
+        changed = true;
+        return { ...o, careerId: best.id };
+      });
+      return changed ? next : current;
+    });
+  }, [options, programsById, careersByMajor, fitByCareer]);
+
+  // Nạp điểm chuẩn mới nhất của các chương trình đã chọn
+  useEffect(() => {
+    const programIds = [...new Set(options.map((o) => o.programId).filter((id) => /^[0-9a-f-]{36}$/i.test(id)))];
+    if (programIds.length === 0) {
+      setCutoffByProgram({});
       return;
     }
     let active = true;
     db.from('admission_data')
-      .select('training_program_id, admission_year, admission_method, cutoff_score')
-      .in('training_program_id', ids)
+      .select('training_program_id, admission_year, admission_method, subject_combination, cutoff_score')
+      .in('training_program_id', programIds)
       .order('admission_year', { ascending: false })
       .then(({ data }) => {
         if (!active) return;
-        const notes: Record<string, string> = {};
+        const next: Record<string, CutoffInfo> = {};
         const score = num(learnerScore);
-        for (const id of ids) {
-          const rows = (data ?? []).filter((row) => row.training_program_id === id);
-          const latest = rows.find((row) => row.cutoff_score !== null) ?? rows[0];
-          if (!latest) notes[id] = 'Chưa có điểm chuẩn theo năm và phương thức.';
-          else if (score === null || latest.cutoff_score === null) notes[id] = `Năm ${latest.admission_year ?? '–'}, ${latest.admission_method ?? 'chưa ghi phương thức'}.`;
-          else if (score >= Number(latest.cutoff_score)) notes[id] = `Điểm ${score} đạt điểm chuẩn ${latest.cutoff_score} (năm ${latest.admission_year}, ${latest.admission_method ?? 'chưa ghi phương thức'}).`;
-          else notes[id] = `Điểm ${score} thấp hơn điểm chuẩn ${latest.cutoff_score} (năm ${latest.admission_year}, ${latest.admission_method ?? 'chưa ghi phương thức'}).`;
+        for (const pid of programIds) {
+          const rows = (data ?? []).filter((r) => r.training_program_id === pid && r.cutoff_score !== null);
+          const matched =
+            rows.find(
+              (r) =>
+                (!learnerMethod || r.admission_method?.toLowerCase() === learnerMethod.toLowerCase()) &&
+                (!learnerCombo || r.subject_combination?.toLowerCase() === learnerCombo.toLowerCase()),
+            ) ??
+            rows.find((r) => !learnerMethod || r.admission_method?.toLowerCase() === learnerMethod.toLowerCase()) ??
+            rows[0];
+          if (!matched || matched.cutoff_score === null) {
+            next[pid] = { cutoff: null, label: 'Chưa công bố', note: '' };
+          } else {
+            const cutoff = Number(matched.cutoff_score);
+            const meta = [matched.admission_year ? `năm ${matched.admission_year}` : null, matched.admission_method, matched.subject_combination]
+              .filter(Boolean)
+              .join(' · ');
+            const label = `${cutoff}${meta ? ` (${meta})` : ''}`;
+            const note =
+              score === null
+                ? ''
+                : score >= cutoff
+                  ? `Điểm ${score} đạt điểm chuẩn ${cutoff}.`
+                  : `Điểm ${score} thấp hơn điểm chuẩn ${cutoff}.`;
+            next[pid] = { cutoff, label, note };
+          }
         }
-        setAdmissionNotes(notes);
+        setCutoffByProgram(next);
       });
     return () => {
       active = false;
     };
-  }, [options, learnerScore]);
+  }, [options, learnerScore, learnerMethod, learnerCombo]);
+
+  const inputs: DecisionOptionInput[] = options.map((o, index) => {
+    const p = programsById[o.programId];
+    const cutoff = o.programId ? cutoffByProgram[o.programId]?.cutoff ?? null : null;
+    const rawYearMax = p ? p.tuitionYearMax ?? p.tuitionYearMin : null;
+    const tuitionMillion = rawYearMax !== null ? Number((rawYearMax / 1_000_000).toFixed(2)) : null;
+    const titleText = p
+      ? `${p.institutionName} – ${p.majorName}${p.specialization ? ` (${p.specialization})` : ''}`
+      : `Phương án ${index + 1}`;
+    return {
+      id: o.programId || o.id,
+      title: titleText,
+      admissionFloor: cutoff,
+      learnerScore: num(learnerScore),
+      tuitionPerYear: tuitionMillion,
+      careerFitPercent: o.careerId ? fitByCareer.get(o.careerId) ?? null : null,
+      locationScore: null,
+      city: p?.city ?? null,
+    };
+  });
+
+  const ranked = useMemo(
+    () =>
+      options.length >= MIN_OPTIONS
+        ? compareDecisionOptions(
+          inputs,
+          {
+            careerFit: num(weights.careerFit) ?? 0,
+            admission: num(weights.admission) ?? 0,
+            finance: num(weights.finance) ?? 0,
+            location: num(weights.location) ?? 0,
+          },
+          num(budget),
+          preferredCity,
+        )
+        : [],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [JSON.stringify(inputs), weights, budget, preferredCity, options.length],
+  );
+  const rankedById = useMemo(() => new Map(ranked.map((r) => [r.id, r])), [ranked]);
+  const backups = ranked.filter((r) => r.eligibility !== 'NOT_MET' && !r.overBudget).slice(1, 4);
+  const needBackup = ranked.length > 0 && ranked.some((r) => r.eligibility === 'NOT_MET' || r.overBudget);
 
   useEffect(() => {
     const lead = ranked[0];
@@ -226,8 +368,10 @@ export const DecisionComparePage: React.FC = () => {
     };
   }, [ranked]);
 
-  const patch = (id: string, change: Partial<OptionDraft>) => setOptions((list) => list.map((o) => (o.id === id ? { ...o, ...change } : o)));
-  const careerOptions = useMemo(() => careers.map((c) => ({ value: c.id, label: c.career_name })), [careers]);
+  const patch = (id: string, change: Partial<OptionDraft>) =>
+    setOptions((list) => list.map((o) => (o.id === id ? { ...o, ...change } : o)));
+
+  const allCareerOptions = useMemo(() => careers.map((c) => ({ value: c.id, label: c.career_name })), [careers]);
 
   const save = async () => {
     setMessage(null);
@@ -272,8 +416,8 @@ export const DecisionComparePage: React.FC = () => {
   const historyLabel = (entry: HistoryEntry, plan: SavedPlan | undefined): string => {
     if (entry.action === 'created') return 'Tạo bộ phương án';
     if (entry.action.startsWith('preferred:')) {
-      const title = plan?.ranking.find((r) => r.id === entry.action.slice('preferred:'.length))?.title;
-      return `Chọn phương án ưu tiên${title ? `: ${title}` : ''}${entry.note ? ` (${entry.note})` : ''}`;
+      const optTitle = plan?.ranking.find((r) => r.id === entry.action.slice('preferred:'.length))?.title;
+      return `Chọn phương án ưu tiên${optTitle ? `: ${optTitle}` : ''}${entry.note ? ` (${entry.note})` : ''}`;
     }
     if (entry.action === 'report_created') return 'Tạo báo cáo';
     if (entry.action === 'consensus_confirmed') return `Phụ huynh đồng thuận${entry.note ? `: ${entry.note}` : ''}`;
@@ -301,8 +445,8 @@ export const DecisionComparePage: React.FC = () => {
   const saveFinance = () =>
     callRpc('save_my_study_finance', {
       p_latest_score: num(learnerScore),
-      p_subject_combination: null,
-      p_admission_method: null,
+      p_subject_combination: learnerCombo,
+      p_admission_method: learnerMethod,
       p_recorded_year: null,
       p_budget_per_year: num(budget),
       p_budget_note: null,
@@ -338,10 +482,11 @@ export const DecisionComparePage: React.FC = () => {
       />
       {message && <Alert variant={message.tone}>{message.text}</Alert>}
 
-      <Card title="Điểm và ngân sách">
+      <Card title="Điểm, ngân sách và địa điểm ưu tiên">
         <div className="module-form">
           <Input label="Điểm xét tuyển của bạn" value={learnerScore} onChange={(e) => setLearnerScore(e.target.value)} inputMode="decimal" />
           <Input label="Ngân sách học phí mỗi năm (triệu đồng)" value={budget} onChange={(e) => setBudget(e.target.value)} inputMode="decimal" />
+          <SearchableSelect label="Thành phố ưu tiên" placeholder="Tất cả tỉnh/thành" options={cities} value={preferredCity} onChange={setPreferredCity} />
           <div className="module-actions">
             <Button type="button" variant="outline" onClick={() => void saveFinance()}>Lưu vào hồ sơ</Button>
             {hasCart && (
@@ -376,48 +521,109 @@ export const DecisionComparePage: React.FC = () => {
               </thead>
               <tbody>
                 <tr>
-                  <th scope="row">Trường – ngành</th>
+                  <th scope="row">Trường</th>
                   {options.map((o) => (
-                    <td key={o.id}><Input aria-label="Trường – ngành" value={o.title} onChange={(e) => patch(o.id, { title: e.target.value })} /></td>
+                    <td key={o.id}>
+                      <SearchableSelect
+                        placeholder="Chọn trường"
+                        options={institutions}
+                        value={o.institutionId}
+                        onChange={(instId) => patch(o.id, { institutionId: instId, programId: '', careerId: '' })}
+                      />
+                    </td>
                   ))}
+                </tr>
+                <tr>
+                  <th scope="row">Ngành / Chương trình</th>
+                  {options.map((o) => {
+                    const progList = o.institutionId ? programsByInst[o.institutionId] ?? [] : [];
+                    const progOptions = progList.map((p) => ({ value: p.id, label: formatProgramOptionLabel(p) }));
+                    return (
+                      <td key={o.id}>
+                        <SearchableSelect
+                          placeholder={o.institutionId ? 'Chọn ngành / chương trình' : 'Chọn trường trước'}
+                          options={progOptions}
+                          value={o.programId}
+                          onChange={(progId) => patch(o.id, { programId: progId, careerId: '' })}
+                        />
+                      </td>
+                    );
+                  })}
                 </tr>
                 <tr>
                   <th scope="row">Nghề hướng tới</th>
-                  {options.map((o) => (
-                    <td key={o.id}>
-                      <SearchableSelect placeholder="Chưa chọn" options={careerOptions} value={o.careerId} onChange={(v) => patch(o.id, { careerId: v })} />
-                    </td>
-                  ))}
+                  {options.map((o) => {
+                    const p = programsById[o.programId];
+                    const linked = p ? careersByMajor[p.majorId] : undefined;
+                    const cOpts = linked && linked.length > 0 ? linked.map((c) => ({ value: c.id, label: c.name })) : allCareerOptions;
+                    return (
+                      <td key={o.id}>
+                        <SearchableSelect
+                          placeholder="Chọn nghề"
+                          options={cOpts}
+                          value={o.careerId}
+                          onChange={(v) => patch(o.id, { careerId: v })}
+                        />
+                      </td>
+                    );
+                  })}
                 </tr>
                 <tr>
-                  <th scope="row">Ngưỡng điểm</th>
-                  {options.map((o) => (
-                    <td key={o.id}><Input aria-label="Ngưỡng điểm" value={o.admissionFloor} onChange={(e) => patch(o.id, { admissionFloor: e.target.value })} inputMode="decimal" /></td>
-                  ))}
+                  <th scope="row">Học phí mỗi năm</th>
+                  {options.map((o) => {
+                    const p = programsById[o.programId];
+                    if (!p) return <td key={o.id}><span className="is-missing">Chưa chọn chương trình</span></td>;
+                    const yearly = formatYearlyTuition(p);
+                    return (
+                      <td key={o.id}>
+                        <span>{yearly.label}</span>
+                        {yearly.isEstimate && <> <Badge variant="default">ước tính</Badge></>}
+                      </td>
+                    );
+                  })}
                 </tr>
                 <tr>
-                  <th scope="row">Học phí mỗi năm (triệu)</th>
-                  {options.map((o) => (
-                    <td key={o.id}><Input aria-label="Học phí mỗi năm" value={o.tuitionPerYear} onChange={(e) => patch(o.id, { tuitionPerYear: e.target.value })} inputMode="decimal" /></td>
-                  ))}
+                  <th scope="row">Tổng học phí cả khóa</th>
+                  {options.map((o) => {
+                    const p = programsById[o.programId];
+                    if (!p) return <td key={o.id}>–</td>;
+                    const total = formatTotalTuition(p);
+                    return (
+                      <td key={o.id}>
+                        <span>{total.label}</span>
+                        {total.isEstimate && <> <Badge variant="default">ước tính</Badge></>}
+                      </td>
+                    );
+                  })}
                 </tr>
                 <tr>
-                  <th scope="row">Địa điểm</th>
-                  {options.map((o) => (
-                    <td key={o.id}>
-                      <Select aria-label="Địa điểm" emptyLabel="Chưa đánh giá" value={o.locationScore} options={LOCATION_OPTIONS} onChange={(v) => patch(o.id, { locationScore: v })} />
-                    </td>
-                  ))}
+                  <th scope="row">Địa điểm & Thời gian</th>
+                  {options.map((o) => {
+                    const p = programsById[o.programId];
+                    if (!p) return <td key={o.id}>–</td>;
+                    const meta = [p.city ?? 'Chưa rõ tỉnh/thành', p.studyYears ? `${p.studyYears} năm` : null].filter(Boolean).join(' · ');
+                    return <td key={o.id}>{meta}</td>;
+                  })}
+                </tr>
+                <tr>
+                  <th scope="row">Điểm chuẩn mới nhất</th>
+                  {options.map((o) => {
+                    if (!o.programId) return <td key={o.id}>–</td>;
+                    const info = cutoffByProgram[o.programId];
+                    return <td key={o.id}>{info ? info.label : 'Chưa công bố'}</td>;
+                  })}
                 </tr>
                 <tr>
                   <th scope="row">Đầu vào</th>
                   {options.map((o) => {
-                    const r = rankedById.get(o.id);
+                    const key = o.programId || o.id;
+                    const r = rankedById.get(key);
+                    const info = o.programId ? cutoffByProgram[o.programId] : undefined;
                     return (
                       <td key={o.id}>
                         {r && <Badge variant={ELIGIBILITY_VARIANT[r.eligibility]}>{ELIGIBILITY_LABEL[r.eligibility]}</Badge>}
                         {r && r.scoreGap !== null && r.scoreGap > 0 && <p className="explain-note">Thiếu {r.scoreGap} điểm</p>}
-                        {admissionNotes[o.id] && <p className="explain-note">{admissionNotes[o.id]}</p>}
+                        {info?.note && <p className="explain-note">{info.note}</p>}
                       </td>
                     );
                   })}
@@ -425,10 +631,16 @@ export const DecisionComparePage: React.FC = () => {
                 <tr>
                   <th scope="row">Điểm tổng hợp</th>
                   {options.map((o) => {
-                    const r = rankedById.get(o.id);
+                    const key = o.programId || o.id;
+                    const r = rankedById.get(key);
                     return (
                       <td key={o.id} className={r?.rank === 1 ? 'is-fit' : undefined}>
-                        {r ? (r.totalScore ?? <span className="is-missing">Chưa đủ dữ liệu</span>) : null}
+                        {r ? (
+                          <>
+                            <strong>{r.totalScore ?? 'Chưa đủ dữ liệu'}</strong>
+                            <p className="explain-note">Đủ {r.criteriaCount}/4 tiêu chí</p>
+                          </>
+                        ) : null}
                       </td>
                     );
                   })}
@@ -456,8 +668,7 @@ export const DecisionComparePage: React.FC = () => {
                       {r.overBudget && <Badge variant="warning">Vượt ngân sách</Badge>}
                     </div>
                     <span className="explain-note">
-                      Điểm {r.totalScore ?? '–'} · Phù hợp nghề {r.careerFitPercent === null ? 'chưa có' : `${r.careerFitPercent.toFixed(1)}%`}
-                      {r.missingCriteria.length > 0 ? ` · Thiếu: ${r.missingCriteria.join(', ')}` : ''}
+                      Điểm {r.totalScore ?? '–'} · Đủ {r.criteriaCount}/4 tiêu chí · Phù hợp nghề {r.careerFitPercent === null ? 'chưa có' : `${r.careerFitPercent.toFixed(1)}%`}
                     </span>
                   </div>
                 </li>

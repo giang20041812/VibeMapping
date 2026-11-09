@@ -13,6 +13,7 @@
     "assign:packages": "tsx assign-default-packages.ts",
     "seed:demo": "tsx seed-demo-accounts.ts",
     "seed:demo:dry": "tsx seed-demo-accounts.ts --dry-run",
+    "check:tuition": "tsx tuition-parser.check.ts",
     "import:phase2": "tsx import-phase2-data.ts",
     "import:phase2:dry": "tsx import-phase2-data.ts --dry-run",
     "import:phase2:career": "tsx import-phase2-data.ts --step career",

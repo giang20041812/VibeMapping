@@ -1,6 +1,6 @@
 import React from 'react';
-import { Calendar, School } from 'lucide-react';
-import { Input, Select } from '../../../components/common';
+import { School } from 'lucide-react';
+import { DateInput, Input, Select } from '../../../components/common';
 import { GRADE_OPTIONS } from '../../profile/profile.logic';
 import type { LearnerInfo, LearnerInfoErrors, RegisterableRole } from '../auth.types';
 import './LearnerInfoFields.css';
@@ -18,13 +18,9 @@ export const LearnerInfoFields: React.FC<LearnerInfoFieldsProps> = ({ role, valu
 
   return (
     <>
-      <Input
+      <DateInput
         label="Ngày sinh"
         name="date_of_birth"
-        placeholder="dd/mm/yyyy"
-        inputMode="numeric"
-        autoComplete="bday"
-        leftIcon={<Calendar size={16} />}
         value={values.date_of_birth}
         onChange={(e) => onChange('date_of_birth', e.target.value)}
         error={errors.date_of_birth}

@@ -64,13 +64,45 @@
 .roadmap-stack { display: flex; flex-direction: column; gap: var(--space-5); min-width: 0; }
 
 /* Thiết lập */
-.roadmap-setup { display: flex; flex-direction: column; gap: var(--space-5); min-width: 0; }
+.roadmap-setup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+  max-width: calc(1080 * var(--px));
+}
+.roadmap-setup .roadmap-block {
+  padding: var(--space-4) var(--space-5);
+  gap: var(--space-3);
+}
 .roadmap-fields {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(240 * var(--px))), 1fr));
   gap: var(--space-4);
 }
 .roadmap-fields.is-single { grid-template-columns: minmax(0, 1fr); }
+.roadmap-fields-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+.roadmap-row-compact {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(calc(200 * var(--px)), calc(300 * var(--px))));
+  gap: var(--space-3) var(--space-4);
+  align-items: start;
+}
+.roadmap-row-textareas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(300 * var(--px))), 1fr));
+  gap: var(--space-3) var(--space-4);
+}
+@media (max-width: 640px) {
+  .roadmap-row-compact {
+    grid-template-columns: 1fr;
+  }
+}
 .roadmap-field-row { max-width: calc(420 * var(--px)); }
 .roadmap-field-error { margin: 0; font-size: var(--font-size-sm); font-weight: 700; color: var(--color-danger-text); }
 .roadmap-career-grid {

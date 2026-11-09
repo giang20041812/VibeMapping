@@ -136,8 +136,27 @@ export async function loadProgramsByIds(ids: string[]): Promise<ProgramSummary[]
   return ((data ?? []) as unknown as RawProgram[]).map(toProgram);
 }
 
+export function distinctVariantParts(
+  p: Pick<ProgramSummary, 'majorName' | 'specialization' | 'qualifier'>,
+): string[] {
+  const parts: string[] = [];
+  const norm = (s: string) => s.trim().toLowerCase();
+  const majorNorm = p.majorName ? norm(p.majorName) : '';
+  if (p.specialization && norm(p.specialization) !== majorNorm) {
+    parts.push(p.specialization.trim());
+  }
+  if (
+    p.qualifier &&
+    norm(p.qualifier) !== majorNorm &&
+    !parts.some((existing) => norm(existing).includes(norm(p.qualifier!)))
+  ) {
+    parts.push(p.qualifier.trim());
+  }
+  return parts;
+}
+
 export function formatProgramOptionLabel(p: Pick<ProgramSummary, 'majorName' | 'specialization' | 'qualifier' | 'programType'>): string {
-  const detail = [p.specialization, p.qualifier, p.programType].filter(Boolean).join(' · ');
+  const detail = [...distinctVariantParts(p), p.programType].filter(Boolean).join(' · ');
   return detail ? `${p.majorName} (${detail})` : p.majorName;
 }
 
@@ -315,6 +334,6 @@ export function formatTotalTuition(
 }
 
 /** Phần phân biệt các chương trình cùng trường, cùng ngành: chuyên ngành, phần trong ngoặc, khoa */
-export function programVariant(p: Pick<ProgramSummary, 'specialization' | 'qualifier' | 'faculty'>): string {
-  return [p.specialization, p.qualifier, p.faculty].filter(Boolean).join(' · ');
+export function programVariant(p: Pick<ProgramSummary, 'majorName' | 'specialization' | 'qualifier' | 'faculty'>): string {
+  return [...distinctVariantParts(p), p.faculty].filter(Boolean).join(' · ');
 }

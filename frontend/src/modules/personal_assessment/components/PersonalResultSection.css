@@ -1,6 +1,15 @@
 .personal-section { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
-.personal-career-cta { display: flex; justify-content: center; padding: var(--space-2) 0 var(--space-4); }
+.personal-careers { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; margin-top: var(--space-4); }
+.personal-careers-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-width: 0;
+}
+.personal-careers-head .section-title { margin: 0; }
 
-@media (max-width: 760px) {
-  .personal-career-cta .app-button { width: 100%; white-space: normal; }
+@media (max-width: 640px) {
+  .personal-careers-head .app-button { width: 100%; white-space: normal; }
 }

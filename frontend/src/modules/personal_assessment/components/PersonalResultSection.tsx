@@ -112,12 +112,15 @@ export const PersonalResultSection: React.FC<PersonalResultSectionProps> = ({ us
             header={<ResultProfileHeader insights={insights} history={history} selectedId={selectedId} onSelect={setSelectedId} />}
             footer={<ResultProfileFooter insights={insights} />}
           />
-          <div className="personal-career-cta">
-            <Button variant="cartoon" size="lg" onClick={() => navigate('/nghe')} leftIcon={<Compass size={20} />} rightIcon={<ArrowRight size={18} />}>
-              Gợi ý nghề nghiệp phù hợp
-            </Button>
-          </div>
-          <TopCareers />
+          <section className="personal-careers" aria-label="Gợi ý nghề nghiệp phù hợp">
+            <div className="personal-careers-head">
+              <h2 className="section-title">Nghề phù hợp</h2>
+              <Button variant="cartoon" onClick={() => navigate('/nghe')} leftIcon={<Compass size={18} />} rightIcon={<ArrowRight size={16} />}>
+                Khám phá tất cả nghề
+              </Button>
+            </div>
+            <TopCareers />
+          </section>
         </>
       )}
       <Modal wide open={retakeOpen} title="Làm bài đánh giá" onClose={() => setRetakeOpen(false)}>

@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Plus, Scale, Search, SearchX, Settings2, Trash2 } from 'lucide-react';
 import {
-  Alert, Badge, Button, Card, Input, Modal, PageHero, Select, StickerCard, StickerFact, StickerGrid, Textarea, stickerToneAt,
+  Alert, Badge, Button, Card, Input, Modal, NumberInput, PageHero, Select, StickerCard, StickerFact, StickerGrid, Textarea, stickerToneAt,
 } from '../../../components/common';
 import { SearchableSelect } from '../../../components/filters/SearchableSelect/SearchableSelect';
 import { compareDecisionOptions, type DecisionOptionInput, type RankedDecisionOption } from '../../../domain/assessmentRules';
@@ -21,6 +21,7 @@ import {
   type ProgramSummary,
 } from '../../school_explorer/education.service';
 import { listCityOptions } from '../../school_explorer/school_explorer.service';
+import { parseNumber, validateAdmissionScore, validateYearlyBudget } from '../decision.logic';
 import '../../career_explorer/pages/CareerPages.css';
 import './DecisionPages.css';
 
@@ -73,12 +74,7 @@ const blank = (index: number): OptionDraft => ({
   careerId: '',
 });
 
-const num = (value: string): number | null => {
-  const trimmed = value.trim().replace(',', '.');
-  if (!trimmed) return null;
-  const parsed = Number(trimmed);
-  return Number.isFinite(parsed) ? parsed : null;
-};
+const num = parseNumber;
 
 export const DecisionComparePage: React.FC = () => {
   const { session } = useAuth();
@@ -96,6 +92,7 @@ export const DecisionComparePage: React.FC = () => {
   const [learnerMethod, setLearnerMethod] = useState<string | null>(null);
   const [learnerCombo, setLearnerCombo] = useState<string | null>(null);
   const [budget, setBudget] = useState('');
+  const [financeErrors, setFinanceErrors] = useState<{ score?: string; budget?: string }>({});
   const [weights, setWeights] = useState({ careerFit: '3', admission: '3', finance: '2', location: '1' });
   const [weightsOpen, setWeightsOpen] = useState(false);
   const [title, setTitle] = useState('');
@@ -375,6 +372,14 @@ export const DecisionComparePage: React.FC = () => {
 
   const save = async () => {
     setMessage(null);
+    const scoreErr = learnerScore.trim() ? validateAdmissionScore(learnerScore) : undefined;
+    const budgetErr = budget.trim() ? validateYearlyBudget(budget) : undefined;
+    if (scoreErr || budgetErr) {
+      setFinanceErrors({ score: scoreErr, budget: budgetErr });
+      setMessage({ tone: 'danger', text: 'Vui lòng kiểm tra lại điểm hoặc ngân sách trước khi lưu phương án.' });
+      return;
+    }
+
     try {
       await callRpc('save_decision_plan', {
         p_title: title,
@@ -442,8 +447,31 @@ export const DecisionComparePage: React.FC = () => {
     }
   };
 
-  const saveFinance = () =>
-    callRpc('save_my_study_finance', {
+  const saveFinance = () => {
+    setMessage(null);
+    const scoreTrimmed = learnerScore.trim();
+    const budgetTrimmed = budget.trim();
+
+    if (!scoreTrimmed && !budgetTrimmed) {
+      setFinanceErrors({
+        score: 'Vui lòng nhập điểm xét tuyển',
+        budget: 'Vui lòng nhập ngân sách',
+      });
+      setMessage({ tone: 'danger', text: 'Vui lòng nhập điểm xét tuyển hoặc ngân sách học phí trước khi lưu.' });
+      return;
+    }
+
+    const scoreErr = scoreTrimmed ? validateAdmissionScore(scoreTrimmed) : undefined;
+    const budgetErr = budgetTrimmed ? validateYearlyBudget(budgetTrimmed) : undefined;
+
+    if (scoreErr || budgetErr) {
+      setFinanceErrors({ score: scoreErr, budget: budgetErr });
+      setMessage({ tone: 'danger', text: 'Vui lòng kiểm tra lại thông tin điểm hoặc ngân sách.' });
+      return;
+    }
+
+    setFinanceErrors({});
+    return callRpc('save_my_study_finance', {
       p_latest_score: num(learnerScore),
       p_subject_combination: learnerCombo,
       p_admission_method: learnerMethod,
@@ -453,6 +481,7 @@ export const DecisionComparePage: React.FC = () => {
     })
       .then(() => setMessage({ tone: 'success', text: 'Đã lưu điểm và ngân sách vào hồ sơ.' }))
       .catch(() => setMessage({ tone: 'danger', text: 'Chưa lưu được vào hồ sơ.' }));
+  };
 
   const confirmPreferred = () => {
     if (!preferring) return;
@@ -484,8 +513,47 @@ export const DecisionComparePage: React.FC = () => {
 
       <Card title="Điểm, ngân sách và địa điểm ưu tiên">
         <div className="module-form">
-          <Input label="Điểm xét tuyển của bạn" value={learnerScore} onChange={(e) => setLearnerScore(e.target.value)} inputMode="decimal" />
-          <Input label="Ngân sách học phí mỗi năm (triệu đồng)" value={budget} onChange={(e) => setBudget(e.target.value)} inputMode="decimal" />
+          <NumberInput
+            label="Điểm xét tuyển của bạn"
+            placeholder="30.0"
+            value={learnerScore}
+            onChange={(e) => {
+              const val = e.target.value;
+              setLearnerScore(val);
+              if (financeErrors.score) {
+                setFinanceErrors((prev) => ({ ...prev, score: validateAdmissionScore(val) }));
+              }
+            }}
+            onBlur={() => {
+              if (learnerScore.trim()) {
+                setFinanceErrors((prev) => ({ ...prev, score: validateAdmissionScore(learnerScore) }));
+              }
+            }}
+            error={financeErrors.score}
+            max={40}
+            decimals={2}
+          />
+          <NumberInput
+            label="Ngân sách học phí mỗi năm (triệu đồng)"
+            placeholder="0"
+            value={budget}
+            autoScaleMillion
+            onChange={(e) => {
+              const val = e.target.value;
+              setBudget(val);
+              if (financeErrors.budget) {
+                setFinanceErrors((prev) => ({ ...prev, budget: validateYearlyBudget(val) }));
+              }
+            }}
+            onBlur={() => {
+              if (budget.trim()) {
+                setFinanceErrors((prev) => ({ ...prev, budget: validateYearlyBudget(budget) }));
+              }
+            }}
+            error={financeErrors.budget}
+            max={2000}
+            decimals={2}
+          />
           <SearchableSelect label="Thành phố ưu tiên" placeholder="Tất cả tỉnh/thành" options={cities} value={preferredCity} onChange={setPreferredCity} />
           <div className="module-actions">
             <Button type="button" variant="outline" onClick={() => void saveFinance()}>Lưu vào hồ sơ</Button>

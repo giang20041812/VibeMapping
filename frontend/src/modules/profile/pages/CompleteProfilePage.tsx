@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowRight, Calendar, Mail, MailCheck, School, Tag, User } from 'lucide-react';
-import { Alert, Button, Card, Input, PasswordInput, Select } from '../../../components/common';
+import { ArrowRight, Mail, MailCheck, School, Tag, User } from 'lucide-react';
+import { Alert, Button, Card, DateInput, Input, PasswordInput, Select } from '../../../components/common';
 import { PageSkeleton } from '../../../components/layout/PageSkeleton';
 import { useAuth } from '../../auth/AuthContext';
 import type { RegisterableRole } from '../../auth/auth.types';
@@ -205,13 +205,9 @@ export const CompleteProfilePage: React.FC = () => {
                 <PasswordRules value={password} />
               </div>
             )}
-            <Input
+            <DateInput
               label="Ngày sinh"
               name="date_of_birth"
-              placeholder="dd/mm/yyyy"
-              inputMode="numeric"
-              autoComplete="bday"
-              leftIcon={<Calendar size={16} />}
               value={dateOfBirth}
               onChange={(e) => setDateOfBirth(e.target.value)}
               error={errors.dateOfBirth}

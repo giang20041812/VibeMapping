@@ -1,4 +1,4 @@
-/* Thông báo và avatar nổi ở góc phải trên cùng */
+/* Thông báo và avatar nổi ở góc phải trên cùng trong viên nang kính mờ */
 .top-actions {
   position: fixed;
   top: calc(var(--space-3) + var(--safe-top));
@@ -7,12 +7,34 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  padding: var(--space-1);
+  background: var(--topbar-bg);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-normal), border-color var(--transition-normal);
+}
+.top-actions:hover {
+  border-color: var(--color-border-hover);
+  box-shadow: var(--shadow-md);
 }
 
-/* Nằm trong thanh điều hướng trên cùng thì đi theo thanh, không nổi riêng */
+/* Nằm trong thanh điều hướng trên cùng thì đi theo thanh, không bọc viên nang riêng */
 .top-actions.is-inline {
   position: static;
   z-index: auto;
+  padding: 0;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.top-actions.is-inline:hover {
+  box-shadow: none;
 }
 
 .top-popover-root { position: relative; }
@@ -23,27 +45,45 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  transition: box-shadow var(--transition-fast), background-color var(--transition-fast);
+  width: 38px;
+  height: 38px;
+  transition:
+    transform var(--transition-normal) var(--ease-spring),
+    box-shadow var(--transition-normal),
+    background-color var(--transition-fast),
+    color var(--transition-fast);
 }
-/* Icon thông báo không có nền: chỉ hiện nền nhạt khi rê chuột hoặc đang mở */
+/* Icon thông báo: nâng nhẹ và sáng màu khi rê chuột hoặc đang mở */
 .top-icon-button {
   color: var(--color-text-main);
   border-radius: var(--radius-md);
 }
 .top-icon-button:hover,
-.top-icon-button[aria-expanded='true'] { background: var(--color-bg-subtle); }
+.top-icon-button[aria-expanded='true'] {
+  color: var(--color-primary);
+  background: var(--sidebar-hover-bg);
+  transform: translateY(-1px);
+}
+.top-icon-button:active {
+  transform: translateY(0) scale(0.95);
+}
 
 .top-avatar {
   font-size: var(--font-size-base);
   font-weight: 800;
   color: var(--color-text-inverse);
-  background: var(--color-primary);
-  border-radius: 50%;
+  background: var(--gradient-brand);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-xs);
 }
 .top-avatar:hover,
-.top-avatar[aria-expanded='true'] { box-shadow: 0 0 0 3px var(--color-primary-ring); }
+.top-avatar[aria-expanded='true'] {
+  transform: scale(1.06);
+  box-shadow: 0 0 0 3px var(--color-primary-ring), var(--shadow-sm);
+}
+.top-avatar:active {
+  transform: scale(0.96);
+}
 .top-icon-button:focus-visible,
 .top-avatar:focus-visible { outline: 3px solid var(--color-primary-ring); outline-offset: 2px; }
 
@@ -78,7 +118,8 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-dropdown);
-  animation: top-popover-in var(--transition-fast) both;
+  transform-origin: top right;
+  animation: top-popover-in var(--transition-normal) var(--ease-out) both;
 }
 .top-popover-error { padding: var(--space-2) var(--space-4); font-size: var(--font-size-xs); font-weight: 600; color: var(--color-danger-text); }
 
@@ -97,10 +138,11 @@
   text-decoration: none;
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: background-color var(--transition-fast);
+  transition: background-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
 }
-.top-item svg { flex: none; color: var(--color-text-secondary); }
-.top-item:hover { background: var(--color-bg-subtle); }
+.top-item svg { flex: none; color: var(--color-text-secondary); transition: color var(--transition-fast), transform var(--transition-fast); }
+.top-item:hover { background: var(--sidebar-hover-bg); color: var(--color-primary); transform: translateX(2px); }
+.top-item:hover svg { color: var(--color-primary); transform: scale(1.06); }
 .top-item:focus-visible { outline: 2px solid var(--color-primary); outline-offset: -2px; }
 .top-item-danger:hover { color: var(--color-danger-text); background: var(--color-danger-bg); }
 .top-item-danger:hover svg { color: var(--color-danger-text); }
@@ -204,7 +246,10 @@
 }
 .notif-read-all:hover { background: var(--color-bg-subtle); }
 
-@keyframes top-popover-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes top-popover-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
 
 /* Danh sách thông báo khi đang tải */
 .notif-item-skeleton { cursor: default; }

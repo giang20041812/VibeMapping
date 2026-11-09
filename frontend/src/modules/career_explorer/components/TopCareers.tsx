@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, GitCompare, Sparkles, Target } from 'lucide-react';
-import { Alert, Badge, Button, Skeleton } from '../../../components/common';
+import { ArrowRight, GitCompare, Sparkles, Target, Trophy } from 'lucide-react';
+import { Alert, Badge, Button, Skeleton, stickerToneAt } from '../../../components/common';
 import { useAuth } from '../../auth/AuthContext';
 import { recommendCareers, type CareerRecommendations } from '../career.service';
 import {
@@ -10,6 +10,7 @@ import {
   PRELIMINARY_NOTE,
   RESULT_STATUS_LABEL,
   formatPercent,
+  interestLabel,
   nextSurveyStep,
 } from '../careerFit.constants';
 import { FitBars } from './FitBars';
@@ -75,10 +76,10 @@ export const TopCareers: React.FC<Props> = ({ picked = [], onToggleCompare, onBr
       <div className="fit-status">
         {statusBadge}
         <span className="fit-completeness">
-          <span>Độ đầy đủ dữ liệu {completeness}%</span>
+          <span>Độ đầy đủ dữ liệu <b>{completeness}%</b></span>
           <span className="fit-bar-track"><span className="fit-bar-fill" style={{ width: `${completeness}%` }} /></span>
         </span>
-        {next && <Link className="fit-next" to={next.to}>{next.label}</Link>}
+        {next && <Link className="fit-next" to={next.to}>{next.label} <ArrowRight size={15} aria-hidden="true" /></Link>}
       </div>
       {data.statusLabel === 'self_assessment' && <Alert variant="warning">{PRELIMINARY_NOTE}</Alert>}
 
@@ -96,15 +97,27 @@ export const TopCareers: React.FC<Props> = ({ picked = [], onToggleCompare, onBr
       ) : (
         <>
           {data.belowThreshold && <Alert variant="warning">{NEAR_FIT_NOTE}</Alert>}
-          <article className="fit-hero">
-            <FitRing percent={top.fitPercent} size={132} />
+          <article className="fit-hero sticker-tone-gold">
+            <div className="fit-hero-visual">
+              <span className="fit-hero-crown">
+                <Trophy size={14} aria-hidden="true" />
+                Hạng {top.rank}
+              </span>
+              <FitRing percent={top.fitPercent} size={136} />
+            </div>
             <div className="fit-hero-body">
-              <span className="fit-eyebrow">{top.nearThreshold ? 'Gần phù hợp nhất' : 'Phù hợp nhất'}</span>
-              <h2><Link to={careerHref(top.careerId)} className="fit-card-title">{top.careerName}</Link></h2>
-              <div className="career-chips">
-                {top.nearThreshold && <Badge variant="warning">Nghề gần đạt</Badge>}
-                {top.isTarget && <Badge variant="success">Mục tiêu</Badge>}
+              <div className="fit-hero-top">
+                <span className="fit-eyebrow">
+                  <Sparkles size={14} aria-hidden="true" />
+                  {top.nearThreshold ? 'Gần phù hợp nhất' : 'Phù hợp nhất'}
+                </span>
+                <div className="career-chips">
+                  {top.hollandTop3 && <span className="fit-holland-tag">{interestLabel(top.hollandTop3)}</span>}
+                  {top.nearThreshold && <Badge variant="warning">Nghề gần đạt</Badge>}
+                  {top.isTarget && <Badge variant="success">Mục tiêu</Badge>}
+                </div>
               </div>
+              <h2><Link to={careerHref(top.careerId)} className="fit-card-title">{top.careerName}</Link></h2>
               <FitBars result={top.result} />
               <div className="fit-actions">
                 <Button onClick={() => navigate(careerHref(top.careerId))} rightIcon={<ArrowRight size={16} />}>Xem chi tiết</Button>
@@ -114,20 +127,29 @@ export const TopCareers: React.FC<Props> = ({ picked = [], onToggleCompare, onBr
           </article>
 
           {rest.length > 0 && (
-            <ul className="fit-grid">
-              {rest.map((item) => (
-                <li key={item.careerId} className="fit-card">
-                  <span className="fit-card-rank">{item.rank}</span>
-                  <FitRing percent={item.fitPercent} size={64} />
-                  <div className="fit-card-body">
-                    <Link to={careerHref(item.careerId)} className="fit-card-title">{item.careerName}</Link>
-                    <div className="career-chips">
-                      {item.nearThreshold && <Badge variant="warning" size="sm">Nghề gần đạt</Badge>}
-                      {item.isTarget && <Badge variant="success" size="sm">Mục tiêu</Badge>}
+            <ul className="fit-grid" aria-label="Các nghề phù hợp tiếp theo">
+              {rest.map((item, index) => (
+                <li key={item.careerId} className={`fit-card sticker-tone-${stickerToneAt(index)}`}>
+                  <div className="fit-card-head">
+                    <FitRing percent={item.fitPercent} size={68} />
+                    <div className="fit-card-heading">
+                      <div className="fit-card-meta">
+                        <span className="fit-card-rank">#{item.rank}</span>
+                        {item.nearThreshold && <Badge variant="warning" size="sm">Nghề gần đạt</Badge>}
+                        {item.isTarget && <Badge variant="success" size="sm">Mục tiêu</Badge>}
+                      </div>
+                      <Link to={careerHref(item.careerId)} className="fit-card-title">{item.careerName}</Link>
+                      {item.hollandTop3 && <span className="fit-holland-tag">{interestLabel(item.hollandTop3)}</span>}
                     </div>
-                    <FitBars result={item.result} />
                   </div>
-                  {compareButton(item.careerId, 'sm')}
+                  <FitBars result={item.result} />
+                  <div className="fit-card-foot">
+                    <Link to={careerHref(item.careerId)} className="sticker-link">
+                      Xem chi tiết
+                      <ArrowRight size={15} aria-hidden="true" />
+                    </Link>
+                    {compareButton(item.careerId, 'sm')}
+                  </div>
                 </li>
               ))}
             </ul>
@@ -137,15 +159,26 @@ export const TopCareers: React.FC<Props> = ({ picked = [], onToggleCompare, onBr
 
       {extraTargets.length > 0 && (
         <section className="fit-targets">
-          <h3><Target size={16} aria-hidden="true" /> Nghề mục tiêu</h3>
+          <h3><Target size={18} aria-hidden="true" /> Nghề mục tiêu</h3>
           <ul className="fit-grid">
-            {extraTargets.map((item) => (
-              <li key={item.careerId} className="fit-card">
-                {item.fitPercent === null ? <span className="fit-card-missing">{formatPercent(null)}</span> : <FitRing percent={item.fitPercent} size={64} />}
-                <div className="fit-card-body">
-                  <Link to={careerHref(item.careerId)} className="fit-card-title">{item.careerName}</Link>
-                  {item.nearThreshold && <Badge variant="warning" size="sm">Nghề gần đạt</Badge>}
-                  {item.fitPercent !== null && <FitBars result={item.result} />}
+            {extraTargets.map((item, index) => (
+              <li key={item.careerId} className={`fit-card sticker-tone-${stickerToneAt(index + 3)}`}>
+                <div className="fit-card-head">
+                  {item.fitPercent === null ? <span className="fit-card-missing">{formatPercent(null)}</span> : <FitRing percent={item.fitPercent} size={68} />}
+                  <div className="fit-card-heading">
+                    <div className="fit-card-meta">
+                      <Badge variant="success" size="sm">Mục tiêu</Badge>
+                      {item.nearThreshold && <Badge variant="warning" size="sm">Nghề gần đạt</Badge>}
+                    </div>
+                    <Link to={careerHref(item.careerId)} className="fit-card-title">{item.careerName}</Link>
+                  </div>
+                </div>
+                {item.fitPercent !== null && <FitBars result={item.result} />}
+                <div className="fit-card-foot">
+                  <Link to={careerHref(item.careerId)} className="sticker-link">
+                    Xem chi tiết
+                    <ArrowRight size={15} aria-hidden="true" />
+                  </Link>
                 </div>
               </li>
             ))}

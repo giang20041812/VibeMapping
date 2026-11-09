@@ -60,6 +60,45 @@ export function monthInputFromIso(iso: string | null): string {
   return iso ? `${iso.slice(5, 7)}/${iso.slice(0, 4)}` : '';
 }
 
+/** Tự động định dạng tháng/năm MM/YYYY khi người dùng gõ */
+export function formatMonthYearInput(value: string, prevValue = ''): string {
+  if (value.length < prevValue.length) {
+    if (prevValue.endsWith('/') && value === prevValue.slice(0, -1)) {
+      return value.slice(0, -1);
+    }
+    return value;
+  }
+
+  if (value.endsWith('/')) {
+    const rawDigits = value.replace(/\D/g, '');
+    if (rawDigits.length === 1) {
+      return `0${rawDigits}/`;
+    }
+  }
+
+  const digits = value.replace(/\D/g, '').slice(0, 6);
+  if (!digits) return '';
+
+  if (digits.length === 1) {
+    const n = Number(digits);
+    if (n > 1) {
+      return `0${digits}/`;
+    }
+    return digits;
+  }
+
+  let m = Number(digits.slice(0, 2));
+  if (m === 0) m = 1;
+  if (m > 12) m = 12;
+  const monthStr = String(m).padStart(2, '0');
+
+  if (digits.length === 2) {
+    return `${monthStr}/`;
+  }
+
+  return `${monthStr}/${digits.slice(2, 6)}`;
+}
+
 export const REASON_OPTIONS: { value: RegenerateReason; label: string }[] = [
   { value: 'off_track', label: 'Chệch hướng so với kế hoạch' },
   { value: 'circumstances', label: 'Hoàn cảnh thay đổi' },

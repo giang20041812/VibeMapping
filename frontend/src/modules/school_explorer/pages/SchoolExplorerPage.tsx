@@ -5,6 +5,7 @@ import {
   Alert,
   Badge,
   Input,
+  NumberInput,
   PageHero,
   Pagination,
   Select,
@@ -126,17 +127,19 @@ export const SchoolExplorerPage: React.FC = () => {
           value={draft.degreeLevel}
           onChange={(value) => patch({ degreeLevel: value as InstitutionFilter['degreeLevel'] })}
         />
-        <Input
+        <NumberInput
           label="Học phí từ (triệu/kỳ)"
-          inputMode="decimal"
           value={draft.tuitionMin}
           onChange={(event) => patch({ tuitionMin: event.target.value })}
+          decimals={1}
+          max={1000}
         />
-        <Input
+        <NumberInput
           label="Học phí đến (triệu/kỳ)"
-          inputMode="decimal"
           value={draft.tuitionMax}
           onChange={(event) => patch({ tuitionMax: event.target.value })}
+          decimals={1}
+          max={1000}
         />
       </FilterBar>
 

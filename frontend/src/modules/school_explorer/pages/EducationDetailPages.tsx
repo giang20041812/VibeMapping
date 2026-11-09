@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { BookMarked, Check, ChevronDown, ExternalLink, GraduationCap, Landmark, Layers, MapPin, Plus, Search, Wallet } from 'lucide-react';
+import { BookMarked, Check, ExternalLink, GraduationCap, Landmark, Layers, MapPin, Plus, Search, Wallet } from 'lucide-react';
 import {
   Alert,
   Badge,
@@ -15,6 +15,7 @@ import {
   Skeleton,
   SkeletonRegion,
   StatTile,
+  stickerToneAt,
   type DataTableColumn,
 } from '../../../components/common';
 import { FilterBar } from '../../../components/filters/FilterBar/FilterBar';
@@ -25,7 +26,7 @@ import type { FilterOption } from '../../../types/filter';
 import { useAdminFilter } from '../../admin/useAdminFilter';
 import { addProgramToDecisionCompare } from '../compareProgram';
 import { INSTITUTION_TYPE_LABEL, OWNERSHIP_LABEL } from '../school_explorer.constants';
-import { formatTuition, loadCareerMap, loadInstitution, loadMajor, loadProgram, programVariant, type ProgramSummary } from '../education.service';
+import { distinctVariantParts, formatTuition, loadCareerMap, loadInstitution, loadMajor, loadProgram, programVariant, type ProgramSummary } from '../education.service';
 import '../../career_explorer/pages/CareerPages.css';
 import './EducationDetailPages.css';
 
@@ -131,23 +132,25 @@ const groupByMajor = (programs: ProgramSummary[]): MajorGroup[] => {
   return [...groups.values()].sort((a, b) => a.majorName.localeCompare(b.majorName, 'vi'));
 };
 
-const variantLabel = (p: ProgramSummary): string => [p.specialization, p.qualifier].filter(Boolean).join(' · ');
+const variantLabel = (p: ProgramSummary): string => distinctVariantParts(p).join(' · ');
 
 const MajorProgramRow: React.FC<{ program: ProgramSummary; added: string[]; onAdd: (p: ProgramSummary) => void }> = ({ program, added, onAdd }) => (
   <li className="major-program-row">
-    <div className="major-program-main">
-      <Link to={`/kham-pha-truong/chuong-trinh/${program.id}`}>{variantLabel(program) || 'Chương trình chung'}</Link>
-      {program.faculty && <div className="program-row-sub">{program.faculty}</div>}
-    </div>
-    <div className="major-program-meta">
+    <div className="major-program-head">
+      <Link className="major-program-link" to={`/kham-pha-truong/chuong-trinh/${program.id}`}>
+        {variantLabel(program) || 'Chương trình tiêu chuẩn'}
+      </Link>
       {program.programType && <Badge>{program.programType}</Badge>}
-      <span className="major-program-tuition">{formatTuition(program)}</span>
     </div>
-    <CompareButton program={program} added={added} onAdd={onAdd} />
+    {program.faculty && <div className="program-row-sub">{program.faculty}</div>}
+    <div className="major-program-foot">
+      <span className="major-program-tuition">{formatTuition(program)}</span>
+      <CompareButton program={program} added={added} onAdd={onAdd} />
+    </div>
   </li>
 );
 
-/** Mỗi ngành chỉ xuất hiện một lần; chuyên ngành nằm gọn trong thẻ của ngành */
+/** Mỗi ngành lớn là một cột; các ngành nhỏ / chuyên ngành là các dòng bên trong */
 const MajorGroupList: React.FC<{ programs: ProgramSummary[] }> = ({ programs }) => {
   const { added, notice, add } = useProgramCompare();
   const groups = useMemo(() => groupByMajor(programs), [programs]);
@@ -155,20 +158,21 @@ const MajorGroupList: React.FC<{ programs: ProgramSummary[] }> = ({ programs }) 
   return (
     <div className="program-list">
       {notice && <Alert variant="info">{notice}</Alert>}
-      <ul className="major-group-list">
+      <ul className="major-group-list" aria-label="Danh sách ngành đào tạo">
         {groups.map((group, index) => (
-          <li key={group.majorId} className={`major-group major-group-tone-${index % 4}`}>
-            <details>
-              <summary className="major-group-head">
-                <span className="major-group-icon" aria-hidden="true"><BookMarked size={18} /></span>
-                <span className="major-group-name">{group.majorName}</span>
-                <Badge variant="info">{group.programs.length} chương trình</Badge>
-                <ChevronDown className="major-group-chevron" size={18} aria-hidden="true" />
-              </summary>
-              <ul className="major-program-list">
-                {group.programs.map((p) => <MajorProgramRow key={p.id} program={p} added={added} onAdd={add} />)}
-              </ul>
-            </details>
+          <li key={group.majorId} className={`major-group sticker-tone-${stickerToneAt(index)}`}>
+            <header className="major-group-head">
+              <span className="major-group-icon" aria-hidden="true"><BookMarked size={18} /></span>
+              <div className="major-group-title-wrap">
+                <Link className="major-group-name" to={`/kham-pha-truong/nganh/${group.majorId}`}>
+                  {group.majorName}
+                </Link>
+                <span className="major-group-count">{group.programs.length} chương trình</span>
+              </div>
+            </header>
+            <ul className="major-program-list">
+              {group.programs.map((p) => <MajorProgramRow key={p.id} program={p} added={added} onAdd={add} />)}
+            </ul>
           </li>
         ))}
       </ul>
@@ -198,7 +202,7 @@ const ProgramList: React.FC<{ programs: ProgramSummary[]; show: 'institution' | 
       ),
     },
     ...(show === 'institution' ? [{ key: 'city', header: 'Tỉnh/thành', nowrap: true, render: (p: ProgramSummary) => p.city ?? '–' }] : []),
-    { key: 'type', header: 'Hệ đào tạo', nowrap: true, render: (p) => p.programType ?? '–' },
+    { key: 'type', header: 'Hệ đào tạo', render: (p) => p.programType ?? '–' },
     { key: 'tuition', header: 'Học phí', nowrap: true, render: (p) => formatTuition(p) },
     {
       key: 'status',
@@ -290,9 +294,13 @@ export const InstitutionDetailPage: React.FC = () => {
         <StatTile label="Ngành" tone="violet" icon={<BookMarked />} value={majorCount} />
         <StatTile label="Học phí mỗi kỳ" tone="gold" icon={<Wallet />} value={tuitionRange(data.programs)} />
       </div>
-      <Card title="Chương trình đào tạo">
+      <section className="school-programs-section" aria-labelledby="school-programs-heading">
+        <div className="school-programs-header">
+          <h2 id="school-programs-heading" className="school-programs-title">Chương trình đào tạo</h2>
+          <Badge variant="info">{majorCount} ngành · {data.programs.length} chương trình</Badge>
+        </div>
         <MajorGroupList programs={data.programs} />
-      </Card>
+      </section>
     </div>
   );
 };

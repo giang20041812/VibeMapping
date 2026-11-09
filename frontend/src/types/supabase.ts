@@ -1485,6 +1485,11 @@ export type Database = {
           updated_at: string;
           growth_level: string | null;
           data_checked_kind: string | null;
+          career_description: string | null;
+          key_skills: string | null;
+          salary_range_text: string | null;
+          career_path_text: string | null;
+          data_source_note: string | null;
         };
         Insert: {
           id?: string;
@@ -1501,6 +1506,11 @@ export type Database = {
           updated_at?: string;
           growth_level?: string | null;
           data_checked_kind?: string | null;
+          career_description?: string | null;
+          key_skills?: string | null;
+          salary_range_text?: string | null;
+          career_path_text?: string | null;
+          data_source_note?: string | null;
         };
         Update: {
           id?: string;
@@ -1517,6 +1527,11 @@ export type Database = {
           updated_at?: string;
           growth_level?: string | null;
           data_checked_kind?: string | null;
+          career_description?: string | null;
+          key_skills?: string | null;
+          salary_range_text?: string | null;
+          career_path_text?: string | null;
+          data_source_note?: string | null;
         };
         Relationships: [
           {
@@ -3396,6 +3411,7 @@ export type Database = {
           hours_per_week: number | null;
           regenerate_reason: string | null;
           previous_roadmap_id: string | null;
+          training_program_id: string | null;
         };
         Insert: {
           id?: string;
@@ -3413,6 +3429,7 @@ export type Database = {
           hours_per_week?: number | null;
           regenerate_reason?: string | null;
           previous_roadmap_id?: string | null;
+          training_program_id?: string | null;
         };
         Update: {
           id?: string;
@@ -3430,6 +3447,7 @@ export type Database = {
           hours_per_week?: number | null;
           regenerate_reason?: string | null;
           previous_roadmap_id?: string | null;
+          training_program_id?: string | null;
         };
         Relationships: [
           {
@@ -3451,6 +3469,13 @@ export type Database = {
             columns: ["previous_roadmap_id"];
             isOneToOne: false;
             referencedRelation: "roadmaps";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "roadmaps_training_program_id_fkey";
+            columns: ["training_program_id"];
+            isOneToOne: false;
+            referencedRelation: "training_programs";
             referencedColumns: ["id"];
           },
         ];
@@ -3650,6 +3675,16 @@ export type Database = {
           is_active: boolean;
           created_at: string;
           updated_at: string;
+          tuition_basis: string | null;
+          tuition_per_year_min: number | null;
+          tuition_per_year_max: number | null;
+          tuition_total_min: number | null;
+          tuition_total_max: number | null;
+          tuition_per_credit: number | null;
+          program_credits: number | null;
+          tuition_per_month: number | null;
+          tuition_status: string | null;
+          tuition_is_estimate: boolean;
         };
         Insert: {
           id?: string;
@@ -3674,6 +3709,16 @@ export type Database = {
           is_active?: boolean;
           created_at?: string;
           updated_at?: string;
+          tuition_basis?: string | null;
+          tuition_per_year_min?: number | null;
+          tuition_per_year_max?: number | null;
+          tuition_total_min?: number | null;
+          tuition_total_max?: number | null;
+          tuition_per_credit?: number | null;
+          program_credits?: number | null;
+          tuition_per_month?: number | null;
+          tuition_status?: string | null;
+          tuition_is_estimate?: boolean;
         };
         Update: {
           id?: string;
@@ -3698,6 +3743,16 @@ export type Database = {
           is_active?: boolean;
           created_at?: string;
           updated_at?: string;
+          tuition_basis?: string | null;
+          tuition_per_year_min?: number | null;
+          tuition_per_year_max?: number | null;
+          tuition_total_min?: number | null;
+          tuition_total_max?: number | null;
+          tuition_per_credit?: number | null;
+          program_credits?: number | null;
+          tuition_per_month?: number | null;
+          tuition_status?: string | null;
+          tuition_is_estimate?: boolean;
         };
         Relationships: [
           {
@@ -3887,6 +3942,18 @@ export type Database = {
         Args: { p_owner: string; p_reason: string };
         Returns: Json;
       };
+      admin_save_career: {
+        Args: { p_career_id: string; p_payload: Json };
+        Returns: string;
+      };
+      admin_save_career_holland: {
+        Args: { p_career_id: string; p_profile: Json };
+        Returns: undefined;
+      };
+      admin_save_career_requirements: {
+        Args: { p_career_id: string; p_rows: Json };
+        Returns: string;
+      };
       assign_class_teacher: {
         Args: { p_class_id: string; p_email: string; p_member_role: string };
         Returns: Json;
@@ -3906,6 +3973,10 @@ export type Database = {
       build_group_report: {
         Args: { p_student_ids: string[] };
         Returns: Json;
+      };
+      bump_matrix_version: {
+        Args: { p_note: string };
+        Returns: string;
       };
       can_manage_class: {
         Args: { p_class_id: string };
@@ -4355,6 +4426,10 @@ export type Database = {
         Args: { p_career_id: string; p_status: string };
         Returns: undefined;
       };
+      set_decision_goal: {
+        Args: { p_plan_id: string };
+        Returns: string;
+      };
       set_grid_package: {
         Args: { p_grid_id: string; p_package_size: number; p_question_ids: string[] };
         Returns: undefined;
@@ -4373,6 +4448,10 @@ export type Database = {
       };
       set_roadmap_careers: {
         Args: { p_roadmap_id: string; p_career_ids: string[] };
+        Returns: undefined;
+      };
+      set_roadmap_program: {
+        Args: { p_roadmap_id: string; p_training_program_id: string };
         Returns: undefined;
       };
       share_decision_report: {

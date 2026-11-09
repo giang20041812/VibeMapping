@@ -12,11 +12,22 @@ export interface ProgramSummary {
   faculty: string | null;
   /** Phần trong ngoặc của tên ngành mô tả chương trình */
   qualifier: string | null;
+  studyYears: number | null;
   tuitionText: string | null;
   tuitionMin: number | null;
   tuitionMax: number | null;
-  /** semester = ghi rõ mỗi kỳ; year, total = chia từ học phí năm hoặc tổng khóa (ước tính) */
+  tuitionYearMin: number | null;
+  tuitionYearMax: number | null;
+  tuitionTotalMin: number | null;
+  tuitionTotalMax: number | null;
+  tuitionPerCredit: number | null;
+  programCredits: number | null;
+  tuitionPerMonth: number | null;
+  /** semester = ghi rõ mỗi kỳ; year, total, credit = quy đổi từ năm, tổng khóa hoặc tín chỉ */
   tuitionBasis?: string | null;
+  /** amount | free | credit_only | unpublished | unclear */
+  tuitionStatus?: string | null;
+  tuitionIsEstimate?: boolean;
   researchStatus: string;
 }
 
@@ -31,7 +42,7 @@ export interface AdmissionRow {
 }
 
 const PROGRAM_SELECT =
-  'id, institution_id, major_id, program_type, specialization_name, faculty_name, program_qualifier, tuition_text, tuition_per_semester_min, tuition_per_semester_max, tuition_basis, research_status, institution:institutions(institution_name, city), major:majors(major_name)';
+  'id, institution_id, major_id, program_type, specialization_name, faculty_name, program_qualifier, study_years, tuition_text, tuition_per_semester_min, tuition_per_semester_max, tuition_per_year_min, tuition_per_year_max, tuition_total_min, tuition_total_max, tuition_per_credit, program_credits, tuition_per_month, tuition_basis, tuition_status, tuition_is_estimate, research_status, institution:institutions(institution_name, city), major:majors(major_name)';
 
 type RawProgram = {
   id: string;
@@ -41,10 +52,20 @@ type RawProgram = {
   specialization_name: string | null;
   faculty_name: string | null;
   program_qualifier: string | null;
+  study_years: number | null;
   tuition_text: string | null;
   tuition_per_semester_min: number | null;
   tuition_per_semester_max: number | null;
+  tuition_per_year_min: number | null;
+  tuition_per_year_max: number | null;
+  tuition_total_min: number | null;
+  tuition_total_max: number | null;
+  tuition_per_credit: number | null;
+  program_credits: number | null;
+  tuition_per_month: number | null;
   tuition_basis: string | null;
+  tuition_status: string | null;
+  tuition_is_estimate: boolean | null;
   research_status: string;
   institution: { institution_name: string; city: string | null } | null;
   major: { major_name: string } | null;
@@ -62,12 +83,62 @@ function toProgram(row: RawProgram): ProgramSummary {
     specialization: row.specialization_name,
     faculty: row.faculty_name,
     qualifier: row.program_qualifier,
+    studyYears: row.study_years !== null ? Number(row.study_years) : null,
     tuitionText: row.tuition_text,
     tuitionMin: row.tuition_per_semester_min,
     tuitionMax: row.tuition_per_semester_max,
+    tuitionYearMin: row.tuition_per_year_min,
+    tuitionYearMax: row.tuition_per_year_max,
+    tuitionTotalMin: row.tuition_total_min,
+    tuitionTotalMax: row.tuition_total_max,
+    tuitionPerCredit: row.tuition_per_credit,
+    programCredits: row.program_credits,
+    tuitionPerMonth: row.tuition_per_month,
     tuitionBasis: row.tuition_basis,
+    tuitionStatus: row.tuition_status,
+    tuitionIsEstimate: Boolean(row.tuition_is_estimate),
     researchStatus: row.research_status,
   };
+}
+
+export async function listInstitutionOptions(): Promise<{ value: string; label: string; city: string | null }[]> {
+  const { data, error } = await db
+    .from('institutions')
+    .select('id, institution_name, city')
+    .neq('institution_type', 'parent_university')
+    .order('institution_name', { ascending: true })
+    .limit(1000);
+  if (error) throw error;
+  return ((data ?? []) as { id: string; institution_name: string; city: string | null }[]).map((row) => ({
+    value: row.id,
+    label: row.institution_name,
+    city: row.city,
+  }));
+}
+
+export async function loadProgramsByInstitution(institutionId: string): Promise<ProgramSummary[]> {
+  const { data, error } = await db
+    .from('training_programs')
+    .select(PROGRAM_SELECT)
+    .eq('institution_id', institutionId)
+    .eq('is_active', true)
+    .limit(500);
+  if (error) throw error;
+  return ((data ?? []) as unknown as RawProgram[])
+    .map(toProgram)
+    .sort((a, b) => formatProgramOptionLabel(a).localeCompare(formatProgramOptionLabel(b), 'vi'));
+}
+
+export async function loadProgramsByIds(ids: string[]): Promise<ProgramSummary[]> {
+  if (ids.length === 0) return [];
+  const { data, error } = await db.from('training_programs').select(PROGRAM_SELECT).in('id', ids);
+  if (error) throw error;
+  return ((data ?? []) as unknown as RawProgram[]).map(toProgram);
+}
+
+export function formatProgramOptionLabel(p: Pick<ProgramSummary, 'majorName' | 'specialization' | 'qualifier' | 'programType'>): string {
+  const detail = [p.specialization, p.qualifier, p.programType].filter(Boolean).join(' · ');
+  return detail ? `${p.majorName} (${detail})` : p.majorName;
 }
 
 export async function loadInstitution(id: string) {
@@ -181,12 +252,66 @@ export async function loadCareerMap(careerId: string) {
   return { career, majors: majors.map((m) => ({ ...m, programs: byMajor.get(m.id) ?? [] })) };
 }
 
-export function formatTuition(p: Pick<ProgramSummary, 'tuitionMin' | 'tuitionMax' | 'tuitionText' | 'tuitionBasis'>): string {
+export function formatTuition(
+  p: Pick<ProgramSummary, 'tuitionMin' | 'tuitionMax' | 'tuitionText' | 'tuitionBasis' | 'tuitionStatus' | 'tuitionPerCredit'>,
+): string {
+  if (p.tuitionStatus === 'free' || (p.tuitionMin === 0 && (p.tuitionMax === 0 || p.tuitionMax === null))) {
+    return 'Miễn học phí';
+  }
   const fmt = (v: number) => `${(v / 1_000_000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} triệu`;
-  const estimate = p.tuitionBasis === 'year' || p.tuitionBasis === 'total' ? ' (ước tính)' : '';
+  const estimate = p.tuitionBasis === 'year' || p.tuitionBasis === 'total' || p.tuitionBasis === 'credit' ? ' (ước tính)' : '';
   if (p.tuitionMin !== null && p.tuitionMax !== null && p.tuitionMin !== p.tuitionMax) return `${fmt(p.tuitionMin)}–${fmt(p.tuitionMax)}/học kỳ${estimate}`;
   if (p.tuitionMin !== null) return `${fmt(p.tuitionMin)}/học kỳ${estimate}`;
+  if (p.tuitionStatus === 'credit_only' && p.tuitionPerCredit) {
+    return `${(p.tuitionPerCredit / 1_000).toLocaleString('vi-VN', { maximumFractionDigits: 0 })} nghìn/tín chỉ`;
+  }
+  if (p.tuitionStatus === 'unpublished') return 'Chưa công bố';
   return p.tuitionText ?? 'Đang cập nhật';
+}
+
+export function formatYearlyTuition(
+  p: Pick<ProgramSummary, 'tuitionYearMin' | 'tuitionYearMax' | 'tuitionStatus' | 'tuitionBasis' | 'tuitionIsEstimate' | 'tuitionPerCredit'>,
+): { label: string; isEstimate: boolean } {
+  if (p.tuitionStatus === 'free' || (p.tuitionYearMin === 0 && (p.tuitionYearMax === 0 || p.tuitionYearMax === null))) {
+    return { label: 'Miễn học phí', isEstimate: false };
+  }
+  const fmt = (v: number) => `${(v / 1_000_000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} triệu`;
+  const isEst = Boolean(p.tuitionIsEstimate || (p.tuitionBasis && p.tuitionBasis !== 'year'));
+  if (p.tuitionYearMin !== null && p.tuitionYearMax !== null && p.tuitionYearMin !== p.tuitionYearMax) {
+    return { label: `${fmt(p.tuitionYearMin)}–${fmt(p.tuitionYearMax)}/năm`, isEstimate: isEst };
+  }
+  if (p.tuitionYearMin !== null) {
+    return { label: `${fmt(p.tuitionYearMin)}/năm`, isEstimate: isEst };
+  }
+  if (p.tuitionStatus === 'credit_only' && p.tuitionPerCredit) {
+    return { label: `${(p.tuitionPerCredit / 1_000).toLocaleString('vi-VN', { maximumFractionDigits: 0 })} nghìn/tín chỉ`, isEstimate: false };
+  }
+  return { label: 'Chưa công bố', isEstimate: false };
+}
+
+export function formatTotalTuition(
+  p: Pick<ProgramSummary, 'tuitionTotalMin' | 'tuitionTotalMax' | 'tuitionYearMin' | 'tuitionYearMax' | 'studyYears' | 'tuitionStatus'>,
+): { label: string; isEstimate: boolean } {
+  if (p.tuitionStatus === 'free' || (p.tuitionYearMin === 0 && (p.tuitionYearMax === 0 || p.tuitionYearMax === null))) {
+    return { label: 'Miễn học phí', isEstimate: false };
+  }
+  const fmt = (v: number) => `${(v / 1_000_000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} triệu`;
+  if (p.tuitionTotalMin !== null) {
+    const high = p.tuitionTotalMax ?? p.tuitionTotalMin;
+    return {
+      label: p.tuitionTotalMin === high ? fmt(p.tuitionTotalMin) : `${fmt(p.tuitionTotalMin)}–${fmt(high)}`,
+      isEstimate: false,
+    };
+  }
+  if (p.tuitionYearMin !== null && p.studyYears && p.studyYears > 0) {
+    const low = p.tuitionYearMin * p.studyYears;
+    const high = (p.tuitionYearMax ?? p.tuitionYearMin) * p.studyYears;
+    return {
+      label: low === high ? fmt(low) : `${fmt(low)}–${fmt(high)}`,
+      isEstimate: true,
+    };
+  }
+  return { label: 'Chưa công bố', isEstimate: false };
 }
 
 /** Phần phân biệt các chương trình cùng trường, cùng ngành: chuyên ngành, phần trong ngoặc, khoa */

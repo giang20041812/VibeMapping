@@ -39,8 +39,8 @@ export async function listInstitutions(filter: InstitutionFilter, page: number):
   if (filter.degreeLevel) query = query.contains('match.degree_levels', [filter.degreeLevel]);
   const tuitionMin = Number(filter.tuitionMin.replace(',', '.'));
   const tuitionMax = Number(filter.tuitionMax.replace(',', '.'));
-  if (Number.isFinite(tuitionMin) && tuitionMin > 0) query = query.gte('match.tuition_per_semester_min', tuitionMin * 1_000_000);
-  if (Number.isFinite(tuitionMax) && tuitionMax > 0) query = query.lte('match.tuition_per_semester_min', tuitionMax * 1_000_000);
+  if (filter.tuitionMin.trim() && Number.isFinite(tuitionMin) && tuitionMin >= 0) query = query.gte('match.tuition_per_semester_min', tuitionMin * 1_000_000);
+  if (filter.tuitionMax.trim() && Number.isFinite(tuitionMax) && tuitionMax >= 0) query = query.lte('match.tuition_per_semester_min', tuitionMax * 1_000_000);
 
   const from = (page - 1) * SCHOOL_PAGE_SIZE;
   const { data, error, count } = await query

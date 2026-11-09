@@ -26,7 +26,7 @@ import type { FilterOption } from '../../../types/filter';
 import { useAdminFilter } from '../../admin/useAdminFilter';
 import { addProgramToDecisionCompare } from '../compareProgram';
 import { INSTITUTION_TYPE_LABEL, OWNERSHIP_LABEL } from '../school_explorer.constants';
-import { formatTuition, loadCareerMap, loadInstitution, loadMajor, loadProgram, programVariant, type ProgramSummary } from '../education.service';
+import { distinctVariantParts, formatTuition, loadCareerMap, loadInstitution, loadMajor, loadProgram, programVariant, type ProgramSummary } from '../education.service';
 import '../../career_explorer/pages/CareerPages.css';
 import './EducationDetailPages.css';
 
@@ -132,7 +132,7 @@ const groupByMajor = (programs: ProgramSummary[]): MajorGroup[] => {
   return [...groups.values()].sort((a, b) => a.majorName.localeCompare(b.majorName, 'vi'));
 };
 
-const variantLabel = (p: ProgramSummary): string => [p.specialization, p.qualifier].filter(Boolean).join(' · ');
+const variantLabel = (p: ProgramSummary): string => distinctVariantParts(p).join(' · ');
 
 const MajorProgramRow: React.FC<{ program: ProgramSummary; added: string[]; onAdd: (p: ProgramSummary) => void }> = ({ program, added, onAdd }) => (
   <li className="major-program-row">
@@ -202,7 +202,7 @@ const ProgramList: React.FC<{ programs: ProgramSummary[]; show: 'institution' | 
       ),
     },
     ...(show === 'institution' ? [{ key: 'city', header: 'Tỉnh/thành', nowrap: true, render: (p: ProgramSummary) => p.city ?? '–' }] : []),
-    { key: 'type', header: 'Hệ đào tạo', nowrap: true, render: (p) => p.programType ?? '–' },
+    { key: 'type', header: 'Hệ đào tạo', render: (p) => p.programType ?? '–' },
     { key: 'tuition', header: 'Học phí', nowrap: true, render: (p) => formatTuition(p) },
     {
       key: 'status',

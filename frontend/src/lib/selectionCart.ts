@@ -6,6 +6,7 @@ const PROGRAM_MAX = 4;
 
 export interface ProgramCompareItem {
   programId: string;
+  institutionId?: string;
   title: string;
   careerId: string;
   admissionFloor: string;

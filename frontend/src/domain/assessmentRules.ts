@@ -724,6 +724,7 @@ export interface DecisionOptionInput {
   tuitionPerYear: number | null;
   careerFitPercent: number | null;
   locationScore: number | null;
+  city?: string | null;
 }
 
 export interface RankedDecisionOption extends DecisionOptionInput {
@@ -733,20 +734,30 @@ export interface RankedDecisionOption extends DecisionOptionInput {
   financeScore: number | null;
   totalScore: number | null;
   rank: number;
+  criteriaCount: number;
   missingCriteria: string[];
 }
 
-/** BR-019 / BR-021 / BR-023: Phương án Chưa đáp ứng điều kiện bắt buộc không bao giờ xếp trên phương án Đáp ứng */
+/** Phương án Chưa đáp ứng điều kiện bắt buộc không bao giờ xếp trên phương án Đáp ứng */
 export function compareDecisionOptions(
   options: readonly DecisionOptionInput[],
   weights: { careerFit: number; admission: number; finance: number; location: number },
   budgetPerYear?: number | null,
+  preferredCity?: string | null,
 ): RankedDecisionOption[] {
   const order: Record<EligibilityStatus, number> = { MET: 0, UNKNOWN: 1, NOT_MET: 2 };
+  const hasBudget = typeof budgetPerYear === 'number' && budgetPerYear > 0;
+  const validTuitions = options
+    .map((o) => o.tuitionPerYear)
+    .filter((v): v is number => typeof v === 'number' && Number.isFinite(v) && v >= 0);
+  const minTuition = validTuitions.length > 0 ? Math.min(...validTuitions) : null;
+  const maxTuition = validTuitions.length > 0 ? Math.max(...validTuitions) : null;
+  const prefCity = preferredCity?.trim() || null;
+
   const evaluated = options.map((opt) => {
     let eligibility: EligibilityStatus = 'UNKNOWN';
     let scoreGap: number | null = null;
-    if (opt.admissionFloor !== null && opt.learnerScore !== null) {
+    if (opt.admissionFloor !== null && opt.admissionFloor > 0 && opt.learnerScore !== null) {
       const diff = Number((opt.admissionFloor - opt.learnerScore).toFixed(2));
       if (diff > 0) {
         eligibility = 'NOT_MET';
@@ -757,26 +768,55 @@ export function compareDecisionOptions(
       }
     }
 
-    const hasBudget = typeof budgetPerYear === 'number' && budgetPerYear > 0;
-    const financeScore =
-      !hasBudget || opt.tuitionPerYear === null
-        ? null
-        : opt.tuitionPerYear <= budgetPerYear
-          ? 100
-          : Math.max(0, 100 - ((opt.tuitionPerYear - budgetPerYear) / budgetPerYear) * 100);
+    let financeScore: number | null = null;
+    if (opt.tuitionPerYear !== null && opt.tuitionPerYear >= 0) {
+      if (hasBudget) {
+        financeScore =
+          opt.tuitionPerYear <= budgetPerYear!
+            ? 100
+            : Math.max(0, 100 - ((opt.tuitionPerYear - budgetPerYear!) / budgetPerYear!) * 100);
+      } else if (minTuition !== null) {
+        if (opt.tuitionPerYear === 0) {
+          financeScore = 100;
+        } else if (minTuition === 0) {
+          financeScore = maxTuition && maxTuition > 0 ? Math.max(0, (1 - opt.tuitionPerYear / maxTuition) * 100) : 0;
+        } else {
+          financeScore = Math.max(0, Math.min(100, (minTuition / opt.tuitionPerYear) * 100));
+        }
+      }
+    }
 
-    const admissionScore = eligibility === 'UNKNOWN' ? null : eligibility === 'MET' ? 100 : Math.max(0, 100 - (scoreGap ?? 0) * 15);
+    const admissionScore =
+      eligibility === 'UNKNOWN' || opt.admissionFloor === null || opt.admissionFloor <= 0
+        ? null
+        : eligibility === 'MET'
+          ? 100
+          : Math.max(0, 100 - ((scoreGap ?? 0) / opt.admissionFloor) * 450);
+
+    const locationVal =
+      opt.locationScore !== null && opt.locationScore !== undefined
+        ? opt.locationScore
+        : prefCity && opt.city
+          ? opt.city.trim().toLowerCase() === prefCity.toLowerCase()
+            ? 100
+            : 0
+          : null;
+
     const pairs: Array<{ key: string; val: number | null; w: number }> = [
       { key: 'Độ phù hợp nghề', val: opt.careerFitPercent, w: weights.careerFit },
       { key: 'Đáp ứng đầu vào', val: admissionScore, w: weights.admission },
-      { key: 'Tài chính / Học phí', val: financeScore, w: hasBudget ? weights.finance : 0 },
-      { key: 'Khu vực / Địa điểm', val: opt.locationScore, w: weights.location },
+      { key: 'Tài chính / Học phí', val: financeScore, w: weights.finance },
+      { key: 'Khu vực / Địa điểm', val: locationVal, w: weights.location },
     ];
 
     let wSum = 0;
     let acc = 0;
+    let criteriaCount = 0;
     const missingCriteria: string[] = [];
     for (const p of pairs) {
+      if (p.val !== null && p.val !== undefined) {
+        criteriaCount += 1;
+      }
       if (p.w <= 0) continue;
       if (p.val === null || p.val === undefined) {
         missingCriteria.push(p.key);
@@ -788,12 +828,14 @@ export function compareDecisionOptions(
 
     return {
       ...opt,
+      locationScore: locationVal,
       eligibility,
       scoreGap,
       overBudget: Boolean(hasBudget && opt.tuitionPerYear !== null && opt.tuitionPerYear > budgetPerYear!),
       financeScore: financeScore !== null ? Number(financeScore.toFixed(1)) : null,
       totalScore: wSum > 0 ? Number((acc / wSum).toFixed(1)) : null,
       rank: 0,
+      criteriaCount,
       missingCriteria,
     };
   });

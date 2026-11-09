@@ -1,17 +1,17 @@
 import { addProgramCompare, type ProgramCompareItem } from '../../lib/selectionCart';
 import type { AdmissionRow, ProgramSummary } from './education.service';
 
-/** Học phí/năm ước từ học kỳ × 2; thiếu số thì để trống để so sánh không gán 0. */
+/** Lấy học phí năm tối đa (triệu đồng) từ cột đã tách; thiếu số thì để trống để so sánh không gán 0. */
 export function programToCompareItem(
   program: ProgramSummary,
   extra?: { careerId?: string; admission?: AdmissionRow[]; studyYears?: number | null },
 ): ProgramCompareItem {
-  const yearTuition = program.tuitionMin !== null
-    ? String(Number(((program.tuitionMin * 2) / 1_000_000).toFixed(1)))
-    : '';
+  const rawYear = program.tuitionYearMax ?? program.tuitionYearMin ?? (program.tuitionMin !== null ? program.tuitionMin * 2 : null);
+  const yearTuition = rawYear !== null ? String(Number((rawYear / 1_000_000).toFixed(2))) : '';
   const cutoff = extra?.admission?.find((row) => row.cutoffScore !== null)?.cutoffScore;
   return {
     programId: program.id,
+    institutionId: program.institutionId,
     title: `${program.institutionName} – ${program.majorName}${program.specialization ? ` (${program.specialization})` : ''}`,
     careerId: extra?.careerId ?? '',
     admissionFloor: cutoff === undefined || cutoff === null ? '' : String(cutoff),

@@ -659,9 +659,27 @@ export interface CareerProfileSection {
   items: string[];
 }
 
+export interface CareerMajorSchoolRow {
+  programId: string;
+  institutionId: string;
+  institutionName: string;
+  city: string | null;
+  programType: string | null;
+  specialization: string | null;
+  qualifier: string | null;
+  faculty: string | null;
+}
+
+export interface CareerMajorColumn {
+  id: string;
+  name: string;
+  direct: boolean;
+  schools: CareerMajorSchoolRow[];
+}
+
 export interface CareerProfileInfo {
   sections: CareerProfileSection[];
-  majors: Array<{ id: string; name: string; direct: boolean }>;
+  majors: CareerMajorColumn[];
 }
 
 const PROFILE_SECTIONS: Array<{ key: string; title: string }> = [
@@ -723,10 +741,62 @@ export async function loadCareerProfileInfo(careerId: string): Promise<CareerPro
   if (lines(written.career_description).length > 0) {
     sections.unshift({ key: 'career_description', title: 'Tóm tắt nghề', items: lines(written.career_description) });
   }
-  const majors = ((links.data ?? []) as unknown as Array<{ major_id: string; link_level: string; majors: { major_name: string } | null }>)
+  const rawMajors = ((links.data ?? []) as unknown as Array<{ major_id: string; link_level: string; majors: { major_name: string } | null }>)
     .filter((row) => row.majors)
     .map((row) => ({ id: row.major_id, name: row.majors!.major_name, direct: row.link_level === 'direct' }))
     .sort((a, b) => Number(b.direct) - Number(a.direct) || a.name.localeCompare(b.name, 'vi'));
+
+  const majorIds = rawMajors.map((m) => m.id);
+  const { data: programRows } = majorIds.length
+    ? await supabase
+      .from('training_programs')
+      .select('id, institution_id, major_id, program_type, specialization_name, faculty_name, program_qualifier, institution:institutions(institution_name, city)')
+      .in('major_id', majorIds)
+      .eq('is_active', true)
+      .limit(1000)
+    : { data: [] };
+
+  type RawCareerProgram = {
+    id: string;
+    institution_id: string;
+    major_id: string;
+    program_type: string | null;
+    specialization_name: string | null;
+    faculty_name: string | null;
+    program_qualifier: string | null;
+    institution: { institution_name: string; city: string | null } | { institution_name: string; city: string | null }[] | null;
+  };
+
+  const schoolsByMajor = new Map<string, CareerMajorSchoolRow[]>();
+  for (const row of (programRows ?? []) as unknown as RawCareerProgram[]) {
+    const inst = Array.isArray(row.institution) ? row.institution[0] : row.institution;
+    if (!inst?.institution_name) continue;
+    const list = schoolsByMajor.get(row.major_id) ?? [];
+    list.push({
+      programId: row.id,
+      institutionId: row.institution_id,
+      institutionName: inst.institution_name,
+      city: inst.city ?? null,
+      programType: row.program_type,
+      specialization: row.specialization_name,
+      qualifier: row.program_qualifier,
+      faculty: row.faculty_name,
+    });
+    schoolsByMajor.set(row.major_id, list);
+  }
+
+  for (const list of schoolsByMajor.values()) {
+    list.sort(
+      (a, b) =>
+        a.institutionName.localeCompare(b.institutionName, 'vi') ||
+        (a.specialization ?? '').localeCompare(b.specialization ?? '', 'vi'),
+    );
+  }
+
+  const majors: CareerMajorColumn[] = rawMajors.map((m) => ({
+    ...m,
+    schools: schoolsByMajor.get(m.id) ?? [],
+  }));
   return { sections, majors };
 }
 

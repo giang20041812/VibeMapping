@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Check, Clock, Compass, MapPin, Target, UserRound } from 'lucide-react';
-import { Alert, Badge, Button, Input, Select, Textarea } from '../../../components/common';
+import { Calendar, Check, Clock, Compass, Target, UserRound } from 'lucide-react';
+import { Alert, Badge, Button, Input, NumberInput, Select, Textarea } from '../../../components/common';
 import { SearchableSelect } from '../../../components/filters/SearchableSelect/SearchableSelect';
 import type { FilterOption } from '../../../types/filter';
-import { EDUCATION_LEVELS, REASON_OPTIONS, schoolYearOptions } from '../roadmap.logic';
+import { EDUCATION_LEVELS, REASON_OPTIONS, formatMonthYearInput, schoolYearOptions } from '../roadmap.logic';
 import type { SetupErrors, SetupValues } from '../roadmap.types';
 
 export interface CareerChoice {
@@ -128,43 +128,48 @@ export const RoadmapSetup: React.FC<Props> = ({
             Lấy từ hồ sơ
           </Button>
         </h2>
-        <div className="roadmap-fields">
-          <Select
-            label="Cấp học"
-            required
-            emptyLabel="Chọn cấp học"
-            options={EDUCATION_LEVELS}
-            value={values.educationLevel}
-            error={errors.educationLevel}
-            onChange={(value) => onChange({ educationLevel: value, schoolYear: '' })}
-          />
-          <Select
-            label="Năm học / Lớp"
-            required
-            emptyLabel="Chọn năm học hoặc lớp"
-            options={schoolYearOptions(values.educationLevel)}
-            value={values.schoolYear}
-            error={errors.schoolYear}
-            disabled={!values.educationLevel}
-            onChange={(value) => onChange({ schoolYear: value })}
-          />
-          <Input
-            label="Chứng chỉ hiện có"
-            value={values.certificates}
-            onChange={(event) => onChange({ certificates: event.target.value })}
-          />
-          <Textarea
-            label="Kỹ năng hiện có"
-            rows={3}
-            value={values.skills}
-            onChange={(event) => onChange({ skills: event.target.value })}
-          />
-          <Textarea
-            label="Hoạt động ngoại khóa hiện có"
-            rows={3}
-            value={values.extracurricular}
-            onChange={(event) => onChange({ extracurricular: event.target.value })}
-          />
+        <div className="roadmap-fields-grid">
+          <div className="roadmap-row-compact">
+            <Select
+              label="Cấp học"
+              required
+              emptyLabel="Chọn cấp học"
+              options={EDUCATION_LEVELS}
+              value={values.educationLevel}
+              error={errors.educationLevel}
+              onChange={(value) => onChange({ educationLevel: value, schoolYear: '' })}
+            />
+            <Select
+              label="Năm học / Lớp"
+              required
+              emptyLabel="Chọn năm học hoặc lớp"
+              options={schoolYearOptions(values.educationLevel)}
+              value={values.schoolYear}
+              error={errors.schoolYear}
+              disabled={!values.educationLevel}
+              onChange={(value) => onChange({ schoolYear: value })}
+            />
+            <Input
+              label="Chứng chỉ hiện có"
+              placeholder="IELTS, MOS..."
+              value={values.certificates}
+              onChange={(event) => onChange({ certificates: event.target.value })}
+            />
+          </div>
+          <div className="roadmap-row-textareas">
+            <Textarea
+              label="Kỹ năng hiện có"
+              rows={2}
+              value={values.skills}
+              onChange={(event) => onChange({ skills: event.target.value })}
+            />
+            <Textarea
+              label="Hoạt động ngoại khóa hiện có"
+              rows={2}
+              value={values.extracurricular}
+              onChange={(event) => onChange({ extracurricular: event.target.value })}
+            />
+          </div>
         </div>
       </section>
 
@@ -173,26 +178,29 @@ export const RoadmapSetup: React.FC<Props> = ({
           <span className="roadmap-block-icon" aria-hidden="true"><Clock /></span>
           Mốc thời gian
         </h2>
-        <div className="roadmap-fields">
+        <div className="roadmap-row-compact">
           <Input
             label="Thời hạn đạt mục tiêu"
             required
             placeholder="MM/YYYY"
             inputMode="numeric"
             maxLength={7}
-            leftIcon={<MapPin size={16} />}
+            leftIcon={<Calendar size={16} />}
             value={values.targetMonth}
             error={errors.targetMonth}
-            onChange={(event) => onChange({ targetMonth: event.target.value })}
+            onChange={(event) => {
+              const formatted = formatMonthYearInput(event.target.value, values.targetMonth);
+              onChange({ targetMonth: formatted });
+            }}
           />
-          <Input
+          <NumberInput
             label="Số giờ mỗi tuần có thể đầu tư"
             required
-            type="number"
+            placeholder="8"
+            allowDecimals={false}
+            allowNegative={false}
             min={1}
-            step={1}
-            inputMode="numeric"
-            placeholder="giờ/tuần"
+            max={168}
             value={values.hoursPerWeek}
             error={errors.hoursPerWeek}
             onChange={(event) => onChange({ hoursPerWeek: event.target.value })}
@@ -203,7 +211,7 @@ export const RoadmapSetup: React.FC<Props> = ({
       {askReason && (
         <section className="roadmap-block roadmap-tone-violet">
           <h2 className="roadmap-block-title">Lý do tạo lại</h2>
-          <div className="roadmap-fields">
+          <div className="roadmap-field-row">
             <Select
               label="Lý do tạo lại"
               required

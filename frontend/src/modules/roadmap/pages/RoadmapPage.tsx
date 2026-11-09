@@ -373,7 +373,16 @@ export const RoadmapPage: React.FC = () => {
           submitLabel={active ? 'Tạo lại lộ trình' : 'Tạo lộ trình'}
           askReason={Boolean(active)}
           nameOf={careerName}
-          onChange={(patch) => setValues((prev) => ({ ...prev, ...patch }))}
+          onChange={(patch) => {
+            setValues((prev) => ({ ...prev, ...patch }));
+            setErrors((prev) => {
+              const next = { ...prev };
+              for (const k of Object.keys(patch) as (keyof typeof prev)[]) {
+                delete next[k];
+              }
+              return next;
+            });
+          }}
           onFillFromProfile={fillFromProfile}
           onSubmit={() => void submitSetup()}
           onCancel={active ? () => setTab('lo-trinh') : undefined}

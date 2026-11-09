@@ -9,6 +9,7 @@ import {
   Card,
   DataTable,
   Input,
+  NumberInput,
   PageHero,
   Select,
   Skeleton,
@@ -228,7 +229,7 @@ const ProgramList: React.FC<{ programs: ProgramSummary[]; show: 'institution' | 
         {typeOptions.length > 1 && <Select label="Hệ đào tạo" emptyLabel="Tất cả" options={typeOptions} value={draft.programType} onChange={(value) => patch({ programType: value })} />}
         {facultyOptions.length > 1 && <SearchableSelect label="Khoa" placeholder="Tất cả" options={facultyOptions} value={draft.faculty} onChange={(value) => patch({ faculty: value })} />}
         {show === 'institution' && cityOptions.length > 1 && <SearchableSelect label="Tỉnh/thành" placeholder="Tất cả" options={cityOptions} value={draft.city} onChange={(value) => patch({ city: value })} />}
-        <Input label="Học phí tối đa (triệu/kỳ)" inputMode="decimal" value={draft.tuitionMax} onChange={(event) => patch({ tuitionMax: event.target.value })} />
+        <NumberInput label="Học phí tối đa (triệu/kỳ)" decimals={1} max={1000} value={draft.tuitionMax} onChange={(event) => patch({ tuitionMax: event.target.value })} />
       </FilterBar>
 
       {notice && <Alert variant="info">{notice}</Alert>}

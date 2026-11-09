@@ -308,18 +308,18 @@ export const RoadmapPage: React.FC = () => {
   const addMilestone = (input: AddInput) =>
     active
       ? run(
-          () =>
-            callRpc('add_roadmap_milestone', {
-              p_roadmap_id: active.id,
-              p_pillar: input.pillar,
-              p_title: input.title,
-              p_due_date: input.due || null,
-              p_weight: 1,
-              p_is_checkpoint: input.checkpoint,
-              p_pass_criteria: input.passCriteria || null,
-            }),
-          'Không thêm được. Nhập nội dung và hạn.',
-        )
+        () =>
+          callRpc('add_roadmap_milestone', {
+            p_roadmap_id: active.id,
+            p_pillar: input.pillar,
+            p_title: input.title,
+            p_due_date: input.due || null,
+            p_weight: 1,
+            p_is_checkpoint: input.checkpoint,
+            p_pass_criteria: input.passCriteria || null,
+          }),
+        'Không thêm được. Nhập nội dung và hạn.',
+      )
       : Promise.resolve();
 
   const tabs: TabItem[] = [

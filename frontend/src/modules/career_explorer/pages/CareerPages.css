@@ -13,8 +13,18 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(calc(220 * var(--px)), 1fr));
   gap: var(--space-3) var(--space-4);
-  align-items: end;
+  align-items: start;
   min-width: 0;
+}
+
+.module-form > .module-actions {
+  padding-top: calc(var(--font-size-sm) * 1.4 + var(--space-1));
+}
+
+@media (max-width: 640px) {
+  .module-form > .module-actions {
+    padding-top: var(--space-2);
+  }
 }
 
 .module-actions {

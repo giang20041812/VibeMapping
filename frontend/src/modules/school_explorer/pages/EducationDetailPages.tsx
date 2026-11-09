@@ -84,7 +84,7 @@ function matchesProgram(p: ProgramSummary, f: ProgramFilter, show: 'institution'
   if (f.faculty && p.faculty !== f.faculty) return false;
   if (f.city && p.city !== f.city) return false;
   const max = Number(f.tuitionMax.replace(',', '.'));
-  if (f.tuitionMax.trim() && max > 0 && (p.tuitionMin === null || p.tuitionMin > max * 1_000_000)) return false;
+  if (f.tuitionMax.trim() && Number.isFinite(max) && max >= 0 && (p.tuitionMin === null || p.tuitionMin > max * 1_000_000)) return false;
   return true;
 }
 
@@ -250,6 +250,7 @@ const tuitionRange = (programs: ProgramSummary[]): string => {
   const fmt = (v: number) => (v / 1_000_000).toLocaleString('vi-VN', { maximumFractionDigits: 1 });
   const low = Math.min(...lows);
   const high = Math.max(...programs.map((p) => p.tuitionMax ?? p.tuitionMin ?? 0));
+  if (low === 0 && high === 0) return 'Miễn học phí';
   return low === high ? `${fmt(low)} triệu` : `${fmt(low)}–${fmt(high)} triệu`;
 };
 

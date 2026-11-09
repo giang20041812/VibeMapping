@@ -47,18 +47,75 @@ export function isInviteLocked(profile: UserProfile | null): boolean {
   return age !== null && age < GUARDIAN_AGE && !profile?.guardian_consent_confirmed;
 }
 
-/** dd/mm/yyyy -> yyyy-mm-dd; trả về null nếu không hợp lệ */
+/** dd/mm/yyyy (hoặc ddmmyyyy) -> yyyy-mm-dd; trả về null nếu không hợp lệ */
 export function parseVietnameseDate(value: string): string | null {
-  const match = value.trim().match(/^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{4})$/);
-  if (!match) return null;
-  const [, d, m, y] = match;
-  const day = Number(d);
-  const month = Number(m);
-  const year = Number(y);
+  const trimmed = value.trim();
+  let day: number;
+  let month: number;
+  let year: number;
+
+  const matchDelimited = trimmed.match(/^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{4})$/);
+  if (matchDelimited) {
+    day = Number(matchDelimited[1]);
+    month = Number(matchDelimited[2]);
+    year = Number(matchDelimited[3]);
+  } else {
+    const matchRawDigits = trimmed.match(/^(\d{2})(\d{2})(\d{4})$/);
+    if (!matchRawDigits) return null;
+    day = Number(matchRawDigits[1]);
+    month = Number(matchRawDigits[2]);
+    year = Number(matchRawDigits[3]);
+  }
+
   const date = new Date(year, month - 1, day);
   if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return null;
   if (date > new Date() || year < 1900) return null;
   return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+/** Tự động định dạng ngày sinh dd/mm/yyyy khi người dùng gõ số */
+export function formatDateInput(value: string, prevValue = ''): string {
+  const digits = value.replace(/\D/g, '').slice(0, 8);
+
+  // Nếu đã đủ 8 chữ số (vd người dùng dán '18122004' hoặc gõ xong năm)
+  if (digits.length === 8) {
+    return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`;
+  }
+
+  // Trường hợp người dùng đang bấm Backspace / xóa
+  if (value.length < prevValue.length) {
+    if (prevValue.endsWith('/') && value === prevValue.slice(0, -1)) {
+      return value.slice(0, -1);
+    }
+    return value;
+  }
+
+  // Người dùng chủ động gõ dấu '/' sau 1 chữ số ngày hoặc tháng (vd: 5/ -> 05/)
+  if (value.endsWith('/')) {
+    const parts = value.split('/').filter((p, i, arr) => i < arr.length - 1 || p.length > 0);
+    if (parts.length === 1 && /^\d$/.test(parts[0])) {
+      return `0${parts[0]}/`;
+    }
+    if (parts.length === 2 && /^\d$/.test(parts[1])) {
+      return `${parts[0]}/0${parts[1]}/`;
+    }
+  }
+
+  if (!digits) return '';
+
+  if (digits.length < 2) {
+    return digits;
+  }
+  if (digits.length === 2) {
+    return `${digits}/`;
+  }
+  if (digits.length < 4) {
+    return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  }
+  if (digits.length === 4) {
+    return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/`;
+  }
+  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`;
 }
 
 export function formatVietnameseDate(isoDate: string | null): string {

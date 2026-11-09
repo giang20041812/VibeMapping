@@ -19,6 +19,7 @@ import {
   weightedMean,
 } from '../src/domain/assessmentRules';
 import { generateRoadmapFromLibrary } from '../src/domain/roadmapGeneration';
+import { parseTuition } from '../../supabase/scripts/tuition-parser';
 
 function assertEqual<T>(actual: T, expected: T, message?: string): void {
   if (actual !== expected) {
@@ -229,6 +230,43 @@ check('R14, BR-016, M06, M07: Trust Index trừ thời gian nghỉ > 120s, Lệc
   });
   assertEqual(generated.some((m) => m.pillar === 'knowledge'), true);
   assertEqual(generated.some((m) => m.isCheckpoint), true);
+});
+
+check('M05 & M06 mới: Tách số học phí (kỳ, năm, tổng khóa, tín chỉ, miễn) & công thức so sánh phương án mới', () => {
+  const M = 1_000_000;
+  assertDeepEqual(parseTuition('- Học phí 1 kỳ học: 15 – 18 triệu đồng', 4).perYear, [30 * M, 36 * M]);
+  assertDeepEqual(parseTuition('Học phí 1 năm học (khóa 2026): 27,38 triệu đồng', 4).perYear, [27.38 * M, 27.38 * M]);
+  const totalParsed = parseTuition('- Tổng học phí 4 năm: 120 triệu đồng', 4);
+  assertEqual(totalParsed.basis, 'total');
+  assertEqual(totalParsed.isEstimate, true);
+  assertDeepEqual(totalParsed.perYear, [30 * M, 30 * M]);
+  const creditParsed = parseTuition('Đơn giá 2026-2027: 500.000 đ/tín chỉ; khung CTĐT 140 TC', 4);
+  assertEqual(creditParsed.basis, 'credit');
+  assertEqual(creditParsed.isEstimate, true);
+  assertDeepEqual(creditParsed.perYear, [17.5 * M, 17.5 * M]);
+  assertEqual(parseTuition('- Học phí 1 kỳ học: 0 VNĐ. Có hỗ trợ sinh hoạt phí', 4).status, 'free');
+
+  // Công thức so sánh mới: thang 30 và thang 1200, chấm tài chính tương đối khi không nhập ngân sách, chấm thành phố ưu tiên
+  const noBudget = compareDecisionOptions(
+    [
+      { id: 'P1', title: 'Trường A', admissionFloor: 30, learnerScore: 28, tuitionPerYear: 20, careerFitPercent: 80, locationScore: null, city: 'TP.HCM' },
+      { id: 'P2', title: 'Trường B', admissionFloor: 900, learnerScore: 950, tuitionPerYear: 40, careerFitPercent: 75, locationScore: null, city: 'Hà Nội' },
+    ],
+    { careerFit: 3, admission: 3, finance: 2, location: 1 },
+    null,
+    'TP.HCM',
+  );
+  // P2 đạt ngưỡng (MET) nên xếp hạng 1 trên P1 (NOT_MET)
+  assertEqual(noBudget[0].id, 'P2');
+  assertEqual(noBudget[0].financeScore, 50); // 20 / 40 * 100 = 50
+  assertEqual(noBudget[0].locationScore, 0); // Hà Nội != TP.HCM
+  assertEqual(noBudget[0].criteriaCount, 4);
+
+  assertEqual(noBudget[1].id, 'P1');
+  assertEqual(noBudget[1].financeScore, 100); // Rẻ nhất nhóm = 100
+  assertEqual(noBudget[1].locationScore, 100); // Cùng TP.HCM = 100
+  // Thang 30 thiếu 2 điểm: 100 - (2/30)*450 = 70; trung bình có trọng số = (80*3 + 70*3 + 100*2 + 100*1)/9 = 750/9 = 83.3
+  assertEqual(noBudget[1].totalScore, 83.3);
 });
 
 if (failed > 0) {

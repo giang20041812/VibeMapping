@@ -1,10 +1,13 @@
-/* Thanh điều hướng ngang dính ở đầu trang: trắng đặc, viền dưới mảnh */
+/* Thanh điều hướng ngang dính ở đầu trang: nền kính mờ hiện đại, viền dưới mảnh */
 .topbar {
   position: sticky;
   top: 0;
   z-index: var(--z-sticky);
   background: var(--topbar-bg);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
   box-shadow: var(--topbar-shadow);
+  transition: box-shadow var(--transition-normal), background-color var(--transition-normal);
 }
 
 .topbar-inner {
@@ -22,6 +25,8 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  margin-left: calc(var(--space-2) * -1);
   white-space: nowrap;
   text-decoration: none;
   font-size: var(--font-size-xl);
@@ -29,56 +34,139 @@
   line-height: 1;
   letter-spacing: -0.02em;
   border-radius: var(--radius-md);
+  transition: transform var(--transition-normal), background-color var(--transition-fast);
 }
-.topbar-brand:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
-.topbar-brand-mark { flex: none; display: block; width: 36px; height: 36px; }
-.topbar-brand-mark .logo-svg { display: block; }
-.topbar-brand-text { display: inline-flex; align-items: baseline; gap: 0.28em; }
-.topbar-brand-vibe { color: var(--color-primary); }
-.topbar-brand-mapping { color: var(--logo-a); }
 
-/* Các mục: chữ, gạch chân ở mục đang chọn */
+.topbar-brand:hover {
+  background: var(--sidebar-hover-bg);
+}
+
+.topbar-brand:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.topbar-brand-mark {
+  flex: none;
+  display: block;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-xs);
+  transition: transform var(--transition-normal) var(--ease-spring), box-shadow var(--transition-normal);
+}
+
+.topbar-brand:hover .topbar-brand-mark {
+  transform: scale(1.08) rotate(-4deg);
+  box-shadow: var(--shadow-sm);
+}
+
+.topbar-brand-mark .logo-svg {
+  display: block;
+}
+
+.topbar-brand-text {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.28em;
+}
+
+.topbar-brand-vibe {
+  color: var(--color-primary);
+}
+
+.topbar-brand-mapping {
+  color: var(--logo-a);
+  transition: color var(--transition-fast);
+}
+
+.topbar-brand:hover .topbar-brand-mapping {
+  color: var(--brand-sky);
+}
+
+/* Các mục điều hướng ở giữa: bo mềm, nâng nhẹ khi rê chuột và vạch chân co giãn mượt */
 .topbar-links {
   display: flex;
   justify-content: center;
-  align-items: stretch;
-  align-self: stretch;
+  align-items: center;
   gap: var(--space-1);
   min-width: 0;
   overflow-x: auto;
   scrollbar-width: none;
 }
-.topbar-links::-webkit-scrollbar { display: none; }
+
+.topbar-links::-webkit-scrollbar {
+  display: none;
+}
 
 .topbar-link {
   position: relative;
   flex: none;
   display: inline-flex;
   align-items: center;
+  height: var(--control-height-md);
   padding: 0 var(--space-4);
   font-size: var(--font-size-md);
   font-weight: 600;
   white-space: nowrap;
   text-decoration: none;
   color: var(--color-text-secondary);
-  transition: color var(--transition-fast);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  transition:
+    color var(--transition-normal),
+    background var(--transition-normal),
+    border-color var(--transition-normal),
+    box-shadow var(--transition-normal),
+    transform var(--transition-normal);
 }
-.topbar-link:hover { color: var(--color-text-main); }
-.topbar-link:focus-visible { outline: 2px solid var(--color-primary); outline-offset: -2px; }
+
+.topbar-link:hover {
+  color: var(--color-text-main);
+  background: var(--sidebar-hover-bg);
+  transform: translateY(-1px);
+}
+
+.topbar-link:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.topbar-link:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
 .topbar-link::after {
   content: '';
   position: absolute;
   left: var(--space-4);
   right: var(--space-4);
-  bottom: 0;
+  bottom: 4px;
   height: 3px;
   background: var(--gradient-brand);
   border-radius: var(--radius-full);
   transform: scaleX(0);
-  transition: transform var(--transition-normal);
+  opacity: 0;
+  transition: transform var(--transition-normal) var(--ease-spring), opacity var(--transition-normal);
 }
-.topbar-link.is-active { color: var(--color-text-main); }
-.topbar-link.is-active::after { transform: scaleX(1); }
+
+.topbar-link:hover::after {
+  transform: scaleX(0.45);
+  opacity: 0.45;
+}
+
+.topbar-link.is-active {
+  color: var(--color-primary);
+  font-weight: 700;
+  background: var(--sidebar-active-bg);
+  border-color: var(--brand-pale);
+  box-shadow: var(--shadow-xs);
+}
+
+.topbar-link.is-active::after {
+  transform: scaleX(1);
+  opacity: 1;
+}
 
 .topbar-end {
   justify-self: end;
@@ -88,35 +176,74 @@
 }
 
 .topbar-toggle,
-.topbar-scrim { display: none; }
+.topbar-scrim {
+  display: none;
+}
 
 /* Điện thoại / máy tính bảng dọc: các mục xổ xuống dưới thanh */
 @media (max-width: 900px) {
-  .topbar-inner { display: flex; gap: var(--space-3); }
-  .topbar-end { margin-left: auto; }
+  .topbar-inner {
+    display: flex;
+    gap: var(--space-3);
+  }
+
+  .topbar-end {
+    margin-left: auto;
+  }
+
   .topbar-links {
     position: absolute;
     top: 100%;
     left: 0;
     right: 0;
     flex-direction: column;
-    align-self: auto;
+    align-items: stretch;
     max-height: calc(100dvh - var(--topbar-height) - var(--safe-top));
     padding: var(--space-2) calc(var(--page-gutter) + var(--safe-left)) calc(var(--space-3) + var(--safe-bottom));
     overflow-y: auto;
     background: var(--topbar-bg);
-    box-shadow: var(--topbar-shadow);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border-bottom: 1px solid var(--color-border);
+    border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+    box-shadow: var(--shadow-lg);
     visibility: hidden;
     opacity: 0;
-    transform: translateY(-6px);
-    transition: opacity var(--transition-fast), transform var(--transition-fast), visibility var(--transition-fast);
+    transform: translateY(-10px) scale(0.98);
+    transform-origin: top center;
+    transition:
+      opacity var(--transition-normal),
+      transform var(--transition-normal) var(--ease-out),
+      visibility var(--transition-normal);
   }
-  .topbar.is-open .topbar-links { visibility: visible; opacity: 1; transform: none; }
 
-  .topbar-link { min-height: var(--touch-target); padding: 0 var(--space-3); border-radius: var(--radius-md); }
-  .topbar-link:hover { background: var(--color-bg-subtle); }
-  .topbar-link::after { display: none; }
-  .topbar-link.is-active { color: var(--color-text-brand); background: var(--brand-ice); }
+  .topbar.is-open .topbar-links {
+    visibility: visible;
+    opacity: 1;
+    transform: none;
+  }
+
+  .topbar-link {
+    min-height: var(--touch-target);
+    height: auto;
+    padding: 0 var(--space-3);
+    border-radius: var(--radius-md);
+  }
+
+  .topbar-link:hover {
+    background: var(--sidebar-hover-bg);
+    transform: translateX(3px);
+  }
+
+  .topbar-link::after {
+    display: none;
+  }
+
+  .topbar-link.is-active {
+    color: var(--color-text-brand);
+    background: var(--sidebar-active-bg);
+    border-color: var(--brand-pale);
+  }
 
   .topbar-toggle {
     display: inline-flex;
@@ -125,10 +252,24 @@
     width: var(--touch-target);
     height: var(--touch-target);
     color: var(--color-text-main);
+    border: 1px solid transparent;
     border-radius: var(--radius-md);
+    transition: background-color var(--transition-fast), transform var(--transition-fast), border-color var(--transition-fast);
   }
-  .topbar-toggle:hover { background: var(--color-bg-subtle); }
-  .topbar-toggle:focus-visible { outline: 3px solid var(--color-primary-ring); outline-offset: 2px; }
+
+  .topbar-toggle:hover {
+    background: var(--color-bg-subtle);
+    border-color: var(--color-border);
+  }
+
+  .topbar-toggle:active {
+    transform: scale(0.95);
+  }
+
+  .topbar-toggle:focus-visible {
+    outline: 3px solid var(--color-primary-ring);
+    outline-offset: 2px;
+  }
 
   .topbar-scrim {
     display: block;
@@ -136,10 +277,25 @@
     inset: 0;
     z-index: calc(var(--z-sticky) - 1);
     background: var(--scrim);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    animation: topbar-scrim-in var(--transition-normal) both;
+  }
+}
+
+@keyframes topbar-scrim-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
   }
 }
 
 /* Điện thoại hẹp: chỉ giữ biểu tượng để nút đăng nhập, đăng ký và menu vừa một hàng */
 @media (max-width: 520px) {
-  .topbar-brand-text { display: none; }
+  .topbar-brand-text {
+    display: none;
+  }
 }

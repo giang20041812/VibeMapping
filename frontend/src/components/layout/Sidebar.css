@@ -27,6 +27,7 @@
   height: var(--top-space);
   padding: 0 var(--space-3) 0 var(--space-4);
 }
+
 .sidebar-top::after {
   content: '';
   position: absolute;
@@ -52,10 +53,16 @@
   border-radius: var(--radius-md);
   transition: transform var(--transition-normal), background-color var(--transition-fast);
 }
+
 .sidebar-brand:hover {
   background: var(--sidebar-hover-bg);
 }
-.sidebar-brand:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+
+.sidebar-brand:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 .sidebar-brand-mark {
   flex: none;
   display: block;
@@ -65,16 +72,38 @@
   box-shadow: var(--shadow-xs);
   transition: transform var(--transition-normal) var(--ease-spring), box-shadow var(--transition-normal);
 }
+
 .sidebar-brand:hover .sidebar-brand-mark {
   transform: scale(1.08) rotate(-4deg);
   box-shadow: var(--shadow-sm);
 }
-.sidebar-brand-mark .logo-svg { display: block; }
-.sidebar-brand-text { display: inline-flex; align-items: baseline; gap: 0.28em; }
-.sidebar-brand-vibe { color: var(--color-primary); }
-.sidebar-brand-mapping { color: var(--logo-a); transition: color var(--transition-fast); }
-.sidebar-brand:hover .sidebar-brand-mapping { color: var(--brand-sky); }
-.sidebar-close { display: none; }
+
+.sidebar-brand-mark .logo-svg {
+  display: block;
+}
+
+.sidebar-brand-text {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.28em;
+}
+
+.sidebar-brand-vibe {
+  color: var(--color-primary);
+}
+
+.sidebar-brand-mapping {
+  color: var(--logo-a);
+  transition: color var(--transition-fast);
+}
+
+.sidebar-brand:hover .sidebar-brand-mapping {
+  color: var(--brand-sky);
+}
+
+.sidebar-close {
+  display: none;
+}
 
 .sidebar-nav {
   display: flex;
@@ -103,6 +132,7 @@
     box-shadow var(--transition-normal),
     transform var(--transition-normal);
 }
+
 /* Vạch dọc xanh ở mép trái với hiệu ứng bung mượt */
 .sidebar-link::before {
   content: '';
@@ -117,15 +147,22 @@
   opacity: 0;
   transition: transform var(--transition-normal) var(--ease-spring), opacity var(--transition-normal);
 }
+
 .sidebar-link:hover {
   color: var(--sidebar-text-strong);
   background: var(--sidebar-hover-bg);
   transform: translateX(3px);
 }
+
 .sidebar-link:active {
   transform: translateX(1px) scale(0.99);
 }
-.sidebar-link:focus-visible { outline: 2px solid var(--color-primary); outline-offset: -2px; }
+
+.sidebar-link:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
 .sidebar-link.is-active {
   color: var(--sidebar-active-text);
   font-weight: 700;
@@ -133,9 +170,11 @@
   border-color: var(--brand-pale);
   box-shadow: var(--sidebar-active-shadow);
 }
+
 .sidebar-link.is-active:hover {
   transform: translateX(2px);
 }
+
 .sidebar-link.is-active::before {
   transform: scaleY(1);
   opacity: 1;
@@ -157,11 +196,13 @@
     color var(--transition-normal),
     box-shadow var(--transition-normal);
 }
+
 .sidebar-link:hover .sidebar-link-icon {
   color: var(--color-primary);
   background: var(--brand-mist);
   transform: scale(1.08);
 }
+
 .sidebar-link.is-active .sidebar-link-icon {
   color: var(--color-text-inverse);
   background: var(--gradient-brand);
@@ -177,13 +218,31 @@
   transition: transform var(--transition-normal);
 }
 
-.nav-icon-fill { fill: currentColor; fill-opacity: 0.2; transition: fill-opacity var(--transition-fast); }
-.nav-icon-inner { fill: currentColor; fill-opacity: 0.35; stroke-width: 1.3; }
-.nav-icon-axis { stroke-width: 1.2; opacity: 0.8; }
-.sidebar-link.is-active .nav-icon-fill { fill-opacity: 0.35; }
+.nav-icon-fill {
+  fill: currentColor;
+  fill-opacity: 0.2;
+  transition: fill-opacity var(--transition-fast);
+}
+
+.nav-icon-inner {
+  fill: currentColor;
+  fill-opacity: 0.35;
+  stroke-width: 1.3;
+}
+
+.nav-icon-axis {
+  stroke-width: 1.2;
+  opacity: 0.8;
+}
+
+.sidebar-link.is-active .nav-icon-fill {
+  fill-opacity: 0.35;
+}
 
 .sidebar-toggle,
-.sidebar-scrim { display: none; }
+.sidebar-scrim {
+  display: none;
+}
 
 /* Điện thoại / máy tính bảng dọc: ẩn hẳn, trượt ra từ mép trái */
 @media (max-width: 900px) {
@@ -194,7 +253,12 @@
     visibility: hidden;
     transition: transform var(--transition-slow), visibility var(--transition-slow), box-shadow var(--transition-slow);
   }
-  .sidebar.is-open { transform: none; visibility: visible; box-shadow: var(--shadow-lg); }
+
+  .sidebar.is-open {
+    transform: none;
+    visibility: visible;
+    box-shadow: var(--shadow-lg);
+  }
 
   .sidebar-close {
     display: inline-flex;
@@ -206,7 +270,11 @@
     border-radius: var(--radius-md);
     transition: background-color var(--transition-fast), transform var(--transition-fast);
   }
-  .sidebar-close:hover { background: var(--sidebar-hover-bg); transform: rotate(90deg); }
+
+  .sidebar-close:hover {
+    background: var(--sidebar-hover-bg);
+    transform: rotate(90deg);
+  }
 
   .sidebar-toggle {
     position: fixed;
@@ -227,13 +295,21 @@
     box-shadow: var(--shadow-sm);
     transition: background-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
   }
+
   .sidebar-toggle:hover {
     background: var(--color-bg-surface);
     box-shadow: var(--shadow-md);
     transform: translateY(-1px);
   }
-  .sidebar-toggle:active { transform: translateY(0) scale(0.96); }
-  .sidebar-toggle:focus-visible { outline: 3px solid var(--color-primary-ring); outline-offset: 2px; }
+
+  .sidebar-toggle:active {
+    transform: translateY(0) scale(0.96);
+  }
+
+  .sidebar-toggle:focus-visible {
+    outline: 3px solid var(--color-primary-ring);
+    outline-offset: 2px;
+  }
 
   .sidebar-scrim {
     display: block;
@@ -248,13 +324,22 @@
 }
 
 @keyframes sidebar-scrim-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 /* Màn hình làm bài: ẩn nút mở menu để tập trung vào câu hỏi */
-.app-shell.is-focus .sidebar-toggle { display: none; }
+.app-shell.is-focus .sidebar-toggle {
+  display: none;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .sidebar { transition: none; }
+  .sidebar {
+    transition: none;
+  }
 }

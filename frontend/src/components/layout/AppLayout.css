@@ -33,11 +33,20 @@
 }
 
 @keyframes page-enter {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Điện thoại: thanh bên ẩn hẳn nên không chừa cột */
 @media (max-width: 900px) {
-  .app-main-content { padding-left: 0; }
+  .app-main-content {
+    padding-left: 0;
+  }
 }

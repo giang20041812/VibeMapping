@@ -46,17 +46,19 @@
     linear-gradient(rgba(79, 70, 229, 0.05) 1px, transparent 1px) 0 0 / 40px 40px,
     linear-gradient(90deg, rgba(79, 70, 229, 0.05) 1px, transparent 1px) 0 0 / 40px 40px;
 
-  /* Thanh bên và thanh ngang: trắng đặc, viền mảnh */
-  --sidebar-bg: var(--color-bg-surface);
+  /* Thanh bên và thanh ngang: nền kính mờ hiện đại, viền mảnh, bóng dịu */
+  --sidebar-bg: rgba(255, 255, 255, 0.92);
   --sidebar-border: var(--color-border);
+  --sidebar-shadow: 4px 0 24px -12px rgba(67, 56, 202, 0.08);
   --sidebar-text: var(--color-text-secondary);
   --sidebar-text-strong: var(--color-text-main);
   --sidebar-hover-bg: var(--brand-ice);
-  --sidebar-active-bg: linear-gradient(90deg, var(--brand-mist) 0%, var(--brand-ice) 100%);
+  --sidebar-active-bg: linear-gradient(100deg, var(--brand-mist) 0%, var(--brand-ice) 100%);
   --sidebar-active-text: var(--color-primary);
+  --sidebar-active-shadow: 0 4px 12px -4px rgba(79, 70, 229, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.8);
   --sidebar-ring: var(--color-primary-ring);
-  --topbar-bg: var(--color-bg-surface);
-  --topbar-shadow: 0 1px 0 var(--color-border);
+  --topbar-bg: rgba(255, 255, 255, 0.88);
+  --topbar-shadow: 0 1px 0 var(--color-border), 0 8px 24px -12px rgba(67, 56, 202, 0.08);
 
   /* Khối thương hiệu trang đăng nhập: xanh sáng phẳng, chấm trắng mờ */
   --auth-hero-bg:

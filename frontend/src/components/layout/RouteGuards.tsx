@@ -1,0 +1,70 @@
+import React from 'react';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { LogoMark } from '../common';
+import { useAuth } from '../../modules/auth/AuthContext';
+import type { UserRole } from '../../modules/auth/auth.types';
+import { isLearnerRole, isProfileComplete } from '../../modules/profile/profile.logic';
+import { PageSkeleton } from './PageSkeleton';
+import './RouteGuards.css';
+
+const FullPageLoader: React.FC = () => (
+  <div className="full-page-loader" role="status" aria-label="Đang tải">
+    <div className="full-page-loader-mark">
+      <LogoMark animated />
+    </div>
+  </div>
+);
+
+/** Chỉ cho người đã có tài khoản; khách (chưa đăng nhập hoặc tài khoản ẩn danh) thì chuyển về trang đăng nhập */
+export const RequireAuth: React.FC = () => {
+  const { isGuest, isLoading } = useAuth();
+  const location = useLocation();
+  if (isLoading) return <FullPageLoader />;
+  if (isGuest) return <Navigate to="/dang-nhap" replace state={{ from: location.pathname }} />;
+  return <Outlet />;
+};
+
+/** Cho mọi phiên đang có, kể cả tài khoản ẩn danh của khách đang làm bài test; chưa có phiên thì chuyển về trang đăng nhập */
+export const RequireSession: React.FC = () => {
+  const { session, isLoading } = useAuth();
+  const location = useLocation();
+  if (isLoading) return <FullPageLoader />;
+  if (!session) return <Navigate to="/dang-nhap" replace state={{ from: location.pathname }} />;
+  return <Outlet />;
+};
+
+/** Chỉ cho vai trò được liệt kê (trang quản trị: system_admin); vai trò khác về trang chủ */
+export const RequireRole: React.FC<{ roles: UserRole[] }> = ({ roles }) => {
+  const { profile, isProfileLoading } = useAuth();
+  if (isProfileLoading) return <PageSkeleton />;
+  if (!profile || !roles.includes(profile.role)) return <Navigate to="/" replace />;
+  return <Outlet />;
+};
+
+/**
+ * Học sinh, sinh viên có tài khoản phải khai báo đủ hồ sơ trước khi dùng chức năng đánh giá và lớp học;
+ * khai báo xong thì quay lại đúng trang đang mở. Khách làm bài test thì làm trước, khai báo sau.
+ */
+export const RequireCompleteProfile: React.FC = () => {
+  const { isGuest, profile, isProfileLoading } = useAuth();
+  const location = useLocation();
+  if (isGuest) return <Outlet />;
+  if (isProfileLoading) return <PageSkeleton />;
+  if (profile && isLearnerRole(profile.role) && !isProfileComplete(profile)) {
+    return <Navigate to="/hoan-tat-ho-so" replace state={{ from: location.pathname + location.search }} />;
+  }
+  return <Outlet />;
+};
+
+/** Trang dành cho khách (đăng nhập, đăng ký): đã có tài khoản thì chuyển vào ứng dụng.
+ *  Vừa đăng ký xong thì đưa sang nhập OTP, không về trang chủ. */
+export const GuestOnly: React.FC = () => {
+  const { isGuest, isLoading } = useAuth();
+  if (isLoading) return <FullPageLoader />;
+  if (!isGuest) {
+    const pendingPhone = sessionStorage.getItem('pending-otp-phone');
+    if (pendingPhone) return <Navigate to="/xac-minh-otp" replace state={{ phone: pendingPhone }} />;
+    return <Navigate to="/" replace />;
+  }
+  return <Outlet />;
+};

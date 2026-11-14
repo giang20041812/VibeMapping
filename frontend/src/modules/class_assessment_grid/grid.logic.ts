@@ -1,0 +1,176 @@
+import { normalizeSearchText } from '../../lib/searchText';
+import type { CellValue, GridData, GridQuestion } from './class_assessment_grid.types';
+
+const SCORES = ['1', '2', '3', '4', '5'] as const;
+export const NA_LABEL = 'Không đủ cơ sở';
+
+export interface AnswerOption {
+  value: CellValue;
+  /** Nhãn ngắn hiện trên nút và trong ô */
+  label: string;
+  /** Nguyên văn đáp án khi nhãn ngắn đã lược bớt mô tả */
+  detail?: string;
+}
+
+const SHORT_LABEL_MAX = 48;
+
+/**
+ * Nhãn ngắn của đáp án ngân hàng câu hỏi giáo viên: bỏ số mức ở đầu ("1 - ", "1 điểm - ", "Mức 1:"),
+ * giữ phần trước dấu ":" hoặc ";" (phần sau là mô tả hành vi) và bỏ ghi chú trong ngoặc ở cuối
+ */
+export function shortAnswerLabel(text: string): string {
+  const head = text.trim().replace(/^(mức\s*)?\d\s*(điểm)?\s*[-–:.]\s*/i, '');
+  const cut = head.split(/[:;]/)[0].replace(/\s*\([^)]*\)\s*$/, '').trim() || text.trim();
+  return cut.length > SHORT_LABEL_MAX ? `${cut.slice(0, SHORT_LABEL_MAX - 1).replace(/\s+\S*$/, '')}…` : cut;
+}
+
+/** Đáp án của câu hỏi theo điểm 1–5, rồi "Không đủ cơ sở"; câu không có nhãn đáp án thì hiện điểm */
+export function answerOptions(question: GridQuestion): AnswerOption[] {
+  const labels = question.answer_options ?? [];
+  return [
+    ...SCORES.map((score, index) => {
+      const full = labels[index]?.trim();
+      if (!full) return { value: score as CellValue, label: score };
+      const label = shortAnswerLabel(full);
+      return { value: score as CellValue, label, detail: label === full ? undefined : full };
+    }),
+    { value: 'na', label: NA_LABEL },
+  ];
+}
+
+/** Đáp án theo từng học sinh (mã dòng học sinh), mỗi học sinh một bảng nhỏ theo mã câu hỏi */
+export type ScoreMap = Map<string, Map<string, CellValue>>;
+
+export function toScoreMap(grid: GridData): ScoreMap {
+  const map: ScoreMap = new Map();
+  for (const student of grid.students) {
+    const scores = new Map<string, CellValue>();
+    for (const cell of student.cells) {
+      if (cell.is_insufficient_basis) scores.set(cell.question_id, 'na');
+      else if (cell.score !== null) scores.set(cell.question_id, String(cell.score) as CellValue);
+    }
+    map.set(student.grid_student_id, scores);
+  }
+  return map;
+}
+
+export function cellToDb(value: CellValue): number | 'na' | null {
+  if (value === '') return null;
+  return value === 'na' ? 'na' : Number(value);
+}
+
+/** Hai cột đầu của tệp mẫu chấm điểm; các cột sau là mã câu hỏi */
+export const GRADE_SHEET_HEADERS = ['Mã học sinh', 'Họ và tên'] as const;
+
+const NA_PATTERN = /^(na|n\/a|x|không đủ cơ sở|khong du co so)$/i;
+
+export function parseCellText(text: string): CellValue | null {
+  const value = text.trim();
+  if (value === '') return '';
+  if (/^[1-5]$/.test(value)) return value as CellValue;
+  if (NA_PATTERN.test(value)) return 'na';
+  return null;
+}
+
+export interface GradeSheetStudent {
+  gridStudentId: string;
+  studentCode: string | null;
+  fullName: string;
+}
+
+/** Một ô cần ghi: học sinh × câu hỏi */
+export interface GridChange {
+  gridStudentId: string;
+  questionId: string;
+  value: CellValue;
+}
+
+export interface GradeSheetResult {
+  changes: GridChange[];
+  /** Số học sinh có điểm được nhập */
+  studentCount: number;
+  /** Số ô sai giá trị, bị bỏ qua */
+  invalid: number;
+  /** Số dòng trong tệp không khớp học sinh nào */
+  unmatchedRows: number[];
+}
+
+export class GradeSheetError extends Error {}
+
+/**
+ * Đọc bảng điểm từ tệp mẫu: dòng 1 là tiêu đề (Mã học sinh, Họ và tên, rồi mã từng câu hỏi),
+ * mỗi dòng sau là một học sinh. Dòng khớp học sinh theo mã học sinh, không có mã thì theo họ tên.
+ * Ô để trống giữ nguyên điểm đang có; ô sai giá trị bị bỏ qua và được đếm vào `invalid`.
+ */
+export function parseGradeRows(rows: string[][], students: GradeSheetStudent[], questions: GridQuestion[]): GradeSheetResult {
+  const header = rows[0] ?? [];
+  if (header[0] !== GRADE_SHEET_HEADERS[0] || header[1] !== GRADE_SHEET_HEADERS[1]) {
+    throw new GradeSheetError('Sai mẫu: dòng đầu phải bắt đầu bằng "Mã học sinh" và "Họ và tên".');
+  }
+
+  const questionByCode = new Map(questions.map((item) => [item.question_code.toLowerCase(), item]));
+  const columns = header
+    .map((code, index) => ({ index, item: questionByCode.get(code.trim().toLowerCase()) }))
+    .filter((column) => column.index >= GRADE_SHEET_HEADERS.length && column.item);
+  if (columns.length === 0) throw new GradeSheetError('Không có cột câu hỏi nào khớp với gói đang chấm.');
+
+  const byCode = new Map(students.filter((student) => student.studentCode).map((student) => [student.studentCode!.trim().toLowerCase(), student]));
+  const byName = new Map<string, GradeSheetStudent[]>();
+  for (const student of students) {
+    const key = normalizeSearchText(student.fullName);
+    byName.set(key, [...(byName.get(key) ?? []), student]);
+  }
+
+  const changes: GradeSheetResult['changes'] = [];
+  const matched = new Set<string>();
+  const unmatchedRows: number[] = [];
+  let invalid = 0;
+
+  rows.slice(1).forEach((row, offset) => {
+    const code = (row[0] ?? '').trim().toLowerCase();
+    const name = normalizeSearchText(row[1] ?? '');
+    if (code === '' && name === '') return;
+    const candidates = byName.get(name) ?? [];
+    const student = (code && byCode.get(code)) || (candidates.length === 1 ? candidates[0] : undefined);
+    if (!student) {
+      unmatchedRows.push(offset + 2);
+      return;
+    }
+    for (const column of columns) {
+      const parsed = parseCellText(row[column.index] ?? '');
+      if (parsed === '') continue;
+      if (parsed === null) {
+        invalid += 1;
+        continue;
+      }
+      matched.add(student.gridStudentId);
+      changes.push({ gridStudentId: student.gridStudentId, questionId: column.item!.question_id, value: parsed });
+    }
+  });
+  return { changes, studentCount: matched.size, invalid, unmatchedRows };
+}
+
+/**
+ * Tách văn bản dán từ bảng tính (dòng cách nhau bằng xuống dòng, ô cách nhau bằng tab).
+ * Bỏ dòng trống ở cuối do trình soạn bảng tính thêm vào.
+ */
+export function parsePastedText(text: string): string[][] {
+  const rows = text.replace(/\r/g, '').split('\n').map((line) => line.split('\t'));
+  while (rows.length > 0 && rows[rows.length - 1].every((cell) => cell.trim() === '')) rows.pop();
+  return rows;
+}
+
+/**
+ * Điền xuống: đi từ trên xuống, ô trống nhận đáp án của ô đã trả lời gần nhất phía trên.
+ * Ô trống ở trên cùng (chưa có giá trị nào phía trên) giữ nguyên.
+ */
+export function fillDownChanges(studentIds: string[], questionId: string, scores: ScoreMap): GridChange[] {
+  const changes: GridChange[] = [];
+  let last: CellValue = '';
+  for (const id of studentIds) {
+    const current = scores.get(id)?.get(questionId) ?? '';
+    if (current !== '') last = current;
+    else if (last !== '') changes.push({ gridStudentId: id, questionId, value: last });
+  }
+  return changes;
+}

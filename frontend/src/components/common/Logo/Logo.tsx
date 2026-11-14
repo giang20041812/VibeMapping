@@ -1,0 +1,60 @@
+import React, { useId } from 'react';
+import { LOGO_CAP, LOGO_DOTS, LOGO_PIN } from './logoPaths';
+import './Logo.css';
+
+export interface LogoProps {
+  variant?: 'mark' | 'full' | 'stacked';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'hero';
+  tone?: 'default' | 'inverse';
+  animated?: boolean;
+  className?: string;
+}
+
+/** Hình tròn navy: mũ cử nhân, dây mũ nối các chấm lộ trình tới ghim định vị.
+ *  `draw`: vẽ nét viền hình tròn và mũ trước rồi mới tô màu, sau đó các chấm và ghim hiện ra. */
+export const LogoMark: React.FC<{ animated?: boolean; draw?: boolean }> = ({ animated = false, draw = false }) => {
+  const gradientId = `logo-gradient-${useId().replace(/:/g, '')}`;
+  return (
+  <svg
+    className={`logo-svg ${animated ? 'is-animated' : ''} ${draw ? 'is-drawing' : ''}`}
+    viewBox="0 0 1600 1600"
+    role="img"
+    aria-label="Vibe Mapping"
+  >
+    <defs>
+      <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" className="logo-stop-a" />
+        <stop offset="1" className="logo-stop-b" />
+      </linearGradient>
+    </defs>
+    <circle className="logo-disc" fill={`url(#${gradientId})`} cx="800" cy="800" r="800" pathLength={1} />
+    <g transform="translate(800 800) scale(1.9)">
+      <path className="logo-cap" d={LOGO_CAP} pathLength={1} />
+      {LOGO_DOTS.map((d, i) => (
+        <path key={i} className="logo-dot" d={d} />
+      ))}
+      <path className="logo-pin" fillRule="evenodd" d={LOGO_PIN} />
+    </g>
+  </svg>
+  );
+};
+
+export const Logo: React.FC<LogoProps> = ({
+  variant = 'full',
+  size = 'md',
+  tone = 'default',
+  animated = false,
+  className = '',
+}) => (
+  <span className={`app-logo logo-${variant} logo-size-${size} logo-tone-${tone} ${className}`}>
+    <span className="logo-mark-box">
+      <LogoMark animated={animated} />
+    </span>
+    {variant !== 'mark' && (
+      <span className="logo-wordmark" aria-hidden="true">
+        <span className="logo-wordmark-vibe">Vibe</span>
+        <span className="logo-wordmark-mapping">Mapping</span>
+      </span>
+    )}
+  </span>
+);

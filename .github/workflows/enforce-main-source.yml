@@ -1,0 +1,17 @@
+name: Kiểm tra nhánh nguồn của main
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  only-from-develop:
+    name: Chỉ develop được gộp vào main
+    runs-on: ubuntu-latest
+    steps:
+      - name: Kiểm tra
+        run: |
+          if [ "${{ github.head_ref }}" != "develop" ]; then
+            echo "::error::Chỉ nhánh develop mới được gộp vào main (hiện tại: ${{ github.head_ref }})"
+            exit 1
+          fi

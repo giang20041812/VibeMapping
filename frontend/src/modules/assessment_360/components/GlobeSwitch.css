@@ -1,0 +1,102 @@
+/* Công tắc có quả địa cầu: không khung nền, quả cầu hòa vào nền trang; màu chỉ hiện khi bật */
+.globe-switch {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-5) var(--space-2) var(--space-2);
+  color: var(--ink-700);
+  border: 1px solid var(--ink-200);
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  transition: border-color var(--transition-slow), box-shadow var(--transition-slow);
+}
+.globe-switch:hover:not(.is-disabled) { border-color: var(--ink-300); }
+.globe-switch.is-on { border-color: var(--ink-300); box-shadow: var(--shadow-md); }
+.globe-switch.is-disabled { cursor: not-allowed; opacity: 0.7; }
+.globe-switch:has(.globe-switch-input:focus-visible) { outline: 3px solid var(--color-primary-ring); outline-offset: 3px; }
+
+.globe-switch-input { position: absolute; inset: 0; z-index: 3; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: inherit; }
+
+.globe-switch-globe {
+  position: relative;
+  z-index: 1;
+  width: clamp(88px, 7vw, 132px);
+  aspect-ratio: 1 / 1;
+}
+
+.globe-switch-body { position: relative; z-index: 1; display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
+.globe-switch-title { font-size: var(--font-size-lg); font-weight: 800; line-height: 1.25; color: var(--color-text-main); }
+.globe-switch-state {
+  align-self: flex-start;
+  padding: 2px var(--space-3);
+  font-size: var(--font-size-sm);
+  font-weight: 800;
+  color: var(--ink-500);
+  background: var(--ink-wash);
+  border: 1px solid var(--ink-200);
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-slow), background-color var(--transition-slow), border-color var(--transition-slow);
+}
+.globe-switch.is-on .globe-switch-state {
+  color: var(--color-success-text);
+  background: var(--color-success-bg);
+  border-color: var(--color-success-border);
+}
+
+.globe-switch-groups { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); margin-top: var(--space-1); }
+.globe-switch-group {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-bottom: var(--space-0-5);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--ink-500);
+  transition: color var(--transition-slow), box-shadow var(--transition-slow);
+}
+.globe-switch-group svg { flex: none; }
+.globe-switch.is-on .globe-switch-group { color: var(--ink-700); }
+.globe-switch.is-on .globe-switch-tone-gold { box-shadow: inset 0 -2px 0 var(--soft-gold); }
+.globe-switch.is-on .globe-switch-tone-cyan { box-shadow: inset 0 -2px 0 var(--soft-cyan); }
+.globe-switch.is-on .globe-switch-tone-violet { box-shadow: inset 0 -2px 0 var(--soft-violet); }
+.globe-switch.is-on .globe-switch-tone-magenta { box-shadow: inset 0 -2px 0 var(--soft-magenta); }
+
+/* Nằm trên lớp ô chọn để bấm được nút bên trong */
+.globe-switch-aside { position: relative; z-index: 4; display: block; min-width: 0; cursor: default; }
+.globe-switch:not(:has(.globe-switch-aside)) { grid-template-columns: auto minmax(0, 1fr) auto; }
+
+/* Công tắc hình chữ nhật, góc vuông */
+.globe-switch-track {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  width: 52px;
+  height: 28px;
+  background: var(--ink-100);
+  border: 1px solid var(--ink-200);
+  border-radius: 999px;
+  transition: background-color var(--transition-slow), border-color var(--transition-slow);
+}
+.globe-switch-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  background: var(--ink-300);
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+  transition: left var(--transition-slow), background-color var(--transition-slow);
+}
+.globe-switch.is-on .globe-switch-track { background: var(--soft-teal); border-color: transparent; }
+.globe-switch.is-on .globe-switch-thumb { left: calc(100% - 23px); background: var(--brand-white); }
+
+@media (max-width: 760px) {
+  .globe-switch { gap: var(--space-3); padding: var(--space-2) var(--space-4) var(--space-2) var(--space-2); }
+  .globe-switch-globe { width: 80px; }
+  .globe-switch-groups { display: none; }
+  .globe-switch:has(.globe-switch-aside) { grid-template-columns: auto minmax(0, 1fr) auto; }
+  .globe-switch-aside { grid-column: 1 / -1; grid-row: 2; }
+}

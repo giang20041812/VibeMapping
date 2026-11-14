@@ -1,0 +1,68 @@
+/* ====================================================================
+   GLOBAL UTILITIES & LAYOUT
+   ==================================================================== */
+
+/* Khung trang: phủ toàn bộ chiều ngang, lề co giãn theo màn hình */
+.app-container {
+  width: 100%;
+  padding-left: var(--page-gutter);
+  padding-right: var(--page-gutter);
+}
+
+/* Responsive Table Wrapper - No horizontal overflow break */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-surface);
+}
+
+/* Custom modern scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-hover);
+  border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* Text Truncation */
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Accessibility screen-reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Tiêu đề một khối nội dung trong trang */
+.section-title {
+  font-size: var(--font-size-2xl);
+  font-weight: 800;
+  line-height: var(--line-tight);
+  letter-spacing: -0.01em;
+  color: var(--color-text-main);
+}

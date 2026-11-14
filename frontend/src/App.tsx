@@ -1,0 +1,191 @@
+import React from 'react';
+import { BrowserRouter, Navigate, Route, Routes, useParams } from 'react-router-dom';
+import { AuthProvider, useAuth } from './modules/auth/AuthContext';
+import { AuthLayout } from './components/layout/AuthLayout';
+import { AppLayout } from './components/layout/AppLayout';
+import { PublicLayout } from './components/layout/PublicLayout';
+import { ShellLayout } from './components/layout/ShellLayout';
+import { GuestOnly, RequireAuth, RequireCompleteProfile, RequireRole, RequireSession } from './components/layout/RouteGuards';
+import { PackageAssignmentsPage } from './modules/admin/pages/PackageAssignmentsPage';
+import { QuestionBankPage } from './modules/admin/pages/QuestionBankPage';
+import { CriteriaPage } from './modules/admin/pages/CriteriaPage';
+import { OperationParametersPage } from './modules/admin/pages/OperationParametersPage';
+import { AuditLogsPage } from './modules/admin/pages/AuditLogsPage';
+import { LoginPage } from './modules/auth/pages/LoginPage';
+import { RegisterPage } from './modules/auth/pages/RegisterPage';
+import { ForgotPasswordPage } from './modules/auth/pages/ForgotPasswordPage';
+import { OtpVerifyPage } from './modules/auth/pages/OtpVerifyPage';
+import { AssessmentResultSamplePage } from './modules/assessment_result/pages/AssessmentResultSamplePage';
+import { NotFoundPage } from './modules/not_found/NotFoundPage';
+import { HomePage } from './modules/home/HomePage';
+import { ProfilePage } from './modules/profile/pages/ProfilePage';
+import { CompleteProfilePage } from './modules/profile/pages/CompleteProfilePage';
+import { GuestTestPage } from './modules/personal_assessment/pages/GuestTestPage';
+import { SchoolExplorerPage } from './modules/school_explorer/pages/SchoolExplorerPage';
+import { MajorExplorerPage } from './modules/major_explorer/pages/MajorExplorerPage';
+import { AssessmentRunPage } from './modules/assessment_session/pages/AssessmentRunPage';
+import { GuestLayout } from './components/layout/GuestLayout';
+import { GuestRolePickerPage } from './modules/guest_assessment/pages/GuestRolePickerPage';
+import { GuestAssessmentPage } from './modules/guest_assessment/pages/GuestAssessmentPage';
+import { Assessment360Page } from './modules/assessment_360/pages/Assessment360Page';
+import { Assessment360SamplePage } from './modules/assessment_360/pages/Assessment360SamplePage';
+import { SchoolsPage } from './modules/class_management/pages/SchoolsPage';
+import { ClassListPage } from './modules/class_management/pages/ClassListPage';
+import { ClassDetailPage } from './modules/class_management/pages/ClassDetailPage';
+import { SkeletonSamplePage } from './modules/dev/SkeletonSamplePage';
+import { CareerListPage } from './modules/career_explorer/pages/CareerListPage';
+import { PublicCareerDetailPage } from './modules/career_explorer/pages/PublicCareerDetailPage';
+import { CareerDetailPage } from './modules/career_explorer/pages/CareerDetailPage';
+import { CareerComparePage } from './modules/career_explorer/pages/CareerComparePage';
+import { DecisionComparePage } from './modules/decision_support/pages/DecisionComparePage';
+import { RoadmapPage } from './modules/roadmap/pages/RoadmapPage';
+import { PortfolioPage } from './modules/portfolio/pages/PortfolioPage';
+import { CommunityPage } from './modules/community/pages/CommunityPage';
+import { GuardianConfirmPage, PrivacyPage } from './modules/privacy/pages/PrivacyPage';
+import { QualitativeReviewPage } from './modules/admin/pages/QualitativeReviewPage';
+import { CommunityAdminPage, ContentLibraryAdminPage } from './modules/admin/pages/AdminModulesPages';
+import { CareerAdminListPage } from './modules/admin/pages/CareerAdminListPage';
+import { CareerAdminDetailPage } from './modules/admin/pages/CareerAdminDetailPage';
+import { ResultHistoryPage } from './modules/assessment_result/pages/ResultHistoryPage';
+import { SharedResultPage } from './modules/privacy/pages/SharedResultPage';
+import { DecisionReportPage, SharedReportsPage } from './modules/decision_support/pages/DecisionReportPage';
+import {
+  CareerEducationMapPage,
+  InstitutionDetailPage,
+  MajorDetailPage,
+  ProgramDetailPage,
+} from './modules/school_explorer/pages/EducationDetailPages';
+
+/** Quản trị hệ thống vào thẳng khu quản trị, giáo viên vào thẳng lớp học */
+const HomeRoute: React.FC = () => {
+  const { profile, isProfileLoading } = useAuth();
+  if (!isProfileLoading && profile?.role === 'system_admin') return <Navigate to="/quan-tri" replace />;
+  if (!isProfileLoading && profile?.role === 'teacher') return <Navigate to="/lop-hoc" replace />;
+  return <HomePage />;
+};
+
+/** Đường dẫn cũ của phiên làm bài */
+const LegacySessionRedirect: React.FC = () => {
+  const { sessionId } = useParams();
+  return <Navigate to={`/danh-gia-ca-nhan/${sessionId}`} replace />;
+};
+
+export const App: React.FC = () => (
+  <BrowserRouter>
+    <AuthProvider>
+      <Routes>
+        <Route element={<GuestOnly />}>
+          <Route element={<AuthLayout />}>
+            <Route path="/dang-nhap" element={<LoginPage />} />
+            <Route path="/dang-ky" element={<RegisterPage />} />
+            <Route path="/quen-mat-khau" element={<ForgotPasswordPage />} />
+          </Route>
+        </Route>
+
+        <Route element={<AuthLayout />}>
+          <Route path="/xac-minh-otp" element={<OtpVerifyPage />} />
+        </Route>
+
+        {/* Thanh điều hướng ngang, không có thanh bên: giới thiệu, ngành nghề, khám phá trường, khách làm bài test và khai báo thông tin sau bài */}
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<HomeRoute />} />
+          <Route path="/nganh-nghe" element={<MajorExplorerPage />} />
+          <Route path="/danh-muc-nghe" element={<CareerListPage publicCatalog />} />
+          <Route path="/danh-muc-nghe/:careerId" element={<PublicCareerDetailPage />} />
+          <Route path="/kham-pha-truong" element={<SchoolExplorerPage />} />
+          <Route path="/kham-pha-truong/truong/:id" element={<InstitutionDetailPage />} />
+          <Route path="/kham-pha-truong/nganh/:id" element={<MajorDetailPage />} />
+          <Route path="/kham-pha-truong/chuong-trinh/:id" element={<ProgramDetailPage />} />
+          <Route path="/lam-bai" element={<GuestTestPage />} />
+          <Route element={<RequireSession />}>
+            <Route path="/hoan-tat-ho-so" element={<CompleteProfilePage />} />
+          </Route>
+        </Route>
+
+        {/* Làm bài: khách (tài khoản ẩn danh) thấy thanh ngang, người có tài khoản thấy thanh bên */}
+        <Route element={<RequireSession />}>
+          <Route element={<ShellLayout />}>
+            <Route element={<RequireCompleteProfile />}>
+              <Route path="/danh-gia-ca-nhan/:sessionId" element={<AssessmentRunPage />} />
+            </Route>
+          </Route>
+        </Route>
+
+        <Route element={<RequireAuth />}>
+          <Route element={<AppLayout />}>
+            <Route path="/ho-so" element={<ProfilePage />} />
+            <Route element={<RequireCompleteProfile />}>
+              <Route path="/danh-gia-360" element={<Assessment360Page />} />
+              <Route path="/nghe" element={<CareerListPage />} />
+              <Route path="/nghe/so-sanh" element={<CareerComparePage />} />
+              <Route path="/nghe/:careerId" element={<CareerDetailPage />} />
+              <Route path="/ban-do/:careerId" element={<CareerEducationMapPage />} />
+              <Route path="/cong-dong" element={<CommunityPage />} />
+              <Route path="/quyen-rieng-tu" element={<PrivacyPage />} />
+              <Route path="/giam-ho/:token" element={<GuardianConfirmPage />} />
+              <Route path="/bao-cao-con/:userId" element={<SharedResultPage />} />
+              <Route path="/bao-cao-quyet-dinh/:reportId" element={<DecisionReportPage />} />
+              <Route element={<RequireRole roles={['student', 'university_student']} />}>
+                <Route path="/so-sanh" element={<DecisionComparePage />} />
+                <Route path="/lo-trinh" element={<RoadmapPage />} />
+                <Route path="/lich-su-ket-qua" element={<ResultHistoryPage />} />
+              </Route>
+              <Route element={<RequireRole roles={['parent']} />}>
+                <Route path="/bao-cao-duoc-chia-se" element={<SharedReportsPage />} />
+              </Route>
+              <Route element={<RequireRole roles={['university_student']} />}>
+                <Route path="/nang-luc" element={<PortfolioPage />} />
+              </Route>
+              <Route element={<RequireRole roles={['student', 'university_student', 'teacher', 'school_admin']} />}>
+                <Route path="/lop-hoc" element={<ClassListPage />} />
+              </Route>
+            </Route>
+            <Route element={<RequireRole roles={['teacher', 'school_admin', 'system_admin']} />}>
+              <Route path="/lop-hoc/:classId" element={<ClassDetailPage />} />
+            </Route>
+
+            <Route element={<RequireRole roles={['system_admin']} />}>
+              <Route path="/quan-tri/truong" element={<SchoolsPage />} />
+              <Route path="/quan-tri" element={<Navigate to="/quan-tri/goi-cau-hoi" replace />} />
+              <Route path="/quan-tri/goi-cau-hoi" element={<PackageAssignmentsPage />} />
+              <Route path="/quan-tri/cau-hoi" element={<QuestionBankPage />} />
+              <Route path="/quan-tri/tieu-chi" element={<CriteriaPage />} />
+              <Route path="/quan-tri/tham-so" element={<OperationParametersPage />} />
+              <Route path="/quan-tri/nhat-ky" element={<AuditLogsPage />} />
+              <Route path="/quan-tri/cham-dinh-tinh" element={<QualitativeReviewPage />} />
+              <Route path="/quan-tri/nghe" element={<CareerAdminListPage />} />
+              <Route path="/quan-tri/nghe/:id" element={<CareerAdminDetailPage />} />
+              <Route path="/quan-tri/thu-vien" element={<ContentLibraryAdminPage />} />
+              <Route path="/quan-tri/cong-dong" element={<CommunityAdminPage />} />
+            </Route>
+          </Route>
+        </Route>
+
+        {/* Đường dẫn cũ đã gộp trang */}
+        <Route path="/danh-gia" element={<Navigate to="/danh-gia-360" replace />} />
+        <Route path="/danh-gia-ca-nhan" element={<Navigate to="/danh-gia-360" replace />} />
+        <Route path="/danh-gia/:sessionId" element={<LegacySessionRedirect />} />
+        <Route path="/ket-qua" element={<Navigate to="/danh-gia-360" replace />} />
+        <Route path="/moi-danh-gia" element={<Navigate to="/danh-gia-360" replace />} />
+        <Route path="/bai-danh-gia" element={<Navigate to="/danh-gia-360" replace />} />
+
+        <Route element={<GuestLayout />}>
+          <Route path="/moi" element={<GuestRolePickerPage />} />
+          <Route path="/moi/:token" element={<GuestAssessmentPage />} />
+        </Route>
+
+        {import.meta.env.DEV && (
+          <Route element={<AppLayout />}>
+            <Route path="/dev/ket-qua-mau" element={<AssessmentResultSamplePage />} />
+            <Route path="/dev/danh-gia-360-mau" element={<Assessment360SamplePage />} />
+            <Route path="/dev/khung-cho" element={<SkeletonSamplePage />} />
+          </Route>
+        )}
+
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </AuthProvider>
+  </BrowserRouter>
+);
+
+export default App;

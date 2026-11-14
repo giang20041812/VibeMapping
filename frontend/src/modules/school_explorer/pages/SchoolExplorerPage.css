@@ -1,0 +1,18 @@
+.school-explorer-alert {
+  margin-bottom: var(--space-4);
+}
+
+.school-explorer-web {
+  display: grid;
+  place-items: center;
+  width: var(--touch-target);
+  height: var(--touch-target);
+  margin: calc(-1 * var(--space-2)) calc(-1 * var(--space-2)) 0 0;
+  color: var(--color-text-muted);
+  border-radius: var(--radius-md);
+}
+
+.school-explorer-web:hover {
+  color: var(--cartoon-ink);
+  background: var(--sticker-bg);
+}

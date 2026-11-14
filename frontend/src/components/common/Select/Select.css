@@ -1,0 +1,66 @@
+.app-select-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 100%;
+  min-width: 0;
+}
+
+.select-field-label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.select-field-required {
+  color: var(--color-danger);
+}
+
+.select-field-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.app-select-field {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  min-width: 0;
+  height: var(--control-height-md);
+  padding: 0 calc(var(--space-8) + var(--space-1)) 0 var(--space-3);
+  font-size: var(--font-size-base);
+  color: var(--color-text-main);
+  background-color: var(--color-bg-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-normal);
+}
+
+.app-select-field:hover { border-color: var(--color-border-hover); }
+.app-select-field:focus { border-color: var(--color-border-focus); box-shadow: 0 0 0 4px var(--color-primary-ring); }
+.app-select-field:disabled { background-color: var(--color-bg-subtle); cursor: not-allowed; }
+.app-select-group.has-error .app-select-field { border-color: var(--color-danger); background-color: var(--color-danger-bg); }
+
+.select-field-chevron {
+  position: absolute;
+  right: var(--space-3);
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.select-field-error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-xs);
+  color: var(--color-danger-text);
+}
+
+@media (max-width: 768px) {
+  .app-select-field {
+    height: var(--touch-target);
+    font-size: 16px;
+  }
+}

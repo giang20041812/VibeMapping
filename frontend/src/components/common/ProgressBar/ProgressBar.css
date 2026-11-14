@@ -1,0 +1,35 @@
+.app-progress {
+  position: relative;
+  width: 100%;
+  height: 8px;
+  overflow: hidden;
+  background: var(--brand-ice);
+  border-radius: var(--radius-full);
+}
+.progress-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(var(--progress, 0) * 100%);
+  background: var(--gradient-brand);
+  border-radius: var(--radius-full);
+  /* Chỉ giữ khung đầu (backwards): giữ cả khung cuối thì animation đè lên width, chặn transition và thanh nhảy cóc */
+  animation: progress-grow 900ms var(--ease-out) backwards;
+  transition: width 700ms var(--ease-out);
+}
+.progress-secondary .progress-fill { background: var(--brand-light); }
+
+/* Màu nhấn phẳng do nơi dùng đặt qua --progress-color / --progress-track; đầu thanh có chấm trắng */
+.progress-accent { height: 10px; background: var(--progress-track, var(--tone-blue-bg)); }
+.progress-accent .progress-fill { background: var(--progress-color, var(--tone-blue)); }
+.progress-accent .progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 6px;
+  height: 6px;
+  background: var(--brand-white);
+  border-radius: 50%;
+}
+
+@keyframes progress-grow { from { width: 0; } }

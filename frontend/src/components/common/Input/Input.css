@@ -1,0 +1,121 @@
+.app-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 100%;
+  min-width: 0;
+}
+
+.input-label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.input-required {
+  color: var(--color-danger);
+}
+
+.input-control-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.app-input-field {
+  width: 100%;
+  min-width: 0;
+  height: var(--control-height-md);
+  padding: 0 var(--space-3);
+  font-size: var(--font-size-base);
+  color: var(--color-text-main);
+  background-color: var(--color-bg-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-normal),
+    background-color var(--transition-fast);
+}
+
+@media (max-width: 768px) {
+  .app-input-field {
+    height: var(--touch-target);
+  }
+}
+
+.app-input-field:hover {
+  border-color: var(--color-border-hover);
+}
+
+.app-input-field:focus {
+  border-color: var(--color-border-focus);
+  box-shadow: 0 0 0 4px var(--color-primary-ring);
+}
+
+.app-input-field::placeholder {
+  color: var(--color-text-muted);
+}
+
+.app-input-field.with-left-icon {
+  padding-left: calc(var(--space-8) + var(--space-1));
+}
+
+.app-input-field.with-right-action {
+  padding-right: calc(var(--space-8) + var(--space-3));
+}
+
+.input-icon-left {
+  position: absolute;
+  left: var(--space-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  pointer-events: none;
+  transition: color var(--transition-fast);
+}
+
+.input-control-wrapper:focus-within .input-icon-left {
+  color: var(--brand-sky);
+}
+
+.input-action-right {
+  position: absolute;
+  right: var(--space-1);
+  display: flex;
+  align-items: center;
+}
+
+.input-error-msg {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--color-danger-text);
+  animation: input-error-in 220ms var(--ease-out) both;
+}
+
+.has-error .app-input-field {
+  border-color: var(--color-danger);
+  background-color: var(--color-danger-bg);
+  animation: input-shake 320ms var(--ease-standard);
+}
+
+.has-error .app-input-field:focus {
+  box-shadow: 0 0 0 4px var(--color-danger-border);
+}
+
+@keyframes input-shake {
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(2px); }
+}
+
+@keyframes input-error-in {
+  from { opacity: 0; transform: translateY(-3px); }
+  to { opacity: 1; transform: translateY(0); }
+}

@@ -1,0 +1,14 @@
+.run-skeleton-step { cursor: default; }
+.run-skeleton-step .run-skeleton-marker { width: 44px; }
+.run-skeleton-step .skeleton-text { height: calc(14 * var(--px)); padding-block: calc(1 * var(--px)); }
+.run-skeleton-question { display: flex; flex-direction: column; }
+.run-skeleton-question .skeleton-heading { height: calc(28 * var(--px)); padding-block: calc(5 * var(--px)); }
+.question-options .run-skeleton-option { height: 56px; border-radius: var(--radius-lg); }
+
+@media (max-width: 480px) {
+  .run-skeleton-step .run-skeleton-marker { width: 38px; }
+}
+
+@media (max-width: 640px) {
+  .run-nav .skeleton-button-lg { flex: 1; width: auto; }
+}

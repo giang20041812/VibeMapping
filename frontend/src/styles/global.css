@@ -63,6 +63,81 @@
   font-size: var(--font-size-2xl);
   font-weight: 800;
   line-height: var(--line-tight);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
   color: var(--color-text-main);
+}
+
+/* ====================================================================
+   MOTION SYSTEM UTILITIES (Kế thừa từ HTDNSK — easeOutQuint kiểu Apple/Google)
+   ==================================================================== */
+
+/* Viền sáng và quầng sáng mảnh đi theo con trỏ (--mx / --my cập nhật bằng JS) */
+.spotlight {
+  position: relative;
+  isolation: isolate;
+}
+.spotlight::before,
+.spotlight::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 500ms var(--ease-out);
+}
+.spotlight::before {
+  z-index: 0;
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgba(199, 227, 254, 0.09), transparent 60%);
+}
+.spotlight::after {
+  z-index: 3;
+  padding: 1px;
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(199, 227, 254, 0.42), transparent 70%);
+  -webkit-mask: linear-gradient(var(--brand-white) 0 0) content-box, linear-gradient(var(--brand-white) 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(var(--brand-white) 0 0) content-box exclude, linear-gradient(var(--brand-white) 0 0);
+}
+@media (hover: hover) {
+  .spotlight:hover::before,
+  .spotlight:hover::after {
+    opacity: 1;
+  }
+}
+
+/* Chữ cuộn lên mượt khi hover (RollText) */
+.roll {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  line-height: 1.42;
+}
+.roll-inner {
+  display: block;
+  position: relative;
+  transition: transform 560ms var(--ease-out);
+}
+.roll-inner::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  top: 100%;
+  width: 100%;
+}
+@media (hover: hover) {
+  .roll-trigger:hover .roll-inner,
+  .app-button:hover .roll-inner,
+  .topbar-link:hover .roll-inner {
+    transform: translateY(-100%);
+  }
+}
+
+/* Lưới nền kiến trúc rất mờ cho khung sân khấu tối */
+.hero-grid {
+  background-image:
+    linear-gradient(rgba(199, 227, 254, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(199, 227, 254, 0.045) 1px, transparent 1px);
+  background-size: calc(56 * var(--px)) calc(56 * var(--px));
+  -webkit-mask-image: radial-gradient(ellipse 75% 65% at 50% 20%, var(--brand-navy) 15%, transparent 78%);
+  mask-image: radial-gradient(ellipse 75% 65% at 50% 20%, var(--brand-navy) 15%, transparent 78%);
 }

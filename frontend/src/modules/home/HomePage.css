@@ -1,14 +1,14 @@
 /* Trang giới thiệu: phần mở đầu navy rộng, hành trình cùng một khung nội dung, nhịp dọc rộng rãi */
 .home {
-  --home-width: calc(1180 * var(--px));
+  --home-width: calc(1280 * var(--px));
   position: relative;
   z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(calc(72 * var(--px)), 10vw, calc(140 * var(--px)));
+  gap: clamp(calc(64 * var(--px)), 8vw, calc(120 * var(--px)));
   min-width: 0;
   padding-bottom: var(--space-16);
 }
 .home > * { width: 100%; max-width: var(--home-width); min-width: 0; }
-.home > .hero { max-width: calc(1320 * var(--px)); }
+.home > .hero { max-width: calc(1360 * var(--px)); }

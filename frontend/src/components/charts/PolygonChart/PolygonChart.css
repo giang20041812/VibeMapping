@@ -80,11 +80,13 @@
 }
 .polygon-spoke.is-active { stroke: var(--chart-edge); stroke-width: 1.5px; }
 
-/* Lưới hiện dần lên, rồi vùng điểm nở ra từ tâm và dừng hẳn, không nảy */
+/* Lưới hiện dần lên, rồi vùng điểm nở ra từ tâm và dừng êm kiểu Apple/Google */
 .polygon-stage { opacity: 0; }
-.polygon-chart.is-visible .polygon-stage { animation: polygon-rise var(--duration-enter) var(--ease-decelerate) both; }
-.polygon-svg-data { opacity: 0; transform: scale(0.4); transform-origin: 50% 50%; }
-.polygon-chart.is-visible .polygon-svg-data { animation: polygon-grow 800ms var(--ease-emphasized) 180ms both; }
+.polygon-chart.is-visible .polygon-stage { animation: polygon-rise 850ms var(--ease-out) both; }
+.polygon-svg-data { opacity: 0; transform: scale(0.32); transform-origin: 50% 50%; }
+.polygon-chart.is-visible .polygon-svg-data { animation: polygon-grow 960ms var(--ease-out) 160ms both; }
+.polygon-node { opacity: 0; }
+.polygon-chart.is-visible .polygon-node { animation: polygon-node-in 760ms var(--ease-out) calc(220ms + var(--i, 0) * 65ms) both; }
 
 .polygon-fill-start { stop-color: var(--chart-fill-start); stop-opacity: 0.45; }
 .polygon-fill-end { stop-color: var(--chart-fill-end); stop-opacity: 0.32; }
@@ -244,12 +246,16 @@
 .polygon-readout-reference { font-size: var(--font-size-sm); font-weight: 600; color: var(--chart-text-muted); }
 
 @keyframes polygon-grow {
-  from { opacity: 0; transform: scale(0.4); }
-  to { opacity: 1; transform: scale(1); }
+  from { opacity: 0; transform: scale(0.32); filter: blur(6px); }
+  to { opacity: 1; transform: scale(1); filter: none; }
 }
 @keyframes polygon-rise {
-  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  from { opacity: 0; transform: translateY(18px) scale(0.96); }
   to { opacity: 1; transform: none; }
+}
+@keyframes polygon-node-in {
+  from { opacity: 0; transform: translate(-50%, calc(-50% + 14px)) scale(0.8); filter: blur(6px); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: none; }
 }
 @keyframes polygon-fade-in {
   from { opacity: 0; }
@@ -271,7 +277,9 @@
 
 @media (prefers-reduced-motion: reduce) {
   .polygon-chart .polygon-svg-data,
-  .polygon-chart.is-visible .polygon-svg-data { opacity: 1; transform: none; animation: none; }
+  .polygon-chart.is-visible .polygon-svg-data,
+  .polygon-chart .polygon-node,
+  .polygon-chart.is-visible .polygon-node { opacity: 1; transform: none; animation: none; }
   .polygon-chart .polygon-stage { opacity: 1; }
   .polygon-chart * { animation: none; transition: none; }
 }

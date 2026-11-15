@@ -1,164 +1,73 @@
-/* Ô số liệu, lối tắt và nhãn nổi của trang giới thiệu: nền trắng, viền mảnh, bóng mềm.
-   Mọi sắc quy về chàm thương hiệu; riêng vàng mang nghĩa "nổi bật" nên giữ màu nhấn. */
-.stat-tone-violet,
-.stat-tone-cyan,
-.stat-tone-magenta,
-.stat-tone-teal,
-.stat-tone-sky { --stat: var(--color-primary); --stat-bg: var(--color-primary-light); }
-.stat-tone-gold { --stat: var(--color-highlight-text); --stat-bg: var(--color-highlight-bg); }
-
-.stat-tiles {
+/* Thẻ khám phá: nền trắng, viền mảnh; rê chuột thì nâng nhẹ, viền xanh trời và mũi tên trượt chéo */
+.explore-links {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(calc(130 * var(--px)), 1fr));
-  gap: var(--space-3);
-  width: 100%;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
   list-style: none;
 }
-.stat-tiles-lg { grid-template-columns: repeat(auto-fit, minmax(calc(190 * var(--px)), 1fr)); gap: var(--space-4); }
-
-.stat-tile {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+.explore-item {
   min-width: 0;
-  padding: var(--space-4) var(--space-5);
+  opacity: 0;
+  transform: translateY(28px);
+  filter: blur(6px);
+  transition:
+    opacity 900ms var(--ease-out),
+    transform 1000ms var(--ease-out),
+    filter 900ms var(--ease-out);
+  transition-delay: calc(200ms + var(--d, 0) * 90ms);
+}
+.explore-links.is-in .explore-item { opacity: 1; transform: none; filter: none; }
+
+.explore-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: calc(112 * var(--px));
+  padding: var(--space-6);
+  color: inherit;
+  text-decoration: none;
   background: var(--color-bg-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  opacity: 0;
-  transform: translateY(12px);
+  border-radius: calc(20 * var(--px));
+  box-shadow: var(--shadow-xs);
   transition:
-    opacity var(--duration-enter) var(--ease-decelerate),
-    transform var(--duration-enter) var(--ease-decelerate),
+    transform 400ms var(--ease-out),
     border-color var(--transition-fast),
-    box-shadow var(--transition-normal);
+    box-shadow 400ms var(--ease-out);
 }
-.stat-tiles.is-visible .stat-tile { opacity: 1; transform: none; }
-.stat-tiles.is-visible .stat-tile:nth-child(2) { transition-delay: var(--stagger); }
-.stat-tiles.is-visible .stat-tile:nth-child(3) { transition-delay: calc(var(--stagger) * 2); }
-.stat-tiles.is-visible .stat-tile:nth-child(4) { transition-delay: calc(var(--stagger) * 3); }
-.stat-tiles.is-visible .stat-tile:hover {
-  border-color: var(--color-border-hover);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
-  transition-delay: 0ms;
-}
+.explore-link:hover { border-color: var(--brand-soft); box-shadow: var(--shadow-lg); transform: translateY(-4px); }
+.explore-link:focus-visible { outline: 3px solid var(--color-primary-ring); outline-offset: 3px; }
 
-.stat-tile-icon {
+.explore-icon {
+  flex: none;
   display: grid;
   place-items: center;
-  width: calc(32 * var(--px));
-  height: calc(32 * var(--px));
-  margin-bottom: var(--space-1);
-  color: var(--stat);
-  background: var(--stat-bg);
-  border-radius: var(--radius-md);
+  width: calc(52 * var(--px));
+  height: calc(52 * var(--px));
+  color: var(--brand-navy);
+  background: var(--brand-ice);
+  border-radius: calc(16 * var(--px));
+  transition: color var(--transition-normal), background-color var(--transition-normal);
 }
-.stat-tiles-lg .stat-tile-icon { width: calc(40 * var(--px)); height: calc(40 * var(--px)); }
+.explore-link:hover .explore-icon { color: var(--brand-cream); background: var(--brand-navy); }
 
-.stat-tile-value {
+.explore-text { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; }
+.explore-value {
   font-size: var(--font-size-3xl);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.1;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
   color: var(--color-text-main);
 }
-.stat-tiles-lg .stat-tile-value { font-size: var(--font-size-4xl); }
-.stat-tile-label { font-size: var(--font-size-sm); font-weight: 600; color: var(--color-text-secondary); }
+.explore-label { font-size: var(--font-size-md); font-weight: 600; color: var(--color-text-secondary); }
+.explore-arrow { flex: none; color: var(--color-text-muted); transition: transform var(--transition-normal), color var(--transition-fast); }
+.explore-link:hover .explore-arrow { color: var(--brand-navy); transform: translate(3px, -3px); }
 
-/* Lối tắt khám phá: số lớn, nhãn ngắn, mũi tên trượt nhẹ khi rê chuột */
-.stat-links {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(calc(200 * var(--px)), calc(260 * var(--px))));
-  justify-content: center;
-  gap: var(--space-3);
-  width: 100%;
-  list-style: none;
-}
-.stat-link {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  min-width: 0;
-  min-height: var(--touch-target);
-  padding: var(--space-4);
-  color: inherit;
-  text-decoration: none;
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-xs);
-  transition:
-    transform var(--transition-normal) var(--ease-decelerate),
-    border-color var(--transition-fast),
-    box-shadow var(--transition-normal);
-}
-.stat-link:hover { border-color: var(--brand-soft); box-shadow: var(--shadow-md); transform: translateY(-2px); }
-.stat-link:focus-visible { outline: 3px solid var(--color-primary-ring); outline-offset: 2px; }
-.stat-link-icon {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: calc(40 * var(--px));
-  height: calc(40 * var(--px));
-  color: var(--stat);
-  background: var(--stat-bg);
-  border-radius: var(--radius-md);
-}
-.stat-link-text { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; text-align: left; }
-.stat-link-value { font-size: var(--font-size-2xl); font-weight: 800; line-height: 1.15; font-variant-numeric: tabular-nums; color: var(--color-text-main); }
-.stat-link-label { font-size: var(--font-size-sm); font-weight: 600; color: var(--color-text-secondary); }
-.stat-link-arrow { flex: none; color: var(--color-text-muted); transition: transform var(--transition-fast), color var(--transition-fast); }
-.stat-link:hover .stat-link-arrow { color: var(--color-primary); transform: translateX(3px); }
-
-/* Nhãn nổi trên hình minh họa: kính mờ trắng, viền mảnh, đứng yên */
-.stat-sticker {
-  position: absolute;
-  z-index: 2;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  max-width: 60%;
-  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-2);
-  background: var(--surface-glass);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
-  box-shadow: var(--shadow-md);
-  pointer-events: none;
-}
-.stat-sticker-top-left { top: 4%; left: 0; }
-.stat-sticker-top-right { top: 4%; right: 0; }
-.stat-sticker-bottom-left { bottom: 6%; left: 0; }
-.stat-sticker-bottom-right { bottom: 6%; right: 0; }
-
-.stat-sticker-icon {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: calc(30 * var(--px));
-  height: calc(30 * var(--px));
-  color: var(--stat);
-  background: var(--stat-bg);
-  border-radius: var(--radius-full);
-}
-.stat-sticker-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.15; }
-.stat-sticker-value { overflow: hidden; font-size: var(--font-size-lg); font-weight: 800; color: var(--color-text-main); white-space: nowrap; text-overflow: ellipsis; }
-.stat-sticker-label { font-size: var(--font-size-xs); font-weight: 600; color: var(--color-text-secondary); white-space: nowrap; }
-
-@media (max-width: 520px) {
-  .stat-links { grid-template-columns: minmax(0, 1fr); }
-  .stat-tile { padding: var(--space-3) var(--space-4); }
-  .stat-tile-value { font-size: var(--font-size-2xl); }
-  .stat-tiles-lg .stat-tile-value { font-size: var(--font-size-3xl); }
-  .stat-sticker { padding: var(--space-1) var(--space-2) var(--space-1) var(--space-1); }
-  .stat-sticker-icon { width: calc(24 * var(--px)); height: calc(24 * var(--px)); }
-  .stat-sticker-value { font-size: var(--font-size-md); }
+@media (max-width: 760px) {
+  .explore-links { grid-template-columns: minmax(0, 1fr); gap: var(--space-3); }
+  .explore-link { min-height: 0; padding: var(--space-4) var(--space-5); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .stat-tile { opacity: 1; transform: none; }
+  .explore-item { opacity: 1; transform: none; filter: none; transition: none; }
 }

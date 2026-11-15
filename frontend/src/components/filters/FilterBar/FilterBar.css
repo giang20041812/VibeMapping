@@ -120,10 +120,10 @@
   color: var(--color-text-main);
 }
 
-/* Kiểu hình dán cho các trang khám phá */
+/* Thanh lọc dạng thẻ cho các trang khám phá */
 .app-filter-bar.is-sticker {
-  border: var(--cartoon-stroke) solid var(--cartoon-ink);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
-  box-shadow: var(--cartoon-pop);
+  box-shadow: var(--shadow-sm);
   margin-bottom: var(--space-6);
 }

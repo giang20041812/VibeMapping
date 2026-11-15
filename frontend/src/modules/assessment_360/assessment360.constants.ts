@@ -1,19 +1,14 @@
 import { Handshake, Presentation, UserRoundCheck, UsersRound, type LucideIcon } from 'lucide-react';
-import type { GlobeNode, GlobeTone } from '../../components/charts/Globe360/Globe360';
-import { GLOBE_ICON_PATHS } from '../../components/charts/Globe360/globeIcons';
+import type { RaterNode } from '../../components/charts/Rater360/Rater360';
 import { INVITE_GROUPS } from '../invitation_link/invitation.constants';
 import type { InviteGroup } from '../invitation_link/invitation.constants';
 
-/** Màu của từng nhóm người đánh giá trên quả địa cầu */
-const GLOBE_TONES: Record<InviteGroup, GlobeTone> = { parent: 'gold', friend: 'cyan', teacher: 'violet', mentor: 'magenta' };
+/** Biểu tượng của từng nhóm người đánh giá */
+const RATER_ICONS: Record<InviteGroup, LucideIcon> = { parent: UsersRound, friend: Handshake, teacher: Presentation, mentor: UserRoundCheck };
 
-/** Biểu tượng của từng nhóm; đường vẽ tương ứng trong GLOBE_ICON_PATHS dùng cho canvas */
-const GLOBE_ICONS: Record<InviteGroup, LucideIcon> = { parent: UsersRound, friend: Handshake, teacher: Presentation, mentor: UserRoundCheck };
-
-export const GLOBE_NODES: GlobeNode[] = INVITE_GROUPS.map(({ key, label }) => ({
+/** Các nhóm người đánh giá quanh người được đánh giá trên sơ đồ 360° */
+export const RATER_NODES: RaterNode[] = INVITE_GROUPS.map(({ key, label }) => ({
   key,
   label,
-  tone: GLOBE_TONES[key],
-  icon: GLOBE_ICON_PATHS[key],
-  Icon: GLOBE_ICONS[key],
+  Icon: RATER_ICONS[key],
 }));

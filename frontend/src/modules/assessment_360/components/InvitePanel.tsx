@@ -1,6 +1,6 @@
 import React from 'react';
 import { Alert, Button, Modal } from '../../../components/common';
-import type { GlobeNode } from '../../../components/charts/Globe360/Globe360';
+import type { RaterNode } from '../../../components/charts/Rater360/Rater360';
 import { GroupPicker } from '../../invitation_link/components/GroupPicker';
 import { SharedQrCard } from '../../invitation_link/components/SharedQrCard';
 import { LinkCard } from '../../invitation_link/components/LinkCard';
@@ -17,7 +17,7 @@ export function invitesEnabled(controller: InviteController): boolean {
 
 export interface InvitePanelProps {
   controller: InviteController;
-  nodes: GlobeNode[];
+  nodes: RaterNode[];
   /** Nút mở phần thiết lập người đánh giá, nằm trong thanh công tắc */
   action?: React.ReactNode;
 }

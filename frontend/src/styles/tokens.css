@@ -1,23 +1,28 @@
 /* ====================================================================
    DESIGN SYSTEM TOKENS
-   Một ngôn ngữ giao diện duy nhất: nền trung tính sáng, chữ mực đậm, viền mảnh, bóng mềm.
-   Màu chàm thương hiệu chỉ dành cho hành động và trạng thái đang chọn để nút kêu gọi hành động luôn nổi bật;
-   vàng nhấn dành cho thông tin quan trọng; dải màu trực quan hóa chỉ dùng trong biểu đồ và hình minh họa.
+   Một ngôn ngữ giao diện duy nhất theo logo: navy đậm là màu chủ đạo, xanh trời và kem là màu phụ của logo.
+   Cam san hô là màu nổi bật duy nhất, chỉ dành cho nút kêu gọi hành động và thông tin quan trọng;
+   dải màu trực quan hóa chỉ dùng trong biểu đồ và hình minh họa.
    Mọi stylesheet chỉ dùng biến ở đây, không dùng mã màu tự do.
    ==================================================================== */
 
 :root {
-  /* Thang màu thương hiệu */
-  --brand-navy: #2b2775;
-  --brand-deep: #3730a3;
-  --brand-azure: #4338ca;
-  --brand-blue: #4f46e5;
-  --brand-sky: #6366f1;
-  --brand-light: #a5a8f8;
-  --brand-soft: #c4c7fb;
-  --brand-pale: #d6d9fd;
-  --brand-mist: #e0e3ff;
-  --brand-ice: #eef0ff;
+  /* Thang màu thương hiệu lấy từ logo: navy #031964 (nền logo), xanh trời #c7e3fe (ghim, chữ Mapping), kem #fffcf0 (mũ) */
+  --brand-navy: #031964;
+  --brand-deep: #0b2a8a;
+  --brand-azure: #1a3aa0;
+  --brand-blue: #2850c0;
+  --brand-sky: #3a64d0;
+  --brand-light: #8fb5f0;
+  --brand-soft: #c7e3fe;
+  --brand-pale: #d8ebff;
+  --brand-mist: #e4f0ff;
+  --brand-ice: #eef5ff;
+  /* Cam san hô: màu nổi bật cho nút chính và thông tin quan trọng; chữ trên nền cam dùng navy (tương phản 5,6:1) */
+  --brand-coral: #ff6b45;
+  --brand-coral-hover: #ff8160;
+  --brand-coral-active: #f2582f;
+  --brand-coral-soft: #ffe6dd;
   --brand-cream: #fffcf0;
   --brand-gold: #f6b73c;
   --brand-violet: #8b5cf6;
@@ -25,34 +30,40 @@
 
   /* Primary */
   --color-primary: var(--brand-blue);
-  --color-primary-hover: #4338ca;
-  --color-primary-active: #3730a3;
+  --color-primary-hover: var(--brand-azure);
+  --color-primary-active: var(--brand-deep);
   --color-primary-light: var(--brand-ice);
-  --color-primary-ring: rgba(79, 70, 229, 0.28);
+  --color-primary-ring: rgba(40, 80, 192, 0.28);
+
+  /* Nút kêu gọi hành động */
+  --color-cta: var(--brand-coral);
+  --color-cta-hover: var(--brand-coral-hover);
+  --color-cta-active: var(--brand-coral-active);
+  --color-cta-text: var(--brand-navy);
+  --color-cta-ring: rgba(255, 107, 69, 0.35);
   --color-accent: var(--brand-sky);
   --color-accent-gold: var(--brand-gold);
 
-  /* Nhấn thông tin quan trọng (hạng cao nhất, mục tiêu, số cần chú ý): vàng, tương phản với chàm.
-     Không dùng cho nút bấm chính. */
-  --color-highlight: var(--brand-gold);
-  --color-highlight-bg: #fff6df;
-  --color-highlight-border: #f3d58a;
-  --color-highlight-text: #7a5200;
+  /* Nhấn thông tin quan trọng (hạng cao nhất, mục tiêu, số cần chú ý): cùng họ cam san hô với nút chính */
+  --color-highlight: var(--brand-coral);
+  --color-highlight-bg: #fff1ec;
+  --color-highlight-border: #ffc6b4;
+  --color-highlight-text: #a8361a;
 
   /* Surface & Background: trung tính lạnh, chỉ phảng phất sắc chàm */
-  --color-bg-app: #f6f7fb;
+  --color-bg-app: #f5f7fb;
   --color-bg-surface: #ffffff;
-  --color-bg-subtle: #f0f2f9;
-  --color-bg-hover: #e8ebf6;
+  --color-bg-subtle: #eff3f9;
+  --color-bg-hover: #e6ecf6;
   --color-bg-cream: var(--brand-cream);
 
   /* Nền trang: phẳng, một vầng sáng rất nhạt ở đầu trang. Không kẻ lưới, không cố định khi cuộn. */
-  --bg-pattern: radial-gradient(70vw 460px at 50% -160px, rgba(99, 102, 241, 0.1), transparent 72%);
+  --bg-pattern: radial-gradient(70vw 460px at 50% -160px, rgba(58, 100, 208, 0.08), transparent 72%);
 
   /* Thanh bên và thanh ngang: nền kính mờ hiện đại, viền mảnh, bóng dịu */
   --sidebar-bg: rgba(255, 255, 255, 0.92);
   --sidebar-border: var(--color-border);
-  --sidebar-shadow: 4px 0 24px -12px rgba(24, 26, 58, 0.08);
+  --sidebar-shadow: 4px 0 24px -12px rgba(3, 18, 64, 0.08);
   --sidebar-text: var(--color-text-secondary);
   --sidebar-text-strong: var(--color-text-main);
   --sidebar-hover-bg: var(--color-bg-subtle);
@@ -61,7 +72,7 @@
   --sidebar-active-shadow: 0 0 0 0 transparent;
   --sidebar-ring: var(--color-primary-ring);
   --topbar-bg: rgba(255, 255, 255, 0.88);
-  --topbar-shadow: 0 1px 0 var(--color-border), 0 8px 24px -12px rgba(24, 26, 58, 0.08);
+  --topbar-shadow: 0 1px 0 var(--color-border), 0 8px 24px -12px rgba(3, 18, 64, 0.08);
 
   /* Khối thương hiệu trang đăng nhập: xanh sáng phẳng, chấm trắng mờ */
   --auth-hero-bg:
@@ -69,14 +80,14 @@
 
 
   /* Borders & Dividers */
-  --color-border: #e3e6f0;
-  --color-border-hover: #cdd2e4;
+  --color-border: #e1e6ef;
+  --color-border-hover: #c9d2e3;
   --color-border-focus: var(--brand-blue);
 
   /* Typography / Text hierarchy: mực đậm gần đen để dễ đọc; màu chàm để dành cho hành động */
-  --color-text-main: #181a3a;
-  --color-text-secondary: #4b4f6e;
-  --color-text-muted: #6c7191;
+  --color-text-main: #0b1640;
+  --color-text-secondary: #46506e;
+  --color-text-muted: #687290;
   --color-text-inverse: #ffffff;
   --color-text-brand: var(--brand-blue);
 
@@ -99,7 +110,7 @@
   --color-info: var(--brand-blue);
   --color-info-bg: var(--brand-ice);
   --color-info-border: var(--brand-mist);
-  --color-info-text: #2b2775;
+  --color-info-text: var(--brand-navy);
 
   /* Hộp thông báo (Alert): nền và viền đậm hơn nhãn trạng thái để dễ thấy */
   --alert-info-bg: var(--brand-pale);
@@ -222,9 +233,9 @@
   /* Phong cách hơi hoạt hình cho hình minh họa: nét viền chàm đậm, bóng đặc lệch xuống dưới */
   --cartoon-ink: var(--brand-navy);
   --cartoon-line: var(--brand-soft);
-  --cartoon-wash: rgba(99, 102, 241, 0.06);
-  --cartoon-drop: 0 4px 0 rgba(43, 39, 117, 0.16);
-  --cartoon-drop-lg: 0 6px 0 rgba(43, 39, 117, 0.14), 0 18px 30px -14px rgba(79, 70, 229, 0.35);
+  --cartoon-wash: rgba(40, 80, 192, 0.06);
+  --cartoon-drop: 0 4px 0 rgba(3, 25, 100, 0.16);
+  --cartoon-drop-lg: 0 6px 0 rgba(3, 25, 100, 0.14), 0 18px 30px -14px rgba(40, 80, 192, 0.35);
   /* Kiểu hình dán: viền mực dày, bóng đặc lệch xuống (không nhòe); nhô lên khi rê chuột, lún xuống khi bấm */
   --cartoon-stroke: 3px;
   --cartoon-stroke-thin: 2px;
@@ -236,27 +247,29 @@
   /* Bề mặt: thẻ trắng đặc, viền mảnh, bóng nhẹ. --surface-glass giữ lại cho quả cầu và biểu đồ. */
   --surface-glass: rgba(255, 255, 255, 0.7);
   --surface-border: var(--color-border);
-  --surface-shadow: 0 1px 2px rgba(24, 26, 58, 0.05), 0 12px 28px -16px rgba(24, 26, 58, 0.14);
+  --surface-shadow: 0 1px 2px rgba(3, 18, 64, 0.05), 0 12px 28px -16px rgba(3, 18, 64, 0.14);
   --chip-bg: var(--color-bg-surface);
   --chip-border: var(--color-border);
   --chip-shadow: 0 0 0 0 transparent;
-  --scrim: rgba(16, 18, 44, 0.5);
+  --scrim: rgba(3, 18, 64, 0.5);
 
   /* Màu phẳng thay cho gradient */
   --gradient-brand: linear-gradient(135deg, var(--brand-azure) 0%, var(--brand-blue) 100%);
-  --gradient-text: linear-gradient(90deg, var(--brand-blue) 0%, var(--brand-violet) 100%);
-  --gradient-feature: linear-gradient(135deg, #2b2775 0%, #4338ca 100%);
+  --gradient-text: linear-gradient(90deg, var(--brand-blue) 0%, var(--brand-sky) 100%);
+  --gradient-feature: linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-azure) 100%);
   --gradient-brand-hover: linear-gradient(135deg, var(--brand-deep) 0%, var(--brand-azure) 100%);
-  --gradient-brand-active: linear-gradient(135deg, #2e2792 0%, var(--brand-deep) 100%);
-  /* Nút kêu gọi hành động: chàm đặc, bóng cùng sắc để nổi khỏi nền trung tính */
-  --shadow-cta: 0 1px 2px rgba(49, 46, 129, 0.24), 0 8px 18px -8px rgba(79, 70, 229, 0.6);
-  --shadow-cta-hover: 0 2px 4px rgba(49, 46, 129, 0.24), 0 14px 26px -10px rgba(79, 70, 229, 0.66);
+  --gradient-brand-active: linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-deep) 100%);
+  /* Nút kêu gọi hành động: cam san hô đặc, bóng cùng sắc để nổi khỏi nền */
+  --shadow-cta: 0 1px 2px rgba(3, 25, 100, 0.18), 0 8px 20px -8px rgba(255, 107, 69, 0.65);
+  --shadow-cta-hover: 0 2px 4px rgba(3, 25, 100, 0.18), 0 14px 28px -10px rgba(255, 107, 69, 0.75);
   /* Giữ lại cho tới khi các màn hình thôi dùng dải màu trên nút */
   --gradient-cta: var(--color-primary);
   --gradient-cta-border: var(--color-border-hover);
   --gradient-soft-blue: linear-gradient(135deg, var(--brand-ice) 0%, var(--brand-mist) 100%);
-  --logo-a: #818cf8;
-  --logo-b: #4f46e5;
+  /* Logo: đĩa navy như bản gốc, ghim xanh trời */
+  --logo-a: var(--brand-deep);
+  --logo-b: var(--brand-navy);
+  --logo-pin: var(--brand-soft);
   --gradient-spectrum: var(--color-primary);
   --gradient-brand-deep: var(--brand-ice);
   --gradient-soft: var(--color-bg-app);
@@ -299,13 +312,13 @@
 
   /* Độ nổi: bóng mềm nhiều lớp, tông mực trung tính. Mỗi bậc một vai trò:
      xs phần tử tĩnh · sm thẻ · md thẻ khi rê chuột · lg lớp nổi (menu, hộp thoại) */
-  --shadow-xs: 0 1px 2px rgba(24, 26, 58, 0.05);
-  --shadow-sm: 0 1px 2px rgba(24, 26, 58, 0.06), 0 2px 8px -2px rgba(24, 26, 58, 0.06);
-  --shadow-md: 0 2px 4px rgba(24, 26, 58, 0.05), 0 10px 22px -8px rgba(24, 26, 58, 0.14);
-  --shadow-lg: 0 6px 12px -6px rgba(24, 26, 58, 0.08), 0 22px 40px -14px rgba(24, 26, 58, 0.2);
+  --shadow-xs: 0 1px 2px rgba(3, 18, 64, 0.05);
+  --shadow-sm: 0 1px 2px rgba(3, 18, 64, 0.06), 0 2px 8px -2px rgba(3, 18, 64, 0.06);
+  --shadow-md: 0 2px 4px rgba(3, 18, 64, 0.05), 0 10px 22px -8px rgba(3, 18, 64, 0.14);
+  --shadow-lg: 0 6px 12px -6px rgba(3, 18, 64, 0.08), 0 22px 40px -14px rgba(3, 18, 64, 0.2);
   --shadow-glow: var(--shadow-md);
-  --shadow-dropdown: 0 14px 30px rgba(24, 26, 58, 0.14), 0 4px 10px rgba(24, 26, 58, 0.06);
-  --shadow-sticky: 0 -6px 16px rgba(24, 26, 58, 0.07);
+  --shadow-dropdown: 0 14px 30px rgba(3, 18, 64, 0.14), 0 4px 10px rgba(3, 18, 64, 0.06);
+  --shadow-sticky: 0 -6px 16px rgba(3, 18, 64, 0.07);
 
   /* Typography */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;

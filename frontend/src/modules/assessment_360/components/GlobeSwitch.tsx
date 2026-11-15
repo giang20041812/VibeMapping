@@ -1,28 +1,28 @@
 import React from 'react';
-import { Globe360 } from '../../../components/charts/Globe360/Globe360';
-import type { GlobeNode } from '../../../components/charts/Globe360/Globe360';
+import { Rater360 } from '../../../components/charts/Rater360/Rater360';
+import type { RaterNode } from '../../../components/charts/Rater360/Rater360';
 import './GlobeSwitch.css';
 
 export interface GlobeSwitchProps {
   checked: boolean;
   disabled?: boolean;
   title: string;
-  nodes: GlobeNode[];
+  nodes: RaterNode[];
   onToggle: () => void;
   /** Phần nằm trong thanh, giữa nội dung và công tắc; bấm vào đây không gạt công tắc */
   aside?: React.ReactNode;
 }
 
 /**
- * Công tắc có quả địa cầu: bật thì quả cầu hiện màu và quay, tắt thì đổi sang xám, giảm tốc rồi đứng yên.
- * Cả khối là một ô chọn, bấm vào quả cầu hay công tắc đều gạt được.
+ * Công tắc có sơ đồ 360°: bật thì sơ đồ có màu và tín hiệu chạy vào tâm, tắt thì chuyển xám và đứng yên.
+ * Cả khối là một ô chọn, bấm vào sơ đồ hay công tắc đều gạt được.
  */
 export const GlobeSwitch: React.FC<GlobeSwitchProps> = ({ checked, disabled = false, title, nodes, onToggle, aside }) => (
   <label className={`globe-switch ${checked ? 'is-on' : 'is-off'} ${disabled ? 'is-disabled' : ''}`}>
     <input type="checkbox" role="switch" className="globe-switch-input" checked={checked} disabled={disabled} onChange={onToggle} />
 
     <span className="globe-switch-globe" aria-hidden="true">
-      <Globe360 nodes={nodes} active={checked} compact />
+      <Rater360 nodes={nodes} active={checked} compact />
     </span>
 
     <span className="globe-switch-body">
@@ -32,7 +32,7 @@ export const GlobeSwitch: React.FC<GlobeSwitchProps> = ({ checked, disabled = fa
         {nodes.map((node) => {
           const Icon = node.Icon;
           return (
-            <span key={node.key} className={`globe-switch-group globe-switch-tone-${node.tone}`}>
+            <span key={node.key} className="globe-switch-group">
               {Icon && <Icon size={16} />}
               {node.label}
             </span>

@@ -120,7 +120,6 @@
 .feature.is-visible .feature-visual { animation-name: home-scale-in; animation-duration: 700ms; }
 /* Ô số liệu tự hiện nối tiếp từng ô nên khung chứa không trồi thêm */
 .feature.is-visible .feature-copy > .stat-tiles { animation: none; opacity: 1; }
-.feature-visual .globe360-canvas { opacity: 1; transform: none; }
 
 .feature-title { font-size: var(--font-size-4xl); font-weight: 800; line-height: var(--line-tight); letter-spacing: -0.02em; color: var(--color-text-main); }
 .feature-lead { max-width: calc(480 * var(--px)); font-size: var(--font-size-xl); line-height: 1.5; color: var(--color-text-secondary); }

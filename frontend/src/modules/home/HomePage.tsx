@@ -2,14 +2,14 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ArrowRight, BookOpen, Briefcase, Gauge, Layers, ListChecks, Orbit, School, Timer, Trophy, Users } from 'lucide-react';
 import { Alert, Badge, Button, LogoMark } from '../../components/common';
-import { Globe360 } from '../../components/charts/Globe360/Globe360';
+import { Rater360 } from '../../components/charts/Rater360/Rater360';
 import { PolygonChart } from '../../components/charts/PolygonChart/PolygonChart';
 import type { PolygonAxis } from '../../components/charts/PolygonChart/PolygonChart';
 import { PolygonChartSkeleton } from '../../components/charts/PolygonChart/PolygonChartSkeleton';
 import { COMPETENCY_LEVELS, GROUP_ICONS, GROUP_SHORT_LABELS } from '../assessment_result/assessmentResult.constants';
 import { getLatestAssessmentResult } from '../assessment_result/assessmentResult.service';
 import type { AssessmentResultSummary } from '../assessment_result/assessmentResult.types';
-import { GLOBE_NODES } from '../assessment_360/assessment360.constants';
+import { RATER_NODES } from '../assessment_360/assessment360.constants';
 import { PACKAGES } from '../assessment_session/assessmentSession.constants';
 import { MAX_EXPECTED_PER_GROUP } from '../invitation_link/invitation.constants';
 import { getCatalogScale, type CatalogScale } from './home.service';
@@ -51,7 +51,7 @@ const QUESTION_RANGE = `${Math.min(...PACKAGE_SIZES)}–${Math.max(...PACKAGE_SI
 const MINUTE_RANGE = `${Math.min(...PACKAGE_MINUTES)}–${Math.max(...PACKAGE_MINUTES)}′`;
 
 const VIEW_STATS: StatItem[] = [
-  { key: 'groups', value: GLOBE_NODES.length, label: 'Nhóm góc nhìn', icon: Users, tone: 'gold' },
+  { key: 'groups', value: RATER_NODES.length, label: 'Nhóm góc nhìn', icon: Users, tone: 'gold' },
   { key: 'raters', value: MAX_EXPECTED_PER_GROUP, label: 'Người mỗi nhóm', icon: Orbit, tone: 'cyan' },
   { key: 'merge', value: '360°', label: 'Kết quả gộp', icon: Gauge, tone: 'magenta' },
 ];
@@ -240,9 +240,9 @@ export const HomePage: React.FC = () => {
         flip
         visual={(started) => (
           <div className="feature-stage">
-            <Globe360 nodes={GLOBE_NODES} paused={!started} />
+            <Rater360 nodes={RATER_NODES} active={started} />
             <StatSticker place="top-left" tone="cyan" icon={Orbit} value="360°" label="Đa góc nhìn" />
-            <StatSticker place="bottom-right" tone="magenta" icon={Users} value={`${GLOBE_NODES.length} + Bạn`} label="Người đánh giá" />
+            <StatSticker place="bottom-right" tone="magenta" icon={Users} value={`${RATER_NODES.length} + Bạn`} label="Người đánh giá" />
           </div>
         )}
       >

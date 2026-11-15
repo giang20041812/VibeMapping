@@ -60,19 +60,31 @@
   /* Nền trang: phẳng, một vầng sáng rất nhạt ở đầu trang. Không kẻ lưới, không cố định khi cuộn. */
   --bg-pattern: radial-gradient(70vw 460px at 50% -160px, rgba(58, 100, 208, 0.08), transparent 72%);
 
-  /* Thanh bên và thanh ngang: nền kính mờ hiện đại, viền mảnh, bóng dịu */
-  --sidebar-bg: rgba(255, 255, 255, 0.92);
-  --sidebar-border: var(--color-border);
-  --sidebar-shadow: 4px 0 24px -12px rgba(3, 18, 64, 0.08);
+  /* Thanh bên và thanh ngang: nền kính mờ hiện đại, viền mảnh, bóng dịu có chiều sâu */
+  --sidebar-bg: rgba(255, 255, 255, 0.88);
+  --sidebar-border: rgba(225, 230, 239, 0.85);
+  --sidebar-shadow: 1px 0 0 rgba(3, 18, 64, 0.04), 12px 0 36px -14px rgba(3, 18, 64, 0.09);
   --sidebar-text: var(--color-text-secondary);
   --sidebar-text-strong: var(--color-text-main);
-  --sidebar-hover-bg: var(--color-bg-subtle);
-  --sidebar-active-bg: var(--color-primary-light);
+  --sidebar-hover-bg: rgba(230, 236, 246, 0.72);
+  --sidebar-active-bg: linear-gradient(135deg, rgba(238, 245, 255, 0.95) 0%, rgba(216, 235, 255, 0.7) 100%);
   --sidebar-active-text: var(--color-primary);
-  --sidebar-active-shadow: 0 0 0 0 transparent;
+  --sidebar-active-shadow: 0 2px 8px -2px rgba(40, 80, 192, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.8);
   --sidebar-ring: var(--color-primary-ring);
-  --topbar-bg: rgba(255, 255, 255, 0.88);
-  --topbar-shadow: 0 1px 0 var(--color-border), 0 8px 24px -12px rgba(3, 18, 64, 0.08);
+  --topbar-bg: rgba(255, 255, 255, 0.82);
+  --topbar-scrolled-bg: rgba(255, 255, 255, 0.92);
+  --topbar-shadow: 0 1px 0 rgba(225, 230, 239, 0.75), 0 8px 28px -12px rgba(3, 18, 64, 0.07);
+  --topbar-shadow-scrolled: 0 1px 0 rgba(201, 210, 227, 0.85), 0 16px 40px -14px rgba(3, 18, 64, 0.12);
+
+  /* Khung sân khấu tối (Hero & Artifact Stage): navy chiều sâu kiểu Apple/Google keynote */
+  --stage-navy-deep: #020f42;
+  --stage-navy-mid: #051c6e;
+  --stage-surface: rgba(255, 255, 255, 0.055);
+  --stage-surface-elevated: rgba(255, 255, 255, 0.085);
+  --stage-surface-solid: #071e6e;
+  --stage-border: rgba(255, 255, 255, 0.12);
+  --stage-border-strong: rgba(199, 227, 254, 0.28);
+  --stage-shadow: 0 32px 72px -24px rgba(2, 12, 48, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.14);
 
   /* Khối thương hiệu trang đăng nhập: xanh sáng phẳng, chấm trắng mờ */
   --auth-hero-bg:
@@ -320,8 +332,9 @@
   --shadow-dropdown: 0 14px 30px rgba(3, 18, 64, 0.14), 0 4px 10px rgba(3, 18, 64, 0.06);
   --shadow-sticky: 0 -6px 16px rgba(3, 18, 64, 0.07);
 
-  /* Typography */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  /* Typography: Montserrat kết hợp Inter cho độ sắc nét và chiều sâu hiện đại */
+  --font-sans: 'Montserrat', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   --font-size-xs: calc(12 * var(--px));
   --font-size-sm: calc(13 * var(--px));
   --font-size-base: calc(14 * var(--px));
@@ -332,21 +345,21 @@
   --font-size-3xl: calc(24 * var(--px));
   --font-size-4xl: calc(32 * var(--px));
   --font-size-5xl: calc(44 * var(--px));
-  --line-tight: 1.2;
+  --line-tight: 1.16;
 
-  /* Motion: dứt khoát, mượt, không nảy. Phần tử đi vào giảm tốc dần (decelerate), đổi trạng thái dùng emphasized;
-     --ease-spring chỉ còn nhích nhẹ quá đích rồi về chỗ. --stagger là độ trễ giữa các phần tử hiện nối tiếp nhau. */
+  /* Motion: chuyển động "đầm", dừng êm kiểu Apple/Google (easeOutQuint từ HTDNSK) */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-spring: cubic-bezier(0.3, 1.2, 0.45, 1);
+  --ease-apple: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
-  --ease-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
-  --duration-enter: 520ms;
-  --stagger: 70ms;
-  --transition-fast: 150ms var(--ease-standard);
-  --transition-normal: 220ms var(--ease-out);
-  --transition-slow: 420ms var(--ease-out);
-  --duration-reveal: 560ms;
+  --ease-emphasized: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-decelerate: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-enter: 720ms;
+  --stagger: 80ms;
+  --transition-fast: 180ms var(--ease-out);
+  --transition-normal: 320ms var(--ease-out);
+  --transition-slow: 560ms var(--ease-out);
+  --duration-reveal: 850ms;
   --duration-fly: 2400ms;
 
   /* Heights */

@@ -61,8 +61,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onToggle, onClose }) => 
                 key={item.to}
                 to={item.to}
                 end={item.end}
-                className={({ isActive }) => `sidebar-link ${isActive ? 'is-active' : ''}`}
+                className={({ isActive }) => `sidebar-link spotlight ${isActive ? 'is-active' : ''}`}
                 onClick={onClose}
+                onPointerMove={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  e.currentTarget.style.setProperty('--mx', `${e.clientX - rect.left}px`);
+                  e.currentTarget.style.setProperty('--my', `${e.clientY - rect.top}px`);
+                }}
               >
                 <span className="sidebar-link-icon">
                   <Icon size={20} />

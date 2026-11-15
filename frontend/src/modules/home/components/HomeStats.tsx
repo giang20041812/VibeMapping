@@ -1,4 +1,6 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useCountUp } from '../../../hooks/useCountUp';
 import { useInView } from '../../../hooks/useInView';
@@ -27,9 +29,11 @@ export interface StatItem {
   label: string;
   icon?: LucideIcon;
   tone: StatTone;
+  /** Trang mở ra khi bấm (dùng cho lối tắt khám phá) */
+  to?: string;
 }
 
-/** Hàng ô số liệu kiểu hình dán: số lớn tô gradient, nhãn ngắn bên dưới */
+/** Hàng ô số liệu: số lớn, nhãn ngắn bên dưới; các ô hiện nối tiếp khi cuộn tới */
 export const StatTiles: React.FC<{ items: StatItem[]; size?: 'md' | 'lg'; className?: string }> = ({ items, size = 'md', className = '' }) => {
   const { ref, seen } = useInView<HTMLUListElement>(0.3);
   return (
@@ -51,24 +55,27 @@ export const StatTiles: React.FC<{ items: StatItem[]; size?: 'md' | 'lg'; classN
   );
 };
 
-/** Hàng số liệu chỉ có chữ trên nền, các cột ngăn bằng đường kẻ nhạt */
-export const StatInline: React.FC<{ items: StatItem[] }> = ({ items }) => {
-  const { ref, seen } = useInView<HTMLUListElement>(0.3);
+/** Lối tắt khám phá: mỗi ô là một liên kết có số lượng, nhãn và mũi tên */
+export const StatLinks: React.FC<{ items: StatItem[] }> = ({ items }) => {
+  const { ref, seen } = useInView<HTMLUListElement>(0.2);
   return (
-    <ul ref={ref} className="stat-inline">
-      {items.map(({ key, value, suffix, label, icon: Icon, tone }) => (
-        <li key={key} className={`stat-inline-item stat-tone-${tone}`}>
-          {Icon && (
-            <span className="stat-inline-icon" aria-hidden="true">
-              <Icon size={26} strokeWidth={2.2} />
+    <ul ref={ref} className="stat-links">
+      {items.map(({ key, value, suffix, label, icon: Icon, tone, to }) => (
+        <li key={key} className={`stat-tone-${tone}`}>
+          <Link to={to ?? '/'} className="stat-link">
+            {Icon && (
+              <span className="stat-link-icon" aria-hidden="true">
+                <Icon size={20} strokeWidth={2.2} />
+              </span>
+            )}
+            <span className="stat-link-text">
+              <span className="stat-link-value">
+                <StatValue value={value} suffix={suffix} run={seen} />
+              </span>
+              <span className="stat-link-label">{label}</span>
             </span>
-          )}
-          <span className="stat-inline-text">
-            <span className="stat-inline-value">
-              <StatValue value={value} suffix={suffix} run={seen} />
-            </span>
-            <span className="stat-inline-label">{label}</span>
-          </span>
+            <ArrowRight className="stat-link-arrow" size={18} aria-hidden="true" />
+          </Link>
         </li>
       ))}
     </ul>
@@ -77,7 +84,7 @@ export const StatInline: React.FC<{ items: StatItem[] }> = ({ items }) => {
 
 export type StickerPlace = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 
-/** Nhãn dán nổi trên hình minh họa: một con số và nhãn ngắn, bồng bềnh nhẹ */
+/** Nhãn nổi trên hình minh họa: một con số và nhãn ngắn */
 export const StatSticker: React.FC<{ value: string; label: string; icon?: LucideIcon; tone: StatTone; place: StickerPlace }> = ({
   value,
   label,

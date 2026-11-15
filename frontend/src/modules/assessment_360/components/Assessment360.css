@@ -20,7 +20,7 @@
   font-weight: 800;
   color: var(--brand-white);
   background: var(--soft-magenta);
-  border: var(--cartoon-stroke-thin) solid var(--cartoon-ink);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-full);
 }
 

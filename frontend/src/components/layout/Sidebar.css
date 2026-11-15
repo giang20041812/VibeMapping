@@ -70,11 +70,11 @@
   height: 36px;
   border-radius: var(--radius-full);
   box-shadow: var(--shadow-xs);
-  transition: transform var(--transition-normal) var(--ease-spring), box-shadow var(--transition-normal);
+  transition: transform var(--transition-normal) var(--ease-decelerate), box-shadow var(--transition-normal);
 }
 
 .sidebar-brand:hover .sidebar-brand-mark {
-  transform: scale(1.08) rotate(-4deg);
+  transform: scale(1.04);
   box-shadow: var(--shadow-sm);
 }
 

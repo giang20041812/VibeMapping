@@ -1,19 +1,20 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ArrowRight, BookOpen, Briefcase, Gauge, Layers, ListChecks, Orbit, School, Timer, Trophy, Users } from 'lucide-react';
-import { Alert, Badge, Button, LogoMark } from '../../components/common';
-import { Globe360 } from '../../components/charts/Globe360/Globe360';
+import { ArrowRight, BookOpen, Briefcase, Layers, ListChecks, School, Timer, Trophy, Users } from 'lucide-react';
+import { Alert, Badge, Button } from '../../components/common';
+import { Rater360 } from '../../components/charts/Rater360/Rater360';
 import { PolygonChart } from '../../components/charts/PolygonChart/PolygonChart';
 import type { PolygonAxis } from '../../components/charts/PolygonChart/PolygonChart';
 import { PolygonChartSkeleton } from '../../components/charts/PolygonChart/PolygonChartSkeleton';
 import { COMPETENCY_LEVELS, GROUP_ICONS, GROUP_SHORT_LABELS } from '../assessment_result/assessmentResult.constants';
 import { getLatestAssessmentResult } from '../assessment_result/assessmentResult.service';
 import type { AssessmentResultSummary } from '../assessment_result/assessmentResult.types';
-import { GLOBE_NODES } from '../assessment_360/assessment360.constants';
+import { RATER_NODES } from '../assessment_360/assessment360.constants';
 import { PACKAGES } from '../assessment_session/assessmentSession.constants';
 import { MAX_EXPECTED_PER_GROUP } from '../invitation_link/invitation.constants';
 import { getCatalogScale, type CatalogScale } from './home.service';
-import { StatLinks, StatSticker, StatTiles, type StatItem } from './components/HomeStats';
+import { ExploreLinks, type ExploreItem } from './components/HomeStats';
+import { HomeHero, type HeroFact } from './components/HomeHero';
 import { useAuth } from '../auth/AuthContext';
 import { isLearnerRole } from '../profile/profile.logic';
 import { useInView } from '../../hooks/useInView';
@@ -50,13 +51,7 @@ const PACKAGE_MINUTES = PACKAGES.flatMap((p) => (p.minutes.match(/\d+/g) ?? []).
 const QUESTION_RANGE = `${Math.min(...PACKAGE_SIZES)}–${Math.max(...PACKAGE_SIZES)}`;
 const MINUTE_RANGE = `${Math.min(...PACKAGE_MINUTES)}–${Math.max(...PACKAGE_MINUTES)}′`;
 
-const VIEW_STATS: StatItem[] = [
-  { key: 'groups', value: GLOBE_NODES.length, label: 'Nhóm góc nhìn', icon: Users, tone: 'gold' },
-  { key: 'raters', value: MAX_EXPECTED_PER_GROUP, label: 'Người mỗi nhóm', icon: Orbit, tone: 'cyan' },
-  { key: 'merge', value: '360°', label: 'Kết quả gộp', icon: Gauge, tone: 'magenta' },
-];
-
-/** Điểm trung bình và nhóm nổi bật nhất của biểu đồ, hiện thành nhãn dán trên hình */
+/** Điểm trung bình và nhóm nổi bật nhất của biểu đồ */
 function summarize(axes: PolygonAxis[]) {
   const scored = axes.filter((a): a is PolygonAxis & { value: number } => a.value !== null);
   if (scored.length === 0) return null;
@@ -65,37 +60,51 @@ function summarize(axes: PolygonAxis[]) {
   return { average, top: top.shortLabel ?? top.label };
 }
 
-/** Chờ hình tải xong tối đa chừng này rồi vẫn hiện, để hàng không trống mãi khi máy chủ chậm */
-const READY_TIMEOUT_MS = 3000;
-
 interface FeatureProps {
   id: string;
-  /** Đưa hình minh họa sang bên trái, chữ sang bên phải */
+  eyebrow: string;
+  title: React.ReactNode;
+  lead: string;
+  /** Liên kết hành động dưới mô tả */
+  action?: { to: string; label: string };
+  /** Đưa hình sang bên trái, chữ sang bên phải */
   flip?: boolean;
-  /** Hình đã tải xong; chưa xong thì chưa nhún, để khung chờ tải không nhún vào trang */
-  ready?: boolean;
-  /** Hình minh họa; dạng hàm nhận `started` để hình nghỉ việc nặng khi chưa tới lượt hiện */
-  visual: React.ReactNode | ((started: boolean) => React.ReactNode);
-  children: React.ReactNode;
+  visual: React.ReactNode;
 }
 
-/** Một hàng giới thiệu: chữ một bên, hình minh họa một bên; hàng sau đổi bên so với hàng trước.
- *  Khi hàng cuộn tới, từng phần trồi lên nối tiếp (tiêu đề, mô tả, số liệu, nút, hình, nhãn nổi). */
-const Feature: React.FC<FeatureProps> = ({ id, flip = false, ready = true, visual, children }) => {
-  const { ref, seen } = useInView<HTMLElement>(0.15);
-  const [waitedEnough, setWaitedEnough] = useState(false);
-
-  useEffect(() => {
-    if (!seen || ready) return;
-    const timer = window.setTimeout(() => setWaitedEnough(true), READY_TIMEOUT_MS);
-    return () => window.clearTimeout(timer);
-  }, [seen, ready]);
-
-  const started = seen && (ready || waitedEnough);
+/** Một hàng giới thiệu: chữ một bên, hình trong thẻ một bên. Khi cuộn tới, từng phần trồi lên và rõ dần nối tiếp nhau. */
+const Feature: React.FC<FeatureProps> = ({ id, eyebrow, title, lead, action, flip = false, visual }) => {
+  const { ref, seen } = useInView<HTMLElement>(0.2);
   return (
-    <section ref={ref} className={`feature ${flip ? 'feature-flip' : ''} ${started ? 'is-visible' : ''}`} aria-labelledby={`${id}-title`}>
-      <div className="feature-copy">{children}</div>
-      <div className="feature-visual">{typeof visual === 'function' ? visual(started) : visual}</div>
+    <section ref={ref} className={`feature ${flip ? 'feature-flip' : ''} ${seen ? 'is-in' : ''}`} aria-labelledby={`${id}-title`}>
+      <div className="feature-copy">
+        <span className="home-eyebrow reveal">{eyebrow}</span>
+        <h2 id={`${id}-title`} className="feature-title reveal" style={{ '--d': 1 } as React.CSSProperties}>
+          {title}
+        </h2>
+        <p className="feature-lead reveal" style={{ '--d': 2 } as React.CSSProperties}>
+          {lead}
+        </p>
+        {action && (
+          <Link to={action.to} className="home-link reveal" style={{ '--d': 3 } as React.CSSProperties}>
+            {action.label}
+            <ArrowRight size={18} aria-hidden="true" />
+          </Link>
+        )}
+      </div>
+      <div className="feature-visual reveal reveal-scale" style={{ '--d': 1 } as React.CSSProperties}>
+        {visual}
+      </div>
+    </section>
+  );
+};
+
+/** Khối có tiêu đề và hiện ra khi cuộn tới */
+const RevealSection: React.FC<{ className: string; labelledBy: string; children: React.ReactNode }> = ({ className, labelledBy, children }) => {
+  const { ref, seen } = useInView<HTMLElement>(0.2);
+  return (
+    <section ref={ref} className={`${className} ${seen ? 'is-in' : ''}`} aria-labelledby={labelledBy}>
+      {children}
     </section>
   );
 };
@@ -155,113 +164,122 @@ export const HomePage: React.FC = () => {
   /* Chờ biết người dùng có kết quả hay chưa, tránh biểu đồ mẫu nháy lên rồi đổi sang biểu đồ thật */
   const isChartLoading = isProfileLoading || (learner && !isGuest && isResultLoading);
   const summary = useMemo(() => summarize(axes), [axes]);
-  const selfStats: StatItem[] = [
-    { key: 'groups', value: axes.length, label: 'Nhóm tiêu chí', icon: Layers, tone: 'violet' },
-    { key: 'questions', value: QUESTION_RANGE, label: 'Câu hỏi', icon: ListChecks, tone: 'sky' },
-    { key: 'minutes', value: MINUTE_RANGE, label: 'Tự đánh giá', icon: Timer, tone: 'teal' },
+
+  const heroFacts: HeroFact[] = [
+    { key: 'groups', value: axes.length, label: 'Nhóm tiêu chí', icon: Layers },
+    { key: 'questions', value: QUESTION_RANGE, label: 'Câu hỏi', icon: ListChecks },
+    { key: 'minutes', value: MINUTE_RANGE, label: 'Tự đánh giá', icon: Timer },
+    { key: 'raters', value: RATER_NODES.length, label: 'Nhóm góc nhìn', icon: Users },
   ];
-  const scaleStats: StatItem[] = [];
-  if (scale) {
-    if (scale.careers !== null) scaleStats.push({ key: 'careers', value: scale.careers, label: 'Nghề nghiệp', icon: Briefcase, tone: 'violet', to: '/danh-muc-nghe' });
-    if (scale.majors !== null) scaleStats.push({ key: 'majors', value: scale.majors, label: 'Ngành học', icon: BookOpen, tone: 'cyan', to: '/nganh-nghe' });
-    if (scale.schools !== null) scaleStats.push({ key: 'schools', value: scale.schools, label: 'Trường', icon: School, tone: 'magenta', to: '/kham-pha-truong' });
-  }
+  if (scale?.careers != null) heroFacts.push({ key: 'careers', value: scale.careers, label: 'Nghề nghiệp', icon: Briefcase });
+
+  const exploreItems: ExploreItem[] = [
+    { key: 'careers', value: scale?.careers ?? null, label: 'Nghề nghiệp', icon: Briefcase, to: '/danh-muc-nghe' },
+    { key: 'majors', value: scale?.majors ?? null, label: 'Ngành học', icon: BookOpen, to: '/nganh-nghe' },
+    { key: 'schools', value: scale?.schools ?? null, label: 'Trường', icon: School, to: '/kham-pha-truong' },
+  ];
 
   return (
     <div className="home">
       {draftSaved && <Alert variant="success">Đã lưu tạm. Bạn có thể quay lại làm tiếp trong 7 ngày.</Alert>}
 
-      <header className="home-brand">
-        <h1 className="home-brand-title" aria-label="Vibe Mapping">
-          <span className="home-brand-mark" aria-hidden="true">
-            <LogoMark draw />
-          </span>
-          <span className="home-brand-words">
-            <span className="home-brand-vibe">Vibe</span> <span className="home-brand-mapping">Mapping</span>
-          </span>
-        </h1>
-        <p className="home-brand-lead">Biết mình là ai, vững bước tương lai.</p>
-        <div className="home-brand-actions">
-          {canExplore && (
-            <Link to={testPath} className="home-brand-link">
-              <Button size="lg" rightIcon={<ArrowRight size={18} />}>
-                Làm bài test
-              </Button>
-            </Link>
-          )}
-          <Link to="/danh-muc-nghe" className="home-brand-link">
-            <Button size="lg" variant="outline">
-              Khám phá nghề nghiệp
-            </Button>
-          </Link>
-        </div>
-        {scaleStats.length > 0 && <StatLinks items={scaleStats} />}
-      </header>
+      <HomeHero
+        canExplore={canExplore}
+        testPath={testPath}
+        axes={axes}
+        isOwnResult={result !== null}
+        isLoading={isChartLoading}
+        raters={RATER_NODES}
+        ratersPerGroup={MAX_EXPECTED_PER_GROUP}
+        facts={heroFacts}
+      />
 
       {!isGuest && !isProfileLoading && !learner && <Alert variant="info">Tài khoản của bạn chưa có chức năng nào trong giai đoạn này.</Alert>}
 
       <Feature
         id="feature-self"
-        ready={!isChartLoading}
+        eyebrow="Tự đánh giá"
+        title={
+          <>
+            Biểu đồ <span className="text-spectrum">{axes.length} nhóm tiêu chí</span> của riêng bạn
+          </>
+        }
+        lead="Đánh giá cá nhân qua biểu đồ tố chất, từ đó gợi ý những ngành nghề phù hợp với bạn."
+        action={canExplore ? { to: testPath, label: 'Làm bài test' } : undefined}
         visual={
-          <div className="feature-stage">
-            {result && <span className="feature-badge"><Badge variant="success">Đánh giá của bạn</Badge></span>}
-            {!result && !isChartLoading && <span className="feature-badge"><Badge variant="default">Ví dụ</Badge></span>}
+          <div className="feature-panel">
+            <div className="feature-panel-head">
+              {isChartLoading ? <span /> : <Badge variant={result ? 'success' : 'default'}>{result ? 'Đánh giá của bạn' : 'Ví dụ'}</Badge>}
+              {!isChartLoading && summary && (
+                <div className="feature-panel-facts">
+                  <span className="panel-fact">
+                    Trung bình <b>{summary.average}%</b>
+                  </span>
+                  <span className="panel-fact is-highlight">
+                    <Trophy size={14} aria-hidden="true" />
+                    Nổi bật <b>{summary.top}</b>
+                  </span>
+                </div>
+              )}
+            </div>
             {isChartLoading ? (
               <PolygonChartSkeleton />
             ) : (
               <PolygonChart axes={axes} levels={POLYGON_LEVELS} showReadout={false} showNodeValues />
             )}
-            {!isChartLoading && summary && (
-              <>
-                <StatSticker place="top-left" tone="violet" icon={Gauge} value={`${summary.average}%`} label="Trung bình" />
-                <StatSticker place="bottom-right" tone="gold" icon={Trophy} value={summary.top} label="Nổi bật" />
-              </>
-            )}
           </div>
         }
-      >
-        <h2 id="feature-self-title" className="feature-title">
-          Tự đánh giá qua biểu đồ <span className="text-spectrum">{axes.length} nhóm tiêu chí</span>
-        </h2>
-        <p className="feature-lead">Đánh giá cá nhân qua biểu đồ tố chất, từ đó gợi ý những ngành nghề phù hợp với bạn.</p>
-        <StatTiles items={selfStats} />
-        {canExplore && (
-          <Link to={testPath} className="feature-link">
-            <Button size="lg" rightIcon={<ArrowRight size={18} />}>
-              Làm bài test
-            </Button>
-          </Link>
-        )}
-      </Feature>
+      />
 
       <Feature
         id="feature-360"
         flip
-        visual={(started) => (
-          <div className="feature-stage">
-            <Globe360 nodes={GLOBE_NODES} paused={!started} />
-            <StatSticker place="top-left" tone="cyan" icon={Orbit} value="360°" label="Đa góc nhìn" />
-            <StatSticker place="bottom-right" tone="magenta" icon={Users} value={`${GLOBE_NODES.length} + Bạn`} label="Người đánh giá" />
+        eyebrow="Đánh giá 360"
+        title={
+          <>
+            Đánh giá <span className="text-spectrum">360°</span> từ những người hiểu bạn
+          </>
+        }
+        lead="Phụ huynh, bạn bè, giáo viên và người hướng dẫn cùng góp góc nhìn để kết quả không chỉ là cảm nhận của riêng bạn."
+        action={canExplore ? { to: '/danh-gia-360', label: 'Khám phá' } : undefined}
+        visual={
+          <div className="feature-panel feature-panel-tint">
+            <div className="feature-panel-head">
+              <span className="panel-fact">
+                <b>{RATER_NODES.length}</b> nhóm góc nhìn
+              </span>
+              <span className="panel-fact">
+                <b>{MAX_EXPECTED_PER_GROUP}</b> người mỗi nhóm
+              </span>
+            </div>
+            <Rater360 nodes={RATER_NODES} />
           </div>
-        )}
-      >
-        <h2 id="feature-360-title" className="feature-title">
-          Đánh giá <span className="text-spectrum">360°</span> từ những người hiểu bạn
-        </h2>
-        <p className="feature-lead">
-          Phụ huynh, bạn bè, giáo viên và người hướng dẫn cùng góp góc nhìn để kết quả không chỉ là cảm nhận của riêng bạn.
-        </p>
-        <StatTiles items={VIEW_STATS} />
-        {canExplore && (
-          <Link to="/danh-gia-360" className="feature-link">
+        }
+      />
+
+      <RevealSection className="home-explore" labelledBy="home-explore-title">
+        <div className="home-section-head">
+          <span className="home-eyebrow reveal">Khám phá</span>
+          <h2 id="home-explore-title" className="home-section-title reveal" style={{ '--d': 1 } as React.CSSProperties}>
+            Nghề nghiệp, ngành học và trường
+          </h2>
+        </div>
+        <ExploreLinks items={exploreItems} />
+      </RevealSection>
+
+      {canExplore && (
+        <RevealSection className="home-closing" labelledBy="home-closing-title">
+          <span className="home-closing-glow" aria-hidden="true" />
+          <h2 id="home-closing-title" className="home-closing-title reveal">
+            Biết mình là ai, <span>vững bước tương lai.</span>
+          </h2>
+          <Link to={testPath} className="home-closing-cta reveal" style={{ '--d': 1 } as React.CSSProperties}>
             <Button size="lg" rightIcon={<ArrowRight size={18} />}>
-              Khám phá
+              Làm bài test
             </Button>
           </Link>
-        )}
-      </Feature>
-
+        </RevealSection>
+      )}
     </div>
   );
 };

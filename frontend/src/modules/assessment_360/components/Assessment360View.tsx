@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Users } from 'lucide-react';
 import { Button, Modal, Tabs } from '../../../components/common';
 import { JoinedClassesSection } from '../../class_management/components/JoinedClassesSection';
-import { GLOBE_NODES } from '../assessment360.constants';
+import { RATER_NODES } from '../assessment360.constants';
 import type { TabItem } from '../../../components/common';
 import type { InviteController } from '../useInviteController';
 import type { ReviewController } from '../useReviewController';
@@ -57,7 +57,7 @@ export const Assessment360View: React.FC<Assessment360ViewProps> = ({ invite, re
 
   return (
     <div className="t360-stack">
-      <InvitePanel controller={invite} nodes={GLOBE_NODES} action={action} />
+      <InvitePanel controller={invite} nodes={RATER_NODES} action={action} />
       <Modal wide open={setupOpen && showSetup} title="Người đánh giá" onClose={() => setSetupOpen(false)} locked={childOpen}>
         <div className="t360-setup">
           {tabs.length > 1 && <Tabs items={tabs} value={activeTab} onChange={(value) => setTab(value as SetupTab)} label="Người đánh giá" />}

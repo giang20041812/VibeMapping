@@ -1,15 +1,18 @@
-/* Trang giới thiệu trên nền phẳng; chữ và hình đặt trực tiếp, không đặt khung riêng */
+/* Trang giới thiệu: phần mở đầu navy rộng, các hàng nội dung cùng một khung, nhịp dọc đều nhau.
+   Cam chỉ ở nút chính (phần mở đầu và dải cuối) và thông tin nổi bật; chữ và hình theo navy của logo. */
 .home {
-  --home-width: calc(1120 * var(--px));
+  --home-width: calc(1160 * var(--px));
   position: relative;
   z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-16);
+  gap: clamp(calc(72 * var(--px)), 10vw, calc(140 * var(--px)));
   min-width: 0;
+  padding-bottom: var(--space-12);
 }
 .home > * { width: 100%; max-width: var(--home-width); min-width: 0; }
+.home > .hero { max-width: calc(1320 * var(--px)); }
 
 .text-spectrum {
   color: var(--brand-blue);
@@ -19,146 +22,165 @@
   -webkit-text-fill-color: transparent;
 }
 
-/* Phần mở đầu: biểu tượng, tên sản phẩm, khẩu hiệu, nút chính, lối tắt khám phá; trồi lên nối tiếp */
-.home-brand {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-5);
-  padding-top: var(--space-8);
-  text-align: center;
+/* ---------- Hiện ra khi cuộn tới: trồi lên, rõ dần, nối tiếp theo --d ---------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  filter: blur(8px);
+  transition:
+    opacity 900ms var(--ease-out),
+    transform 1100ms var(--ease-out),
+    filter 900ms var(--ease-out);
+  transition-delay: calc(var(--d, 0) * 90ms);
 }
-.home-brand > * { animation: home-rise var(--duration-enter) var(--ease-decelerate) both; }
-.home-brand > :nth-child(2) { animation-delay: var(--stagger); }
-.home-brand > :nth-child(3) { animation-delay: calc(var(--stagger) * 2); }
-.home-brand > :nth-child(4) { animation-delay: calc(var(--stagger) * 3); }
-.home-brand > :nth-child(n + 5) { animation-delay: calc(var(--stagger) * 4); }
+.reveal-scale { transform: translateY(40px) scale(0.96); }
+.is-in .reveal { opacity: 1; transform: none; filter: none; }
 
-.home-brand-title {
-  display: flex;
-  flex-wrap: wrap;
+/* ---------- Nhãn nhỏ trên tiêu đề, tiêu đề khối, liên kết hành động ---------- */
+.home-eyebrow {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: var(--space-2) 0.28em;
-  max-width: 100%;
-  font-size: clamp(calc(36 * var(--px)), 10vw, calc(84 * var(--px)));
-  font-weight: 800;
-  line-height: 1.05;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brand-sky);
+}
+.home-eyebrow::before { content: ''; width: calc(20 * var(--px)); height: 2px; background: currentColor; border-radius: var(--radius-full); }
+
+.home-section-head { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-3); margin-bottom: var(--space-8); }
+.home-section-title,
+.feature-title {
+  font-size: clamp(var(--font-size-3xl), 3.4vw, calc(48 * var(--px)));
+  font-weight: 700;
+  line-height: 1.1;
   letter-spacing: -0.03em;
+  color: var(--color-text-main);
 }
-.home-brand-mark { flex: none; width: 1.05em; height: 1.05em; }
-.home-brand-mark .logo-svg { display: block; }
-.home-brand-words { min-width: 0; }
-.home-brand-vibe { color: var(--color-text-main); }
-.home-brand-mapping { color: var(--color-accent); }
-.home-brand-lead {
-  max-width: calc(560 * var(--px));
-  font-size: var(--font-size-2xl);
-  line-height: 1.4;
-  color: var(--color-text-secondary);
-}
-.home-brand-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--space-3);
-  margin-top: var(--space-2);
-}
-.home-brand-link { text-decoration: none; border-radius: var(--radius-md); }
-.home-brand .stat-links { max-width: calc(760 * var(--px)); margin-top: var(--space-6); }
 
-/* Hàng giới thiệu so le hai bên: hai cột bằng nhau, chữ và hình cùng cỡ */
+.home-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target);
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: var(--brand-navy);
+  text-decoration: none;
+  background: linear-gradient(currentColor, currentColor) 0 calc(100% - 8px) / 0 2px no-repeat;
+}
+.home-link:hover { background-size: 100% 2px; }
+.home-link svg { transition: transform var(--transition-normal); }
+.home-link:hover svg { transform: translateX(4px); }
+.home-link:focus-visible { outline: 3px solid var(--color-primary-ring); outline-offset: 4px; border-radius: var(--radius-sm); }
+.is-in .home-link.reveal {
+  transition:
+    opacity 900ms var(--ease-out) calc(var(--d, 0) * 90ms),
+    transform 1100ms var(--ease-out) calc(var(--d, 0) * 90ms),
+    filter 900ms var(--ease-out) calc(var(--d, 0) * 90ms),
+    background-size 400ms var(--ease-out);
+}
+
+/* ---------- Hàng giới thiệu: hai cột bằng nhau, chữ canh giữa theo chiều dọc với thẻ hình ---------- */
 .feature {
-  position: relative;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: center;
-  gap: var(--space-16);
+  gap: clamp(calc(32 * var(--px)), 6vw, calc(88 * var(--px)));
 }
 .feature-flip .feature-visual { order: -1; }
 
-.feature-visual {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  min-width: 0;
-}
-.feature-stage { position: relative; width: 100%; max-width: calc(520 * var(--px)); }
-.feature-badge { position: absolute; top: 0; right: 0; z-index: 1; }
+.feature-copy { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-5); min-width: 0; }
+.feature-lead { max-width: calc(480 * var(--px)); font-size: var(--font-size-xl); line-height: 1.55; color: var(--color-text-secondary); }
 
-.feature-copy {
-  position: relative;
+.feature-visual { min-width: 0; }
+.feature-panel {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-5);
-  min-width: 0;
+  gap: var(--space-4);
+  padding: clamp(var(--space-4), 2.4vw, var(--space-8));
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: calc(28 * var(--px));
+  box-shadow: var(--shadow-lg);
 }
-
-/* Thứ tự trồi lên khi hàng cuộn tới: chữ trước, hình sau, nhãn nổi cuối */
-.feature-copy > :nth-child(1) { --order: 0; }
-.feature-copy > :nth-child(2) { --order: 1; }
-.feature-copy > :nth-child(3) { --order: 2; }
-.feature-copy > :nth-child(4) { --order: 3; }
-.feature-copy > :nth-child(5) { --order: 4; }
-.feature-visual { --order: 1; }
-.feature-stage .feature-badge,
-.feature-stage .stat-sticker { --order: 4; }
-.feature-stage .stat-sticker-bottom-left,
-.feature-stage .stat-sticker-bottom-right { --order: 5; }
-
-.feature .feature-visual,
-.feature .feature-badge,
-.feature .stat-sticker,
-.feature-copy > * { opacity: 0; }
-.feature.is-visible .feature-visual,
-.feature.is-visible .feature-badge,
-.feature.is-visible .stat-sticker,
-.feature.is-visible .feature-copy > * {
-  animation: home-rise var(--duration-enter) var(--ease-decelerate) calc(var(--order, 0) * var(--stagger)) both;
+.feature-panel-tint { background: linear-gradient(180deg, var(--brand-ice) 0%, var(--color-bg-surface) 70%); }
+.feature-panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: calc(32 * var(--px));
 }
-.feature.is-visible .feature-visual { animation-name: home-scale-in; animation-duration: 700ms; }
-/* Ô số liệu tự hiện nối tiếp từng ô nên khung chứa không trồi thêm */
-.feature.is-visible .feature-copy > .stat-tiles { animation: none; opacity: 1; }
-.feature-visual .globe360-canvas { opacity: 1; transform: none; }
-
-.feature-title { font-size: var(--font-size-4xl); font-weight: 800; line-height: var(--line-tight); letter-spacing: -0.02em; color: var(--color-text-main); }
-.feature-lead { max-width: calc(480 * var(--px)); font-size: var(--font-size-xl); line-height: 1.5; color: var(--color-text-secondary); }
-.feature-copy .stat-tiles { max-width: calc(520 * var(--px)); }
-.feature-link { margin-top: var(--space-2); text-decoration: none; border-radius: var(--radius-md); }
-
-@keyframes home-rise {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: none; }
+.feature-panel-facts { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.panel-fact {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-subtle);
+  border-radius: var(--radius-full);
 }
-@keyframes home-scale-in {
-  from { opacity: 0; transform: translateY(24px) scale(0.96); }
-  to { opacity: 1; transform: none; }
-}
+.panel-fact b { font-weight: 700; color: var(--color-text-main); }
+.panel-fact.is-highlight { color: var(--color-highlight-text); background: var(--color-highlight-bg); }
+.panel-fact.is-highlight b { color: var(--color-highlight-text); }
 
-@media (prefers-reduced-motion: reduce) {
-  .home-brand > * { animation: none; }
-  .feature .feature-visual,
-  .feature .feature-badge,
-  .feature .stat-sticker,
-  .feature-copy > * { opacity: 1; }
-  .feature.is-visible .feature-visual,
-  .feature.is-visible .feature-badge,
-  .feature.is-visible .stat-sticker,
-  .feature.is-visible .feature-copy > * { animation: none; }
+/* ---------- Dải kêu gọi cuối trang: navy, quầng cam, tiêu đề lớn và nút chính ---------- */
+.home-closing {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-8);
+  padding: clamp(calc(48 * var(--px)), 7vw, calc(96 * var(--px))) var(--space-6);
+  overflow: hidden;
+  text-align: center;
+  color: var(--brand-cream);
+  background: var(--brand-navy);
+  border-radius: calc(28 * var(--px));
 }
+.home-closing-glow {
+  position: absolute;
+  z-index: -1;
+  bottom: -60%;
+  left: 50%;
+  width: 60%;
+  aspect-ratio: 1 / 1;
+  background: radial-gradient(circle, var(--brand-coral) 0%, color-mix(in srgb, var(--brand-coral) 30%, transparent) 45%, transparent 70%);
+  border-radius: var(--radius-full);
+  filter: blur(calc(60 * var(--px)));
+  opacity: 0.7;
+  transform: translateX(-50%) scale(0.7);
+  transition: transform 1600ms var(--ease-out);
+}
+.home-closing.is-in .home-closing-glow { transform: translateX(-50%) scale(1); }
+.home-closing-title {
+  max-width: calc(820 * var(--px));
+  font-size: clamp(var(--font-size-3xl), 4.4vw, calc(64 * var(--px)));
+  font-weight: 500;
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+.home-closing-title span { display: block; color: var(--brand-soft); }
+.home-closing-cta { text-decoration: none; border-radius: var(--radius-md); }
 
 @media (max-width: 900px) {
-  .home { gap: var(--space-12); }
-  .feature { grid-template-columns: minmax(0, 1fr); gap: var(--space-8); }
+  .feature { grid-template-columns: minmax(0, 1fr); }
   .feature-flip .feature-visual { order: 0; }
-  .feature-title { font-size: var(--font-size-3xl); }
 }
-
-@media (max-width: 520px) {
-  .home { gap: var(--space-10); }
-  .home-brand { padding-top: var(--space-4); }
-  .home-brand-lead { font-size: var(--font-size-xl); }
-  .home-brand-actions { flex-direction: column; align-self: stretch; }
-  .home-brand-link .app-button { width: 100%; }
+@media (max-width: 640px) {
+  .home-closing-cta,
+  .home-closing-cta .app-button { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal-scale { opacity: 1; transform: none; filter: none; transition: none; }
+  .home-closing-glow { transition: none; transform: translateX(-50%); }
 }

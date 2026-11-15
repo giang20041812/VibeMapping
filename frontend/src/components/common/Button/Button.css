@@ -58,19 +58,21 @@
 }
 
 /* Variants.
-   Nút chính là phần tử duy nhất tô chàm đặc trên màn hình: mỗi vùng chỉ nên có một nút chính. */
+   Nút chính là phần tử duy nhất tô cam san hô trên màn hình: mỗi vùng chỉ nên có một nút chính. */
 .btn-primary {
-  color: var(--color-text-inverse);
-  background: var(--color-primary);
+  color: var(--color-cta-text);
+  font-weight: 700;
+  background: var(--color-cta);
   box-shadow: var(--shadow-cta);
 }
+.btn-primary:focus-visible { outline-color: var(--color-cta-ring); }
 .btn-primary:hover:not(:disabled) {
-  background: var(--color-primary-hover);
+  background: var(--color-cta-hover);
   box-shadow: var(--shadow-cta-hover);
   transform: translateY(-1px);
 }
 .btn-primary:active:not(:disabled) {
-  background: var(--color-primary-active);
+  background: var(--color-cta-active);
   box-shadow: var(--shadow-cta);
   transform: translateY(0) scale(0.98);
 }

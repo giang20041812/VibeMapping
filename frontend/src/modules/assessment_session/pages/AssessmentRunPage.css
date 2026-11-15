@@ -34,6 +34,7 @@
 .run-finish.btn-primary,
 .run-finish.btn-primary:hover:not(:disabled),
 .run-finish.btn-primary:active:not(:disabled) {
+  color: var(--color-text-inverse);
   background: var(--part-color, var(--color-primary));
 }
 .run-finish {

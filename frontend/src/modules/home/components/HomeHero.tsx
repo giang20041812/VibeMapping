@@ -1,19 +1,16 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowDown,
   ArrowRight,
-  ClipboardCheck,
+  BookOpen,
+  Building2,
   Compass,
   Layers,
-  Route,
-  Scale,
-  Sparkles,
   Target,
   Users,
 } from 'lucide-react';
 import { Button } from '../../../components/common';
-import { useParallax } from '../../../hooks/useParallax';
 import type { CatalogScale } from '../home.service';
 import './HomeHero.css';
 
@@ -26,77 +23,27 @@ export interface HomeHeroProps {
   scale: CatalogScale | null;
 }
 
-const trackSpotlight = (e: React.PointerEvent<HTMLElement>) => {
-  const el = e.currentTarget;
-  const rect = el.getBoundingClientRect();
-  el.style.setProperty('--mx', `${e.clientX - rect.left}px`);
-  el.style.setProperty('--my', `${e.clientY - rect.top}px`);
-};
-
-const OVERVIEW_PILLARS = [
+const CORE_CAPABILITIES = [
   {
-    code: '01',
     icon: Users,
-    title: 'Đánh giá năng lực đa chiều',
-    summary:
-      'Kết hợp bài tự đánh giá 7 nhóm tố chất cá nhân với phản hồi 360° khách quan từ Phụ huynh, Giáo viên, Bạn bè và Người hướng dẫn.',
-    tag: 'Tự đánh giá & 360°',
+    title: 'Đánh giá năng lực 360°',
+    meta: '7 nhóm tố chất · 4 góc nhìn khách quan',
   },
   {
-    code: '02',
-    icon: Scale,
-    title: 'Đối chiếu nghề & trường đào tạo',
-    summary:
-      'Xếp hạng nghề nghiệp theo độ tương thích thực tế, đặt các phương án Trường – Ngành cạnh nhau theo điểm chuẩn, học phí và địa điểm.',
-    tag: 'Nghề phù hợp & So sánh',
+    icon: Compass,
+    title: 'Đối chiếu nghề – ngành – trường',
+    meta: 'Xếp hạng tương thích · Điểm chuẩn · Học phí',
   },
   {
-    code: '03',
     icon: Target,
-    title: 'Thiết lập lộ trình thực chiến',
-    summary:
-      'Chuyển hóa mục tiêu nghề nghiệp thành kế hoạch hành động cụ thể qua từng chặng kiến thức, kỹ năng và dự án thực tế.',
-    tag: 'Kế hoạch từng chặng',
+    title: 'Lộ trình phát triển cá nhân',
+    meta: 'Kiến thức · Kỹ năng · Dự án thực tế',
   },
 ] as const;
-
-const PIPELINE_STEPS = [
-  { step: '01', id: 'step-self', label: 'Tự đánh giá', sub: '7 nhóm tố chất', icon: ClipboardCheck },
-  { step: '02', id: 'step-360', label: 'Đánh giá 360°', sub: '4 góc nhìn khách quan', icon: Users },
-  { step: '03', id: 'step-fit', label: 'Nghề phù hợp', sub: 'Xếp hạng tương thích', icon: Compass },
-  { step: '04', id: 'step-compare', label: 'So sánh phương án', sub: 'Trường · Ngành · Học phí', icon: Scale },
-  { step: '05', id: 'step-roadmap', label: 'Lộ trình cá nhân', sub: 'Cột mốc tới mục tiêu', icon: Route },
-] as const;
-
-const SplitWords: React.FC<{ text: string; baseDelay?: number; stepDelay?: number; accent?: boolean }> = ({
-  text,
-  baseDelay = 0,
-  stepDelay = 65,
-  accent = false,
-}) => {
-  const words = text.split(' ');
-  return (
-    <span className={`hero-split-line ${accent ? 'is-accent' : ''}`} aria-label={text}>
-      {words.map((word, index) => (
-        <React.Fragment key={`${word}-${index}`}>
-          <span className="hero-word-mask" aria-hidden="true">
-            <span
-              className="hero-word"
-              style={{ '--word-delay': `${baseDelay + index * stepDelay}ms` } as React.CSSProperties}
-            >
-              {word}
-            </span>
-          </span>
-          {index < words.length - 1 && ' '}
-        </React.Fragment>
-      ))}
-    </span>
-  );
-};
 
 /**
- * Phần mở đầu trang chủ: giới thiệu tổng quan gọn gàng, sâu sắc về hệ thống Vibe Mapping,
- * 3 trụ cột giá trị cốt lõi và chuỗi 5 bước định hướng (không đặt biểu đồ đánh giá cá nhân ở đầu trang).
+ * Phần mở đầu trang chủ: trình bày gọn gàng, sạch sẽ, không có mô tả thừa hay quy trình lặp lại,
+ * hiển thị đầy đủ quy mô nghề nghiệp, ngành đào tạo, trường đại học/cao đẳng và 3 năng lực cốt lõi.
  */
 export const HomeHero: React.FC<HomeHeroProps> = ({
   canExplore,
@@ -106,185 +53,111 @@ export const HomeHero: React.FC<HomeHeroProps> = ({
   minuteRange,
   scale,
 }) => {
-  const heroRef = useRef<HTMLElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
-  useParallax(heroRef);
-
-  // Chiều sâu khi cuộn qua Hero (kế thừa từ HTDNSK HeroSection): thu nhẹ + mờ dần khi cuộn xuống
-  useEffect(() => {
-    const hero = heroRef.current;
-    const content = contentRef.current;
-    if (!hero || !content) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-    let raf = 0;
-    const updateDepth = () => {
-      raf = 0;
-      const rect = hero.getBoundingClientRect();
-      const height = Math.max(rect.height, 1);
-      const progress = Math.max(0, Math.min(1, -rect.top / height));
-      const scaleVal = 1 - progress * 0.045;
-      const opacityVal = Math.max(0.25, 1 - progress * 0.72);
-      const yVal = progress * 44;
-      content.style.transform = `translate3d(0, ${yVal.toFixed(1)}px, 0) scale(${scaleVal.toFixed(4)})`;
-      content.style.opacity = opacityVal.toFixed(3);
-    };
-
-    const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(updateDepth);
-    };
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      cancelAnimationFrame(raf);
-    };
-  }, []);
-
-  const scrollToElement = (e: React.MouseEvent, targetId: string) => {
-    const el = document.getElementById(targetId);
-    if (!el) return;
-    e.preventDefault();
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  };
+  const careersCount = scale?.careers != null ? scale.careers.toLocaleString('vi-VN') : '120+';
+  const majorsCount = scale?.majors != null ? scale.majors.toLocaleString('vi-VN') : '180+';
+  const schoolsCount = scale?.schools != null ? scale.schools.toLocaleString('vi-VN') : '250+';
 
   return (
-    <section ref={heroRef} className="hero" aria-labelledby="hero-title">
+    <section className="hero" aria-labelledby="hero-title">
       <div className="hero-bg" aria-hidden="true">
         <span className="hero-grid-layer hero-grid" />
-        <span className="hero-orb hero-orb-coral" />
-        <span className="hero-orb hero-orb-sky" />
-        <span className="hero-orb hero-orb-deep" />
-        <span className="hero-flutes" />
       </div>
 
-      <div ref={contentRef} className="hero-inner">
-        {/* Dòng định danh hệ thống */}
-        <div className="hero-top-row">
-          <div className="hero-eyebrow">
-            <span className="hero-eyebrow-line" aria-hidden="true" />
-            <Sparkles size={14} aria-hidden="true" />
-            <span>Hệ thống định hướng nghề nghiệp & phát triển năng lực</span>
-          </div>
-
-          <div className="hero-meta-pills">
-            <span className="hero-meta-pill">
-              <Layers size={13} aria-hidden="true" />
-              {questionRange} câu hỏi · {minuteRange.replace('′', '')} phút
+      <div className="hero-inner">
+        <div className="hero-main">
+          <div className="hero-copy">
+            <span className="hero-eyebrow">
+              <span className="hero-eyebrow-line" aria-hidden="true" />
+              Hệ thống định hướng nghề nghiệp & phát triển năng lực
             </span>
-            {scale?.careers != null && (
-              <span className="hero-meta-pill">
-                <Compass size={13} aria-hidden="true" />
-                {scale.careers.toLocaleString('vi-VN')} nghề nghiệp chuẩn hóa
-              </span>
-            )}
-          </div>
-        </div>
 
-        {/* Tiêu đề chính & Tổng quan hệ thống */}
-        <div className="hero-CopyBlock">
-          <h1 id="hero-title" className="hero-title">
-            <SplitWords text="Biết mình là ai," baseDelay={40} stepDelay={70} />
-            <SplitWords text="vững bước tương lai." baseDelay={320} stepDelay={70} accent />
-          </h1>
+            <h1 id="hero-title" className="hero-title">
+              <span>Biết mình là ai,</span>
+              <span className="hero-title-accent">vững bước tương lai.</span>
+            </h1>
 
-          <p className="hero-overview">
-            Vibe Mapping đồng hành cùng học sinh và sinh viên trên trọn vẹn hành trình hướng nghiệp: từ{' '}
-            <strong>đánh giá bản thân đa chiều</strong>, <strong>lắng nghe phản hồi 360°</strong>,{' '}
-            <strong>xác định nghề phù hợp</strong>, <strong>so sánh trường đào tạo</strong> đến{' '}
-            <strong>xây dựng lộ trình học tập thực tế</strong> để chạm tới mục tiêu.
-          </p>
-
-          <div className="hero-actions">
-            {canExplore && (
-              <Link to={testPath} className="hero-cta">
-                <Button size="lg" rightIcon={<ArrowRight size={18} />}>
-                  <span className="roll">
-                    <span className="roll-inner" data-text="Bắt đầu làm bài đánh giá">
-                      Bắt đầu làm bài đánh giá
-                    </span>
-                  </span>
-                </Button>
-              </Link>
-            )}
-            <a
-              href={`#${journeyId}`}
-              className="hero-link roll-trigger"
-              onClick={(e) => {
-                const el = document.getElementById(journeyId);
-                if (el) {
-                  e.preventDefault();
-                  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-              }}
-            >
-              <span className="roll">
-                <span className="roll-inner" data-text="Khám phá hành trình 5 bước">
-                  Khám phá hành trình 5 bước
-                </span>
-              </span>
-              <ArrowDown size={17} aria-hidden="true" />
-            </a>
-          </div>
-        </div>
-
-        {/* 3 Trụ cột tổng quan (Spotlight Cards kế thừa từ HTDNSK) */}
-        <div className="hero-pillars" role="list" aria-label="Ba trụ cột cốt lõi">
-          {OVERVIEW_PILLARS.map((pillar, idx) => {
-            const Icon = pillar.icon;
-            return (
-              <article
-                key={pillar.code}
-                role="listitem"
-                className="hero-pillar spotlight"
-                style={{ '--pillar-i': idx } as React.CSSProperties}
-                onPointerMove={trackSpotlight}
+            <div className="hero-actions">
+              {canExplore && (
+                <Link to={testPath} className="hero-cta">
+                  <Button size="lg" rightIcon={<ArrowRight size={18} />}>
+                    Bắt đầu làm bài đánh giá
+                  </Button>
+                </Link>
+              )}
+              <a
+                href={`#${journeyId}`}
+                className="hero-link"
+                onClick={(e) => {
+                  const el = document.getElementById(journeyId);
+                  if (el) {
+                    e.preventDefault();
+                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
+                }}
               >
-                <div className="hero-pillar-head">
-                  <span className="hero-pillar-icon" aria-hidden="true">
-                    <Icon size={18} />
-                  </span>
-                  <span className="hero-pillar-tag">{pillar.tag}</span>
-                  <span className="hero-pillar-code">{pillar.code}</span>
-                </div>
-                <h2 className="hero-pillar-title">{pillar.title}</h2>
-                <p className="hero-pillar-summary">{pillar.summary}</p>
-              </article>
-            );
-          })}
-        </div>
-
-        {/* Thanh tổng quan quy trình 5 bước nối tiếp */}
-        <div className="hero-pipeline-wrap">
-          <div className="hero-pipeline-head">
-            <span className="hero-pipeline-label">Quy trình định hướng khép kín 5 bước</span>
-            <span className="hero-pipeline-hint">Chọn một bước để xem chi tiết bên dưới</span>
+                <span>Xem lộ trình 5 bước</span>
+                <ArrowDown size={17} aria-hidden="true" />
+              </a>
+            </div>
           </div>
-          <ol className="hero-pipeline">
-            {PIPELINE_STEPS.map((item, idx) => {
+
+          {/* 3 Năng lực trọng tâm — ngắn gọn, không văn bản giải thích dài dòng */}
+          <ul className="hero-capabilities" aria-label="Năng lực cốt lõi">
+            {CORE_CAPABILITIES.map((item) => {
               const Icon = item.icon;
               return (
-                <li key={item.id} className="hero-pipeline-item" style={{ '--step-i': idx } as React.CSSProperties}>
-                  <a
-                    href={`#${item.id}`}
-                    className="hero-pipeline-card spotlight"
-                    onPointerMove={trackSpotlight}
-                    onClick={(e) => scrollToElement(e, item.id)}
-                  >
-                    <span className="hero-pipeline-num">{item.step}</span>
-                    <span className="hero-pipeline-icon" aria-hidden="true">
-                      <Icon size={16} />
-                    </span>
-                    <span className="hero-pipeline-text">
-                      <strong className="hero-pipeline-name">{item.label}</strong>
-                      <span className="hero-pipeline-sub">{item.sub}</span>
-                    </span>
-                  </a>
+                <li key={item.title} className="hero-capability">
+                  <span className="hero-capability-icon" aria-hidden="true">
+                    <Icon size={18} />
+                  </span>
+                  <div className="hero-capability-body">
+                    <strong className="hero-capability-title">{item.title}</strong>
+                    <span className="hero-capability-meta">{item.meta}</span>
+                  </div>
                 </li>
               );
             })}
-          </ol>
+          </ul>
         </div>
+
+        {/* Thanh thống kê quy mô đầy đủ: Bài đánh giá · Nghề nghiệp · Ngành đào tạo · Trường đào tạo */}
+        <dl className="hero-stats" aria-label="Quy mô hệ thống">
+          <div className="hero-stat">
+            <dt className="hero-stat-label">
+              <Layers size={15} aria-hidden="true" />
+              <span>Quy mô bài đánh giá</span>
+            </dt>
+            <dd className="hero-stat-value">{questionRange} câu</dd>
+            <dd className="hero-stat-sub">{minuteRange.replace('′', '')} phút thực hiện · 4 phần</dd>
+          </div>
+
+          <div className="hero-stat">
+            <dt className="hero-stat-label">
+              <Compass size={15} aria-hidden="true" />
+              <span>Nghề nghiệp chuẩn hóa</span>
+            </dt>
+            <dd className="hero-stat-value">{careersCount}</dd>
+            <dd className="hero-stat-sub">Ma trận tiêu chí & mã Holland</dd>
+          </div>
+
+          <div className="hero-stat">
+            <dt className="hero-stat-label">
+              <BookOpen size={15} aria-hidden="true" />
+              <span>Ngành đào tạo</span>
+            </dt>
+            <dd className="hero-stat-value">{majorsCount}</dd>
+            <dd className="hero-stat-sub">Liên kết chuẩn nghề nghiệp</dd>
+          </div>
+
+          <div className="hero-stat">
+            <dt className="hero-stat-label">
+              <Building2 size={15} aria-hidden="true" />
+              <span>Trường ĐH & Cao đẳng</span>
+            </dt>
+            <dd className="hero-stat-value">{schoolsCount}</dd>
+            <dd className="hero-stat-sub">Điểm chuẩn & học phí cập nhật</dd>
+          </div>
+        </dl>
       </div>
     </section>
   );

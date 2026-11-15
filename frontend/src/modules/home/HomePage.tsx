@@ -20,7 +20,7 @@ interface RouteState {
 }
 
 /* Số liệu mẫu cho bản đồ minh họa: đủ các nhóm tiêu chí như trong đánh giá cá nhân */
-const SAMPLE_SCORES: Record<string, number> = { G1: 78, G2: 88, G3: 70, G4: 84, G5: 62, G6: 91, G7: 74 };
+const SAMPLE_SCORES: Record<string, number> = { G1: 78, G2: 92, G3: 74, G4: 85, G5: 68, G6: 88, G7: 81 };
 const SAMPLE_AXES: PolygonAxis[] = Object.keys(GROUP_SHORT_LABELS).map((code) => ({
   key: code,
   label: GROUP_SHORT_LABELS[code],
@@ -114,11 +114,10 @@ export const HomePage: React.FC = () => {
       <HomeHero
         canExplore={canExplore}
         testPath={testPath}
-        axes={axes}
-        levels={POLYGON_LEVELS}
-        isOwnResult={result !== null}
-        isLoading={isChartLoading}
         journeyId={JOURNEY_ID}
+        questionRange={QUESTION_RANGE}
+        minuteRange={MINUTE_RANGE}
+        scale={scale}
       />
 
       {!isGuest && !isProfileLoading && !learner && <Alert variant="info">Tài khoản của bạn chưa có chức năng nào trong giai đoạn này.</Alert>}
@@ -132,6 +131,10 @@ export const HomePage: React.FC = () => {
         raters={RATER_NODES}
         ratersPerGroup={MAX_EXPECTED_PER_GROUP}
         careers={scale?.careers ?? null}
+        axes={axes}
+        levels={POLYGON_LEVELS}
+        isOwnResult={result !== null}
+        isChartLoading={isChartLoading}
       />
     </div>
   );

@@ -1,0 +1,239 @@
+.formula-loading {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-8);
+}
+
+/* Công thức dạng toán học: cuộn ngang khi dài, không làm tràn trang */
+.formula-math {
+  color: var(--color-text-main);
+}
+
+.formula-math-block {
+  display: block;
+  min-width: 0;
+}
+
+.formula-display {
+  min-width: 0;
+  overflow-x: auto;
+  padding: var(--space-4);
+  font-size: var(--font-size-xl);
+  background-color: var(--color-bg-subtle);
+  border-radius: var(--radius-md);
+}
+
+/* Chữ tiếng Việt trong công thức: font KaTeX thiếu dấu chồng nên dùng font của ứng dụng */
+.formula-math .katex .text,
+.formula-math .katex .mord.text {
+  font-family: var(--font-sans);
+}
+
+.formula-notes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-text-secondary);
+}
+
+.formula-link-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: var(--space-5);
+}
+
+.formula-link-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.formula-link {
+  color: var(--color-text-brand);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.formula-link:hover {
+  text-decoration: underline;
+}
+
+.formula-empty {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.formula-tabs {
+  padding: var(--space-3) var(--space-4) 0;
+  min-width: 0;
+}
+
+/* Sơ đồ liên kết: kích thước theo --px để lớn lên cùng màn hình; dây nối vẽ trong hệ đơn vị của sơ đồ */
+.formula-graph-scroll {
+  min-width: 0;
+  overflow: auto;
+  max-height: 70vh;
+  background-color: var(--color-bg-subtle);
+  border-radius: var(--radius-lg);
+}
+
+.formula-graph {
+  position: relative;
+}
+
+.formula-graph-edges {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.formula-edge {
+  fill: none;
+  stroke: var(--color-border-hover);
+  stroke-width: 1.5;
+}
+
+.formula-edge.is-dimmed {
+  opacity: 0.25;
+}
+
+.formula-edge.is-active {
+  stroke: var(--color-primary);
+  stroke-width: 2.5;
+}
+
+.formula-node {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 0 var(--space-3);
+  text-align: left;
+  color: var(--color-text-main);
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-left-width: 4px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xs);
+  cursor: pointer;
+}
+
+.formula-node:hover {
+  border-color: var(--color-border-hover);
+}
+
+.formula-node:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.formula-node.is-approved { border-left-color: var(--color-success); }
+.formula-node.is-demo { border-left-color: var(--color-info); }
+.formula-node.is-pending_ba { border-left-color: var(--color-warning); }
+.formula-node.is-blocked { border-left-color: var(--color-danger); }
+
+.formula-node.is-dimmed {
+  opacity: 0.4;
+}
+
+.formula-node.is-related {
+  border-color: var(--color-primary);
+}
+
+.formula-node.is-selected {
+  background-color: var(--color-primary-light);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-ring);
+}
+
+.formula-node-name {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  line-height: 1.25;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.formula-node-group {
+  overflow: hidden;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Bản điện thoại: cây gập mở thay cho đồ thị */
+.formula-tree-view {
+  display: none;
+}
+
+.formula-tree-children {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0 0 0 var(--space-5);
+  list-style: none;
+  border-left: 1px solid var(--color-border);
+}
+
+.formula-tree-children.is-root {
+  padding: var(--space-2) var(--space-3);
+  border-left: 0;
+}
+
+.formula-tree-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+}
+
+.formula-tree-toggle {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  color: var(--color-text-secondary);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.formula-tree-toggle.is-leaf {
+  cursor: default;
+}
+
+.formula-tree-name {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  text-align: left;
+  color: var(--color-text-brand);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .formula-graph-view {
+    display: none;
+  }
+
+  .formula-tree-view {
+    display: block;
+  }
+}

@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ArrowRight, BookOpen, Briefcase, Gauge, Layers, ListChecks, Orbit, School, Timer, Trophy, Users } from 'lucide-react';
 import { Alert, Badge, Button, LogoMark } from '../../components/common';
@@ -13,7 +13,7 @@ import { GLOBE_NODES } from '../assessment_360/assessment360.constants';
 import { PACKAGES } from '../assessment_session/assessmentSession.constants';
 import { MAX_EXPECTED_PER_GROUP } from '../invitation_link/invitation.constants';
 import { getCatalogScale, type CatalogScale } from './home.service';
-import { StatSticker, StatTiles, StatInline, type StatItem } from './components/HomeStats';
+import { StatLinks, StatSticker, StatTiles, type StatItem } from './components/HomeStats';
 import { useAuth } from '../auth/AuthContext';
 import { isLearnerRole } from '../profile/profile.logic';
 import { useInView } from '../../hooks/useInView';
@@ -80,9 +80,9 @@ interface FeatureProps {
 }
 
 /** Một hàng giới thiệu: chữ một bên, hình minh họa một bên; hàng sau đổi bên so với hàng trước.
- *  Khi hàng hiện ra, từng phần nhún vào lần lượt (hình, nhãn dán, tiêu đề, mô tả, số liệu, nút). */
+ *  Khi hàng cuộn tới, từng phần trồi lên nối tiếp (tiêu đề, mô tả, số liệu, nút, hình, nhãn nổi). */
 const Feature: React.FC<FeatureProps> = ({ id, flip = false, ready = true, visual, children }) => {
-  const { ref, seen } = useInView<HTMLElement>(0.3);
+  const { ref, seen } = useInView<HTMLElement>(0.15);
   const [waitedEnough, setWaitedEnough] = useState(false);
 
   useEffect(() => {
@@ -100,35 +100,7 @@ const Feature: React.FC<FeatureProps> = ({ id, flip = false, ready = true, visua
   );
 };
 
-/** Khoảng cách từ biểu tượng tới giữa tiêu đề: biểu tượng bắt đầu ở giữa rồi trượt về chỗ của nó.
- *  Đo lại khi phông chữ tải xong vì độ rộng chữ đổi vị trí biểu tượng. */
-function useCenterShift() {
-  const titleRef = useRef<HTMLHeadingElement>(null);
-  const markRef = useRef<HTMLSpanElement>(null);
-
-  useLayoutEffect(() => {
-    const measure = () => {
-      const title = titleRef.current;
-      const mark = markRef.current;
-      if (!title || !mark) return;
-      /* Tiêu đề là khung định vị của biểu tượng; offsetLeft đo theo bố cục, bỏ qua transform đang chạy */
-      title.style.setProperty('--brand-shift', `${title.clientWidth / 2 - (mark.offsetLeft + mark.offsetWidth / 2)}px`);
-    };
-    measure();
-    let active = true;
-    document.fonts?.ready.then(() => {
-      if (active) measure();
-    });
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  return { titleRef, markRef };
-}
-
 export const HomePage: React.FC = () => {
-  const { titleRef, markRef } = useCenterShift();
   const { profile, session, isGuest, isProfileLoading } = useAuth();
   const location = useLocation();
   const draftSaved = (location.state as RouteState | null)?.draftSaved;
@@ -190,9 +162,9 @@ export const HomePage: React.FC = () => {
   ];
   const scaleStats: StatItem[] = [];
   if (scale) {
-    if (scale.careers !== null) scaleStats.push({ key: 'careers', value: scale.careers, label: 'Nghề nghiệp', icon: Briefcase, tone: 'violet' });
-    if (scale.majors !== null) scaleStats.push({ key: 'majors', value: scale.majors, label: 'Ngành học', icon: BookOpen, tone: 'cyan' });
-    if (scale.schools !== null) scaleStats.push({ key: 'schools', value: scale.schools, label: 'Trường', icon: School, tone: 'magenta' });
+    if (scale.careers !== null) scaleStats.push({ key: 'careers', value: scale.careers, label: 'Nghề nghiệp', icon: Briefcase, tone: 'violet', to: '/danh-muc-nghe' });
+    if (scale.majors !== null) scaleStats.push({ key: 'majors', value: scale.majors, label: 'Ngành học', icon: BookOpen, tone: 'cyan', to: '/nganh-nghe' });
+    if (scale.schools !== null) scaleStats.push({ key: 'schools', value: scale.schools, label: 'Trường', icon: School, tone: 'magenta', to: '/kham-pha-truong' });
   }
 
   return (
@@ -200,16 +172,30 @@ export const HomePage: React.FC = () => {
       {draftSaved && <Alert variant="success">Đã lưu tạm. Bạn có thể quay lại làm tiếp trong 7 ngày.</Alert>}
 
       <header className="home-brand">
-        <h1 ref={titleRef} className="home-brand-title" aria-label="Vibe Mapping">
-          <span className="home-brand-word">
-            <span ref={markRef} className="home-brand-mark" aria-hidden="true">
-              <LogoMark animated draw />
-            </span>
-            <span className="home-brand-vibe">Vibe</span>
+        <h1 className="home-brand-title" aria-label="Vibe Mapping">
+          <span className="home-brand-mark" aria-hidden="true">
+            <LogoMark draw />
           </span>
-          <span className="home-brand-mapping">Mapping</span>
+          <span className="home-brand-words">
+            <span className="home-brand-vibe">Vibe</span> <span className="home-brand-mapping">Mapping</span>
+          </span>
         </h1>
         <p className="home-brand-lead">Biết mình là ai, vững bước tương lai.</p>
+        <div className="home-brand-actions">
+          {canExplore && (
+            <Link to={testPath} className="home-brand-link">
+              <Button size="lg" rightIcon={<ArrowRight size={18} />}>
+                Làm bài test
+              </Button>
+            </Link>
+          )}
+          <Link to="/danh-muc-nghe" className="home-brand-link">
+            <Button size="lg" variant="outline">
+              Khám phá nghề nghiệp
+            </Button>
+          </Link>
+        </div>
+        {scaleStats.length > 0 && <StatLinks items={scaleStats} />}
       </header>
 
       {!isGuest && !isProfileLoading && !learner && <Alert variant="info">Tài khoản của bạn chưa có chức năng nào trong giai đoạn này.</Alert>}
@@ -247,7 +233,6 @@ export const HomePage: React.FC = () => {
             </Button>
           </Link>
         )}
-        {scaleStats.length > 0 && <StatInline items={scaleStats} />}
       </Feature>
 
       <Feature

@@ -115,7 +115,7 @@ export const PersonalResultSection: React.FC<PersonalResultSectionProps> = ({ us
           <section className="personal-careers" aria-label="Gợi ý nghề nghiệp phù hợp">
             <div className="personal-careers-head">
               <h2 className="section-title">Nghề phù hợp</h2>
-              <Button variant="cartoon" onClick={() => navigate('/nghe')} leftIcon={<Compass size={18} />} rightIcon={<ArrowRight size={16} />}>
+              <Button variant="outline" onClick={() => navigate('/nghe')} leftIcon={<Compass size={18} />} rightIcon={<ArrowRight size={16} />}>
                 Khám phá tất cả nghề
               </Button>
             </div>

@@ -45,7 +45,7 @@ export const Assessment360View: React.FC<Assessment360ViewProps> = ({ invite, re
   const activeTab = tabs.some((item) => item.value === tab) ? tab : (tabs[0]?.value ?? 'invite');
 
   const action = showSetup ? (
-    <Button variant="cartoon" size="lg" className="t360-who" onClick={() => setSetupOpen(true)} leftIcon={<Users size={20} />}>
+    <Button variant="outline" size="lg" className="t360-who" onClick={() => setSetupOpen(true)} leftIcon={<Users size={20} />}>
       Ai đánh giá?
       {pending > 0 && (
         <span className="t360-who-count" aria-label={`${pending} bài chờ duyệt`}>

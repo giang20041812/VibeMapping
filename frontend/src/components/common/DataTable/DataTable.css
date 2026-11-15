@@ -52,23 +52,3 @@
   text-align: center;
   color: var(--color-text-muted);
 }
-
-/* Phía học sinh: bảng kiểu hình dán, viền mực dày, đầu bảng vàng phẳng */
-[data-ui='cartoon'] .app-table-scroll {
-  background: var(--color-bg-surface);
-  border: var(--cartoon-stroke) solid var(--cartoon-ink);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--cartoon-pop);
-}
-[data-ui='cartoon'] .app-table th {
-  background: var(--brand-gold);
-  color: var(--cartoon-ink);
-  font-weight: 800;
-  border-bottom: var(--cartoon-stroke) solid var(--cartoon-ink);
-}
-[data-ui='cartoon'] .app-table td { border-bottom: var(--cartoon-stroke-thin) dashed var(--cartoon-line); }
-[data-ui='cartoon'] .app-table tbody tr:last-child td { border-bottom: 0; }
-[data-ui='cartoon'] .app-table tbody tr:hover { background-color: var(--tone-yellow-bg); }
-[data-ui='cartoon'] .app-table th,
-[data-ui='cartoon'] .app-table td { text-align: center; }
-[data-ui='cartoon'] .app-table .align-right { text-align: center; }

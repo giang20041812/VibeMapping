@@ -30,9 +30,9 @@
   min-width: 0;
   padding: var(--space-3);
   background: var(--color-bg-surface);
-  border: var(--cartoon-stroke-thin) solid var(--cartoon-ink);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  box-shadow: var(--cartoon-drop);
+  box-shadow: var(--shadow-sm);
 }
 .decision-rank-list li.is-first { background: var(--tone-yellow-bg); }
 .decision-rank-no {
@@ -44,7 +44,7 @@
   font-weight: 800;
   color: var(--color-text-inverse);
   background: var(--color-primary);
-  border: var(--cartoon-stroke-thin) solid var(--cartoon-ink);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-full);
 }
 .decision-rank-body { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; overflow-wrap: anywhere; }

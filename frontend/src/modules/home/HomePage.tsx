@@ -1,16 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Briefcase, Layers, ListChecks, Timer, Users } from 'lucide-react';
 import { Alert } from '../../components/common';
 import type { PolygonAxis } from '../../components/charts/PolygonChart/PolygonChart';
-import { GROUP_ICONS, GROUP_SHORT_LABELS } from '../assessment_result/assessmentResult.constants';
+import { COMPETENCY_LEVELS, GROUP_ICONS, GROUP_SHORT_LABELS } from '../assessment_result/assessmentResult.constants';
 import { getLatestAssessmentResult } from '../assessment_result/assessmentResult.service';
 import type { AssessmentResultSummary } from '../assessment_result/assessmentResult.types';
 import { RATER_NODES } from '../assessment_360/assessment360.constants';
 import { PACKAGES } from '../assessment_session/assessmentSession.constants';
 import { MAX_EXPECTED_PER_GROUP } from '../invitation_link/invitation.constants';
 import { getCatalogScale, type CatalogScale } from './home.service';
-import { HomeHero, type HeroFact } from './components/HomeHero';
+import { HomeHero } from './components/HomeHero';
 import { HomeJourney } from './components/HomeJourney';
 import { useAuth } from '../auth/AuthContext';
 import { isLearnerRole } from '../profile/profile.logic';
@@ -39,6 +38,7 @@ function resultToAxes(result: AssessmentResultSummary): PolygonAxis[] {
     icon: GROUP_ICONS[g.groupCode] ?? GROUP_ICONS.G1,
   }));
 }
+const POLYGON_LEVELS = COMPETENCY_LEVELS.map(({ min, label }) => ({ min, label }));
 
 /* Quy mô một bài tự đánh giá lấy từ các gói: số câu ít nhất – nhiều nhất, số phút ngắn nhất – dài nhất */
 const PACKAGE_SIZES = PACKAGES.map((p) => p.size);
@@ -106,13 +106,6 @@ export const HomePage: React.FC = () => {
   const axes = useMemo(() => (result ? resultToAxes(result) : SAMPLE_AXES), [result]);
   /* Chờ biết người dùng có kết quả hay chưa, tránh bản đồ mẫu nháy lên rồi đổi sang bản đồ thật */
   const isChartLoading = isProfileLoading || (learner && !isGuest && isResultLoading);
-  const heroFacts: HeroFact[] = [
-    { key: 'groups', value: axes.length, label: 'Nhóm tiêu chí', icon: Layers },
-    { key: 'questions', value: QUESTION_RANGE, label: 'Câu hỏi', icon: ListChecks },
-    { key: 'minutes', value: MINUTE_RANGE, label: 'Tự đánh giá', icon: Timer },
-    { key: 'raters', value: RATER_NODES.length, label: 'Nhóm góc nhìn', icon: Users },
-  ];
-  if (scale?.careers != null) heroFacts.push({ key: 'careers', value: scale.careers, label: 'Nghề nghiệp', icon: Briefcase });
 
   return (
     <div className="home">
@@ -122,11 +115,10 @@ export const HomePage: React.FC = () => {
         canExplore={canExplore}
         testPath={testPath}
         axes={axes}
+        levels={POLYGON_LEVELS}
         isOwnResult={result !== null}
         isLoading={isChartLoading}
-        raters={RATER_NODES}
-        ratersPerGroup={MAX_EXPECTED_PER_GROUP}
-        facts={heroFacts}
+        journeyId={JOURNEY_ID}
       />
 
       {!isGuest && !isProfileLoading && !learner && <Alert variant="info">Tài khoản của bạn chưa có chức năng nào trong giai đoạn này.</Alert>}

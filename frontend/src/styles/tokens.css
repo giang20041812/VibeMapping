@@ -1,7 +1,8 @@
 /* ====================================================================
    DESIGN SYSTEM TOKENS
-   Bảng màu lấy từ logo: navy #031964 · xanh nhạt #C7E3FE · kem #FFFCF0,
-   các sắc độ ở giữa nội suy cùng tông giữa navy và xanh nhạt.
+   Một ngôn ngữ giao diện duy nhất: nền trung tính sáng, chữ mực đậm, viền mảnh, bóng mềm.
+   Màu chàm thương hiệu chỉ dành cho hành động và trạng thái đang chọn để nút kêu gọi hành động luôn nổi bật;
+   vàng nhấn dành cho thông tin quan trọng; dải màu trực quan hóa chỉ dùng trong biểu đồ và hình minh họa.
    Mọi stylesheet chỉ dùng biến ở đây, không dùng mã màu tự do.
    ==================================================================== */
 
@@ -31,34 +32,36 @@
   --color-accent: var(--brand-sky);
   --color-accent-gold: var(--brand-gold);
 
-  /* Surface & Background */
-  --color-bg-app: #f7f8ff;
+  /* Nhấn thông tin quan trọng (hạng cao nhất, mục tiêu, số cần chú ý): vàng, tương phản với chàm.
+     Không dùng cho nút bấm chính. */
+  --color-highlight: var(--brand-gold);
+  --color-highlight-bg: #fff6df;
+  --color-highlight-border: #f3d58a;
+  --color-highlight-text: #7a5200;
+
+  /* Surface & Background: trung tính lạnh, chỉ phảng phất sắc chàm */
+  --color-bg-app: #f6f7fb;
   --color-bg-surface: #ffffff;
-  --color-bg-subtle: #eef0fd;
-  --color-bg-hover: #e3e6fb;
+  --color-bg-subtle: #f0f2f9;
+  --color-bg-hover: #e8ebf6;
   --color-bg-cream: var(--brand-cream);
 
-  /* Nền trang: lưới mảnh rất mờ và vài vầng sáng lớn. Tĩnh. */
-  --bg-pattern:
-    radial-gradient(40vw 360px at 6% 24%, rgba(99, 102, 241, 0.12), transparent 70%),
-    radial-gradient(36vw 320px at 94% 10%, rgba(139, 92, 246, 0.1), transparent 70%),
-    radial-gradient(34vw 300px at 46% 62%, rgba(56, 189, 248, 0.08), transparent 70%),
-    linear-gradient(rgba(79, 70, 229, 0.05) 1px, transparent 1px) 0 0 / 40px 40px,
-    linear-gradient(90deg, rgba(79, 70, 229, 0.05) 1px, transparent 1px) 0 0 / 40px 40px;
+  /* Nền trang: phẳng, một vầng sáng rất nhạt ở đầu trang. Không kẻ lưới, không cố định khi cuộn. */
+  --bg-pattern: radial-gradient(70vw 460px at 50% -160px, rgba(99, 102, 241, 0.1), transparent 72%);
 
   /* Thanh bên và thanh ngang: nền kính mờ hiện đại, viền mảnh, bóng dịu */
   --sidebar-bg: rgba(255, 255, 255, 0.92);
   --sidebar-border: var(--color-border);
-  --sidebar-shadow: 4px 0 24px -12px rgba(67, 56, 202, 0.08);
+  --sidebar-shadow: 4px 0 24px -12px rgba(24, 26, 58, 0.08);
   --sidebar-text: var(--color-text-secondary);
   --sidebar-text-strong: var(--color-text-main);
-  --sidebar-hover-bg: var(--brand-ice);
-  --sidebar-active-bg: linear-gradient(100deg, var(--brand-mist) 0%, var(--brand-ice) 100%);
+  --sidebar-hover-bg: var(--color-bg-subtle);
+  --sidebar-active-bg: var(--color-primary-light);
   --sidebar-active-text: var(--color-primary);
-  --sidebar-active-shadow: 0 4px 12px -4px rgba(79, 70, 229, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  --sidebar-active-shadow: 0 0 0 0 transparent;
   --sidebar-ring: var(--color-primary-ring);
   --topbar-bg: rgba(255, 255, 255, 0.88);
-  --topbar-shadow: 0 1px 0 var(--color-border), 0 8px 24px -12px rgba(67, 56, 202, 0.08);
+  --topbar-shadow: 0 1px 0 var(--color-border), 0 8px 24px -12px rgba(24, 26, 58, 0.08);
 
   /* Khối thương hiệu trang đăng nhập: xanh sáng phẳng, chấm trắng mờ */
   --auth-hero-bg:
@@ -66,14 +69,14 @@
 
 
   /* Borders & Dividers */
-  --color-border: #e4e6f7;
-  --color-border-hover: #cdd1f0;
+  --color-border: #e3e6f0;
+  --color-border-hover: #cdd2e4;
   --color-border-focus: var(--brand-blue);
 
-  /* Typography / Text hierarchy */
-  --color-text-main: #2b2775;
-  --color-text-secondary: #55577f;
-  --color-text-muted: #7f819f;
+  /* Typography / Text hierarchy: mực đậm gần đen để dễ đọc; màu chàm để dành cho hành động */
+  --color-text-main: #181a3a;
+  --color-text-secondary: #4b4f6e;
+  --color-text-muted: #6c7191;
   --color-text-inverse: #ffffff;
   --color-text-brand: var(--brand-blue);
 
@@ -233,11 +236,11 @@
   /* Bề mặt: thẻ trắng đặc, viền mảnh, bóng nhẹ. --surface-glass giữ lại cho quả cầu và biểu đồ. */
   --surface-glass: rgba(255, 255, 255, 0.7);
   --surface-border: var(--color-border);
-  --surface-shadow: 0 1px 2px rgba(67, 56, 202, 0.05), 0 14px 34px -14px rgba(79, 70, 229, 0.16);
+  --surface-shadow: 0 1px 2px rgba(24, 26, 58, 0.05), 0 12px 28px -16px rgba(24, 26, 58, 0.14);
   --chip-bg: var(--color-bg-surface);
   --chip-border: var(--color-border);
   --chip-shadow: 0 0 0 0 transparent;
-  --scrim: rgba(30, 27, 90, 0.5);
+  --scrim: rgba(16, 18, 44, 0.5);
 
   /* Màu phẳng thay cho gradient */
   --gradient-brand: linear-gradient(135deg, var(--brand-azure) 0%, var(--brand-blue) 100%);
@@ -245,11 +248,12 @@
   --gradient-feature: linear-gradient(135deg, #2b2775 0%, #4338ca 100%);
   --gradient-brand-hover: linear-gradient(135deg, var(--brand-deep) 0%, var(--brand-azure) 100%);
   --gradient-brand-active: linear-gradient(135deg, #2e2792 0%, var(--brand-deep) 100%);
-  /* Nút kêu gọi hành động: dải chàm – tím – hồng, rộng gấp đôi để trượt màu khi rê chuột */
-  --gradient-cta: linear-gradient(110deg, var(--brand-blue) 0%, var(--brand-sky) 30%, var(--brand-violet) 65%, #c026d3 100%);
-  --shadow-cta: 0 10px 24px -10px rgba(124, 58, 237, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.28);
-  --shadow-cta-hover: 0 16px 32px -12px rgba(124, 58, 237, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.32);
-  --gradient-cta-border: linear-gradient(110deg, var(--brand-sky) 0%, var(--brand-violet) 60%, #d946ef 100%);
+  /* Nút kêu gọi hành động: chàm đặc, bóng cùng sắc để nổi khỏi nền trung tính */
+  --shadow-cta: 0 1px 2px rgba(49, 46, 129, 0.24), 0 8px 18px -8px rgba(79, 70, 229, 0.6);
+  --shadow-cta-hover: 0 2px 4px rgba(49, 46, 129, 0.24), 0 14px 26px -10px rgba(79, 70, 229, 0.66);
+  /* Giữ lại cho tới khi các màn hình thôi dùng dải màu trên nút */
+  --gradient-cta: var(--color-primary);
+  --gradient-cta-border: var(--color-border-hover);
   --gradient-soft-blue: linear-gradient(135deg, var(--brand-ice) 0%, var(--brand-mist) 100%);
   --logo-a: #818cf8;
   --logo-b: #4f46e5;
@@ -293,14 +297,15 @@
   --radius-2xl: 28px;
   --radius-full: 9999px;
 
-  /* Shadows (pha tông navy) */
-  --shadow-xs: 0 1px 2px rgba(67, 56, 202, 0.05);
-  --shadow-sm: 0 1px 3px rgba(67, 56, 202, 0.08), 0 1px 2px rgba(67, 56, 202, 0.04);
-  --shadow-md: 0 6px 14px -4px rgba(67, 56, 202, 0.12), 0 2px 6px -2px rgba(67, 56, 202, 0.06);
-  --shadow-lg: 0 18px 32px -10px rgba(67, 56, 202, 0.18), 0 6px 12px -6px rgba(67, 56, 202, 0.08);
+  /* Độ nổi: bóng mềm nhiều lớp, tông mực trung tính. Mỗi bậc một vai trò:
+     xs phần tử tĩnh · sm thẻ · md thẻ khi rê chuột · lg lớp nổi (menu, hộp thoại) */
+  --shadow-xs: 0 1px 2px rgba(24, 26, 58, 0.05);
+  --shadow-sm: 0 1px 2px rgba(24, 26, 58, 0.06), 0 2px 8px -2px rgba(24, 26, 58, 0.06);
+  --shadow-md: 0 2px 4px rgba(24, 26, 58, 0.05), 0 10px 22px -8px rgba(24, 26, 58, 0.14);
+  --shadow-lg: 0 6px 12px -6px rgba(24, 26, 58, 0.08), 0 22px 40px -14px rgba(24, 26, 58, 0.2);
   --shadow-glow: var(--shadow-md);
-  --shadow-dropdown: 0 14px 30px rgba(67, 56, 202, 0.16), 0 4px 10px rgba(67, 56, 202, 0.08);
-  --shadow-sticky: 0 -6px 16px rgba(67, 56, 202, 0.08);
+  --shadow-dropdown: 0 14px 30px rgba(24, 26, 58, 0.14), 0 4px 10px rgba(24, 26, 58, 0.06);
+  --shadow-sticky: 0 -6px 16px rgba(24, 26, 58, 0.07);
 
   /* Typography */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -316,10 +321,15 @@
   --font-size-5xl: calc(44 * var(--px));
   --line-tight: 1.2;
 
-  /* Motion */
+  /* Motion: dứt khoát, mượt, không nảy. Phần tử đi vào giảm tốc dần (decelerate), đổi trạng thái dùng emphasized;
+     --ease-spring chỉ còn nhích nhẹ quá đích rồi về chỗ. --stagger là độ trễ giữa các phần tử hiện nối tiếp nhau. */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-spring: cubic-bezier(0.3, 1.2, 0.45, 1);
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --ease-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --duration-enter: 520ms;
+  --stagger: 70ms;
   --transition-fast: 150ms var(--ease-standard);
   --transition-normal: 220ms var(--ease-out);
   --transition-slow: 420ms var(--ease-out);
@@ -354,6 +364,8 @@
     --transition-slow: 0ms;
     --duration-reveal: 0ms;
     --duration-fly: 0ms;
+    --duration-enter: 0ms;
+    --stagger: 0ms;
   }
 
   *,

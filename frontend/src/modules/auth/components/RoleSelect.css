@@ -90,7 +90,7 @@
 }
 
 .role-option.is-selected .role-option-icon {
-  transform: scale(1.15) rotate(-6deg);
+  transform: scale(1.08);
 }
 
 @media (max-width: 520px) {

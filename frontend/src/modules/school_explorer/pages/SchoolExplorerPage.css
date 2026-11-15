@@ -13,6 +13,6 @@
 }
 
 .school-explorer-web:hover {
-  color: var(--cartoon-ink);
+  color: var(--color-text-main);
   background: var(--sticker-bg);
 }

@@ -254,7 +254,8 @@ export const PolygonChart: React.FC<PolygonChartProps> = ({
 
   if (!valid || !geometry) return null;
 
-  const activeKey = hoverKey ?? pinnedKey ?? (cycling ? axes[cycleIndex % count].key : null);
+  const topKey = axes.reduce<PolygonAxis | null>((best, a) => (a.value !== null && (best === null || (best.value ?? -1) < a.value) ? a : best), null)?.key ?? null;
+  const activeKey = hoverKey ?? pinnedKey ?? (cycling ? axes[cycleIndex % count].key : topKey);
   const foundIndex = activeKey === null ? -1 : axes.findIndex((a) => a.key === activeKey);
   const activeIndex = foundIndex >= 0 ? foundIndex : null;
   const active = activeIndex === null ? null : axes[activeIndex];
@@ -284,7 +285,7 @@ export const PolygonChart: React.FC<PolygonChartProps> = ({
               key={axis.key}
               type="button"
               className={`polygon-node polygon-tone-${toneOf(i)} ${activeIndex === i ? 'is-active' : ''}`}
-              style={{ left: `${fmt(p.x)}%`, top: `${fmt(p.y)}%` }}
+              style={{ left: `${fmt(p.x)}%`, top: `${fmt(p.y)}%`, '--i': i } as React.CSSProperties}
               onPointerEnter={() => setHoverKey(axis.key)}
               onPointerLeave={() => setHoverKey(null)}
               onFocus={() => setHoverKey(axis.key)}

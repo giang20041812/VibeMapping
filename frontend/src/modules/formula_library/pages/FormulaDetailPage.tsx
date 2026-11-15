@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { Alert, Badge, Breadcrumb, Card, Checkbox, DataTable, Spinner, Tabs } from '../../../components/common';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Network } from 'lucide-react';
+import { Alert, Badge, Breadcrumb, Button, Card, Checkbox, DataTable, Spinner, Tabs } from '../../../components/common';
 import type { DataTableColumn } from '../../../components/common';
 import { collectFallbacks, evaluate, formulaToLatex, valuesMatch, type SymbolDef, type Value } from '../../../domain/formula';
 import { formatDateTime } from '../../admin/admin.logic';
@@ -40,6 +41,7 @@ interface TestResult {
 
 export const FormulaDetailPage: React.FC = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { library, isLoading, error } = useFormulaLibrary();
   const [tab, setTab] = useState('tests');
   const [showParamValues, setShowParamValues] = useState(false);
@@ -216,6 +218,15 @@ export const FormulaDetailPage: React.FC = () => {
           <Badge variant={VERIFICATION_VARIANT[formula.verification_level]}>{VERIFICATION_LABEL[formula.verification_level]}</Badge>
           <Badge>{formula.group_name}</Badge>
           {formula.version_no && <Badge>{`v${formula.version_no}`}</Badge>}
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            leftIcon={<Network size={14} />}
+            onClick={() => navigate(`/quan-tri/cong-thuc/so-do?chon=${encodeURIComponent(formula.formula_code)}`)}
+          >
+            Xem trên sơ đồ
+          </Button>
         </div>
       </div>
 

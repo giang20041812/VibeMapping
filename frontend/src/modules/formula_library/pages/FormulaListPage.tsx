@@ -1,15 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, Search } from 'lucide-react';
+import { Eye, Network, Search } from 'lucide-react';
 import { Alert, Badge, Button, Card, DataTable, Input, Pagination } from '../../../components/common';
 import type { DataTableColumn } from '../../../components/common';
 import { FilterBar } from '../../../components/filters/FilterBar/FilterBar';
 import { SearchableSelect } from '../../../components/filters/SearchableSelect/SearchableSelect';
-import { normalizeSearchText } from '../../../lib/searchText';
 import { ADMIN_PAGE_SIZE } from '../../admin/admin.constants';
 import { useAdminFilter } from '../../admin/useAdminFilter';
 import { FormulaMath } from '../components/FormulaMath';
-import { VERIFICATION_LABEL, VERIFICATION_OPTIONS, VERIFICATION_VARIANT, formulaDependencies } from '../formula.logic';
+import { VERIFICATION_LABEL, VERIFICATION_OPTIONS, VERIFICATION_VARIANT, formulaDependencies, matchesFormulaFilter } from '../formula.logic';
 import type { FormulaFilter, FormulaRecord } from '../formula.types';
 import { useFormulaLibrary } from '../useFormulaLibrary';
 import '../../admin/pages/AdminPages.css';
@@ -38,15 +37,7 @@ export const FormulaListPage: React.FC = () => {
     return counts;
   }, [library]);
 
-  const filtered = useMemo(() => {
-    const keyword = normalizeSearchText(applied.keyword);
-    return (library?.formulas ?? []).filter((formula) => {
-      if (applied.groupId && formula.group_id !== applied.groupId) return false;
-      if (applied.verification && formula.verification_level !== applied.verification) return false;
-      if (!keyword) return true;
-      return normalizeSearchText(`${formula.formula_name} ${formula.formula_code} ${formula.group_name}`).includes(keyword);
-    });
-  }, [library, applied]);
+  const filtered = useMemo(() => (library?.formulas ?? []).filter((formula) => matchesFormulaFilter(formula, applied)), [library, applied]);
 
   const pageRows = useMemo(() => filtered.slice((page - 1) * ADMIN_PAGE_SIZE, page * ADMIN_PAGE_SIZE), [filtered, page]);
 
@@ -99,6 +90,9 @@ export const FormulaListPage: React.FC = () => {
     <>
       <div className="admin-page-header">
         <h1 className="page-title">Công thức</h1>
+        <Button type="button" variant="outline" leftIcon={<Network size={16} />} onClick={() => navigate('/quan-tri/cong-thuc/so-do')}>
+          Sơ đồ liên kết
+        </Button>
       </div>
 
       {error && (

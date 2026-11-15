@@ -26,6 +26,16 @@ import {
   type Expr,
   type Value,
 } from '../src/domain/formula';
+import {
+  GRAPH_NODE_HEIGHT,
+  GRAPH_NODE_WIDTH,
+  buildEdges,
+  computeDepths,
+  layoutGraph,
+  relatedCodes,
+  visibleCodes,
+  type GraphFormula,
+} from '../src/modules/formula_library/formula.graph';
 import { parseTuition } from '../../supabase/scripts/tuition-parser';
 
 type Args = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -254,6 +264,59 @@ check('tự tính đệ quy khi chưa có giá trị của công thức con', ()
   const formulas = Object.fromEntries(FORMULAS.map((f) => [f.code, f.expression]));
   const value = evaluate(formulas.criterion_percent, { vars: { self_weight: 0.5 }, refs: { rater_rs: 4 }, sets: { raters: [] }, formulas });
   must(valuesMatch(value, 80), `Nhận ${show(value)}`);
+});
+
+// 5. Sơ đồ liên kết ---------------------------------------------------------------------------------------------------
+const graphFormulas: GraphFormula[] = FORMULAS.map((f, index) => ({
+  id: f.code,
+  formula_code: f.code,
+  formula_name: f.name,
+  group_id: f.group,
+  group_name: GROUPS.find((g) => g.code === f.group)?.name ?? f.group,
+  verification_level: f.verification,
+  sort_order: index,
+  expression: f.expression,
+}));
+const graphEdges = buildEdges(graphFormulas);
+const allCodes = new Set(graphFormulas.map((f) => f.formula_code));
+
+check('sơ đồ: số cạnh khớp số công thức được dùng', () => {
+  const expected = FORMULAS.reduce((total, f) => total + collectDependencies(f.expression).formulas.length, 0);
+  must(graphEdges.length === expected && expected > 0, `${graphEdges.length} cạnh, mong đợi ${expected}`);
+});
+check('sơ đồ: tầng của công thức lớn hơn tầng của mọi công thức nó dùng', () => {
+  const depths = computeDepths([...allCodes], graphEdges);
+  must(depths.get('rater_rs') === 0 && depths.get('th_percent') === 0, 'công thức chỉ dùng dữ liệu đầu vào phải ở tầng 0');
+  for (const edge of graphEdges) must((depths.get(edge.to) ?? 0) > (depths.get(edge.from) ?? 0), `${edge.from} → ${edge.to} không đi từ trái sang phải`);
+  must((depths.get('option_total_score') ?? 0) >= 3, 'điểm tổng hợp phương án phải ở tầng sâu');
+});
+check('sơ đồ: chuỗi phía trước và phía sau', () => {
+  const related = relatedCodes('career_fit', graphEdges);
+  for (const code of ['match_g1_g5', 'match_g7', 'riasec_match', 'criterion_fit']) must(related.ancestors.has(code), `thiếu ${code} phía trước career_fit`);
+  for (const code of ['option_total_score', 'career_rank_band', 'career_fit_class']) must(related.descendants.has(code), `thiếu ${code} phía sau career_fit`);
+  must(!related.ancestors.has('career_fit') && !related.descendants.has('career_fit'), 'công thức không được nằm trong chuỗi của chính nó');
+});
+check('sơ đồ: lọc giữ nguyên chuỗi liên kết', () => {
+  const visible = visibleCodes(graphFormulas, graphEdges, (f) => f.formula_code === 'career_rank_band');
+  must(visible.has('career_fit') && visible.has('criterion_fit'), 'lọc phải giữ các công thức phía trước');
+  must(!visible.has('trust_index'), 'không liên quan thì phải bị loại');
+});
+check('sơ đồ: bố cục không chồng nút và mọi dây đi từ trái sang phải', () => {
+  const layout = layoutGraph(graphFormulas, graphEdges, allCodes);
+  must(layout.nodes.length === FORMULAS.length, `${layout.nodes.length} nút`);
+  const seen = new Set<string>();
+  for (const node of layout.nodes) {
+    const key = `${node.x}:${node.y}`;
+    must(!seen.has(key), `hai nút chồng nhau tại ${key}`);
+    seen.add(key);
+    must(node.x + GRAPH_NODE_WIDTH <= layout.width && node.y + GRAPH_NODE_HEIGHT <= layout.height, `${node.code} nằm ngoài khung`);
+  }
+  const byCode = new Map(layout.nodes.map((n) => [n.code, n]));
+  for (const edge of layout.edges) must((byCode.get(edge.from)?.x ?? 0) < (byCode.get(edge.to)?.x ?? 0), `${edge.from} → ${edge.to}`);
+});
+check('sơ đồ: bộ lọc rỗng cho bố cục rỗng', () => {
+  const layout = layoutGraph(graphFormulas, graphEdges, new Set());
+  must(layout.nodes.length === 0 && layout.edges.length === 0, 'phải rỗng');
 });
 
 console.log(`${passed} kiểm tra đạt, ${failed} thất bại; ${FORMULAS.length} công thức, ${SYMBOLS.length} ký hiệu`);

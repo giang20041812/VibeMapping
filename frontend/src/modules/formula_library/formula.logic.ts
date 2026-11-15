@@ -1,5 +1,6 @@
 import { collectDependencies, formatNumber, walkExpr, type LatexContext, type SymbolDef, type Value } from '../../domain/formula';
-import type { FormulaLibrary, FormulaRecord } from './formula.types';
+import { normalizeSearchText } from '../../lib/searchText';
+import type { FormulaFilter, FormulaLibrary, FormulaRecord } from './formula.types';
 
 export const VERIFICATION_LABEL: Record<string, string> = {
   approved: 'Đã chốt',
@@ -85,4 +86,16 @@ export function formatValue(value: Value | undefined): string {
 /** Giá trị tham số dạng số, dùng để thay số vào công thức; tham số không phải số thì bỏ qua */
 export function numericParamValues(raw: Record<string, unknown>): Record<string, number> {
   return Object.fromEntries(Object.entries(raw).filter((entry): entry is [string, number] => typeof entry[1] === 'number'));
+}
+
+/** Công thức có khớp bộ lọc của danh sách và sơ đồ không */
+export function matchesFormulaFilter(
+  formula: Pick<FormulaRecord, 'formula_name' | 'formula_code' | 'group_name' | 'group_id'> & { verification_level: string },
+  filter: FormulaFilter,
+): boolean {
+  if (filter.groupId && formula.group_id !== filter.groupId) return false;
+  if (filter.verification && formula.verification_level !== filter.verification) return false;
+  const keyword = normalizeSearchText(filter.keyword);
+  if (!keyword) return true;
+  return normalizeSearchText(`${formula.formula_name} ${formula.formula_code} ${formula.group_name}`).includes(keyword);
 }

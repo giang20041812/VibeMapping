@@ -60,16 +60,42 @@
 /* Variants.
    Nút chính là phần tử duy nhất tô cam san hô trên màn hình: mỗi vùng chỉ nên có một nút chính. */
 .btn-primary {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
   color: var(--color-cta-text);
-  font-weight: 700;
+  font-weight: 800;
   background: var(--color-cta);
   box-shadow: var(--shadow-cta);
+  transition:
+    color 480ms var(--ease-out),
+    background-color 480ms var(--ease-out),
+    box-shadow 480ms var(--ease-out),
+    transform 480ms var(--ease-out);
+}
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--brand-white);
+  transform: translateY(102%);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  transition:
+    transform 560ms var(--ease-out),
+    border-radius 560ms var(--ease-out);
 }
 .btn-primary:focus-visible { outline-color: var(--color-cta-ring); }
-.btn-primary:hover:not(:disabled) {
-  background: var(--color-cta-hover);
-  box-shadow: var(--shadow-cta-hover);
-  transform: translateY(-1px);
+@media (hover: hover) {
+  .btn-primary:hover:not(:disabled) {
+    color: var(--brand-navy);
+    box-shadow: var(--shadow-cta-hover);
+    transform: translateY(-2px);
+  }
+  .btn-primary:hover:not(:disabled)::before {
+    transform: translateY(0);
+    border-radius: inherit;
+  }
 }
 .btn-primary:active:not(:disabled) {
   background: var(--color-cta-active);
@@ -132,8 +158,8 @@
   display: inline-flex;
   align-items: center;
   font-size: 1.1em;
-  transition: transform var(--transition-normal);
+  transition: transform 480ms var(--ease-out);
 }
 .app-button:hover:not(:disabled) .btn-icon-right {
-  transform: translateX(3px);
+  transform: translateX(5px);
 }

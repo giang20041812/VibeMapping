@@ -1,0 +1,75 @@
+.formula-loading {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-8);
+}
+
+/* Công thức dạng toán học: cuộn ngang khi dài, không làm tràn trang */
+.formula-math {
+  color: var(--color-text-main);
+}
+
+.formula-math-block {
+  display: block;
+  min-width: 0;
+}
+
+.formula-display {
+  min-width: 0;
+  overflow-x: auto;
+  padding: var(--space-4);
+  font-size: var(--font-size-xl);
+  background-color: var(--color-bg-subtle);
+  border-radius: var(--radius-md);
+}
+
+/* Chữ tiếng Việt trong công thức: font KaTeX thiếu dấu chồng nên dùng font của ứng dụng */
+.formula-math .katex .text,
+.formula-math .katex .mord.text {
+  font-family: var(--font-sans);
+}
+
+.formula-notes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-text-secondary);
+}
+
+.formula-link-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: var(--space-5);
+}
+
+.formula-link-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.formula-link {
+  color: var(--color-text-brand);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.formula-link:hover {
+  text-decoration: underline;
+}
+
+.formula-empty {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.formula-tabs {
+  padding: var(--space-3) var(--space-4) 0;
+  min-width: 0;
+}

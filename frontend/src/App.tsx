@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useParams } from 'react-router-dom';
 import { AuthProvider, useAuth } from './modules/auth/AuthContext';
 import { AuthLayout } from './components/layout/AuthLayout';
@@ -55,6 +55,12 @@ import {
   MajorDetailPage,
   ProgramDetailPage,
 } from './modules/school_explorer/pages/EducationDetailPages';
+
+import { Spinner } from './components/common';
+
+/** Trang công thức nạp khi mở, vì thư viện hiển thị công thức toán chỉ khu quản trị dùng */
+const FormulaListPage = lazy(() => import('./modules/formula_library/pages/FormulaListPage').then((m) => ({ default: m.FormulaListPage })));
+const FormulaDetailPage = lazy(() => import('./modules/formula_library/pages/FormulaDetailPage').then((m) => ({ default: m.FormulaDetailPage })));
 
 /** Quản trị hệ thống vào thẳng khu quản trị, giáo viên vào thẳng lớp học */
 const HomeRoute: React.FC = () => {
@@ -151,6 +157,8 @@ export const App: React.FC = () => (
               <Route path="/quan-tri/cau-hoi" element={<QuestionBankPage />} />
               <Route path="/quan-tri/tieu-chi" element={<CriteriaPage />} />
               <Route path="/quan-tri/tham-so" element={<OperationParametersPage />} />
+              <Route path="/quan-tri/cong-thuc" element={<Suspense fallback={<Spinner />}><FormulaListPage /></Suspense>} />
+              <Route path="/quan-tri/cong-thuc/:id" element={<Suspense fallback={<Spinner />}><FormulaDetailPage /></Suspense>} />
               <Route path="/quan-tri/nhat-ky" element={<AuditLogsPage />} />
               <Route path="/quan-tri/cham-dinh-tinh" element={<QualitativeReviewPage />} />
               <Route path="/quan-tri/nghe" element={<CareerAdminListPage />} />

@@ -19,53 +19,8 @@
   -webkit-text-fill-color: transparent;
 }
 
-/* Phần mở đầu: biểu tượng, tên sản phẩm, khẩu hiệu, nút chính, lối tắt khám phá; trồi lên nối tiếp */
-.home-brand {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-5);
-  padding-top: var(--space-8);
-  text-align: center;
-}
-.home-brand > * { animation: home-rise var(--duration-enter) var(--ease-decelerate) both; }
-.home-brand > :nth-child(2) { animation-delay: var(--stagger); }
-.home-brand > :nth-child(3) { animation-delay: calc(var(--stagger) * 2); }
-.home-brand > :nth-child(4) { animation-delay: calc(var(--stagger) * 3); }
-.home-brand > :nth-child(n + 5) { animation-delay: calc(var(--stagger) * 4); }
-
-.home-brand-title {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2) 0.28em;
-  max-width: 100%;
-  font-size: clamp(calc(36 * var(--px)), 10vw, calc(84 * var(--px)));
-  font-weight: 800;
-  line-height: 1.05;
-  letter-spacing: -0.03em;
-}
-.home-brand-mark { flex: none; width: 1.05em; height: 1.05em; }
-.home-brand-mark .logo-svg { display: block; }
-.home-brand-words { min-width: 0; }
-.home-brand-vibe { color: var(--color-text-main); }
-.home-brand-mapping { color: var(--color-accent); }
-.home-brand-lead {
-  max-width: calc(560 * var(--px));
-  font-size: var(--font-size-2xl);
-  line-height: 1.4;
-  color: var(--color-text-secondary);
-}
-.home-brand-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--space-3);
-  margin-top: var(--space-2);
-}
-.home-brand-link { text-decoration: none; border-radius: var(--radius-md); }
-.home-brand .stat-links { max-width: calc(760 * var(--px)); margin-top: var(--space-6); }
+/* Phần mở đầu rộng hơn các hàng nội dung để làm nền cho cả trang */
+.home > .hero { max-width: calc(1320 * var(--px)); }
 
 /* Hàng giới thiệu so le hai bên: hai cột bằng nhau, chữ và hình cùng cỡ */
 .feature {
@@ -136,7 +91,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .home-brand > * { animation: none; }
   .feature .feature-visual,
   .feature .feature-badge,
   .feature .stat-sticker,
@@ -156,8 +110,4 @@
 
 @media (max-width: 520px) {
   .home { gap: var(--space-10); }
-  .home-brand { padding-top: var(--space-4); }
-  .home-brand-lead { font-size: var(--font-size-xl); }
-  .home-brand-actions { flex-direction: column; align-self: stretch; }
-  .home-brand-link .app-button { width: 100%; }
 }

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ArrowRight, BookOpen, Briefcase, Gauge, Layers, ListChecks, Orbit, School, Timer, Trophy, Users } from 'lucide-react';
-import { Alert, Badge, Button, LogoMark } from '../../components/common';
+import { ArrowRight, Briefcase, Gauge, Layers, ListChecks, Orbit, Timer, Trophy, Users } from 'lucide-react';
+import { Alert, Badge, Button } from '../../components/common';
 import { Rater360 } from '../../components/charts/Rater360/Rater360';
 import { PolygonChart } from '../../components/charts/PolygonChart/PolygonChart';
 import type { PolygonAxis } from '../../components/charts/PolygonChart/PolygonChart';
@@ -13,7 +13,8 @@ import { RATER_NODES } from '../assessment_360/assessment360.constants';
 import { PACKAGES } from '../assessment_session/assessmentSession.constants';
 import { MAX_EXPECTED_PER_GROUP } from '../invitation_link/invitation.constants';
 import { getCatalogScale, type CatalogScale } from './home.service';
-import { StatLinks, StatSticker, StatTiles, type StatItem } from './components/HomeStats';
+import { StatSticker, StatTiles, type StatItem } from './components/HomeStats';
+import { HomeHero, type HeroFact } from './components/HomeHero';
 import { useAuth } from '../auth/AuthContext';
 import { isLearnerRole } from '../profile/profile.logic';
 import { useInView } from '../../hooks/useInView';
@@ -160,43 +161,28 @@ export const HomePage: React.FC = () => {
     { key: 'questions', value: QUESTION_RANGE, label: 'Câu hỏi', icon: ListChecks, tone: 'sky' },
     { key: 'minutes', value: MINUTE_RANGE, label: 'Tự đánh giá', icon: Timer, tone: 'teal' },
   ];
-  const scaleStats: StatItem[] = [];
-  if (scale) {
-    if (scale.careers !== null) scaleStats.push({ key: 'careers', value: scale.careers, label: 'Nghề nghiệp', icon: Briefcase, tone: 'violet', to: '/danh-muc-nghe' });
-    if (scale.majors !== null) scaleStats.push({ key: 'majors', value: scale.majors, label: 'Ngành học', icon: BookOpen, tone: 'cyan', to: '/nganh-nghe' });
-    if (scale.schools !== null) scaleStats.push({ key: 'schools', value: scale.schools, label: 'Trường', icon: School, tone: 'magenta', to: '/kham-pha-truong' });
-  }
+  const heroFacts: HeroFact[] = [
+    { key: 'groups', value: axes.length, label: 'Nhóm tiêu chí', icon: Layers },
+    { key: 'questions', value: QUESTION_RANGE, label: 'Câu hỏi', icon: ListChecks },
+    { key: 'minutes', value: MINUTE_RANGE, label: 'Tự đánh giá', icon: Timer },
+    { key: 'raters', value: RATER_NODES.length, label: 'Nhóm góc nhìn', icon: Users },
+  ];
+  if (scale?.careers != null) heroFacts.push({ key: 'careers', value: scale.careers, label: 'Nghề nghiệp', icon: Briefcase });
 
   return (
     <div className="home">
       {draftSaved && <Alert variant="success">Đã lưu tạm. Bạn có thể quay lại làm tiếp trong 7 ngày.</Alert>}
 
-      <header className="home-brand">
-        <h1 className="home-brand-title" aria-label="Vibe Mapping">
-          <span className="home-brand-mark" aria-hidden="true">
-            <LogoMark draw />
-          </span>
-          <span className="home-brand-words">
-            <span className="home-brand-vibe">Vibe</span> <span className="home-brand-mapping">Mapping</span>
-          </span>
-        </h1>
-        <p className="home-brand-lead">Biết mình là ai, vững bước tương lai.</p>
-        <div className="home-brand-actions">
-          {canExplore && (
-            <Link to={testPath} className="home-brand-link">
-              <Button size="lg" rightIcon={<ArrowRight size={18} />}>
-                Làm bài test
-              </Button>
-            </Link>
-          )}
-          <Link to="/danh-muc-nghe" className="home-brand-link">
-            <Button size="lg" variant="outline">
-              Khám phá nghề nghiệp
-            </Button>
-          </Link>
-        </div>
-        {scaleStats.length > 0 && <StatLinks items={scaleStats} />}
-      </header>
+      <HomeHero
+        canExplore={canExplore}
+        testPath={testPath}
+        axes={axes}
+        isOwnResult={result !== null}
+        isLoading={isChartLoading}
+        raters={RATER_NODES}
+        ratersPerGroup={MAX_EXPECTED_PER_GROUP}
+        facts={heroFacts}
+      />
 
       {!isGuest && !isProfileLoading && !learner && <Alert variant="info">Tài khoản của bạn chưa có chức năng nào trong giai đoạn này.</Alert>}
 

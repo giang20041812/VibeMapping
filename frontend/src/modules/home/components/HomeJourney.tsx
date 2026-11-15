@@ -23,7 +23,7 @@ import {
   SpotlightCard,
   trackPointer,
 } from '../../../components/common';
-import { PolygonChart, type PolygonAxis, type PolygonLevel } from '../../../components/charts/PolygonChart/PolygonChart';
+import { PolygonChart, polygonToneOf, type PolygonAxis, type PolygonLevel } from '../../../components/charts/PolygonChart/PolygonChart';
 import { PolygonChartSkeleton } from '../../../components/charts/PolygonChart/PolygonChartSkeleton';
 import { Rater360, type RaterNode } from '../../../components/charts/Rater360/Rater360';
 import { PARTS } from '../../assessment_session/assessmentSession.constants';
@@ -65,8 +65,9 @@ const SelfAssessmentArtifact: React.FC<{
   isOwnResult: boolean;
   isLoading: boolean;
 }> = ({ axes, levels, isOwnResult, isLoading }) => {
-  const topGroups = [...axes]
-    .filter((a): a is PolygonAxis & { value: number } => a.value !== null)
+  const topGroups = axes
+    .map((axis, index) => ({ ...axis, tone: polygonToneOf(index) }))
+    .filter((a): a is PolygonAxis & { value: number; tone: number } => a.value !== null)
     .sort((a, b) => b.value - a.value)
     .slice(0, 4);
 
@@ -102,25 +103,33 @@ const SelfAssessmentArtifact: React.FC<{
             onPointerMove={trackPointer}
           >
             <div className="artifact-panel-head">
-              <span className="artifact-panel-title">Nhóm tố chất nổi bật</span>
+              <span className="artifact-panel-title">Tố chất nổi bật</span>
               <span className="artifact-tag is-sky">Holland: I-R-C</span>
             </div>
             <ul className="artifact-score-list">
-              {topGroups.map((group, idx) => (
-                <li
-                  key={group.key}
-                  className="artifact-score-row"
-                  style={{ '--bar-i': idx, '--w': `${Math.round(group.value)}%` } as React.CSSProperties}
-                >
-                  <div className="artifact-score-meta">
-                    <span className="artifact-score-name">{group.label}</span>
-                    <strong className="artifact-score-val">{Math.round(group.value)}%</strong>
-                  </div>
-                  <span className="scene-track">
-                    <span className={`scene-fill ${idx === 0 ? 'is-coral' : ''}`} />
-                  </span>
-                </li>
-              ))}
+              {topGroups.map((group, idx) => {
+                const GroupIcon = group.icon;
+                return (
+                  <li
+                    key={group.key}
+                    className={`artifact-score-row artifact-tone-${group.tone}`}
+                    style={{ '--bar-i': idx, '--w': `${Math.round(group.value)}%` } as React.CSSProperties}
+                  >
+                    <span className="artifact-score-icon" aria-hidden="true">
+                      <GroupIcon strokeWidth={2} />
+                    </span>
+                    <div className="artifact-score-body">
+                      <div className="artifact-score-meta">
+                        <span className="artifact-score-name">{group.label}</span>
+                        <strong className="artifact-score-val">{Math.round(group.value)}%</strong>
+                      </div>
+                      <span className="scene-track">
+                        <span className={`scene-fill ${idx === 0 ? 'is-coral' : ''}`} />
+                      </span>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           </div>
 
@@ -148,11 +157,11 @@ const SelfAssessmentArtifact: React.FC<{
    BƯỚC 2: ĐÁNH GIÁ 360°
    ========================================================================== */
 
-const RATER_SAMPLE_META: Record<string, string> = {
-  parent: '2/2 bài · 86%',
-  friend: '2/2 bài · 88%',
-  teacher: '2/2 bài · 94%',
-  mentor: '2/2 bài · 91%',
+const RATER_SAMPLE_SCORE: Record<string, string> = {
+  parent: '86%',
+  friend: '88%',
+  teacher: '94%',
+  mentor: '91%',
 };
 
 const CALIBRATION_ROWS = [
@@ -164,7 +173,8 @@ const CALIBRATION_ROWS = [
 const Rater360Artifact: React.FC<{ raters: RaterNode[] }> = ({ raters }) => {
   const enrichedNodes: RaterNode[] = raters.map((node) => ({
     ...node,
-    meta: RATER_SAMPLE_META[node.key] ?? '2/2 đã nộp',
+    meta: '2/2 bài',
+    value: RATER_SAMPLE_SCORE[node.key],
   }));
 
   return (
@@ -187,19 +197,18 @@ const Rater360Artifact: React.FC<{ raters: RaterNode[] }> = ({ raters }) => {
         onPointerMove={trackPointer}
       >
         <div className="artifact-360-compare-head">
-          <span>Nhóm tiêu chí đối chiếu</span>
+          <span>Nhóm tiêu chí</span>
           <span>Tự đánh giá</span>
           <span>Sau 360°</span>
+          <span>Chênh lệch</span>
         </div>
         <ul className="artifact-360-compare-list">
           {CALIBRATION_ROWS.map((row) => (
             <li key={row.label} className="artifact-360-compare-row">
               <span className="artifact-360-crit">{row.label}</span>
               <span className="artifact-360-self">{row.self}</span>
-              <span className="artifact-360-combined">
-                <strong>{row.combined}</strong>
-                <em className="artifact-360-delta">{row.delta}</em>
-              </span>
+              <span className="artifact-360-combined">{row.combined}</span>
+              <span className="artifact-360-delta">{row.delta}</span>
             </li>
           ))}
         </ul>

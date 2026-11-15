@@ -1,4 +1,4 @@
-import React, { useId, useState } from 'react';
+import React, { useEffect, useId, useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { LearnerCenterIcon } from '../ArtifactIcons';
 import { trackPointer } from '../../common/MotionPrimitives';
@@ -10,8 +10,10 @@ export interface RaterNode {
   key: string;
   label: string;
   Icon: LucideIcon;
-  /** Thông tin phụ hiển thị dưới tên nhóm (ví dụ: "2/2 bài · 94%") */
+  /** Thông tin phụ hiển thị dưới tên nhóm (ví dụ: "2/2 bài") */
   meta?: string;
+  /** Số liệu nổi bật ở cạnh phải thẻ (ví dụ: "94%") */
+  value?: string;
 }
 
 export interface Rater360Props {
@@ -27,21 +29,66 @@ export interface Rater360Props {
   className?: string;
 }
 
-const W = 540;
-const H = 300;
-const CX = W / 2;
-const CY = H / 2;
+interface Layout {
+  w: number;
+  h: number;
+  /** Tọa độ 4 góc cân xứng, nối thẳng một mạch từ tâm ra từng nhóm */
+  nodes: { x: number; y: number }[];
+  /** Bán kính vòng quỹ đạo; điểm nối nằm đúng trên vòng này */
+  orbit: number;
+  halo: number;
+  inner: number;
+}
 
-/** Tọa độ 4 góc cân xứng, nối thẳng một mạch từ tâm ra từng nhóm */
-const NODE_POSITIONS = [
-  { x: 108, y: 62 },
-  { x: 432, y: 62 },
-  { x: 432, y: 238 },
-  { x: 108, y: 238 },
-];
+/* Tỷ lệ w/h của từng bố cục phải trùng aspect-ratio trong Rater360.css */
 
-const pctX = (value: number) => `${((value / W) * 100).toFixed(2)}%`;
-const pctY = (value: number) => `${((value / H) * 100).toFixed(2)}%`;
+/** Khung rộng (máy tính, máy tính bảng): thẻ ngang ở 4 góc */
+const WIDE: Layout = {
+  w: 540,
+  h: 300,
+  nodes: [
+    { x: 104, y: 58 },
+    { x: 436, y: 58 },
+    { x: 436, y: 242 },
+    { x: 104, y: 242 },
+  ],
+  orbit: 104,
+  halo: 126,
+  inner: 54,
+};
+
+/** Khung hẹp (điện thoại): sơ đồ cao hơn để thẻ dựng đứng không chồng lên nhau */
+const NARROW: Layout = {
+  w: 360,
+  h: 340,
+  nodes: [
+    { x: 76, y: 62 },
+    { x: 284, y: 62 },
+    { x: 284, y: 278 },
+    { x: 76, y: 278 },
+  ],
+  orbit: 78,
+  halo: 98,
+  inner: 42,
+};
+
+/** Bản thu gọn trong nút gạt: khung vuông */
+const COMPACT: Layout = {
+  w: 300,
+  h: 300,
+  nodes: [
+    { x: 66, y: 66 },
+    { x: 234, y: 66 },
+    { x: 234, y: 234 },
+    { x: 66, y: 234 },
+  ],
+  orbit: 84,
+  halo: 110,
+  inner: 46,
+};
+
+/** Dưới bề rộng này (px) chuyển sang bố cục khung hẹp */
+const NARROW_BELOW = 460;
 
 /**
  * Sơ đồ đánh giá 360° hiện đại:
@@ -59,13 +106,28 @@ export const Rater360: React.FC<Rater360Props> = ({
   const haloId = `rater360-halo-${useId().replace(/:/g, '')}`;
   const gradId = `rater360-line-${useId().replace(/:/g, '')}`;
   const [hoverKey, setHoverKey] = useState<string | null>(null);
+  const [narrow, setNarrow] = useState(false);
 
-  const points = nodes.map((_, i) => NODE_POSITIONS[i % NODE_POSITIONS.length]);
+  useEffect(() => {
+    const element = ref.current;
+    if (compact || !element || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(([entry]) => setNarrow(entry.contentRect.width < NARROW_BELOW));
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [compact, ref]);
+
+  const layout = compact ? COMPACT : narrow ? NARROW : WIDE;
+  const { w: W, h: H } = layout;
+  const CX = W / 2;
+  const CY = H / 2;
+  const pctX = (value: number) => `${((value / W) * 100).toFixed(2)}%`;
+  const pctY = (value: number) => `${((value / H) * 100).toFixed(2)}%`;
+  const points = nodes.map((_, i) => layout.nodes[i % layout.nodes.length]);
 
   return (
     <figure
       ref={ref}
-      className={`rater360 ${seen ? 'is-visible' : ''} ${active ? '' : 'is-off'} ${compact ? 'is-compact' : ''} ${className}`}
+      className={`rater360 ${seen ? 'is-visible' : ''} ${active ? '' : 'is-off'} ${compact ? 'is-compact' : ''} ${narrow && !compact ? 'is-narrow' : ''} ${className}`}
     >
       <div className="rater360-stage">
         <svg className="rater360-svg" viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
@@ -80,16 +142,17 @@ export const Rater360: React.FC<Rater360Props> = ({
             </linearGradient>
           </defs>
 
-          <circle cx={CX} cy={CY} r={126} className="rater360-halo" fill={`url(#${haloId})`} />
-          <circle cx={CX} cy={CY} r={104} className="rater360-ring rater360-orbit" pathLength={1} />
-          <circle cx={CX} cy={CY} r={54} className="rater360-ring rater360-inner" pathLength={1} />
+          <circle cx={CX} cy={CY} r={layout.halo} className="rater360-halo" fill={`url(#${haloId})`} />
+          <circle cx={CX} cy={CY} r={layout.orbit} className="rater360-ring rater360-orbit" pathLength={1} />
+          <circle cx={CX} cy={CY} r={layout.inner} className="rater360-ring rater360-inner" pathLength={1} />
 
           {/* Đường thẳng nối trực tiếp từ tâm ra 4 nhóm đánh giá */}
           {points.map((p, i) => {
             const key = nodes[i]?.key ?? String(i);
             const lit = key === hoverKey;
-            const midX = (CX + p.x) / 2;
-            const midY = (CY + p.y) / 2;
+            const len = Math.hypot(p.x - CX, p.y - CY);
+            const jointX = CX + ((p.x - CX) * layout.orbit) / len;
+            const jointY = CY + ((p.y - CY) * layout.orbit) / len;
             return (
               <g key={key} className={`rater360-link ${lit ? 'is-lit' : ''}`} style={{ '--i': i } as React.CSSProperties}>
                 <line x1={CX} y1={CY} x2={p.x} y2={p.y} className="rater360-line" pathLength={1} />
@@ -102,7 +165,7 @@ export const Rater360: React.FC<Rater360Props> = ({
                   stroke={`url(#${gradId})`}
                   pathLength={1}
                 />
-                {!compact && <circle cx={midX} cy={midY} r={3} className="rater360-joint" />}
+                {!compact && <circle cx={jointX} cy={jointY} r={3.5} className="rater360-joint" />}
               </g>
             );
           })}
@@ -120,7 +183,7 @@ export const Rater360: React.FC<Rater360Props> = ({
           )}
         </span>
 
-        {nodes.map(({ key, label, Icon, meta }, i) => {
+        {nodes.map(({ key, label, Icon, meta, value }, i) => {
           const p = points[i];
           return (
             <span
@@ -138,7 +201,7 @@ export const Rater360: React.FC<Rater360Props> = ({
               onPointerLeave={() => setHoverKey(null)}
             >
               <span className="rater360-badge" aria-hidden="true">
-                <Icon strokeWidth={1.9} />
+                <Icon strokeWidth={2} />
               </span>
               {!compact && (
                 <span className="rater360-caption">
@@ -146,6 +209,7 @@ export const Rater360: React.FC<Rater360Props> = ({
                   {meta && <span className="rater360-meta">{meta}</span>}
                 </span>
               )}
+              {!compact && value && <span className="rater360-value">{value}</span>}
             </span>
           );
         })}

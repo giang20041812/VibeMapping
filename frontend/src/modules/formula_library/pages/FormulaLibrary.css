@@ -237,3 +237,147 @@
     display: block;
   }
 }
+
+/* Tính thử và khai triển */
+.formula-tab-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+  padding: var(--space-4);
+}
+
+.formula-trial-case {
+  max-width: 320px;
+}
+
+.formula-trial-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.formula-trial-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.formula-trial-table-wrap {
+  min-width: 0;
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.formula-trial-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.formula-trial-table th,
+.formula-trial-table td {
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.formula-trial-table th {
+  min-width: 120px;
+  font-weight: 600;
+  background-color: var(--color-bg-subtle);
+}
+
+.formula-trial-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.formula-steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.formula-step {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-2) var(--space-3);
+  overflow-x: auto;
+  background-color: var(--color-bg-subtle);
+  border-radius: var(--radius-md);
+}
+
+.formula-step-value {
+  font-weight: 700;
+  color: var(--color-text-main);
+}
+
+.formula-result {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  font-size: var(--font-size-xl);
+  background-color: var(--color-primary-light);
+  border-radius: var(--radius-md);
+}
+
+.formula-expansion-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.formula-expansion-count {
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.formula-expansion-level,
+.formula-expansion-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.formula-expansion-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.formula-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.formula-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  background-color: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}

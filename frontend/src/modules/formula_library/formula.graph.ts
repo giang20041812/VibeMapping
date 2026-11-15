@@ -198,3 +198,30 @@ export function edgePath(from: GraphNode, to: GraphNode): string {
   const dx = Math.max(24, (x2 - x1) / 2);
   return `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
 }
+
+/**
+ * Các công thức mà công thức này dùng, chia theo cấp: cấp 1 là công thức nó dùng trực tiếp,
+ * cấp 2 là công thức mà cấp 1 dùng... Mỗi công thức chỉ xuất hiện một lần, ở cấp gần nhất.
+ */
+export function dependencyLevels<T extends Pick<GraphFormula, 'formula_code' | 'expression'>>(code: string, formulas: readonly T[]): T[][] {
+  const byCode = new Map(formulas.map((formula) => [formula.formula_code, formula]));
+  const seen = new Set<string>([code]);
+  const levels: T[][] = [];
+  let frontier = [code];
+  while (frontier.length > 0) {
+    const next: T[] = [];
+    for (const current of frontier) {
+      const formula = byCode.get(current);
+      if (!formula?.expression) continue;
+      for (const dependency of collectDependencies(formula.expression).formulas) {
+        const target = byCode.get(dependency);
+        if (!target || seen.has(dependency)) continue;
+        seen.add(dependency);
+        next.push(target);
+      }
+    }
+    if (next.length > 0) levels.push(next);
+    frontier = next.map((formula) => formula.formula_code);
+  }
+  return levels;
+}

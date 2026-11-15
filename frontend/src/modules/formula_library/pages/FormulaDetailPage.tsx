@@ -5,7 +5,9 @@ import { Alert, Badge, Breadcrumb, Button, Card, Checkbox, DataTable, Spinner, T
 import type { DataTableColumn } from '../../../components/common';
 import { collectFallbacks, evaluate, formulaToLatex, valuesMatch, type SymbolDef, type Value } from '../../../domain/formula';
 import { formatDateTime } from '../../admin/admin.logic';
+import { FormulaExpansion } from '../components/FormulaExpansion';
 import { FormulaMath } from '../components/FormulaMath';
+import { FormulaTrial } from '../components/FormulaTrial';
 import { listCurrentParamValues, listFormulaTests, listFormulaVersions } from '../formula.service';
 import {
   SYMBOL_KIND_LABEL,
@@ -26,6 +28,8 @@ import '../../admin/pages/AdminPages.css';
 import './FormulaLibrary.css';
 
 const TAB_ITEMS = [
+  { value: 'trial', label: 'Tính thử' },
+  { value: 'expansion', label: 'Khai triển' },
   { value: 'tests', label: 'Ca thử' },
   { value: 'versions', label: 'Phiên bản' },
 ];
@@ -43,7 +47,8 @@ export const FormulaDetailPage: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { library, isLoading, error } = useFormulaLibrary();
-  const [tab, setTab] = useState('tests');
+  const [tab, setTab] = useState('trial');
+  const [extraLoaded, setExtraLoaded] = useState(false);
   const [showParamValues, setShowParamValues] = useState(false);
   const [paramValues, setParamValues] = useState<Record<string, unknown>>({});
   const [tests, setTests] = useState<FormulaTestRow[]>([]);
@@ -64,7 +69,8 @@ export const FormulaDetailPage: React.FC = () => {
         setParamValues(params);
         setExtraError(null);
       })
-      .catch(() => active && setExtraError('Không tải được ca thử và phiên bản.'));
+      .catch(() => active && setExtraError('Không tải được ca thử và phiên bản.'))
+      .finally(() => active && setExtraLoaded(true));
     return () => {
       active = false;
     };
@@ -184,7 +190,7 @@ export const FormulaDetailPage: React.FC = () => {
     );
   }
 
-  if (error || !library || !formula) {
+  if (error || !library || !formula || !latexContext) {
     return (
       <>
         <Breadcrumb items={[{ label: 'Công thức', to: '/quan-tri/cong-thuc' }, { label: 'Không tìm thấy' }]} />
@@ -276,13 +282,19 @@ export const FormulaDetailPage: React.FC = () => {
 
         <Card noPadding>
           <div className="formula-tabs">
-            <Tabs items={TAB_ITEMS} value={tab} onChange={setTab} label="Ca thử và phiên bản" />
+            <Tabs items={TAB_ITEMS} value={tab} onChange={setTab} label="Tính thử, khai triển, ca thử và phiên bản" />
           </div>
-          {tab === 'tests' ? (
-            <DataTable columns={testColumns} rows={testResults} rowKey={(row) => row.test.id} emptyText="Chưa có ca thử" caption="Ca thử" />
-          ) : (
-            <DataTable columns={versionColumns} rows={versions} rowKey={(row) => row.id} emptyText="Chưa có phiên bản" caption="Phiên bản" />
-          )}
+          {tab === 'trial' &&
+            (extraLoaded ? (
+              <FormulaTrial key={formula.id} formula={formula} library={library} latexContext={latexContext} tests={tests} currentParams={paramValues} />
+            ) : (
+              <div className="formula-loading">
+                <Spinner />
+              </div>
+            ))}
+          {tab === 'expansion' && <FormulaExpansion key={formula.id} formula={formula} library={library} latexContext={latexContext} />}
+          {tab === 'tests' && <DataTable columns={testColumns} rows={testResults} rowKey={(row) => row.test.id} emptyText="Chưa có ca thử" caption="Ca thử" />}
+          {tab === 'versions' && <DataTable columns={versionColumns} rows={versions} rowKey={(row) => row.id} emptyText="Chưa có phiên bản" caption="Phiên bản" />}
         </Card>
       </div>
     </>

@@ -18,6 +18,7 @@ import {
 import {
   collectDependencies,
   collectFallbacks,
+  collectNeeds,
   evaluate,
   findCycle,
   formulaToLatex,
@@ -31,11 +32,13 @@ import {
   GRAPH_NODE_WIDTH,
   buildEdges,
   computeDepths,
+  dependencyLevels,
   layoutGraph,
   relatedCodes,
   visibleCodes,
   type GraphFormula,
 } from '../src/modules/formula_library/formula.graph';
+import { contextFromState, parseCell, stateFromInputs } from '../src/modules/formula_library/formula.trial';
 import { parseTuition } from '../../supabase/scripts/tuition-parser';
 
 type Args = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -317,6 +320,66 @@ check('sơ đồ: bố cục không chồng nút và mọi dây đi từ trái s
 check('sơ đồ: bộ lọc rỗng cho bố cục rỗng', () => {
   const layout = layoutGraph(graphFormulas, graphEdges, new Set());
   must(layout.nodes.length === 0 && layout.edges.length === 0, 'phải rỗng');
+});
+
+// 6. Tính thử và khai triển --------------------------------------------------------------------------------------------
+check('cần nhập gì: điểm tiêu chí tổng hợp', () => {
+  const needs = collectNeeds(FORMULAS_BY_CODE.criterion_score_360.expression);
+  must(needs.params.join() === 'self_weight', `tham số ${needs.params.join()}`);
+  must(needs.refs.join() === 'rater_rs', `công thức ${needs.refs.join()}`);
+  const fields = needs.sets.raters?.fields.map((f) => `${f.kind}:${f.key}`).sort().join() ?? '';
+  must(fields === 'ref:rater_rs,ref:rater_share', `trường dòng ${fields}`);
+});
+check('cần nhập gì: tập viết thẳng của độ phù hợp nghề chỉ cần công thức và tham số', () => {
+  const needs = collectNeeds(FORMULAS_BY_CODE.career_fit.expression);
+  must(Object.keys(needs.sets).length === 0, 'không cần tập dòng');
+  must(needs.refs.length === 3 && needs.params.length === 3 && needs.vars.length === 0, JSON.stringify(needs));
+});
+check('cần nhập gì: đủ để tính mọi công thức không báo thiếu đầu vào', () => {
+  for (const f of FORMULAS) {
+    const needs = collectNeeds(f.expression);
+    const sets = Object.fromEntries(Object.entries(needs.sets).map(([name]) => [name, [] as Record<string, Value>[]]));
+    const vars: Record<string, Value> = {};
+    for (const key of [...needs.vars, ...needs.params]) vars[key] = null;
+    const refs: Record<string, Value> = {};
+    for (const key of needs.refs) refs[key] = null;
+    try {
+      evaluate(f.expression, { vars, refs, sets });
+    } catch (error) {
+      throw new Error(`${f.code}: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+});
+check('tính thử: mọi ca thử đi qua ô nhập dạng chữ vẫn ra đúng kết quả', () => {
+  for (const f of FORMULAS) {
+    const needs = collectNeeds(f.expression);
+    for (const test of f.tests) {
+      const context = contextFromState(stateFromInputs(needs, test.inputs, {}));
+      const actual = evaluate(f.expression, context);
+      must(valuesMatch(actual, test.expected, test.tolerance ?? 0.0001), `${f.code} – ${test.name}: ${show(actual)}, mong đợi ${show(test.expected)}`);
+    }
+  }
+});
+check('tính thử: đọc ô nhập', () => {
+  must(parseCell('') === null && parseCell('  ') === null, 'ô trống là không có dữ liệu');
+  must(parseCell('4,25') === 4.25 && parseCell('-3') === -3 && parseCell('0.5') === 0.5, 'đọc số có dấu phẩy');
+  must(parseCell('Phụ huynh') === 'Phụ huynh' && parseCell('12abc') === '12abc', 'chữ giữ nguyên');
+});
+check('tính thử: tham số hiện hành điền vào khi ca thử không có', () => {
+  const needs = collectNeeds(FORMULAS_BY_CODE.th_percent.expression);
+  const state = stateFromInputs(needs, { vars: { th_score: 6 } }, { understanding_percent_floor: 5 });
+  must(state.vars.understanding_percent_floor === '5' && state.vars.th_score === '6', JSON.stringify(state.vars));
+});
+check('khai triển theo cấp', () => {
+  const levels = dependencyLevels('career_fit', graphFormulas);
+  const codes = (n: number) => levels[n - 1].map((f) => f.formula_code).sort().join();
+  must(codes(1) === 'match_g1_g5,match_g7,riasec_match', `cấp 1: ${codes(1)}`);
+  must(levels[1].some((f) => f.formula_code === 'criterion_fit') && levels.length === 2, `số cấp ${levels.length}`);
+  const all = levels.flat().map((f) => f.formula_code);
+  must(new Set(all).size === all.length && !all.includes('career_fit'), 'mỗi công thức chỉ một lần và không có chính nó');
+  must(dependencyLevels('rater_rs', graphFormulas).length === 0, 'công thức không dùng công thức khác thì không có cấp');
+  const deep = dependencyLevels('trust_label', graphFormulas);
+  must(deep.flat().some((f) => f.formula_code === 'trust_effective_seconds'), 'phải đi tới tận công thức đầu chuỗi');
 });
 
 console.log(`${passed} kiểm tra đạt, ${failed} thất bại; ${FORMULAS.length} công thức, ${SYMBOLS.length} ký hiệu`);

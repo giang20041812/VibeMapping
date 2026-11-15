@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight,
+  ArrowUpRight,
   Briefcase,
   Check,
   ClipboardCheck,
@@ -10,10 +11,18 @@ import {
   Route,
   Scale,
   Star,
+  Trophy,
   Users,
   type LucideIcon,
 } from 'lucide-react';
-import { Button } from '../../../components/common';
+import {
+  Magnetic,
+  Reveal,
+  RollText,
+  SplitText,
+  SpotlightCard,
+  trackPointer,
+} from '../../../components/common';
 import { PolygonChart, type PolygonAxis, type PolygonLevel } from '../../../components/charts/PolygonChart/PolygonChart';
 import { PolygonChartSkeleton } from '../../../components/charts/PolygonChart/PolygonChartSkeleton';
 import { Rater360, type RaterNode } from '../../../components/charts/Rater360/Rater360';
@@ -67,7 +76,9 @@ const SelfAssessmentArtifact: React.FC<{
         <ol className="artifact-part-stepper" aria-label="Bốn phần tự đánh giá">
           {PARTS.map((part) => (
             <li key={part.number} className="artifact-part-item">
-              <Check size={12} strokeWidth={2.8} aria-hidden="true" />
+              <span className="artifact-part-check" aria-hidden="true">
+                <Check size={11} strokeWidth={3} />
+              </span>
               <span>{part.short}</span>
             </li>
           ))}
@@ -76,7 +87,7 @@ const SelfAssessmentArtifact: React.FC<{
       </div>
 
       <div className="artifact-self-grid">
-        <div className="artifact-self-radar">
+        <div className="artifact-self-radar artifact-stagger" style={{ '--stagger-i': 0 } as React.CSSProperties}>
           {isLoading ? (
             <PolygonChartSkeleton />
           ) : (
@@ -85,7 +96,11 @@ const SelfAssessmentArtifact: React.FC<{
         </div>
 
         <div className="artifact-self-side">
-          <div className="artifact-panel-block">
+          <div
+            className="artifact-panel-block spotlight artifact-stagger"
+            style={{ '--stagger-i': 1 } as React.CSSProperties}
+            onPointerMove={trackPointer}
+          >
             <div className="artifact-panel-head">
               <span className="artifact-panel-title">Nhóm tố chất nổi bật</span>
               <span className="artifact-tag is-sky">Holland: I-R-C</span>
@@ -95,7 +110,7 @@ const SelfAssessmentArtifact: React.FC<{
                 <li
                   key={group.key}
                   className="artifact-score-row"
-                  style={{ '--w': `${Math.round(group.value)}%` } as React.CSSProperties}
+                  style={{ '--bar-i': idx, '--w': `${Math.round(group.value)}%` } as React.CSSProperties}
                 >
                   <div className="artifact-score-meta">
                     <span className="artifact-score-name">{group.label}</span>
@@ -109,7 +124,11 @@ const SelfAssessmentArtifact: React.FC<{
             </ul>
           </div>
 
-          <div className="artifact-panel-block">
+          <div
+            className="artifact-panel-block spotlight artifact-stagger"
+            style={{ '--stagger-i': 2 } as React.CSSProperties}
+            onPointerMove={trackPointer}
+          >
             <span className="artifact-panel-title">Giá trị cốt lõi</span>
             <div className="artifact-chip-row">
               {SELF_CORE_VALUES.map((val) => (
@@ -158,11 +177,15 @@ const Rater360Artifact: React.FC<{ raters: RaterNode[] }> = ({ raters }) => {
         <span className="artifact-tag is-sky">Đã duyệt 8/8 bài</span>
       </div>
 
-      <div className="artifact-360-stage">
+      <div className="artifact-360-stage artifact-stagger" style={{ '--stagger-i': 0 } as React.CSSProperties}>
         <Rater360 nodes={enrichedNodes} centerLabel="Bạn" centerSub="Tổng hợp 360°" />
       </div>
 
-      <div className="artifact-360-compare">
+      <div
+        className="artifact-360-compare spotlight artifact-stagger"
+        style={{ '--stagger-i': 1 } as React.CSSProperties}
+        onPointerMove={trackPointer}
+      >
         <div className="artifact-360-compare-head">
           <span>Nhóm tiêu chí đối chiếu</span>
           <span>Tự đánh giá</span>
@@ -214,10 +237,17 @@ const CareerFitArtifact: React.FC = () => (
   <div className="artifact-window artifact-fit">
     <div className="artifact-topbar">
       <span className="artifact-status-line">Hồ sơ 360° · Độ đầy đủ dữ liệu 96%</span>
-      <span className="artifact-tag is-coral">Hạng 1 phù hợp nhất</span>
+      <span className="artifact-tag is-coral">
+        <Trophy size={12} aria-hidden="true" />
+        Hạng 1 phù hợp nhất
+      </span>
     </div>
 
-    <div className="artifact-fit-hero">
+    <div
+      className="artifact-fit-hero spotlight artifact-stagger"
+      style={{ '--stagger-i': 0 } as React.CSSProperties}
+      onPointerMove={trackPointer}
+    >
       <div className="artifact-fit-score-box">
         <span className="artifact-fit-rank-label">Hạng 1 · Mục tiêu</span>
         <strong className="artifact-fit-big-score">94%</strong>
@@ -231,11 +261,11 @@ const CareerFitArtifact: React.FC = () => (
         </div>
 
         <ul className="artifact-fit-bars">
-          {TOP_CAREER_BARS.map((bar) => (
+          {TOP_CAREER_BARS.map((bar, idx) => (
             <li
               key={bar.label}
               className="artifact-fit-bar-item"
-              style={{ '--w': `${bar.value}%` } as React.CSSProperties}
+              style={{ '--bar-i': idx, '--w': `${bar.value}%` } as React.CSSProperties}
             >
               <div className="artifact-fit-bar-head">
                 <span>{bar.label}</span>
@@ -251,8 +281,13 @@ const CareerFitArtifact: React.FC = () => (
     </div>
 
     <ul className="artifact-fit-next">
-      {NEXT_CAREERS.map((row) => (
-        <li key={row.rank} className="artifact-fit-next-row">
+      {NEXT_CAREERS.map((row, idx) => (
+        <li
+          key={row.rank}
+          className="artifact-fit-next-row spotlight artifact-stagger"
+          style={{ '--stagger-i': idx + 1 } as React.CSSProperties}
+          onPointerMove={trackPointer}
+        >
           <span className="artifact-fit-rank">#{row.rank}</span>
           <span className="artifact-fit-next-icon" aria-hidden="true">
             <Briefcase size={16} />
@@ -311,10 +346,12 @@ const DecisionCompareArtifact: React.FC = () => (
     </div>
 
     <div className="artifact-compare-grid">
-      {COMPARE_PLANS.map((plan) => (
+      {COMPARE_PLANS.map((plan, idx) => (
         <div
           key={plan.school}
-          className={`artifact-plan-card ${plan.preferred ? 'is-preferred' : ''}`}
+          className={`artifact-plan-card spotlight artifact-stagger ${plan.preferred ? 'is-preferred' : ''}`}
+          style={{ '--stagger-i': idx } as React.CSSProperties}
+          onPointerMove={trackPointer}
         >
           <div className="artifact-plan-head">
             <span className="artifact-plan-rank">
@@ -372,7 +409,7 @@ interface SampleRoadmapStage {
 
 const SAMPLE_ROADMAP_STAGES: SampleRoadmapStage[] = [
   {
-    stepCode: 'Chặng 1',
+    stepCode: 'Chặng 01',
     title: 'Nền tảng lập trình & Tư duy máy tính',
     statusLabel: 'Đã xong',
     statusKind: 'done',
@@ -383,7 +420,7 @@ const SAMPLE_ROADMAP_STAGES: SampleRoadmapStage[] = [
     ],
   },
   {
-    stepCode: 'Chặng 2',
+    stepCode: 'Chặng 02',
     title: 'Cấu trúc dữ liệu, Giải thuật & Cơ sở dữ liệu',
     statusLabel: 'Đã xong',
     statusKind: 'done',
@@ -394,7 +431,7 @@ const SAMPLE_ROADMAP_STAGES: SampleRoadmapStage[] = [
     ],
   },
   {
-    stepCode: 'Chặng 3',
+    stepCode: 'Chặng 03',
     title: 'Xây dựng dự án thực tế & Thực tập doanh nghiệp',
     statusLabel: 'Đang học',
     statusKind: 'current',
@@ -414,10 +451,12 @@ const RoadmapArtifact: React.FC = () => (
     </div>
 
     <ol className="artifact-roadmap-list">
-      {SAMPLE_ROADMAP_STAGES.map((stage) => (
+      {SAMPLE_ROADMAP_STAGES.map((stage, idx) => (
         <li
           key={stage.stepCode}
-          className={`artifact-roadmap-stage is-${stage.statusKind}`}
+          className={`artifact-roadmap-stage spotlight artifact-stagger is-${stage.statusKind}`}
+          style={{ '--stagger-i': idx } as React.CSSProperties}
+          onPointerMove={trackPointer}
         >
           <div className="artifact-roadmap-stage-head">
             <span className="artifact-roadmap-code">{stage.stepCode}</span>
@@ -441,7 +480,11 @@ const RoadmapArtifact: React.FC = () => (
         </li>
       ))}
 
-      <li className="artifact-roadmap-goal">
+      <li
+        className="artifact-roadmap-goal spotlight artifact-stagger"
+        style={{ '--stagger-i': SAMPLE_ROADMAP_STAGES.length } as React.CSSProperties}
+        onPointerMove={trackPointer}
+      >
         <span className="artifact-goal-pin" aria-hidden="true">
           <MapPin size={18} />
         </span>
@@ -455,7 +498,7 @@ const RoadmapArtifact: React.FC = () => (
 );
 
 /* ==========================================================================
-   THEO DÕI CUỘN MƯỢT MÀ
+   THEO DÕI CUỘN & THANH TIẾN ĐỘ DỌC MƯỢT MÀ
    ========================================================================== */
 
 const LINE_DESKTOP = 0.5;
@@ -516,8 +559,9 @@ function useJourneyProgress(listRef: React.RefObject<HTMLOListElement | null>) {
 }
 
 /**
- * Hành trình 5 bước hướng nghiệp:
- * Khoảng cách giữa các bước rộng rãi, không có mô tả thừa, chuyển cảnh hoàn toàn trên GPU không giật lag.
+ * Hành trình 5 bước hướng nghiệp phong cách HTDNSK:
+ * Thẻ bước SpotlightCard tương tác, khoảng cách cuộn rộng rãi, không dùng viền cạnh lệch,
+ * sân khấu Artifact bên phải có chuyển động tầng bậc mượt mà.
  */
 export const HomeJourney: React.FC<HomeJourneyProps> = ({
   id,
@@ -615,22 +659,31 @@ export const HomeJourney: React.FC<HomeJourneyProps> = ({
 
   return (
     <section id={id} className="journey" aria-labelledby={`${id}-title`}>
+      {/* Phần đầu phân tách rõ ràng với Hero */}
       <div className="journey-head">
-        <span className="journey-eyebrow">Lộ trình định hướng 5 bước</span>
+        <Reveal y={14}>
+          <div className="journey-eyebrow">
+            <span className="journey-eyebrow-line" aria-hidden="true" />
+            <span className="journey-eyebrow-code">02 //</span>
+            <span>Lộ trình định hướng 5 bước</span>
+          </div>
+        </Reveal>
+
         <div className="journey-head-row">
           <h2 id={`${id}-title`} className="journey-title">
-            Từ thấu hiểu bản thân đến mục tiêu nghề nghiệp
+            <SplitText text="Từ thấu hiểu bản thân đến mục tiêu nghề nghiệp" staggerMs={55} />
           </h2>
+
           <ol className="journey-quick-tabs" aria-label="Chọn nhanh bước">
             {steps.map((s, idx) => (
               <li key={s.key}>
                 <button
                   type="button"
-                  className={`journey-quick-tab ${idx === shown ? 'is-active' : idx < shown ? 'is-done' : ''}`}
+                  className={`journey-quick-tab roll-trigger ${idx === shown ? 'is-active' : idx < shown ? 'is-done' : ''}`}
                   onClick={() => scrollToStep(s.stepId)}
                 >
                   <span className="journey-quick-num">0{idx + 1}</span>
-                  <span>{s.title}</span>
+                  <RollText text={s.title} />
                 </button>
               </li>
             ))}
@@ -645,45 +698,59 @@ export const HomeJourney: React.FC<HomeJourneyProps> = ({
             const state = i < scrollActive ? 'is-done' : i === scrollActive ? 'is-current' : '';
             return (
               <li key={step.key} id={step.stepId} data-step className={`journey-step ${state}`}>
-                <span className="journey-meta">Bước 0{i + 1}</span>
+                <span className="journey-meta">0{i + 1}</span>
                 <span className="journey-rail" aria-hidden="true">
-                  <span className="journey-dot" />
+                  <span className="journey-dot">
+                    <span className="journey-dot-core" />
+                  </span>
                   <span className="journey-segment" />
                 </span>
-                <div className="journey-content">
-                  <button
-                    type="button"
-                    className="journey-step-trigger"
-                    onClick={() => scrollToStep(step.stepId)}
-                  >
-                    <h3 className="journey-step-title">
-                      <span className="journey-step-icon" aria-hidden="true">
-                        <Icon size={20} />
-                      </span>
-                      {step.title}
-                    </h3>
-                  </button>
+                <SpotlightCard
+                  light
+                  className="journey-content"
+                  onClick={() => scrollToStep(step.stepId)}
+                >
+                  <div className="journey-step-top">
+                    <span className="journey-step-icon" aria-hidden="true">
+                      <Icon size={20} />
+                    </span>
+                    <div className="journey-step-heading">
+                      <span className="journey-step-code">Bước 0{i + 1}</span>
+                      <h3 className="journey-step-title">{step.title}</h3>
+                    </div>
+                    <ArrowUpRight size={18} className="journey-step-arrow" aria-hidden="true" />
+                  </div>
+
                   <ul className="journey-facts">
                     {step.facts.map((fact) => (
-                      <li key={fact}>{fact}</li>
+                      <li key={fact}>
+                        <span className="journey-fact-check" aria-hidden="true">
+                          <Check size={12} strokeWidth={2.8} />
+                        </span>
+                        <span>{fact}</span>
+                      </li>
                     ))}
                   </ul>
-                </div>
+                </SpotlightCard>
               </li>
             );
           })}
+
           <li data-step className={`journey-step journey-end ${scrollActive >= steps.length ? 'is-current' : ''}`}>
             <span className="journey-meta" />
             <span className="journey-rail" aria-hidden="true">
-              <span className="journey-dot" />
+              <span className="journey-dot">
+                <span className="journey-dot-core" />
+              </span>
             </span>
-            <div className="journey-content">
+            <div className="journey-end-cta">
               {canExplore && (
-                <Link to={testPath} className="journey-cta">
-                  <Button size="lg" rightIcon={<ArrowRight size={18} />}>
-                    Bắt đầu làm bài đánh giá ngay
-                  </Button>
-                </Link>
+                <Magnetic strength={0.15} className="journey-cta-wrap">
+                  <Link to={testPath} className="journey-cta-btn btn-fill">
+                    <RollText text="Bắt đầu làm bài đánh giá ngay" />
+                    <ArrowRight size={18} className="btn-arrow-slide" aria-hidden="true" />
+                  </Link>
+                </Magnetic>
               )}
             </div>
           </li>

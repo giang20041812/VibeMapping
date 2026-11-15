@@ -1,6 +1,7 @@
 import React, { useId, useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { LearnerCenterIcon } from '../ArtifactIcons';
+import { trackPointer } from '../../common/MotionPrimitives';
 import { useInView } from '../../../hooks/useInView';
 import './Rater360.css';
 
@@ -26,26 +27,25 @@ export interface Rater360Props {
   className?: string;
 }
 
-const W = 560;
+const W = 540;
 const H = 300;
 const CX = W / 2;
 const CY = H / 2;
 
-/** Tọa độ 4 góc thoáng đãng để thẻ chữ không bao giờ đè vào tâm */
-const CORNER_POINTS = [
-  { x: 108, y: 66, align: 'left' as const },
-  { x: 452, y: 66, align: 'right' as const },
-  { x: 452, y: 234, align: 'right' as const },
-  { x: 108, y: 234, align: 'left' as const },
+/** Tọa độ 4 góc cân xứng, nối thẳng một mạch từ tâm ra từng nhóm */
+const NODE_POSITIONS = [
+  { x: 108, y: 62 },
+  { x: 432, y: 62 },
+  { x: 432, y: 238 },
+  { x: 108, y: 238 },
 ];
 
 const pctX = (value: number) => `${((value / W) * 100).toFixed(2)}%`;
 const pctY = (value: number) => `${((value / H) * 100).toFixed(2)}%`;
 
 /**
- * Sơ đồ đánh giá 360° kiến trúc phẳng, thoáng chữ:
- * Tâm ở giữa, 4 nhóm người đánh giá nằm ở 4 góc rộng rãi, không bo tròn chồng chéo,
- * chỉ dùng chuyển động transform + opacity mượt trên GPU.
+ * Sơ đồ đánh giá 360° hiện đại:
+ * Tâm ở giữa, 4 đường thẳng nối trực tiếp tới 4 thẻ nhóm đánh giá ở 4 góc thoáng đãng.
  */
 export const Rater360: React.FC<Rater360Props> = ({
   nodes,
@@ -56,10 +56,11 @@ export const Rater360: React.FC<Rater360Props> = ({
   className = '',
 }) => {
   const { ref, seen } = useInView<HTMLElement>(0.15);
+  const haloId = `rater360-halo-${useId().replace(/:/g, '')}`;
   const gradId = `rater360-line-${useId().replace(/:/g, '')}`;
   const [hoverKey, setHoverKey] = useState<string | null>(null);
 
-  const points = nodes.map((_, i) => CORNER_POINTS[i % CORNER_POINTS.length]);
+  const points = nodes.map((_, i) => NODE_POSITIONS[i % NODE_POSITIONS.length]);
 
   return (
     <figure
@@ -69,37 +70,39 @@ export const Rater360: React.FC<Rater360Props> = ({
       <div className="rater360-stage">
         <svg className="rater360-svg" viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
           <defs>
+            <radialGradient id={haloId} cx="50%" cy="50%" r="50%">
+              <stop offset="0%" className="rater360-halo-in" />
+              <stop offset="100%" className="rater360-halo-out" />
+            </radialGradient>
             <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="var(--brand-soft)" stopOpacity="0.75" />
-              <stop offset="100%" stopColor="var(--brand-coral)" stopOpacity="0.85" />
+              <stop offset="0%" stopColor="var(--brand-soft)" stopOpacity="0.85" />
+              <stop offset="100%" stopColor="var(--brand-coral)" stopOpacity="0.9" />
             </linearGradient>
           </defs>
 
-          <rect
-            x={CX - 178}
-            y={CY - 92}
-            width={356}
-            height={184}
-            rx={16}
-            className="rater360-ring rater360-orbit"
-            pathLength={1}
-          />
+          <circle cx={CX} cy={CY} r={126} className="rater360-halo" fill={`url(#${haloId})`} />
+          <circle cx={CX} cy={CY} r={104} className="rater360-ring rater360-orbit" pathLength={1} />
+          <circle cx={CX} cy={CY} r={54} className="rater360-ring rater360-inner" pathLength={1} />
 
+          {/* Đường thẳng nối trực tiếp từ tâm ra 4 nhóm đánh giá */}
           {points.map((p, i) => {
             const key = nodes[i]?.key ?? String(i);
             const lit = key === hoverKey;
-            const elbowX = p.align === 'left' ? CX - 56 : CX + 56;
-            const pathD = `M ${CX} ${CY} L ${elbowX} ${p.y} L ${p.x} ${p.y}`;
+            const midX = (CX + p.x) / 2;
+            const midY = (CY + p.y) / 2;
             return (
               <g key={key} className={`rater360-link ${lit ? 'is-lit' : ''}`} style={{ '--i': i } as React.CSSProperties}>
-                <path d={pathD} className="rater360-line" pathLength={1} />
-                <path
-                  d={pathD}
+                <line x1={CX} y1={CY} x2={p.x} y2={p.y} className="rater360-line" pathLength={1} />
+                <line
+                  x1={CX}
+                  y1={CY}
+                  x2={p.x}
+                  y2={p.y}
                   className="rater360-line-accent"
                   stroke={`url(#${gradId})`}
                   pathLength={1}
                 />
-                {!compact && <circle cx={elbowX} cy={p.y} r={3} className="rater360-joint" />}
+                {!compact && <circle cx={midX} cy={midY} r={3} className="rater360-joint" />}
               </g>
             );
           })}
@@ -122,7 +125,7 @@ export const Rater360: React.FC<Rater360Props> = ({
           return (
             <span
               key={key}
-              className={`rater360-node is-${p.align} rater360-tone-${(i % 4) + 1} ${key === hoverKey ? 'is-active' : ''}`}
+              className={`rater360-node spotlight rater360-tone-${(i % 4) + 1} ${key === hoverKey ? 'is-active' : ''}`}
               style={
                 {
                   left: pctX(p.x),
@@ -130,6 +133,7 @@ export const Rater360: React.FC<Rater360Props> = ({
                   '--i': i,
                 } as React.CSSProperties
               }
+              onPointerMove={trackPointer}
               onPointerEnter={() => setHoverKey(key)}
               onPointerLeave={() => setHoverKey(null)}
             >

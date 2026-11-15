@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   ArrowDown,
   ArrowRight,
+  ArrowUpRight,
   BookOpen,
   Building2,
   Compass,
@@ -10,7 +11,13 @@ import {
   Target,
   Users,
 } from 'lucide-react';
-import { Button } from '../../../components/common';
+import {
+  Magnetic,
+  Reveal,
+  RollText,
+  SplitText,
+  SpotlightCard,
+} from '../../../components/common';
 import type { CatalogScale } from '../home.service';
 import './HomeHero.css';
 
@@ -25,16 +32,22 @@ export interface HomeHeroProps {
 
 const CORE_CAPABILITIES = [
   {
+    num: '01',
+    targetId: 'step-self',
     icon: Users,
     title: 'Đánh giá năng lực 360°',
     meta: '7 nhóm tố chất · 4 góc nhìn khách quan',
   },
   {
+    num: '02',
+    targetId: 'step-fit',
     icon: Compass,
     title: 'Đối chiếu nghề – ngành – trường',
     meta: 'Xếp hạng tương thích · Điểm chuẩn · Học phí',
   },
   {
+    num: '03',
+    targetId: 'step-roadmap',
     icon: Target,
     title: 'Lộ trình phát triển cá nhân',
     meta: 'Kiến thức · Kỹ năng · Dự án thực tế',
@@ -42,8 +55,9 @@ const CORE_CAPABILITIES = [
 ] as const;
 
 /**
- * Phần mở đầu trang chủ: trình bày gọn gàng, sạch sẽ, không có mô tả thừa hay quy trình lặp lại,
- * hiển thị đầy đủ quy mô nghề nghiệp, ngành đào tạo, trường đại học/cao đẳng và 3 năng lực cốt lõi.
+ * Phần mở đầu trang chủ phong cách HTDNSK:
+ * SplitText trồi từng chữ, CTA Magnetic + btn-fill + RollText,
+ * 3 thẻ SpotlightCard tương tác và 4 thẻ quy mô (Câu hỏi, Nghề, Ngành, Trường) phân tách rõ ràng.
  */
 export const HomeHero: React.FC<HomeHeroProps> = ({
   canExplore,
@@ -57,36 +71,56 @@ export const HomeHero: React.FC<HomeHeroProps> = ({
   const majorsCount = scale?.majors != null ? scale.majors.toLocaleString('vi-VN') : '180+';
   const schoolsCount = scale?.schools != null ? scale.schools.toLocaleString('vi-VN') : '250+';
 
+  const scrollToTarget = (e: React.MouseEvent, targetId: string) => {
+    const el = document.getElementById(targetId);
+    if (!el) return;
+    e.preventDefault();
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
   return (
     <section className="hero" aria-labelledby="hero-title">
       <div className="hero-bg" aria-hidden="true">
         <span className="hero-grid-layer hero-grid" />
+        <span className="hero-ambient-top" />
+        <span className="hero-ambient-corner" />
       </div>
 
       <div className="hero-inner">
-        <div className="hero-main">
-          <div className="hero-copy">
-            <span className="hero-eyebrow">
+        {/* Khối 1: Tiêu đề & Nút kêu gọi hành động */}
+        <div className="hero-header-block">
+          <Reveal y={16} delayMs={20}>
+            <div className="hero-eyebrow">
               <span className="hero-eyebrow-line" aria-hidden="true" />
-              Hệ thống định hướng nghề nghiệp & phát triển năng lực
-            </span>
+              <span className="hero-eyebrow-code">01 //</span>
+              <span>Hệ thống định hướng nghề nghiệp & phát triển năng lực</span>
+            </div>
+          </Reveal>
 
-            <h1 id="hero-title" className="hero-title">
-              <span>Biết mình là ai,</span>
-              <span className="hero-title-accent">vững bước tương lai.</span>
-            </h1>
+          <h1 id="hero-title" className="hero-title">
+            <SplitText text="Biết mình là ai," delayMs={60} staggerMs={75} />
+            <SplitText
+              text="vững bước tương lai."
+              className="hero-title-accent"
+              delayMs={320}
+              staggerMs={75}
+            />
+          </h1>
 
-            <div className="hero-actions">
-              {canExplore && (
-                <Link to={testPath} className="hero-cta">
-                  <Button size="lg" rightIcon={<ArrowRight size={18} />}>
-                    Bắt đầu làm bài đánh giá
-                  </Button>
+          <Reveal y={20} delayMs={480} className="hero-actions">
+            {canExplore && (
+              <Magnetic strength={0.16} className="hero-cta-wrap">
+                <Link to={testPath} className="hero-cta-primary btn-fill">
+                  <RollText text="Bắt đầu làm bài đánh giá" />
+                  <ArrowRight size={18} className="btn-arrow-slide" aria-hidden="true" />
                 </Link>
-              )}
+              </Magnetic>
+            )}
+
+            <Magnetic strength={0.12} className="hero-cta-wrap">
               <a
                 href={`#${journeyId}`}
-                className="hero-link"
+                className="hero-cta-secondary roll-trigger"
                 onClick={(e) => {
                   const el = document.getElementById(journeyId);
                   if (el) {
@@ -95,69 +129,109 @@ export const HomeHero: React.FC<HomeHeroProps> = ({
                   }
                 }}
               >
-                <span>Xem lộ trình 5 bước</span>
-                <ArrowDown size={17} aria-hidden="true" />
+                <RollText text="Khám phá lộ trình 5 bước" />
+                <ArrowDown size={17} className="hero-arrow-down" aria-hidden="true" />
               </a>
-            </div>
-          </div>
-
-          {/* 3 Năng lực trọng tâm — ngắn gọn, không văn bản giải thích dài dòng */}
-          <ul className="hero-capabilities" aria-label="Năng lực cốt lõi">
-            {CORE_CAPABILITIES.map((item) => {
-              const Icon = item.icon;
-              return (
-                <li key={item.title} className="hero-capability">
-                  <span className="hero-capability-icon" aria-hidden="true">
-                    <Icon size={18} />
-                  </span>
-                  <div className="hero-capability-body">
-                    <strong className="hero-capability-title">{item.title}</strong>
-                    <span className="hero-capability-meta">{item.meta}</span>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+            </Magnetic>
+          </Reveal>
         </div>
 
-        {/* Thanh thống kê quy mô đầy đủ: Bài đánh giá · Nghề nghiệp · Ngành đào tạo · Trường đào tạo */}
-        <dl className="hero-stats" aria-label="Quy mô hệ thống">
-          <div className="hero-stat">
-            <dt className="hero-stat-label">
-              <Layers size={15} aria-hidden="true" />
-              <span>Quy mô bài đánh giá</span>
-            </dt>
-            <dd className="hero-stat-value">{questionRange} câu</dd>
-            <dd className="hero-stat-sub">{minuteRange.replace('′', '')} phút thực hiện · 4 phần</dd>
+        {/* Khối 2: 3 Trụ cột năng lực cốt lõi (Spotlight Cards đồng nhất, không dùng viền cạnh lệch) */}
+        <div className="hero-section-group">
+          <div className="hero-divider-bar">
+            <span className="hero-divider-label">Trọng tâm hệ thống</span>
+            <span className="hero-divider-line" aria-hidden="true" />
           </div>
 
-          <div className="hero-stat">
-            <dt className="hero-stat-label">
-              <Compass size={15} aria-hidden="true" />
-              <span>Nghề nghiệp chuẩn hóa</span>
-            </dt>
-            <dd className="hero-stat-value">{careersCount}</dd>
-            <dd className="hero-stat-sub">Ma trận tiêu chí & mã Holland</dd>
+          <div className="hero-capabilities" role="list" aria-label="Ba trọng tâm cốt lõi">
+            {CORE_CAPABILITIES.map((item, idx) => {
+              const Icon = item.icon;
+              return (
+                <Reveal key={item.num} y={28} delayMs={560 + idx * 90} className="hero-capability-cell">
+                  <SpotlightCard
+                    role="listitem"
+                    className="hero-capability-card"
+                    onClick={(e) => scrollToTarget(e, item.targetId)}
+                  >
+                    <div className="hero-capability-top">
+                      <span className="hero-capability-num">{item.num}</span>
+                      <span className="hero-capability-icon" aria-hidden="true">
+                        <Icon size={18} />
+                      </span>
+                      <ArrowUpRight size={17} className="hero-capability-arrow" aria-hidden="true" />
+                    </div>
+                    <div className="hero-capability-body">
+                      <strong className="hero-capability-title">{item.title}</strong>
+                      <span className="hero-capability-meta">{item.meta}</span>
+                    </div>
+                  </SpotlightCard>
+                </Reveal>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Khối 3: Quy mô hệ thống (Số câu hỏi · Số nghề · Số ngành · Số trường) */}
+        <div className="hero-section-group">
+          <div className="hero-divider-bar">
+            <span className="hero-divider-label">Quy mô dữ liệu chuẩn hóa</span>
+            <span className="hero-divider-line" aria-hidden="true" />
           </div>
 
-          <div className="hero-stat">
-            <dt className="hero-stat-label">
-              <BookOpen size={15} aria-hidden="true" />
-              <span>Ngành đào tạo</span>
-            </dt>
-            <dd className="hero-stat-value">{majorsCount}</dd>
-            <dd className="hero-stat-sub">Liên kết chuẩn nghề nghiệp</dd>
-          </div>
+          <dl className="hero-stats" aria-label="Quy mô hệ thống">
+            <Reveal y={24} delayMs={760}>
+              <SpotlightCard className="hero-stat">
+                <dt className="hero-stat-label">
+                  <span className="hero-stat-icon" aria-hidden="true">
+                    <Layers size={15} />
+                  </span>
+                  <span>Quy mô bài đánh giá</span>
+                </dt>
+                <dd className="hero-stat-value">{questionRange} câu</dd>
+                <dd className="hero-stat-sub">{minuteRange.replace('′', '')} phút thực hiện · 4 phần</dd>
+              </SpotlightCard>
+            </Reveal>
 
-          <div className="hero-stat">
-            <dt className="hero-stat-label">
-              <Building2 size={15} aria-hidden="true" />
-              <span>Trường ĐH & Cao đẳng</span>
-            </dt>
-            <dd className="hero-stat-value">{schoolsCount}</dd>
-            <dd className="hero-stat-sub">Điểm chuẩn & học phí cập nhật</dd>
-          </div>
-        </dl>
+            <Reveal y={24} delayMs={830}>
+              <SpotlightCard className="hero-stat">
+                <dt className="hero-stat-label">
+                  <span className="hero-stat-icon" aria-hidden="true">
+                    <Compass size={15} />
+                  </span>
+                  <span>Nghề nghiệp chuẩn hóa</span>
+                </dt>
+                <dd className="hero-stat-value">{careersCount}</dd>
+                <dd className="hero-stat-sub">Ma trận tiêu chí & mã Holland</dd>
+              </SpotlightCard>
+            </Reveal>
+
+            <Reveal y={24} delayMs={900}>
+              <SpotlightCard className="hero-stat">
+                <dt className="hero-stat-label">
+                  <span className="hero-stat-icon" aria-hidden="true">
+                    <BookOpen size={15} />
+                  </span>
+                  <span>Ngành đào tạo</span>
+                </dt>
+                <dd className="hero-stat-value">{majorsCount}</dd>
+                <dd className="hero-stat-sub">Liên kết chuẩn nghề nghiệp</dd>
+              </SpotlightCard>
+            </Reveal>
+
+            <Reveal y={24} delayMs={970}>
+              <SpotlightCard className="hero-stat">
+                <dt className="hero-stat-label">
+                  <span className="hero-stat-icon" aria-hidden="true">
+                    <Building2 size={15} />
+                  </span>
+                  <span>Trường ĐH & Cao đẳng</span>
+                </dt>
+                <dd className="hero-stat-value">{schoolsCount}</dd>
+                <dd className="hero-stat-sub">Điểm chuẩn & học phí cập nhật</dd>
+              </SpotlightCard>
+            </Reveal>
+          </dl>
+        </div>
       </div>
     </section>
   );

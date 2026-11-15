@@ -9,9 +9,7 @@ import {
   MapPin,
   Route,
   Scale,
-  Sparkles,
   Star,
-  Trophy,
   Users,
   type LucideIcon,
 } from 'lucide-react';
@@ -20,7 +18,6 @@ import { PolygonChart, type PolygonAxis, type PolygonLevel } from '../../../comp
 import { PolygonChartSkeleton } from '../../../components/charts/PolygonChart/PolygonChartSkeleton';
 import { Rater360, type RaterNode } from '../../../components/charts/Rater360/Rater360';
 import { PARTS } from '../../assessment_session/assessmentSession.constants';
-import { useInView } from '../../../hooks/useInView';
 import './HomeJourney.css';
 
 export interface HomeJourneyProps {
@@ -31,7 +28,6 @@ export interface HomeJourneyProps {
   minuteRange: string;
   raters: RaterNode[];
   ratersPerGroup: number;
-  /** Số nghề trong danh mục; null khi chưa tải được */
   careers: number | null;
   axes: PolygonAxis[];
   levels: PolygonLevel[];
@@ -43,26 +39,16 @@ interface Step {
   key: string;
   stepId: string;
   title: string;
-  detail: string;
   facts: string[];
   icon: LucideIcon;
   scene: React.ReactNode;
 }
 
 /* ==========================================================================
-   ARTIFACT BƯỚC 1: ĐÁNH GIÁ CÁ NHÂN (TỰ ĐÁNH GIÁ)
-   Cấu trúc UI như trang Làm bài & Kết quả cá nhân:
-   Thanh tiến trình 4 phần + Bản đồ 7 nhóm tố chất + Bảng điểm nhóm & Giá trị cốt lõi
+   BƯỚC 1: TỰ ĐÁNH GIÁ
    ========================================================================== */
 
 const SELF_CORE_VALUES = ['Tư duy logic', 'Sáng tạo công nghệ', 'Học hỏi liên tục'];
-
-function levelLabelOf(score: number): string {
-  if (score >= 80) return 'Rất cao';
-  if (score >= 65) return 'Cao';
-  if (score >= 50) return 'Trung bình';
-  return 'Thấp';
-}
 
 const SelfAssessmentArtifact: React.FC<{
   axes: PolygonAxis[];
@@ -70,10 +56,6 @@ const SelfAssessmentArtifact: React.FC<{
   isOwnResult: boolean;
   isLoading: boolean;
 }> = ({ axes, levels, isOwnResult, isLoading }) => {
-  const top = axes.reduce<PolygonAxis | null>(
-    (best, a) => (a.value !== null && (best === null || (best.value ?? -1) < a.value) ? a : best),
-    null,
-  );
   const topGroups = [...axes]
     .filter((a): a is PolygonAxis & { value: number } => a.value !== null)
     .sort((a, b) => b.value - a.value)
@@ -81,30 +63,18 @@ const SelfAssessmentArtifact: React.FC<{
 
   return (
     <div className="artifact-window artifact-self">
-      {/* Thanh đầu thẻ: 4 phần đánh giá đã hoàn tất + nhãn kết quả */}
       <div className="artifact-topbar">
         <ol className="artifact-part-stepper" aria-label="Bốn phần tự đánh giá">
-          {PARTS.map((part, idx) => (
-            <li key={part.number} className="artifact-part-pill" style={{ '--i': idx } as React.CSSProperties}>
-              <span className="artifact-part-check" aria-hidden="true">
-                <Check size={11} strokeWidth={3} />
-              </span>
+          {PARTS.map((part) => (
+            <li key={part.number} className="artifact-part-item">
+              <Check size={12} strokeWidth={2.8} aria-hidden="true" />
               <span>{part.short}</span>
             </li>
           ))}
         </ol>
-        <div className="artifact-badges">
-          <span className="artifact-badge">{isOwnResult ? 'Kết quả của bạn' : 'Mẫu minh họa · Gói 50 câu'}</span>
-          {top && top.value !== null && (
-            <span className="artifact-badge is-coral">
-              <Trophy size={12} aria-hidden="true" />
-              Nổi bật · {top.shortLabel ?? top.label} ({Math.round(top.value)}%)
-            </span>
-          )}
-        </div>
+        <span className="artifact-tag">{isOwnResult ? 'Kết quả của bạn' : 'Mẫu 50 câu'}</span>
       </div>
 
-      {/* Thân thẻ: Bản đồ đa giác 7 nhóm tố chất + Bảng điểm chi tiết như trang Kết quả */}
       <div className="artifact-self-grid">
         <div className="artifact-self-radar">
           {isLoading ? (
@@ -117,19 +87,18 @@ const SelfAssessmentArtifact: React.FC<{
         <div className="artifact-self-side">
           <div className="artifact-panel-block">
             <div className="artifact-panel-head">
-              <span className="artifact-panel-title">Điểm nhóm tố chất dẫn đầu</span>
-              <span className="artifact-badge is-sky">Holland: I-R-C</span>
+              <span className="artifact-panel-title">Nhóm tố chất nổi bật</span>
+              <span className="artifact-tag is-sky">Holland: I-R-C</span>
             </div>
             <ul className="artifact-score-list">
               {topGroups.map((group, idx) => (
                 <li
                   key={group.key}
                   className="artifact-score-row"
-                  style={{ '--i': idx, '--w': `${Math.round(group.value)}%` } as React.CSSProperties}
+                  style={{ '--w': `${Math.round(group.value)}%` } as React.CSSProperties}
                 >
                   <div className="artifact-score-meta">
                     <span className="artifact-score-name">{group.label}</span>
-                    <span className="artifact-score-level">{levelLabelOf(group.value)}</span>
                     <strong className="artifact-score-val">{Math.round(group.value)}%</strong>
                   </div>
                   <span className="scene-track">
@@ -140,8 +109,8 @@ const SelfAssessmentArtifact: React.FC<{
             </ul>
           </div>
 
-          <div className="artifact-panel-block artifact-values-block">
-            <span className="artifact-panel-title">Giá trị cốt lõi ưu tiên</span>
+          <div className="artifact-panel-block">
+            <span className="artifact-panel-title">Giá trị cốt lõi</span>
             <div className="artifact-chip-row">
               {SELF_CORE_VALUES.map((val) => (
                 <span key={val} className="artifact-value-chip">
@@ -157,10 +126,7 @@ const SelfAssessmentArtifact: React.FC<{
 };
 
 /* ==========================================================================
-   ARTIFACT BƯỚC 2: ĐÁNH GIÁ 360°
-   Cấu trúc UI như trang Đánh giá 360:
-   Thanh công tắc mời đánh giá + Sơ đồ 4 nhóm (Phụ huynh, Giáo viên, Bạn bè, Người hướng dẫn)
-   với icon thiết kế riêng + Bảng đối chiếu Tự đánh giá vs Sau 360°
+   BƯỚC 2: ĐÁNH GIÁ 360°
    ========================================================================== */
 
 const RATER_SAMPLE_META: Record<string, string> = {
@@ -184,24 +150,18 @@ const Rater360Artifact: React.FC<{ raters: RaterNode[] }> = ({ raters }) => {
 
   return (
     <div className="artifact-window artifact-360">
-      {/* Thanh trạng thái công tắc 360° như trên InvitePanel */}
       <div className="artifact-topbar">
-        <div className="artifact-switch-pill">
-          <span className="artifact-switch-dot" aria-hidden="true" />
+        <div className="artifact-status-line">
+          <span className="artifact-status-dot" aria-hidden="true" />
           <span>Cho phép người khác đánh giá · Đang bật</span>
         </div>
-        <div className="artifact-badges">
-          <span className="artifact-badge is-sky">Đã duyệt 8/8 phản hồi</span>
-          <span className="artifact-badge is-coral">Độ tin cậy: Cao</span>
-        </div>
+        <span className="artifact-tag is-sky">Đã duyệt 8/8 bài</span>
       </div>
 
-      {/* Sơ đồ 360° trung tâm với 4 nhóm đánh giá có icon thiết kế riêng */}
       <div className="artifact-360-stage">
         <Rater360 nodes={enrichedNodes} centerLabel="Bạn" centerSub="Tổng hợp 360°" />
       </div>
 
-      {/* Bảng đối chiếu điểm Tự đánh giá và Sau 360° như trong ResultView */}
       <div className="artifact-360-compare">
         <div className="artifact-360-compare-head">
           <span>Nhóm tiêu chí đối chiếu</span>
@@ -209,8 +169,8 @@ const Rater360Artifact: React.FC<{ raters: RaterNode[] }> = ({ raters }) => {
           <span>Sau 360°</span>
         </div>
         <ul className="artifact-360-compare-list">
-          {CALIBRATION_ROWS.map((row, idx) => (
-            <li key={row.label} className="artifact-360-compare-row" style={{ '--i': idx } as React.CSSProperties}>
+          {CALIBRATION_ROWS.map((row) => (
+            <li key={row.label} className="artifact-360-compare-row">
               <span className="artifact-360-crit">{row.label}</span>
               <span className="artifact-360-self">{row.self}</span>
               <span className="artifact-360-combined">
@@ -226,9 +186,7 @@ const Rater360Artifact: React.FC<{ raters: RaterNode[] }> = ({ raters }) => {
 };
 
 /* ==========================================================================
-   ARTIFACT BƯỚC 3: NGHỀ PHÙ HỢP
-   Cấu trúc UI tương tự TopCareers.tsx:
-   Thanh độ đầy đủ dữ liệu + Thẻ Hạng 1 nổi bật có vòng tròn % & 3 thanh thành phần + Danh sách #2, #3
+   BƯỚC 3: NGHỀ PHÙ HỢP
    ========================================================================== */
 
 const TOP_CAREER_BARS = [
@@ -243,60 +201,41 @@ const NEXT_CAREERS = [
     name: 'Kỹ sư dữ liệu & Trí tuệ nhân tạo (Data / AI Engineer)',
     holland: 'I-R-C · Nghiên cứu – Kỹ thuật',
     fit: 89,
-    tag: 'Đang chọn so sánh',
   },
   {
     rank: 3,
     name: 'Kỹ sư hệ thống & Điện toán đám mây (Cloud / DevOps)',
     holland: 'R-I-C · Kỹ thuật – Nghiên cứu',
     fit: 84,
-    tag: 'Phù hợp cao',
   },
 ];
 
 const CareerFitArtifact: React.FC = () => (
   <div className="artifact-window artifact-fit">
-    {/* Thanh trạng thái đầu trang Nghề phù hợp */}
     <div className="artifact-topbar">
-      <div className="artifact-badges">
-        <span className="artifact-badge is-sky">Cuối cùng 360°</span>
-        <span className="artifact-badge">Độ đầy đủ dữ liệu: 96%</span>
-      </div>
-      <span className="artifact-badge is-coral">
-        <Sparkles size={12} aria-hidden="true" />
-        Hạng 1 phù hợp nhất
-      </span>
+      <span className="artifact-status-line">Hồ sơ 360° · Độ đầy đủ dữ liệu 96%</span>
+      <span className="artifact-tag is-coral">Hạng 1 phù hợp nhất</span>
     </div>
 
-    {/* Thẻ Nghề Hạng 1 nổi bật (cấu trúc giống fit-hero trong TopCareers.tsx) */}
     <div className="artifact-fit-hero">
-      <div className="artifact-fit-ring-col">
-        <span className="artifact-fit-crown">
-          <Trophy size={12} aria-hidden="true" />
-          Hạng 1
-        </span>
-        <div className="artifact-fit-ring" aria-label="Độ phù hợp 94%">
-          <svg viewBox="0 0 88 88" aria-hidden="true">
-            <circle cx="44" cy="44" r="37" className="artifact-ring-track" />
-            <circle cx="44" cy="44" r="37" className="artifact-ring-fill" pathLength={100} strokeDasharray="94 100" />
-          </svg>
-          <strong className="artifact-ring-value">94%</strong>
-        </div>
-        <span className="artifact-fit-target">Mục tiêu</span>
+      <div className="artifact-fit-score-box">
+        <span className="artifact-fit-rank-label">Hạng 1 · Mục tiêu</span>
+        <strong className="artifact-fit-big-score">94%</strong>
+        <span className="artifact-fit-score-sub">Độ tương thích</span>
       </div>
 
       <div className="artifact-fit-main">
         <div className="artifact-fit-head">
           <h4 className="artifact-fit-title">Kỹ sư phần mềm (Software Engineer)</h4>
-          <span className="artifact-fit-sub">Công nghệ thông tin · Thu nhập: 18–45 triệu/tháng · Tăng trưởng rất cao</span>
+          <span className="artifact-fit-sub">Công nghệ thông tin · Holland: I-R-C</span>
         </div>
 
         <ul className="artifact-fit-bars">
-          {TOP_CAREER_BARS.map((bar, idx) => (
+          {TOP_CAREER_BARS.map((bar) => (
             <li
               key={bar.label}
               className="artifact-fit-bar-item"
-              style={{ '--i': idx, '--w': `${bar.value}%` } as React.CSSProperties}
+              style={{ '--w': `${bar.value}%` } as React.CSSProperties}
             >
               <div className="artifact-fit-bar-head">
                 <span>{bar.label}</span>
@@ -311,23 +250,15 @@ const CareerFitArtifact: React.FC = () => (
       </div>
     </div>
 
-    {/* Các nghề phù hợp tiếp theo (#2, #3) */}
     <ul className="artifact-fit-next">
-      {NEXT_CAREERS.map((row, idx) => (
-        <li
-          key={row.rank}
-          className="artifact-fit-next-row"
-          style={{ '--i': idx + 2, '--w': `${row.fit}%` } as React.CSSProperties}
-        >
+      {NEXT_CAREERS.map((row) => (
+        <li key={row.rank} className="artifact-fit-next-row">
           <span className="artifact-fit-rank">#{row.rank}</span>
           <span className="artifact-fit-next-icon" aria-hidden="true">
             <Briefcase size={16} />
           </span>
           <div className="artifact-fit-next-body">
-            <div className="artifact-fit-next-top">
-              <strong className="artifact-fit-next-name">{row.name}</strong>
-              <span className="artifact-fit-next-tag">{row.tag}</span>
-            </div>
+            <strong className="artifact-fit-next-name">{row.name}</strong>
             <span className="artifact-fit-next-holland">{row.holland}</span>
           </div>
           <strong className="artifact-fit-next-score">{row.fit}%</strong>
@@ -338,9 +269,7 @@ const CareerFitArtifact: React.FC = () => (
 );
 
 /* ==========================================================================
-   ARTIFACT BƯỚC 4: SO SÁNH PHƯƠNG ÁN
-   Cấu trúc UI tương tự DecisionComparePage.tsx:
-   Thanh thông số đầu vào của người học + Bảng đặt 2 phương án Trường – Ngành cạnh nhau
+   BƯỚC 4: SO SÁNH PHƯƠNG ÁN
    ========================================================================== */
 
 const COMPARE_PLANS = [
@@ -350,12 +279,11 @@ const COMPARE_PLANS = [
     school: 'ĐH Bách khoa Hà Nội (HUST)',
     program: 'Khoa học Máy tính (IT1)',
     career: 'Kỹ sư phần mềm · 94%',
-    cutoff: '26.85 (Khối A00)',
-    admissionStatus: 'Đáp ứng (+0.65đ)',
+    cutoff: '26.85 (A00)',
+    admissionStatus: 'Đạt (+0.65đ)',
     tuition: '34 triệu / năm',
     location: 'Hà Nội · 4 năm',
     totalScore: '92.4 / 100',
-    criteriaNote: 'Đủ 4/4 tiêu chí · Hạng 1',
   },
   {
     rank: 2,
@@ -363,38 +291,34 @@ const COMPARE_PLANS = [
     school: 'ĐH Công nghệ – ĐHQGHN (UET)',
     program: 'Kỹ thuật Phần mềm (CN8)',
     career: 'Kỹ sư phần mềm · 94%',
-    cutoff: '26.40 (Khối A00)',
-    admissionStatus: 'Đáp ứng (+1.10đ)',
+    cutoff: '26.40 (A00)',
+    admissionStatus: 'Đạt (+1.10đ)',
     tuition: '31.5 triệu / năm',
     location: 'Hà Nội · 4 năm',
     totalScore: '89.8 / 100',
-    criteriaNote: 'Đủ 4/4 tiêu chí · Dự phòng',
   },
 ];
 
 const DecisionCompareArtifact: React.FC = () => (
   <div className="artifact-window artifact-compare">
-    {/* Thanh thông số đầu vào của học sinh như trên DecisionComparePage */}
     <div className="artifact-topbar">
-      <div className="artifact-badges">
-        <span className="artifact-badge">Điểm của bạn: 27.50 (A00)</span>
-        <span className="artifact-badge">Ngân sách: 45 triệu/năm</span>
-        <span className="artifact-badge">Ưu tiên: Hà Nội</span>
+      <div className="artifact-param-list">
+        <span>Điểm của bạn: <strong>27.50 (A00)</strong></span>
+        <span>Ngân sách: <strong>45 triệu/năm</strong></span>
+        <span>Ưu tiên: <strong>Hà Nội</strong></span>
       </div>
-      <span className="artifact-badge is-sky">4 tiêu chí trọng số</span>
+      <span className="artifact-tag is-sky">4 tiêu chí</span>
     </div>
 
-    {/* Hai thẻ phương án đặt cạnh nhau theo đúng hàng tiêu chí của bảng so sánh */}
     <div className="artifact-compare-grid">
-      {COMPARE_PLANS.map((plan, idx) => (
+      {COMPARE_PLANS.map((plan) => (
         <div
           key={plan.school}
           className={`artifact-plan-card ${plan.preferred ? 'is-preferred' : ''}`}
-          style={{ '--i': idx } as React.CSSProperties}
         >
           <div className="artifact-plan-head">
             <span className="artifact-plan-rank">
-              {plan.preferred && <Star size={12} aria-hidden="true" />}
+              {plan.preferred && <Star size={11} aria-hidden="true" />}
               Phương án {plan.rank} {plan.preferred ? '· Ưu tiên' : '· Dự phòng'}
             </span>
             <strong className="artifact-plan-school">{plan.school}</strong>
@@ -407,27 +331,24 @@ const DecisionCompareArtifact: React.FC = () => (
               <dd>{plan.career}</dd>
             </div>
             <div className="artifact-plan-row">
-              <dt>Điểm chuẩn & Đầu vào</dt>
+              <dt>Điểm chuẩn</dt>
               <dd>
                 <span>{plan.cutoff}</span>
-                <span className="artifact-plan-pill is-ok">{plan.admissionStatus}</span>
+                <span className="artifact-plan-ok">{plan.admissionStatus}</span>
               </dd>
             </div>
             <div className="artifact-plan-row">
-              <dt>Học phí mỗi năm</dt>
+              <dt>Học phí</dt>
               <dd>{plan.tuition}</dd>
             </div>
             <div className="artifact-plan-row">
-              <dt>Địa điểm & Thời gian</dt>
+              <dt>Đào tạo</dt>
               <dd>{plan.location}</dd>
             </div>
           </dl>
 
           <div className="artifact-plan-foot">
-            <div>
-              <span className="artifact-plan-foot-label">Điểm tổng hợp</span>
-              <span className="artifact-plan-foot-sub">{plan.criteriaNote}</span>
-            </div>
+            <span className="artifact-plan-foot-label">Điểm tổng hợp</span>
             <strong className="artifact-plan-total">{plan.totalScore}</strong>
           </div>
         </div>
@@ -437,9 +358,7 @@ const DecisionCompareArtifact: React.FC = () => (
 );
 
 /* ==========================================================================
-   ARTIFACT BƯỚC 5: LỘ TRÌNH CÁ NHÂN
-   Cấu trúc UI như RoadmapStageCard & RoadmapPlan:
-   Học C++ => Học cấu trúc dữ liệu & Giải thuật => Xây dựng Web bán hàng Full-stack => Mục tiêu: Trở thành Lập trình viên
+   BƯỚC 5: LỘ TRÌNH CÁ NHÂN
    ========================================================================== */
 
 interface SampleRoadmapStage {
@@ -470,47 +389,42 @@ const SAMPLE_ROADMAP_STAGES: SampleRoadmapStage[] = [
     statusKind: 'done',
     percent: 100,
     items: [
-      { pillar: 'Kiến thức', text: 'Học Cấu trúc dữ liệu & Giải thuật (Mảng, Cây, Đồ thị, Quy hoạch động)', done: true },
-      { pillar: 'Kỹ năng', text: 'Thiết kế Cơ sở dữ liệu SQL (PostgreSQL) & RESTful API', done: true },
+      { pillar: 'Kiến thức', text: 'Học Cấu trúc dữ liệu & Giải thuật (Mảng, Cây, Đồ thị)', done: true },
+      { pillar: 'Kỹ năng', text: 'Thiết kế Cơ sở dữ liệu SQL & Xây dựng RESTful API', done: true },
     ],
   },
   {
     stepCode: 'Chặng 3',
     title: 'Xây dựng dự án thực tế & Thực tập doanh nghiệp',
-    statusLabel: 'Đang thực hiện',
+    statusLabel: 'Đang học',
     statusKind: 'current',
     percent: 50,
     items: [
       { pillar: 'Trải nghiệm', text: 'Xây dựng Web bán hàng Full-stack (React, TypeScript, Node.js)', done: true },
-      { pillar: 'Trải nghiệm', text: 'Triển khai Docker, CI/CD & Thực tập tại công ty công nghệ', done: false },
+      { pillar: 'Trải nghiệm', text: 'Triển khai Docker, CI/CD & Thực tập tại doanh nghiệp', done: false },
     ],
   },
 ];
 
 const RoadmapArtifact: React.FC = () => (
   <div className="artifact-window artifact-roadmap">
-    {/* Thanh tổng quan lộ trình và tiến độ tổng thể */}
     <div className="artifact-topbar">
-      <div className="artifact-badges">
-        <span className="artifact-badge is-sky">Lộ trình cá nhân hóa</span>
-        <span className="artifact-badge">ĐH Bách khoa Hà Nội · Khoa học Máy tính</span>
-      </div>
-      <span className="artifact-badge is-coral">Tiến độ: 83%</span>
+      <span className="artifact-status-line">ĐH Bách khoa Hà Nội · Khoa học Máy tính</span>
+      <span className="artifact-tag is-coral">Tiến độ: 83%</span>
     </div>
 
-    {/* Dòng chảy các chặng học tập nối tiếp tới mục tiêu */}
     <ol className="artifact-roadmap-list">
-      {SAMPLE_ROADMAP_STAGES.map((stage, idx) => (
+      {SAMPLE_ROADMAP_STAGES.map((stage) => (
         <li
           key={stage.stepCode}
           className={`artifact-roadmap-stage is-${stage.statusKind}`}
-          style={{ '--i': idx } as React.CSSProperties}
         >
           <div className="artifact-roadmap-stage-head">
             <span className="artifact-roadmap-code">{stage.stepCode}</span>
             <strong className="artifact-roadmap-title">{stage.title}</strong>
-            <span className={`artifact-roadmap-status is-${stage.statusKind}`}>{stage.statusLabel}</span>
-            <span className="artifact-roadmap-pct">{stage.percent}%</span>
+            <span className={`artifact-roadmap-status is-${stage.statusKind}`}>
+              {stage.statusLabel} · {stage.percent}%
+            </span>
           </div>
 
           <ul className="artifact-roadmap-tasks">
@@ -527,17 +441,13 @@ const RoadmapArtifact: React.FC = () => (
         </li>
       ))}
 
-      {/* Đích đến: Mục tiêu nghề nghiệp */}
-      <li className="artifact-roadmap-goal" style={{ '--i': SAMPLE_ROADMAP_STAGES.length } as React.CSSProperties}>
+      <li className="artifact-roadmap-goal">
         <span className="artifact-goal-pin" aria-hidden="true">
           <MapPin size={18} />
         </span>
         <div className="artifact-goal-body">
           <span className="artifact-goal-eyebrow">Mục tiêu quyết định</span>
           <strong className="artifact-goal-title">Trở thành Lập trình viên (Kỹ sư phần mềm)</strong>
-          <span className="artifact-goal-sub">
-            Hoàn thiện Portfolio 3 dự án thực chiến trên GitHub · Sẵn sàng ứng tuyển Fresher / Junior Developer
-          </span>
         </div>
       </li>
     </ol>
@@ -545,11 +455,11 @@ const RoadmapArtifact: React.FC = () => (
 );
 
 /* ==========================================================================
-   THEO DÕI CUỘN: VẠCH TIẾN ĐỘ DỌC & ĐỔI CẢNH THEO BƯỚC
+   THEO DÕI CUỘN MƯỢT MÀ
    ========================================================================== */
 
-const LINE_DESKTOP = 0.52;
-const LINE_MOBILE = 0.68;
+const LINE_DESKTOP = 0.5;
+const LINE_MOBILE = 0.65;
 
 function useJourneyProgress(listRef: React.RefObject<HTMLOListElement | null>) {
   const [active, setActive] = useState(0);
@@ -576,7 +486,7 @@ function useJourneyProgress(listRef: React.RefObject<HTMLOListElement | null>) {
         const length = i < items.length - 1 ? centers[i + 1] - centers[i] : 0;
         item.style.setProperty('--seg-fill', `${Math.max(0, Math.min(length, line - centers[i]))}px`);
       });
-      setActive(next);
+      setActive((prev) => (prev === next ? prev : next));
     };
 
     const schedule = () => {
@@ -606,9 +516,8 @@ function useJourneyProgress(listRef: React.RefObject<HTMLOListElement | null>) {
 }
 
 /**
- * Hành trình 5 bước hướng nghiệp theo đúng thứ tự sử dụng sản phẩm.
- * Bên trái là dòng thời gian tuần tự có thể cuộn hoặc bấm chọn;
- * bên phải là khung sân khấu dính hiển thị UI Artifact chuẩn xác như khi chức năng được sử dụng.
+ * Hành trình 5 bước hướng nghiệp:
+ * Khoảng cách giữa các bước rộng rãi, không có mô tả thừa, chuyển cảnh hoàn toàn trên GPU không giật lag.
  */
 export const HomeJourney: React.FC<HomeJourneyProps> = ({
   id,
@@ -626,24 +535,19 @@ export const HomeJourney: React.FC<HomeJourneyProps> = ({
 }) => {
   const listRef = useRef<HTMLOListElement>(null);
   const scrollActive = useJourneyProgress(listRef);
-  const { ref: stageRef, seen } = useInView<HTMLDivElement>(0.2);
   const STEP_COUNT = 5;
   const shown = Math.min(Math.max(scrollActive, 0), STEP_COUNT - 1);
-
-  /* Mỗi lần đổi bước đang xem thì kích hoạt lại animation mở đầu kiểu Apple/Google cho cảnh mới */
-  const [runs, setRuns] = useState<number[]>([0, 0, 0, 0, 0]);
-  useEffect(() => {
-    setRuns((r) => r.map((v, i) => (i === shown ? v + 1 : v)));
-  }, [shown]);
 
   const steps: Step[] = [
     {
       key: 'self',
       stepId: 'step-self',
       title: 'Tự đánh giá',
-      detail:
-        'Trả lời bộ câu hỏi chuẩn hóa qua 4 phần (Tính cách, Giá trị, Sở thích nghề nghiệp, Năng lực chuyên môn) để phác họa bản đồ 7 nhóm tố chất và mã Holland.',
-      facts: [`${questionRange} câu hỏi`, `${minuteRange.replace('′', '')} phút`, '7 nhóm tố chất'],
+      facts: [
+        `${questionRange} câu hỏi · ${minuteRange.replace('′', '')} phút thực hiện`,
+        '4 phần: Tính cách, Giá trị, Sở thích, Năng lực',
+        'Bản đồ 7 nhóm tố chất & mã Holland',
+      ],
       icon: ClipboardCheck,
       scene: (
         <SelfAssessmentArtifact
@@ -658,9 +562,11 @@ export const HomeJourney: React.FC<HomeJourneyProps> = ({
       key: '360',
       stepId: 'step-360',
       title: 'Đánh giá 360',
-      detail:
-        'Mời Phụ huynh, Giáo viên, Bạn bè và Người hướng dẫn cùng đánh giá qua đường dẫn hoặc mã QR để hiệu chỉnh điểm mù và tăng độ tin cậy cho hồ sơ năng lực.',
-      facts: [`${raters.length} nhóm người đánh giá`, `Tối đa ${ratersPerGroup} người/nhóm`, 'Đối chiếu đa chiều'],
+      facts: [
+        `${raters.length} nhóm: Phụ huynh, Giáo viên, Bạn bè, Người hướng dẫn`,
+        `Tối đa ${ratersPerGroup} người đánh giá mỗi nhóm`,
+        'Đối chiếu điểm tự đánh giá & góc nhìn 360°',
+      ],
       icon: Users,
       scene: <Rater360Artifact raters={raters} />,
     },
@@ -668,9 +574,11 @@ export const HomeJourney: React.FC<HomeJourneyProps> = ({
       key: 'fit',
       stepId: 'step-fit',
       title: 'Nghề phù hợp',
-      detail:
-        'Hệ thống đối chiếu hồ sơ năng lực 360° với ma trận tiêu chí chuẩn để xếp hạng các nghề nghiệp phù hợp nhất kèm phân tích chi tiết từng chiều.',
-      facts: careers !== null ? [`${careers.toLocaleString('vi-VN')} nghề nghiệp`, 'Xếp hạng độ tương thích'] : ['Xếp hạng độ tương thích'],
+      facts: [
+        careers !== null ? `Đối chiếu ${careers.toLocaleString('vi-VN')} nghề nghiệp chuẩn hóa` : 'Đối chiếu danh mục nghề nghiệp chuẩn hóa',
+        'Xếp hạng theo Năng lực, Sở thích & Giá trị',
+        'Chọn nghề mục tiêu để lập phương án',
+      ],
       icon: Compass,
       scene: <CareerFitArtifact />,
     },
@@ -678,9 +586,11 @@ export const HomeJourney: React.FC<HomeJourneyProps> = ({
       key: 'compare',
       stepId: 'step-compare',
       title: 'So sánh phương án',
-      detail:
-        'Đặt các phương án Trường – Ngành – Nghề cạnh nhau theo 4 tiêu chí trọng số: độ phù hợp nghề, điểm chuẩn đầu vào, học phí mỗi năm và địa điểm đào tạo.',
-      facts: ['4 tiêu chí trọng số', 'Kiểm tra điểm chuẩn & học phí'],
+      facts: [
+        'Đặt các phương án Trường – Ngành cạnh nhau',
+        '4 tiêu chí: Độ phù hợp, Điểm chuẩn, Học phí, Địa điểm',
+        'Xác định phương án ưu tiên & dự phòng',
+      ],
       icon: Scale,
       scene: <DecisionCompareArtifact />,
     },
@@ -688,9 +598,11 @@ export const HomeJourney: React.FC<HomeJourneyProps> = ({
       key: 'roadmap',
       stepId: 'step-roadmap',
       title: 'Lộ trình',
-      detail:
-        'Xây dựng kế hoạch hành động cụ thể theo từng chặng từ kiến thức nền tảng, kỹ năng cốt lõi đến dự án thực chiến để vươn tới nghề mục tiêu.',
-      facts: ['3 trụ cột: Kiến thức · Kỹ năng · Trải nghiệm', 'Theo dõi tiến độ từng chặng'],
+      facts: [
+        'Chia theo từng chặng từ nền tảng đến thực chiến',
+        '3 trụ cột: Kiến thức · Kỹ năng · Trải nghiệm',
+        'Theo dõi tiến độ tới mục tiêu nghề nghiệp',
+      ],
       icon: Route,
       scene: <RoadmapArtifact />,
     },
@@ -704,10 +616,10 @@ export const HomeJourney: React.FC<HomeJourneyProps> = ({
   return (
     <section id={id} className="journey" aria-labelledby={`${id}-title`}>
       <div className="journey-head">
-        <span className="journey-eyebrow">Hành trình định hướng 5 bước</span>
+        <span className="journey-eyebrow">Lộ trình định hướng 5 bước</span>
         <div className="journey-head-row">
           <h2 id={`${id}-title`} className="journey-title">
-            Từ thấu hiểu bản thân đến lộ trình sự nghiệp rõ ràng
+            Từ thấu hiểu bản thân đến mục tiêu nghề nghiệp
           </h2>
           <ol className="journey-quick-tabs" aria-label="Chọn nhanh bước">
             {steps.map((s, idx) => (
@@ -751,14 +663,11 @@ export const HomeJourney: React.FC<HomeJourneyProps> = ({
                       {step.title}
                     </h3>
                   </button>
-                  <p className="journey-detail">{step.detail}</p>
-                  {step.facts.length > 0 && (
-                    <ul className="journey-facts">
-                      {step.facts.map((fact) => (
-                        <li key={fact}>{fact}</li>
-                      ))}
-                    </ul>
-                  )}
+                  <ul className="journey-facts">
+                    {step.facts.map((fact) => (
+                      <li key={fact}>{fact}</li>
+                    ))}
+                  </ul>
                 </div>
               </li>
             );
@@ -772,11 +681,7 @@ export const HomeJourney: React.FC<HomeJourneyProps> = ({
               {canExplore && (
                 <Link to={testPath} className="journey-cta">
                   <Button size="lg" rightIcon={<ArrowRight size={18} />}>
-                    <span className="roll">
-                      <span className="roll-inner" data-text="Bắt đầu làm bài đánh giá ngay">
-                        Bắt đầu làm bài đánh giá ngay
-                      </span>
-                    </span>
+                    Bắt đầu làm bài đánh giá ngay
                   </Button>
                 </Link>
               )}
@@ -785,17 +690,16 @@ export const HomeJourney: React.FC<HomeJourneyProps> = ({
         </ol>
 
         <div className="journey-aside">
-          <div ref={stageRef} className="journey-stage" aria-hidden="true">
+          <div className="journey-stage" aria-hidden="true">
             <span className="journey-stage-glow" />
-            {seen &&
-              steps.map((step, i) => (
-                <div
-                  key={`${step.key}-${runs[i]}`}
-                  className={`journey-scene journey-scene-${step.key} ${i === shown ? 'is-active' : ''}`}
-                >
-                  {step.scene}
-                </div>
-              ))}
+            {steps.map((step, i) => (
+              <div
+                key={step.key}
+                className={`journey-scene journey-scene-${step.key} ${i === shown ? 'is-active' : ''}`}
+              >
+                {step.scene}
+              </div>
+            ))}
             <ol className="journey-dots">
               {steps.map((step, i) => (
                 <li

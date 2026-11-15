@@ -165,28 +165,26 @@
 .polygon-node-badge {
   display: grid;
   place-items: center;
-  width: var(--touch-target);
-  height: var(--touch-target);
+  width: calc(38 * var(--px));
+  height: calc(38 * var(--px));
   color: var(--tone);
   background: var(--chart-paper);
   border: 1px solid var(--chart-line);
-  border-radius: var(--radius-full);
-  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xs);
   transition:
     transform var(--transition-normal) var(--ease-decelerate),
     color var(--transition-fast),
     background-color var(--transition-fast),
-    border-color var(--transition-fast),
-    box-shadow var(--transition-normal);
+    border-color var(--transition-fast);
 }
-.polygon-node:hover .polygon-node-badge { transform: translateY(-2px); border-color: var(--chart-line-strong); box-shadow: var(--shadow-md); }
+.polygon-node:hover .polygon-node-badge { transform: translateY(-2px); border-color: var(--chart-line-strong); }
 .polygon-node.is-active { color: var(--chart-text-strong); }
 .polygon-node.is-active .polygon-node-badge {
   color: var(--brand-white);
   background: var(--tone);
   border-color: transparent;
-  box-shadow: 0 6px 16px -6px var(--tone);
-  transform: scale(1.08);
+  transform: scale(1.06);
 }
 
 .polygon-node-name { white-space: nowrap; }
@@ -246,16 +244,16 @@
 .polygon-readout-reference { font-size: var(--font-size-sm); font-weight: 600; color: var(--chart-text-muted); }
 
 @keyframes polygon-grow {
-  from { opacity: 0; transform: scale(0.32); filter: blur(6px); }
-  to { opacity: 1; transform: scale(1); filter: none; }
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 1; transform: scale(1); }
 }
 @keyframes polygon-rise {
-  from { opacity: 0; transform: translateY(18px) scale(0.96); }
+  from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: none; }
 }
 @keyframes polygon-node-in {
-  from { opacity: 0; transform: translate(-50%, calc(-50% + 14px)) scale(0.8); filter: blur(6px); }
-  to { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: none; }
+  from { opacity: 0; transform: translate(-50%, calc(-50% + 10px)); }
+  to { opacity: 1; transform: translate(-50%, -50%); }
 }
 @keyframes polygon-fade-in {
   from { opacity: 0; }

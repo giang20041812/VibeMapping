@@ -1,4 +1,5 @@
 import { supabase } from '../../lib/supabase';
+import type { Json } from '../../types/supabase';
 import type { EvalContext, Expr, SymbolDef, Value, VerificationLevel } from '../../domain/formula';
 import type { FormulaGroupRow, FormulaLibrary, FormulaRecord, FormulaTestRow, FormulaVersionRow } from './formula.types';
 
@@ -105,4 +106,75 @@ export async function listCurrentParamValues(codes: string[]): Promise<Record<st
     .limit(200);
   if (error) fail('giá trị tham số', error.message);
   return Object.fromEntries(data.map((row) => [row.param_code, row.param_value]));
+}
+
+export interface FormulaDraft {
+  id: string;
+  version_no: number;
+  note: string | null;
+  expression: Expr;
+}
+
+/** Bản nháp đang soạn của công thức (mỗi công thức tối đa một bản) */
+export async function getFormulaDraft(formulaId: string): Promise<FormulaDraft | null> {
+  const { data, error } = await supabase
+    .from('formula_versions')
+    .select('id, version_no, note, expression')
+    .eq('formula_id', formulaId)
+    .eq('status', 'draft')
+    .maybeSingle();
+  if (error) fail('bản nháp công thức', error.message);
+  if (!data || !isExpr(data.expression)) return null;
+  return { id: data.id, version_no: data.version_no, note: data.note, expression: data.expression };
+}
+
+export interface SaveVersionInput {
+  formulaId: string;
+  /** Bản nháp đang soạn; bỏ trống khi chưa có */
+  draftId: string | null;
+  expression: Expr;
+  note: string;
+  userId: string;
+}
+
+/** Lưu bản nháp: sửa bản nháp đang có hoặc tạo mới. Trả về mã bản nháp */
+export async function saveFormulaDraft(input: SaveVersionInput): Promise<string> {
+  const payload = { expression: input.expression as unknown as Json, note: input.note.trim() || null, changed_by: input.userId };
+  if (input.draftId) {
+    const { error } = await supabase.from('formula_versions').update(payload).eq('id', input.draftId).eq('status', 'draft');
+    if (error) throw new Error(error.message);
+    return input.draftId;
+  }
+  const { data, error } = await supabase
+    .from('formula_versions')
+    .insert({ ...payload, formula_id: input.formulaId, status: 'draft' })
+    .select('id')
+    .single();
+  if (error) throw new Error(error.message);
+  return data.id;
+}
+
+/** Áp dụng: bản này thành bản hiệu lực, bản cũ chuyển sang đã thay. Đổi trạng thái công thức nếu có */
+export async function applyFormulaVersion(
+  input: Omit<SaveVersionInput, 'expression'> & { expression: Expr | null; verification: string | null },
+): Promise<void> {
+  const payload = { expression: input.expression as unknown as Json, note: input.note.trim(), changed_by: input.userId, status: 'active' as const };
+  if (input.expression === null) {
+    // Không có nội dung mới: chỉ đổi trạng thái công thức
+  } else if (input.draftId) {
+    const { error } = await supabase.from('formula_versions').update(payload).eq('id', input.draftId).eq('status', 'draft');
+    if (error) throw new Error(error.message);
+  } else {
+    const { error } = await supabase.from('formula_versions').insert({ ...payload, formula_id: input.formulaId });
+    if (error) throw new Error(error.message);
+  }
+  if (input.verification) {
+    const { error } = await supabase.from('formulas').update({ verification_level: input.verification }).eq('id', input.formulaId);
+    if (error) throw new Error(error.message);
+  }
+}
+
+export async function deleteFormulaDraft(draftId: string): Promise<void> {
+  const { error } = await supabase.from('formula_versions').delete().eq('id', draftId).eq('status', 'draft');
+  if (error) throw new Error(error.message);
 }

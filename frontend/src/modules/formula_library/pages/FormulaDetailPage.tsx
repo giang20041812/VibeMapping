@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Network } from 'lucide-react';
+import { Network, Pencil } from 'lucide-react';
 import { Alert, Badge, Breadcrumb, Button, Card, Checkbox, DataTable, Spinner, Tabs } from '../../../components/common';
 import type { DataTableColumn } from '../../../components/common';
-import { collectFallbacks, evaluate, formulaToLatex, valuesMatch, type SymbolDef, type Value } from '../../../domain/formula';
+import { collectFallbacks, formulaToLatex, type SymbolDef } from '../../../domain/formula';
+import { runTests, type TestOutcome } from '../editor.logic';
 import { formatDateTime } from '../../admin/admin.logic';
 import { FormulaExpansion } from '../components/FormulaExpansion';
 import { FormulaMath } from '../components/FormulaMath';
@@ -36,12 +37,6 @@ const TAB_ITEMS = [
 
 const VERSION_STATUS_LABEL = { draft: 'Bản nháp', active: 'Đang hiệu lực', retired: 'Đã thay' } as const;
 const VERSION_STATUS_VARIANT = { draft: 'warning', active: 'success', retired: 'default' } as const;
-
-interface TestResult {
-  test: FormulaTestRow;
-  actual: Value | undefined;
-  state: 'match' | 'mismatch' | 'error';
-}
 
 export const FormulaDetailPage: React.FC = () => {
   const { id } = useParams();
@@ -102,18 +97,7 @@ export const FormulaDetailPage: React.FC = () => {
   );
   const usedBy = useMemo(() => (formula && library ? formulaDependents(formula.formula_code, library.formulas) : []), [formula, library]);
 
-  const testResults = useMemo<TestResult[]>(() => {
-    if (!formula?.expression) return [];
-    const expression = formula.expression;
-    return tests.map((test) => {
-      try {
-        const actual = evaluate(expression, test.inputs);
-        return { test, actual, state: valuesMatch(actual, test.expected, test.tolerance) ? 'match' : 'mismatch' };
-      } catch {
-        return { test, actual: undefined, state: 'error' };
-      }
-    });
-  }, [formula, tests]);
+  const testResults = useMemo<TestOutcome[]>(() => (formula?.expression ? runTests(formula.expression, tests) : []), [formula, tests]);
 
   const formulaIdByCode = useMemo(() => new Map((library?.formulas ?? []).map((item) => [item.formula_code, item.id])), [library]);
 
@@ -151,7 +135,7 @@ export const FormulaDetailPage: React.FC = () => {
     [formulaIdByCode, paramValues],
   );
 
-  const testColumns = useMemo<DataTableColumn<TestResult>[]>(
+  const testColumns = useMemo<DataTableColumn<TestOutcome>[]>(
     () => [
       { key: 'case_name', header: 'Ca thử', render: (row) => <span className="admin-cell-text">{row.test.case_name}</span> },
       { key: 'expected', header: 'Mong đợi', nowrap: true, render: (row) => formatValue(row.test.expected) },
@@ -232,6 +216,9 @@ export const FormulaDetailPage: React.FC = () => {
             onClick={() => navigate(`/quan-tri/cong-thuc/so-do?chon=${encodeURIComponent(formula.formula_code)}`)}
           >
             Xem trên sơ đồ
+          </Button>
+          <Button type="button" size="sm" leftIcon={<Pencil size={14} />} onClick={() => navigate(`/quan-tri/cong-thuc/${formula.id}/sua`)}>
+            Sửa công thức
           </Button>
         </div>
       </div>

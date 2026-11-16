@@ -39,6 +39,20 @@ import {
   type GraphFormula,
 } from '../src/modules/formula_library/formula.graph';
 import { contextFromState, parseCell, stateFromInputs } from '../src/modules/formula_library/formula.trial';
+import {
+  FN_ARITY,
+  KIND_OPTIONS,
+  allowedRefs,
+  buildEditorEnv,
+  changeNodeKind,
+  checkDraft,
+  defaultCond,
+  defaultNode,
+  fitFnArgs,
+  runTests,
+  saveErrorText,
+} from '../src/modules/formula_library/editor.logic';
+import type { FormulaLibrary, FormulaRecord, FormulaTestRow } from '../src/modules/formula_library/formula.types';
 import { parseTuition } from '../../supabase/scripts/tuition-parser';
 
 type Args = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -380,6 +394,93 @@ check('khai triển theo cấp', () => {
   must(dependencyLevels('rater_rs', graphFormulas).length === 0, 'công thức không dùng công thức khác thì không có cấp');
   const deep = dependencyLevels('trust_label', graphFormulas);
   must(deep.flat().some((f) => f.formula_code === 'trust_effective_seconds'), 'phải đi tới tận công thức đầu chuỗi');
+});
+
+// 7. Trình soạn ---------------------------------------------------------------------------------------------------------
+const library: FormulaLibrary = {
+  groups: [],
+  symbols: SYMBOLS,
+  formulas: FORMULAS.map<FormulaRecord>((f, index) => ({
+    id: f.code,
+    formula_code: f.code,
+    formula_name: f.name,
+    group_id: f.group,
+    group_name: f.group,
+    output_symbol: f.output.symbol,
+    output_unit: null,
+    verification_level: f.verification,
+    sort_order: index,
+    version_no: 1,
+    effective_from: null,
+    expression: f.expression,
+  })),
+};
+const editorSelf = 'career_fit';
+const editorEnv = buildEditorEnv(library, editorSelf);
+
+check('trình soạn: mỗi loại nút có giá trị mặc định dựng được thành công thức hiển thị được', () => {
+  for (const option of KIND_OPTIONS) {
+    const node = defaultNode(option.value, editorEnv);
+    must(node.t === option.value, `${option.value}: loại nút sai`);
+    katex.renderToString(formulaToLatex({ output: { symbol: 'x', latex: 'X', name: 'X' }, expression: node }, latexContext), { throwOnError: true, strict: 'ignore' });
+  }
+  for (const kind of ['cmp', 'notnull', 'and', 'or'] as const) must(defaultCond(kind).c === kind, `điều kiện ${kind}`);
+});
+check('trình soạn: nút mặc định tính được và không báo lỗi cấu trúc', () => {
+  const needsOf = (node: Expr) => {
+    const needs = collectNeeds(node);
+    return { vars: Object.fromEntries([...needs.vars, ...needs.params].map((k) => [k, 1])), refs: Object.fromEntries(needs.refs.map((k) => [k, 1])), sets: Object.fromEntries(Object.keys(needs.sets).map((k) => [k, [{}]])) };
+  };
+  for (const option of KIND_OPTIONS) {
+    const node = defaultNode(option.value, editorEnv);
+    const issues = validateExpression(node, { symbols: SYMBOLS_BY_CODE, formulaCodes: new Set(FORMULAS.map((f) => f.code)) });
+    must(issues.length === 0, `${option.value}: ${issues.map((i) => i.message).join('; ')}`);
+    evaluate(node, needsOf(node));
+  }
+});
+check('trình soạn: đổi giữa phép tính và phân số giữ nguyên hai vế', () => {
+  const bin: Expr = { t: 'bin', op: '+', l: { t: 'num', v: 3 }, r: { t: 'num', v: 4 } };
+  const div = changeNodeKind(bin, 'div', editorEnv);
+  must(div.t === 'div' && div.n.t === 'num' && div.n.v === 3 && div.d.t === 'num' && div.d.v === 4, JSON.stringify(div));
+  const back = changeNodeKind(div, 'bin', editorEnv);
+  must(back.t === 'bin' && back.op === '*', JSON.stringify(back));
+  must(changeNodeKind(bin, 'bin', editorEnv) === bin, 'cùng loại thì giữ nguyên');
+});
+check('trình soạn: số đối số khớp với hàm', () => {
+  for (const [name, [min, max]] of Object.entries(FN_ARITY)) {
+    const fitted = fitFnArgs(name as keyof typeof FN_ARITY, []);
+    must(fitted.length === min, `${name}: ${fitted.length} đối số`);
+    const many = fitFnArgs(name as keyof typeof FN_ARITY, Array.from({ length: 5 }, () => ({ t: 'num', v: 1 }) as Expr));
+    must(many.length === (Number.isFinite(max) ? max : 5), `${name}: cắt còn ${many.length}`);
+  }
+});
+check('trình soạn: không cho chọn công thức tạo vòng lặp', () => {
+  const codes = allowedRefs(editorSelf, library.formulas).map((f) => f.formula_code);
+  must(!codes.includes(editorSelf), 'không được chọn chính nó');
+  for (const user of ['option_total_score', 'career_rank_band', 'career_fit_class']) must(!codes.includes(user), `${user} đang dùng career_fit`);
+  for (const dependency of ['match_g1_g5', 'criterion_fit', 'th_percent']) must(codes.includes(dependency), `${dependency} phải chọn được`);
+});
+check('trình soạn: kiểm tra bản đang soạn', () => {
+  must(checkDraft(FORMULAS_BY_CODE.career_fit.expression, editorSelf, library).length === 0, 'công thức hiện hành phải sạch');
+  const cycle = checkDraft({ t: 'ref', formula: 'option_total_score' }, editorSelf, library);
+  must(cycle.some((i) => i.blocking && i.message.includes('vòng lặp')), 'phải báo vòng lặp');
+  const unknown = checkDraft({ t: 'sym', id: 'khong_co' }, editorSelf, library);
+  must(unknown.some((i) => i.blocking), 'ký hiệu chưa khai báo phải chặn');
+  const risky = checkDraft({ t: 'div', n: { t: 'num', v: 1 }, d: { t: 'sym', id: 'budget' } }, editorSelf, library);
+  must(risky.length === 1 && !risky[0].blocking, 'chia cho 0 chỉ là cảnh báo');
+});
+check('trình soạn: ca thử phát hiện chỗ lệch khi sửa công thức', () => {
+  const f = FORMULAS_BY_CODE.th_percent;
+  const tests: FormulaTestRow[] = f.tests.map((t, i) => ({ id: String(i), case_name: t.name, inputs: t.inputs, expected: t.expected, tolerance: t.tolerance ?? 0.0001 }));
+  must(runTests(f.expression, tests).every((o) => o.state === 'match'), 'công thức gốc phải khớp hết');
+  const edited: Expr = { t: 'bin', op: '*', l: f.expression, r: { t: 'num', v: 2 } };
+  must(runTests(edited, tests).some((o) => o.state === 'mismatch'), 'sửa nhân đôi phải làm lệch ca thử');
+  const broken: Expr = { t: 'sym', id: 'khong_co' };
+  must(runTests(broken, tests).every((o) => o.state === 'error'), 'thiếu đầu vào phải báo lỗi chứ không treo');
+});
+check('trình soạn: thông báo lỗi từ cơ sở dữ liệu', () => {
+  must(saveErrorText('formula_cycle').includes('vòng lặp'), 'vòng lặp');
+  must(saveErrorText('xyz').includes('Không lưu được'), 'lỗi chung');
 });
 
 console.log(`${passed} kiểm tra đạt, ${failed} thất bại; ${FORMULAS.length} công thức, ${SYMBOLS.length} ký hiệu`);

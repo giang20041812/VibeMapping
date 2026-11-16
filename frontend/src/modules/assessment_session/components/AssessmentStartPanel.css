@@ -8,7 +8,7 @@
 
 .resume-card .card-body { padding: var(--space-5) var(--space-6); }
 .resume-content { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4); }
-.resume-icon { display: inline-flex; color: var(--brand-sky); animation: resume-pulse 2.2s ease-in-out infinite; }
+.resume-icon { display: inline-flex; color: var(--hope-blue); }
 .resume-text { flex: 1 1 240px; min-width: 0; font-size: var(--font-size-lg); font-weight: 600; color: var(--color-text-main); }
 
 /* Chọn gói (rộng) cạnh bảng số câu theo phần */
@@ -27,9 +27,9 @@
 }
 
 .package-card {
-  --pack: var(--color-primary);
-  --pack-bg: var(--brand-ice);
-  --pack-glow: var(--color-primary-ring);
+  --pack: var(--hope-blue);
+  --pack-bg: var(--hope-blue-soft);
+  --pack-glow: var(--hope-blue-ring);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -37,13 +37,13 @@
   overflow: hidden;
   padding: var(--space-6);
   background: var(--color-bg-surface);
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   cursor: pointer;
+  animation: ui-rise var(--duration-enter) var(--ease-decelerate) both;
   transition:
     border-color var(--transition-fast),
     background-color var(--transition-fast),
-    transform var(--transition-normal),
     box-shadow var(--transition-normal);
 }
 .package-35 { --pack: var(--pack-35); --pack-bg: var(--pack-35-bg); --pack-glow: var(--pack-35-glow); }
@@ -59,18 +59,18 @@
   background: var(--pack);
   transition: height var(--transition-normal);
 }
-.package-card:hover { border-color: var(--pack); transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.package-card:hover { border-color: var(--pack); box-shadow: var(--shadow-sm); }
 .package-card:has(.package-input:focus-visible) { outline: 3px solid var(--pack-glow); outline-offset: 2px; }
 .package-input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 
 .package-card.is-selected {
   background: var(--pack-bg);
   border-color: var(--pack);
-  box-shadow: 0 0 0 3px var(--pack-glow);
+  box-shadow: 0 0 0 2px var(--pack);
 }
 .package-card.is-selected::before { height: 6px; }
 
-.package-name { font-size: var(--font-size-xl); font-weight: 800; color: var(--color-text-main); }
+.package-name { font-size: var(--font-size-xl); font-weight: 800; letter-spacing: -0.025em; color: var(--color-text-main); }
 .package-count {
   align-self: flex-start;
   font-size: var(--font-size-4xl);

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, GitCompare, Sparkles, Target, Trophy } from 'lucide-react';
-import { Alert, Badge, Button, Skeleton, stickerToneAt } from '../../../components/common';
+import { ArrowRight, GitCompare, Sparkles, Target } from 'lucide-react';
+import { Alert, Badge, Button, Skeleton } from '../../../components/common';
 import { useAuth } from '../../auth/AuthContext';
 import { recommendCareers, type CareerRecommendations } from '../career.service';
 import {
@@ -9,12 +9,11 @@ import {
   NEAR_FIT_NOTE,
   PRELIMINARY_NOTE,
   RESULT_STATUS_LABEL,
-  formatPercent,
   interestLabel,
   nextSurveyStep,
 } from '../careerFit.constants';
-import { FitBars } from './FitBars';
-import { FitRing } from './FitRing';
+import type { CareerComponentResult } from '../../../domain/assessmentRules';
+import './TopCareers.css';
 import '../pages/CareerFit.css';
 
 interface Props {
@@ -24,6 +23,98 @@ interface Props {
   /** Phụ huynh xem nghề phù hợp của con đã chia sẻ kết quả: chỉ đọc */
   subjectUserId?: string;
 }
+
+const PARTS: Array<{ key: 'g1toG5' | 'g6' | 'g7'; label: string }> = [
+  { key: 'g1toG5', label: 'Năng lực' },
+  { key: 'g6', label: 'Sở thích' },
+  { key: 'g7', label: 'Động lực' },
+];
+
+interface RowItem {
+  careerId: string;
+  careerName: string;
+  fitPercent: number | null;
+  nearThreshold: boolean;
+  hollandTop3?: string | null;
+  rank?: number;
+  isTarget?: boolean;
+  result: CareerComponentResult;
+}
+
+const Meter: React.FC<{ percent: number | null }> = ({ percent }) => (
+  <span className="fit-bar-track">
+    <span className="fit-bar-fill" style={{ width: `${percent ?? 0}%` }} />
+  </span>
+);
+
+interface RowProps {
+  item: RowItem;
+  href: string;
+  isTop?: boolean;
+  compare: React.ReactNode;
+}
+
+/** Một dòng nghề: hạng, tên cùng thẻ thông tin, mức phù hợp tổng và ba thành phần, mỗi số kèm một đường thẳng */
+const FitRow: React.FC<RowProps> = ({ item, href, isTop = false, compare }) => {
+  const { result } = item;
+  const unmet = result.unmetCriteriaCount;
+  const completeness = Math.round(result.componentCompleteness * 100);
+  return (
+    <li className={`fit-row${isTop ? ' is-top' : ''}`}>
+      <span className="fit-row-rank">{item.rank ?? '–'}</span>
+      <div className="fit-row-main">
+        <Link to={href} className="fit-row-title">{item.careerName}</Link>
+        <div className="fit-row-tags">
+          {isTop && <Badge variant="highlight" size="sm">{item.nearThreshold ? 'Gần phù hợp nhất' : 'Phù hợp nhất'}</Badge>}
+          {item.isTarget && <Badge variant="success" size="sm">Mục tiêu</Badge>}
+          {item.nearThreshold && !isTop && <Badge variant="warning" size="sm">Nghề gần đạt</Badge>}
+          {item.hollandTop3 && <span className="fit-holland-tag">{interestLabel(item.hollandTop3)}</span>}
+          {unmet > 0 && <span className="fit-row-meta">Chưa đạt {unmet} tiêu chí</span>}
+          {completeness < 100 && <span className="fit-row-meta">Dữ liệu {completeness}%</span>}
+        </div>
+      </div>
+      <div className="fit-row-total">
+        {item.fitPercent === null ? (
+          <b className="is-missing">–</b>
+        ) : (
+          <b>{Math.round(item.fitPercent)}<small>%</small></b>
+        )}
+        <Meter percent={item.fitPercent} />
+      </div>
+      <ul className="fit-row-parts">
+        {PARTS.map(({ key, label }) => {
+          const percent = result[key].matchPercent;
+          return (
+            <li key={key}>
+              <span className="fit-row-part-label">{label}</span>
+              <b>{percent === null ? '–' : `${Math.round(percent)}%`}</b>
+              <Meter percent={percent} />
+            </li>
+          );
+        })}
+      </ul>
+      <div className="fit-row-actions">
+        {compare}
+        <Link to={href} className="sticker-link" aria-label={`Xem chi tiết ${item.careerName}`}>
+          Chi tiết
+          <ArrowRight size={15} aria-hidden="true" />
+        </Link>
+      </div>
+    </li>
+  );
+};
+
+const ListHead: React.FC = () => (
+  <div className="fit-list-head" aria-hidden="true">
+    <span>Hạng</span>
+    <span>Nghề</span>
+    <span>Phù hợp</span>
+    <span className="fit-list-head-parts">
+      {PARTS.map(({ key, label }) => <span key={key}>{label}</span>)}
+    </span>
+    <span />
+  </div>
+);
 
 /** Nghề phù hợp nhất và các nghề tiếp theo (R20), nghề mục tiêu ngoài danh sách vẫn hiện */
 export const TopCareers: React.FC<Props> = ({ picked = [], onToggleCompare, onBrowse, subjectUserId }) => {
@@ -63,27 +154,26 @@ export const TopCareers: React.FC<Props> = ({ picked = [], onToggleCompare, onBr
   const statusBadge = data.statusLabel && (
     <Badge variant={data.statusLabel === 'final_360' ? 'success' : 'info'}>{RESULT_STATUS_LABEL[data.statusLabel] ?? data.statusLabel}</Badge>
   );
-  const compareButton = (id: string, size?: 'sm') =>
+  const compareButton = (id: string) =>
     onToggleCompare && !readOnly ? (
-      <Button size={size} variant={picked.includes(id) ? 'primary' : 'outline'} leftIcon={<GitCompare size={size ? 14 : 16} />} onClick={() => onToggleCompare(id)}>
+      <Button size="sm" variant={picked.includes(id) ? 'primary' : 'outline'} leftIcon={<GitCompare size={14} />} onClick={() => onToggleCompare(id)}>
         {picked.includes(id) ? 'Bỏ so sánh' : 'So sánh'}
       </Button>
     ) : null;
 
-  const [top, ...rest] = data.items;
   return (
     <div className="fit-section">
       <div className="fit-status">
         {statusBadge}
         <span className="fit-completeness">
           <span>Độ đầy đủ dữ liệu <b>{completeness}%</b></span>
-          <span className="fit-bar-track"><span className="fit-bar-fill" style={{ width: `${completeness}%` }} /></span>
+          <Meter percent={completeness} />
         </span>
         {next && <Link className="fit-next" to={next.to}>{next.label} <ArrowRight size={15} aria-hidden="true" /></Link>}
       </div>
       {data.statusLabel === 'self_assessment' && <Alert variant="warning">{PRELIMINARY_NOTE}</Alert>}
 
-      {!top ? (
+      {data.items.length === 0 ? (
         <div className="fit-empty">
           <Sparkles size={28} aria-hidden="true" />
           <h2>Chưa tìm thấy nghề đạt ngưỡng phù hợp</h2>
@@ -97,92 +187,39 @@ export const TopCareers: React.FC<Props> = ({ picked = [], onToggleCompare, onBr
       ) : (
         <>
           {data.belowThreshold && <Alert variant="warning">{NEAR_FIT_NOTE}</Alert>}
-          <article className="fit-hero sticker-tone-gold">
-            <div className="fit-hero-visual">
-              <span className="fit-hero-crown">
-                <Trophy size={14} aria-hidden="true" />
-                Hạng {top.rank}
-              </span>
-              <FitRing percent={top.fitPercent} size={136} />
-            </div>
-            <div className="fit-hero-body">
-              <div className="fit-hero-top">
-                <span className="fit-eyebrow">
-                  <Sparkles size={14} aria-hidden="true" />
-                  {top.nearThreshold ? 'Gần phù hợp nhất' : 'Phù hợp nhất'}
-                </span>
-                <div className="career-chips">
-                  {top.hollandTop3 && <span className="fit-holland-tag">{interestLabel(top.hollandTop3)}</span>}
-                  {top.nearThreshold && <Badge variant="warning">Nghề gần đạt</Badge>}
-                  {top.isTarget && <Badge variant="success">Mục tiêu</Badge>}
-                </div>
-              </div>
-              <h2><Link to={careerHref(top.careerId)} className="fit-card-title">{top.careerName}</Link></h2>
-              <FitBars result={top.result} />
-              <div className="fit-actions">
-                <Button onClick={() => navigate(careerHref(top.careerId))} rightIcon={<ArrowRight size={16} />}>Xem chi tiết</Button>
-                {compareButton(top.careerId)}
-              </div>
-            </div>
-          </article>
-
-          {rest.length > 0 && (
-            <ul className="fit-grid" aria-label="Các nghề phù hợp tiếp theo">
-              {rest.map((item, index) => (
-                <li key={item.careerId} className={`fit-card sticker-tone-${stickerToneAt(index)}`}>
-                  <div className="fit-card-head">
-                    <FitRing percent={item.fitPercent} size={68} />
-                    <div className="fit-card-heading">
-                      <div className="fit-card-meta">
-                        <span className="fit-card-rank">#{item.rank}</span>
-                        {item.nearThreshold && <Badge variant="warning" size="sm">Nghề gần đạt</Badge>}
-                        {item.isTarget && <Badge variant="success" size="sm">Mục tiêu</Badge>}
-                      </div>
-                      <Link to={careerHref(item.careerId)} className="fit-card-title">{item.careerName}</Link>
-                      {item.hollandTop3 && <span className="fit-holland-tag">{interestLabel(item.hollandTop3)}</span>}
-                    </div>
-                  </div>
-                  <FitBars result={item.result} />
-                  <div className="fit-card-foot">
-                    <Link to={careerHref(item.careerId)} className="sticker-link">
-                      Xem chi tiết
-                      <ArrowRight size={15} aria-hidden="true" />
-                    </Link>
-                    {compareButton(item.careerId, 'sm')}
-                  </div>
-                </li>
+          <div className="fit-list">
+            <ListHead />
+            <ol className="fit-rows" aria-label="Các nghề phù hợp">
+              {data.items.map((item, index) => (
+                <FitRow
+                  key={item.careerId}
+                  item={item}
+                  href={careerHref(item.careerId)}
+                  isTop={index === 0}
+                  compare={compareButton(item.careerId)}
+                />
               ))}
-            </ul>
-          )}
+            </ol>
+          </div>
         </>
       )}
 
       {extraTargets.length > 0 && (
         <section className="fit-targets">
-          <h3><Target size={18} aria-hidden="true" /> Nghề mục tiêu</h3>
-          <ul className="fit-grid">
-            {extraTargets.map((item, index) => (
-              <li key={item.careerId} className={`fit-card sticker-tone-${stickerToneAt(index + 3)}`}>
-                <div className="fit-card-head">
-                  {item.fitPercent === null ? <span className="fit-card-missing">{formatPercent(null)}</span> : <FitRing percent={item.fitPercent} size={68} />}
-                  <div className="fit-card-heading">
-                    <div className="fit-card-meta">
-                      <Badge variant="success" size="sm">Mục tiêu</Badge>
-                      {item.nearThreshold && <Badge variant="warning" size="sm">Nghề gần đạt</Badge>}
-                    </div>
-                    <Link to={careerHref(item.careerId)} className="fit-card-title">{item.careerName}</Link>
-                  </div>
-                </div>
-                {item.fitPercent !== null && <FitBars result={item.result} />}
-                <div className="fit-card-foot">
-                  <Link to={careerHref(item.careerId)} className="sticker-link">
-                    Xem chi tiết
-                    <ArrowRight size={15} aria-hidden="true" />
-                  </Link>
-                </div>
-              </li>
-            ))}
-          </ul>
+          <h3><Target size={16} aria-hidden="true" /> Nghề mục tiêu</h3>
+          <div className="fit-list">
+            <ListHead />
+            <ol className="fit-rows">
+              {extraTargets.map((item) => (
+                <FitRow
+                  key={item.careerId}
+                  item={{ ...item, isTarget: true }}
+                  href={careerHref(item.careerId)}
+                  compare={compareButton(item.careerId)}
+                />
+              ))}
+            </ol>
+          </div>
         </section>
       )}
 

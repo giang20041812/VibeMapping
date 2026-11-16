@@ -2,17 +2,13 @@ import { useEffect, useState } from 'react';
 
 const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 
-/** Đếm từ 0 tới giá trị đích; bỏ qua hiệu ứng nếu người dùng bật giảm chuyển động */
+/** Đếm từ 0 tới giá trị đích */
 export function useCountUp(target: number | null, durationMs = 900, delayMs = 0): number | null {
   const [value, setValue] = useState<number | null>(target === null ? null : 0);
 
   useEffect(() => {
     if (target === null) {
       setValue(null);
-      return;
-    }
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setValue(target);
       return;
     }
 

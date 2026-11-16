@@ -164,6 +164,81 @@ SELECT t_assert((SELECT sc.coverage FROM assessment_result_scores sc JOIN criter
                   WHERE sc.result_id = (SELECT v FROM ids WHERE k = 'result_a') AND c.dimension_code = 'D1.1'
                     AND sc.score_source = 'combined_360') = 0.6, 'Coverage D1.1 = 3/5 nhóm');
 
+
+-- Engine đọc công thức từ thư viện: công thức bị thay thì lần tính kế tiếp dùng công thức mới -------------
+\i formula_catalog_fixture.sql
+CREATE OR REPLACE FUNCTION pg_temp.set_formula(p_code text, p_expr jsonb) RETURNS void LANGUAGE sql AS $$
+  INSERT INTO formula_versions (formula_id, expression, status, note)
+  SELECT id, p_expr, 'active', 'thử' FROM formulas WHERE formula_code = p_code;
+$$;
+CREATE OR REPLACE FUNCTION pg_temp.reset_formula(p_code text) RETURNS void LANGUAGE sql AS $$
+  INSERT INTO formula_versions (formula_id, expression, status, note)
+  SELECT f.id, (SELECT v.expression FROM formula_versions v WHERE v.formula_id = f.id ORDER BY v.version_no LIMIT 1), 'active', 'đặt lại'
+    FROM formulas f WHERE f.formula_code = p_code;
+$$;
+CREATE OR REPLACE FUNCTION pg_temp.d11_level() RETURNS text LANGUAGE sql AS $$
+  SELECT sc.competency_level FROM assessment_result_scores sc JOIN criteria c ON c.id = sc.criteria_id
+   WHERE sc.result_id = (SELECT v FROM ids WHERE k = 'result_a') AND c.dimension_code = 'D1.1' AND sc.score_source = 'combined_360';
+$$;
+CREATE OR REPLACE FUNCTION pg_temp.d11_confidence() RETURNS text LANGUAGE sql AS $$
+  SELECT sc.confidence FROM assessment_result_scores sc JOIN criteria c ON c.id = sc.criteria_id
+   WHERE sc.result_id = (SELECT v FROM ids WHERE k = 'result_a') AND c.dimension_code = 'D1.1' AND sc.score_source = 'combined_360';
+$$;
+SELECT set_config('app.formula_strict', '1', false);
+
+UPDATE assessment_360_submissions SET understanding_score = 6 WHERE rater_group = 'friend';
+SELECT recalculate_result((SELECT v FROM ids WHERE k = 'result_a'));
+SELECT t_assert(pg_temp.d11() = 67.5 AND pg_temp.d11_level() = 'high', 'Chưa thay công thức: bài thấu hiểu ít được chia phần nhỏ hơn, mức Cao');
+SELECT pg_temp.set_formula('rater_weight', '{"t":"bin","op":"*","l":{"t":"ref","formula":"th_percent"},"r":{"t":"ref","formula":"th_percent"}}');
+SELECT recalculate_result((SELECT v FROM ids WHERE k = 'result_a'));
+SELECT t_assert(pg_temp.d11() = 63, 'Thay trọng số bài: tính lại ra 63% theo công thức mới');
+SELECT pg_temp.reset_formula('rater_weight');
+SELECT pg_temp.set_formula('competency_level', '{"t":"text","v":"Rất cao"}');
+SELECT pg_temp.set_formula('confidence', '{"t":"text","v":"Thấp"}');
+SELECT recalculate_result((SELECT v FROM ids WHERE k = 'result_a'));
+SELECT t_assert(pg_temp.d11() = 67.5, 'Đặt lại trọng số bài thì về 67,5%');
+SELECT t_assert(pg_temp.d11_level() = 'very_high' AND pg_temp.d11_confidence() = 'low', 'Thay mức năng lực và độ tin cậy: ghi vào kết quả');
+SELECT pg_temp.reset_formula('competency_level');
+SELECT pg_temp.reset_formula('confidence');
+SELECT recalculate_result((SELECT v FROM ids WHERE k = 'result_a'));
+SELECT t_assert(pg_temp.d11_level() = 'high' AND pg_temp.d11_confidence() = 'medium', 'Đặt lại mức năng lực và độ tin cậy về như cũ');
+
+-- Nộp bài 360: chỉ số tin cậy theo công thức
+CREATE OR REPLACE FUNCTION pg_temp.submit_draft() RETURNS jsonb LANGUAGE plpgsql AS $$
+DECLARE v_token text; v_id uuid;
+BEGIN
+  INSERT INTO assessment_360_submissions (subject_user_id, rater_group, submission_channel, invitation_link_id, understanding_score, status, started_at)
+  SELECT '00000000-0000-0000-0000-00000000000a', 'parent', 'invite_link', l.id, 12, 'draft', now() - interval '1 hour'
+    FROM invitation_links l WHERE l.user_id = '00000000-0000-0000-0000-00000000000a' AND l.rater_group = 'parent'
+  RETURNING id, resume_token INTO v_id, v_token;
+  INSERT INTO assessment_360_answers (submission_id, question_id, criteria_id, score)
+  SELECT v_id, (x ->> 'question_id')::uuid, (x ->> 'criteria_id')::uuid, 3 FROM jsonb_array_elements(public.get_360_questions(v_token)) x;
+  RETURN public.submit_360(v_token);
+END;
+$$;
+SELECT t_assert((pg_temp.submit_draft() ->> 'trust_index')::numeric = 100, 'Nộp bài: chưa thay công thức thì Trust Index 100');
+SELECT pg_temp.set_formula('trust_dispersion', '{"t":"num","v":0}');
+SELECT t_assert((SELECT (r ->> 'trust_index')::numeric = 66.67 AND r ->> 'trust_label' = 'consider' FROM (SELECT pg_temp.submit_draft() AS r) x),
+  'Thay độ phân tán: Trust Index 66,67 và nhãn Cần cân nhắc');
+SELECT pg_temp.reset_formula('trust_dispersion');
+SELECT pg_temp.set_formula('trust_time_ratio', '{"t":"num","v":0.5}');
+SELECT t_assert((SELECT (r ->> 'trust_index')::numeric = 83.33 FROM (SELECT pg_temp.submit_draft() AS r) x), 'Thay tỷ lệ thời gian: Trust Index 83,33');
+SELECT pg_temp.reset_formula('trust_time_ratio');
+SELECT pg_temp.set_formula('trust_answer_ratio', '{"t":"num","v":0}');
+SELECT t_assert((SELECT (r ->> 'trust_index')::numeric = 66.67 FROM (SELECT pg_temp.submit_draft() AS r) x), 'Thay tỷ lệ câu có cơ sở: Trust Index 66,67');
+SELECT pg_temp.reset_formula('trust_answer_ratio');
+SELECT pg_temp.set_formula('trust_index', '{"t":"num","v":10}');
+SELECT t_assert((SELECT (r ->> 'trust_index')::numeric = 10 AND r ->> 'trust_label' = 'suggest_reject' FROM (SELECT pg_temp.submit_draft() AS r) x),
+  'Thay Trust Index: nhãn tự chuyển Đề xuất loại');
+SELECT pg_temp.reset_formula('trust_index');
+SELECT pg_temp.set_formula('trust_label', '{"t":"text","v":"Tin cậy"}');
+SELECT pg_temp.set_formula('trust_index', '{"t":"num","v":10}');
+SELECT t_assert((SELECT r ->> 'trust_label' = 'trusted' FROM (SELECT pg_temp.submit_draft() AS r) x), 'Thay nhãn tin cậy: dùng nhãn mới');
+SELECT pg_temp.reset_formula('trust_label');
+SELECT pg_temp.reset_formula('trust_index');
+SELECT t_assert((SELECT count(*) FROM formula_live) = 0, 'Đặt lại hết thì không còn công thức bị thay');
+SELECT set_config('app.formula_strict', '0', false);
+
 -- P18: không làm lại trước 14 ngày
 SET ROLE authenticated;
 SELECT public.t_act_as('00000000-0000-0000-0000-00000000000a');

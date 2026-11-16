@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { ArrowUpRight, Menu, X } from 'lucide-react';
 import { LogoMark } from '../common';
 import { useAuth } from '../../modules/auth/AuthContext';
 import { navItemsFor } from './navigation';
@@ -14,7 +14,7 @@ export interface SidebarProps {
 }
 
 /**
- * Thanh điều hướng cố định bên trái: logo trên cùng, các mục xếp dọc.
+ * Thanh điều hướng cố định bên trái: logo trên cùng, các mục xếp dọc thành hàng ngăn bằng đường kẻ.
  * Điện thoại: ẩn hẳn, mở bằng nút ở góc trên bên trái.
  */
 export const Sidebar: React.FC<SidebarProps> = ({ open, onToggle, onClose }) => {
@@ -53,7 +53,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onToggle, onClose }) => 
           </button>
         </div>
 
-        <nav className="sidebar-nav">
+        <nav className="sidebar-nav hover-sweep-group">
           {items.map((item) => {
             const Icon = item.icon;
             return (
@@ -61,13 +61,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onToggle, onClose }) => 
                 key={item.to}
                 to={item.to}
                 end={item.end}
-                className={({ isActive }) => `sidebar-link ${isActive ? 'is-active' : ''}`}
+                className={({ isActive }) => `sidebar-link hover-sweep ${isActive ? 'is-active' : ''}`}
                 onClick={onClose}
               >
                 <span className="sidebar-link-icon">
                   <Icon size={20} />
                 </span>
                 <span className="sidebar-link-label">{item.label}</span>
+                <ArrowUpRight size={16} className="sidebar-link-arrow hover-sweep-arrow" aria-hidden="true" />
               </NavLink>
             );
           })}

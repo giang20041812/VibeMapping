@@ -46,26 +46,10 @@
   gap: var(--space-3);
 }
 
-/* Biểu tượng trong ô nhập nảy lên khi ô được chọn; nút chính có vệt sáng quét qua khi rê chuột */
+/* Biểu tượng trong ô nhập nảy lên khi ô được chọn */
 .auth-form .input-icon-left { transition: color var(--transition-fast), transform var(--transition-normal); }
 .auth-form .input-control-wrapper:focus-within .input-icon-left { transform: scale(1.18); }
-.auth-form .app-button.btn-primary::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 40%;
-  background: var(--brand-white);
-  opacity: 0.18;
-  transform: translateX(-160%) skewX(-20deg);
-  pointer-events: none;
-}
-.auth-form .app-button.btn-primary:hover:not(:disabled)::after {
-  transform: translateX(380%) skewX(-20deg);
-  transition: transform 700ms var(--ease-out);
-}
-.auth-form .app-button.btn-primary:hover:not(:disabled) { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.auth-form .app-button.btn-primary:hover:not(:disabled) { transform: translateY(-1px); }
 .auth-form .app-button.btn-primary:active:not(:disabled) { transform: scale(0.97); }
 
 .auth-link {

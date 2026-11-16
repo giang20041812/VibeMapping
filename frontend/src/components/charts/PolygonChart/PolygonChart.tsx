@@ -2,7 +2,6 @@ import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { useCountUp } from '../../../hooks/useCountUp';
 import { useInView } from '../../../hooks/useInView';
-import { useReducedMotion } from '../../../hooks/useReducedMotion';
 import './PolygonChart.css';
 
 export interface PolygonAxis {
@@ -44,7 +43,7 @@ const RADIUS = 27;
 const NODE_RATIO = 1.28;
 const RINGS = [25, 50, 75, 100];
 const TONE_COUNT = 7;
-/* Bốn vạch tia ngắn quanh đỉnh đang chọn, kiểu "bụp!" trong truyện tranh */
+/* Bốn vạch tia ngắn quanh đỉnh đang chọn */
 const BURST_RAYS = [45, 135, 225, 315].map((deg) => {
   const rad = (deg * Math.PI) / 180;
   return [Math.cos(rad) * 5.2, Math.sin(rad) * 5.2, Math.cos(rad) * 7.4, Math.sin(rad) * 7.4].map((n) => Number(n.toFixed(2)));
@@ -225,7 +224,7 @@ const Readout: React.FC<ReadoutProps> = ({ axis, tone, level, valueLabel, refere
 };
 
 /**
- * Biểu đồ đa giác kiểu hình dán: mỗi trục một màu đặc, viền mực dày, bóng đặc lệch xuống, không phát sáng.
+ * Biểu đồ đa giác phong cách hiện đại: mỗi trục một màu phẳng, đường kẻ mảnh, không viền dày, không phát sáng.
  * Đứng yên; chỉ chuyển động một lần khi hiện ra và khi rê chuột, tab vào hoặc chạm chọn một trục.
  * Tối ưu: lớp tĩnh và lớp dữ liệu được ghi nhớ, hoạt ảnh chỉ dùng transform/opacity, không dùng bộ lọc.
  */
@@ -245,13 +244,12 @@ export const PolygonChart: React.FC<PolygonChartProps> = ({
   const [hoverKey, setHoverKey] = useState<string | null>(null);
   const [pinnedKey, setPinnedKey] = useState<string | null>(null);
   const [cycleIndex, setCycleIndex] = useState(0);
-  const reducedMotion = useReducedMotion();
 
   const count = axes.length;
   const valid = count >= 3;
   const interacting = hoverKey !== null || pinnedKey !== null;
   /* Khuất khỏi màn hình thì thôi tự chuyển nhóm: mỗi lần chuyển là vẽ lại cả biểu đồ, làm giật hình khác đang chạy trên trang */
-  const cycling = valid && inView && !interacting && !reducedMotion && autoCycleMs > 0;
+  const cycling = valid && inView && !interacting && autoCycleMs > 0;
 
   useEffect(() => {
     if (!cycling) return;

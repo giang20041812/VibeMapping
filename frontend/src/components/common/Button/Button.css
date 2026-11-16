@@ -4,7 +4,6 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  overflow: hidden;
   border: 1px solid transparent;
   border-radius: var(--radius-md);
   font-weight: 600;
@@ -15,7 +14,7 @@
     border-color var(--transition-fast),
     color var(--transition-fast),
     box-shadow var(--transition-normal),
-    transform var(--transition-normal);
+    transform var(--transition-fast);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -25,7 +24,7 @@
 }
 
 .app-button:active:not(:disabled) {
-  transform: scale(0.97);
+  transform: scale(0.98);
 }
 
 .btn-block {
@@ -52,160 +51,136 @@
 }
 
 @media (max-width: 768px) {
+
   .btn-sm,
   .btn-md {
     min-height: var(--touch-target);
   }
 }
 
-/* Variants */
+/* Variants.
+   Nút chính là phần tử duy nhất tô cam san hô trên màn hình: mỗi vùng chỉ nên có một nút chính. */
 .btn-primary {
-  color: var(--color-text-inverse);
-  background: var(--gradient-cta);
-  background-size: 200% 100%;
-  background-position: 0% 50%;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  color: var(--color-cta-text);
+  font-weight: 800;
+  background: var(--color-cta);
   box-shadow: var(--shadow-cta);
   transition:
-    background-position var(--transition-slow),
-    box-shadow var(--transition-normal),
-    transform var(--transition-normal);
+    color 480ms var(--ease-out),
+    background-color 480ms var(--ease-out),
+    box-shadow 480ms var(--ease-out),
+    transform 480ms var(--ease-out);
 }
-/* Vệt sáng lướt qua nút khi rê chuột */
-.btn-primary::after {
+
+.btn-primary::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.35) 50%, transparent 70%);
-  transform: translateX(-120%);
-  pointer-events: none;
-}
-.btn-primary:hover:not(:disabled) {
-  background-position: 100% 50%;
-  box-shadow: var(--shadow-cta-hover);
-  transform: translateY(-1px);
-}
-.btn-primary:hover:not(:disabled)::after { transform: translateX(120%); transition: transform 700ms var(--ease-out); }
-.btn-primary:active:not(:disabled) { transform: translateY(0) scale(0.98); box-shadow: var(--shadow-cta); }
-.btn-primary .btn-text,
-.btn-primary .btn-icon-left,
-.btn-primary .btn-icon-right { position: relative; z-index: 1; }
-
-.btn-secondary {
-  background: var(--gradient-soft-blue);
-  color: var(--color-text-brand);
-}
-.btn-secondary:hover:not(:disabled) { background: var(--brand-mist); }
-
-/* Viền gradient: nền trắng ở lớp đệm, dải màu ở lớp viền */
-.btn-outline {
-  color: var(--color-text-brand);
-  background:
-    linear-gradient(var(--color-bg-surface), var(--color-bg-surface)) padding-box,
-    var(--gradient-cta-border) border-box;
-  border: 1.5px solid transparent;
-  box-shadow: var(--shadow-xs);
-}
-.btn-outline:hover:not(:disabled) {
-  background:
-    linear-gradient(var(--brand-ice), var(--brand-ice)) padding-box,
-    var(--gradient-cta-border) border-box;
-  box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
-}
-
-.btn-danger {
-  background: var(--color-danger);
-  color: var(--color-text-inverse);
-}
-.btn-danger:hover:not(:disabled) { background: var(--color-danger-text); }
-
-.btn-ghost {
-  background-color: transparent;
-  color: var(--color-text-secondary);
-}
-.btn-ghost:hover:not(:disabled) {
-  background-color: var(--brand-ice);
-  color: var(--color-text-brand);
-}
-
-/* Kiểu hình dán: viền mực dày, bóng đặc lệch xuống; nhô lên khi rê chuột, lún xuống khi bấm */
-.btn-cartoon {
-  overflow: visible;
-  color: var(--cartoon-ink);
-  background: var(--brand-gold);
-  border: var(--cartoon-stroke) solid var(--cartoon-ink);
-  border-radius: var(--radius-lg);
-  font-weight: 800;
-  box-shadow: var(--cartoon-pop);
-}
-.btn-cartoon:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--cartoon-pop-hover); }
-.btn-cartoon:active:not(:disabled) { transform: translateY(3px); box-shadow: var(--cartoon-pop-press); }
-.btn-cartoon:disabled { opacity: 0.6; cursor: not-allowed; }
-
-/* Loading Spinner */
-.btn-spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid currentColor;
-  border-right-color: transparent;
-  border-radius: 50%;
-  animation: btn-spin 0.6s linear infinite;
-}
-
-@keyframes btn-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.btn-icon-left,
-.btn-icon-right {
-  display: inline-flex;
-  align-items: center;
-  font-size: 1.1em;
-  transition: transform var(--transition-normal);
-}
-.app-button:hover:not(:disabled) .btn-icon-right {
-  transform: translateX(3px);
-}
-
-/* ===== Phía học sinh: mọi nút chuyển sang kiểu hình dán ===== */
-[data-ui='cartoon'] .app-button:not(.btn-ghost) {
-  overflow: visible;
-  border: var(--cartoon-stroke) solid var(--cartoon-ink);
-  border-radius: var(--radius-lg);
-  font-weight: 800;
-  box-shadow: var(--cartoon-pop);
+  z-index: -1;
+  background: var(--brand-white);
+  transform: translateY(102%);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
   transition:
-    background-color var(--transition-fast),
-    transform var(--transition-fast),
-    box-shadow var(--transition-fast);
+    transform 560ms var(--ease-out),
+    border-radius 560ms var(--ease-out);
 }
-[data-ui='cartoon'] .app-button:not(.btn-ghost)::after { display: none; }
-[data-ui='cartoon'] .app-button:hover:not(:disabled):not(.btn-ghost) {
-  transform: translateY(-2px);
-  box-shadow: var(--cartoon-pop-hover);
-}
-[data-ui='cartoon'] .app-button:active:not(:disabled):not(.btn-ghost) {
-  transform: translateY(3px);
-  box-shadow: var(--cartoon-pop-press);
-}
-[data-ui='cartoon'] .app-button:disabled:not(.btn-ghost) { opacity: 0.6; box-shadow: var(--cartoon-pop-press); }
 
-[data-ui='cartoon'] .btn-primary,
-[data-ui='cartoon'] .btn-primary:hover:not(:disabled) {
-  background: var(--brand-gold);
-  color: var(--cartoon-ink);
+.btn-primary:focus-visible {
+  outline-color: var(--color-cta-ring);
 }
-[data-ui='cartoon'] .btn-secondary,
-[data-ui='cartoon'] .btn-secondary:hover:not(:disabled) {
-  background: var(--brand-mist);
-  color: var(--cartoon-ink);
-}
-[data-ui='cartoon'] .btn-outline,
-[data-ui='cartoon'] .btn-outline:hover:not(:disabled) {
-  background: var(--color-bg-surface);
-  color: var(--cartoon-ink);
-}
-[data-ui='cartoon'] .btn-danger { color: var(--color-text-inverse); }
-[data-ui='cartoon'] .btn-ghost { font-weight: 700; }
+
+
+  @media (hover: hover) {
+    .btn-primary:hover:not(:disabled) {
+      color: var(--brand-navy);
+      box-shadow: var(--shadow-cta-hover);
+      transform: translateY(-2px);
+    }
+
+    .btn-primary:hover:not(:disabled)::before {
+      transform: translateY(0);
+      border-radius: inherit;
+    }
+  }
+
+  .btn-primary:active:not(:disabled) {
+    background: var(--color-cta-active);
+    box-shadow: var(--shadow-cta);
+    transform: translateY(0) scale(0.98);
+  }
+
+  .btn-primary:disabled {
+    box-shadow: none;
+  }
+
+  .btn-secondary {
+    color: var(--color-text-brand);
+    background: var(--color-primary-light);
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    background: var(--brand-mist);
+  }
+
+  .btn-outline {
+    color: var(--color-text-main);
+    background: var(--color-bg-surface);
+    border-color: var(--color-border-hover);
+    box-shadow: var(--shadow-xs);
+  }
+
+  .btn-outline:hover:not(:disabled) {
+    color: var(--color-text-brand);
+    background: var(--color-primary-light);
+    border-color: var(--brand-soft);
+  }
+
+  .btn-danger {
+    background: var(--color-danger);
+    color: var(--color-text-inverse);
+  }
+
+  .btn-danger:hover:not(:disabled) {
+    background: var(--color-danger-text);
+  }
+
+  .btn-ghost {
+    background-color: transparent;
+    color: var(--color-text-secondary);
+  }
+
+  .btn-ghost:hover:not(:disabled) {
+    background-color: var(--color-bg-subtle);
+    color: var(--color-text-brand);
+  }
+
+  /* Loading Spinner */
+  .btn-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: btn-spin 0.6s linear infinite;
+  }
+
+  @keyframes btn-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .btn-icon-left,
+  .btn-icon-right {
+    display: inline-flex;
+    align-items: center;
+    font-size: 1.1em;
+    transition: transform 480ms var(--ease-out);
+  }
+
+  .app-button:hover:not(:disabled) .btn-icon-right {
+    transform: translateX(5px);
+  }

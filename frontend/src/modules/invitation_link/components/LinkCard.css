@@ -5,11 +5,11 @@
   padding: var(--space-5);
   background: var(--color-bg-surface);
   border: 1.5px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--surface-shadow);
-  transition: box-shadow var(--transition-normal), transform var(--transition-normal);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xs);
+  transition: border-color var(--transition-fast);
 }
-.link-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.link-card:hover { border-color: var(--color-border-hover); }
 .link-card.is-expired { background: var(--color-bg-app); }
 .link-card.is-expired .link-card-qr { opacity: 0.35; filter: grayscale(1); }
 

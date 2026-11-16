@@ -32,14 +32,14 @@
   font-size: var(--font-size-base);
   color: var(--color-text-main);
   background-color: var(--color-bg-surface);
-  border: 1.5px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-hover);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: border-color var(--transition-fast), box-shadow var(--transition-normal);
 }
 
-.app-select-field:hover { border-color: var(--color-border-hover); }
-.app-select-field:focus { border-color: var(--color-border-focus); box-shadow: 0 0 0 4px var(--color-primary-ring); }
+.app-select-field:hover { border-color: var(--ink-300); }
+.app-select-field:focus { border-color: var(--hope-blue); box-shadow: 0 0 0 3px var(--hope-blue-ring); }
 .app-select-field:disabled { background-color: var(--color-bg-subtle); cursor: not-allowed; }
 .app-select-group.has-error .app-select-field { border-color: var(--color-danger); background-color: var(--color-danger-bg); }
 

@@ -14,6 +14,7 @@ import {
   School,
   Shield,
   SlidersHorizontal,
+  Sigma,
 } from 'lucide-react';
 import { Globe360Icon, HomeIcon, type NavIconProps } from './NavIcons';
 import type { UserRole } from '../../modules/auth/auth.types';
@@ -52,6 +53,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/quan-tri/cau-hoi', label: 'Ngân hàng câu hỏi', icon: Library, roles: ADMIN_ROLES },
   { to: '/quan-tri/tieu-chi', label: 'Tiêu chí', icon: ClipboardList, roles: ADMIN_ROLES },
   { to: '/quan-tri/tham-so', label: 'Tham số vận hành', icon: SlidersHorizontal, roles: ADMIN_ROLES },
+  { to: '/quan-tri/cong-thuc', label: 'Công thức', icon: Sigma, roles: ADMIN_ROLES },
   { to: '/quan-tri/nhat-ky', label: 'Nhật ký', icon: History, roles: ADMIN_ROLES },
 ];
 

@@ -29,6 +29,8 @@ export interface PendingChange {
 
 interface Props {
   stage: Stage;
+  /** Thứ tự chặng (từ 0) để hiện mã chặng ở đầu thẻ */
+  index: number;
   open: boolean;
   readOnly: boolean;
   busy: boolean;
@@ -40,7 +42,8 @@ interface Props {
 }
 
 /** Thẻ giai đoạn: thu gọn còn một dòng, mở ra thì tick hoàn thành ngay trên từng hoạt động */
-export const RoadmapStageCard: React.FC<Props> = ({ stage, open, readOnly, busy, pending, onToggle, onChange, onEditDue, onAddMissing }) => {
+export const RoadmapStageCard: React.FC<Props> = ({ stage, index, open, readOnly, busy, pending, onToggle, onChange, onEditDue, onAddMissing }) => {
+  const code = `Chặng ${String(index + 1).padStart(2, '0')}`;
   const doneCount = stage.items.filter((m) => pending[m.id]?.done ?? m.done).length;
   const dues = [...new Set(stage.items.map((m) => m.due_date).filter(Boolean))] as string[];
   const sharedDue = dues.length === 1 && stage.items.every((m) => m.due_date) ? dues[0] : null;
@@ -51,6 +54,7 @@ export const RoadmapStageCard: React.FC<Props> = ({ stage, open, readOnly, busy,
       <article id={`stage-${stage.key}`} className={`roadmap-stage is-collapsed is-${stage.status}`}>
         <button type="button" className="roadmap-stage-toggle" aria-expanded="false" onClick={onToggle}>
           <ChevronRight size={18} aria-hidden="true" />
+          <span className="roadmap-stage-code">{code}</span>
           <span className="roadmap-stage-name">{stage.label}</span>
           <Badge variant={STATUS_VARIANT[stage.status]} size="sm">{STATUS_LABEL[stage.status]}</Badge>
           <span className="roadmap-stage-count">{doneCount}/{stage.items.length} hoạt động</span>
@@ -65,6 +69,7 @@ export const RoadmapStageCard: React.FC<Props> = ({ stage, open, readOnly, busy,
       <header className="roadmap-stage-head">
         <button type="button" className="roadmap-stage-toggle" aria-expanded="true" onClick={onToggle}>
           <CalendarClock size={18} aria-hidden="true" />
+          <span className="roadmap-stage-code">{code}</span>
           <span className="roadmap-stage-name">{stage.label}</span>
           <Badge variant={STATUS_VARIANT[stage.status]} size="sm">{STATUS_LABEL[stage.status]}</Badge>
           {sharedDue && <span className="roadmap-stage-count">Hạn {formatDate(sharedDue)}</span>}

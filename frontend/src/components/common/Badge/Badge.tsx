@@ -3,7 +3,7 @@ import './Badge.css';
 
 export interface BadgeProps {
   children: React.ReactNode;
-  variant?: 'success' | 'warning' | 'danger' | 'info' | 'default';
+  variant?: 'success' | 'warning' | 'danger' | 'info' | 'highlight' | 'default';
   size?: 'sm' | 'md';
 }
 

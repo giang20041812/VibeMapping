@@ -58,11 +58,312 @@
   border-width: 0;
 }
 
+/* Chuyển động xuất hiện chung của khối nội dung: trồi nhẹ từ dưới lên, dừng êm */
+@keyframes ui-rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Tên trang: cùng cỡ chữ, nét đậm co sát và xanh hy vọng như tiêu đề lớn trang giới thiệu */
+.module-page > h1,
+.page-heading {
+  margin: 0;
+  font-size: clamp(calc(28 * var(--px)), 3.2vw, calc(52 * var(--px)));
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.045em;
+  color: var(--color-heading);
+  text-wrap: balance;
+}
+
 /* Tiêu đề một khối nội dung trong trang */
 .section-title {
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-3xl);
   font-weight: 800;
   line-height: var(--line-tight);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.035em;
   color: var(--color-text-main);
+}
+
+/* ====================================================================
+   MOTION SYSTEM UTILITIES (Kế thừa trọn vẹn từ HTDNSK — easeOutQuint)
+   ==================================================================== */
+
+/* Thanh tiến độ cuộn cố định ở đỉnh màn hình (ScrollProgress từ HTDNSK) */
+.scroll-progress-track {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1200;
+  height: 3px;
+  pointer-events: none;
+  background: transparent;
+}
+
+.scroll-progress-bar {
+  width: 100%;
+  height: 100%;
+  transform-origin: 0% 50%;
+  transform: scaleX(0);
+  background: linear-gradient(90deg, var(--brand-sky) 0%, var(--brand-coral) 60%, var(--brand-coral-hover) 100%);
+  will-change: transform;
+}
+
+/* Viền sáng và quầng sáng mảnh đi theo con trỏ (SpotlightCard từ HTDNSK) */
+.spotlight {
+  position: relative;
+  isolation: isolate;
+}
+
+.spotlight::before,
+.spotlight::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 500ms var(--ease-out);
+}
+
+.spotlight::before {
+  z-index: 0;
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgba(199, 227, 254, 0.085), transparent 60%);
+}
+
+.spotlight::after {
+  z-index: 3;
+  padding: 1px;
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(199, 227, 254, 0.45), transparent 70%);
+  -webkit-mask: linear-gradient(var(--brand-white) 0 0) content-box, linear-gradient(var(--brand-white) 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(var(--brand-white) 0 0) content-box exclude, linear-gradient(var(--brand-white) 0 0);
+}
+
+/* Phiên bản spotlight trên nền sáng (dùng cho thẻ bước ở cột trái HomeJourney) */
+.spotlight-light::before {
+  background: radial-gradient(380px circle at var(--mx, 50%) var(--my, 50%), rgba(40, 80, 192, 0.06), transparent 60%);
+}
+
+.spotlight-light::after {
+  background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 50%), rgba(40, 80, 192, 0.35), transparent 70%);
+}
+
+@media (hover: hover) {
+
+  .spotlight:hover::before,
+  .spotlight:hover::after {
+    opacity: 1;
+  }
+}
+
+/* Chữ cuộn lên mượt khi hover (RollText từ HTDNSK) */
+.roll {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  line-height: 1.42;
+}
+
+.roll-inner {
+  display: block;
+  position: relative;
+  transition: transform 580ms var(--ease-out);
+}
+
+.roll-inner::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  top: 100%;
+  width: 100%;
+}
+
+@media (hover: hover) {
+
+  .roll-trigger:hover .roll-inner,
+  .btn-fill:hover .roll-inner,
+  .app-button:hover .roll-inner,
+  .topbar-link:hover .roll-inner {
+    transform: translateY(-100%);
+  }
+}
+
+/* Nút "lấp đầy" (btn-fill từ HTDNSK): lớp nền trượt vòm từ dưới lên khi hover + icon dịch chuyển */
+.btn-fill {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition:
+    color 500ms var(--ease-out),
+    border-color 500ms var(--ease-out),
+    transform 500ms var(--ease-out),
+    box-shadow 500ms var(--ease-out);
+}
+
+.btn-fill::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--brand-white);
+  transform: translateY(102%);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  transition:
+    transform 580ms var(--ease-out),
+    border-radius 580ms var(--ease-out);
+}
+
+.btn-fill svg {
+  transition: transform 500ms var(--ease-out);
+}
+
+@media (hover: hover) {
+  .btn-fill:hover {
+    color: var(--brand-navy);
+    box-shadow: 0 14px 32px -10px rgba(255, 107, 69, 0.65);
+  }
+
+  .btn-fill:hover::before {
+    transform: translateY(0);
+    border-radius: inherit;
+  }
+
+  .btn-fill:hover .btn-arrow-slide {
+    transform: translateX(5px);
+  }
+
+  .btn-fill:hover .btn-arrow-up {
+    transform: translate(2px, -2px) rotate(45deg);
+  }
+}
+
+/* Rê chuột kiểu kẻ dòng (hàng trọng tâm trang chủ, thanh trên, thanh bên):
+   nền mờ dâng lên từ dưới, vạch cam chạy dọc mép trên; mép dưới với .hover-sweep-bottom.
+   .is-active giữ nguyên trạng thái đã rê; .hover-sweep-arrow xoay khi rê; nhóm .hover-sweep-group làm mờ mục khác. */
+.hover-sweep {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.hover-sweep::before,
+.hover-sweep::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+
+.hover-sweep::before {
+  inset: 0;
+  z-index: -1;
+  background: var(--ink-wash);
+  transform: scaleY(0);
+  transform-origin: bottom center;
+  transition: transform 560ms var(--ease-out);
+}
+
+.hover-sweep::after {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--brand-coral);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 620ms var(--ease-out);
+}
+
+.hover-sweep-bottom::after {
+  top: auto;
+  bottom: 0;
+}
+
+.hover-sweep.is-active::before,
+.hover-sweep.is-active::after {
+  transform: none;
+}
+
+.hover-sweep-arrow {
+  flex-shrink: 0;
+  color: var(--ink-300);
+  transition:
+    transform 560ms var(--ease-out),
+    color 420ms var(--ease-out);
+}
+
+@media (hover: hover) {
+  .hover-sweep:hover::before {
+    transform: scaleY(1);
+  }
+
+  .hover-sweep:hover::after {
+    transform: scaleX(1);
+  }
+
+  .hover-sweep:hover .hover-sweep-arrow {
+    color: var(--color-text-main);
+    transform: rotate(45deg) scale(1.1);
+  }
+
+  .hover-sweep-group:hover > .hover-sweep:not(:hover),
+  .hover-sweep-group:hover > * > .hover-sweep:not(:hover) {
+    opacity: 0.42;
+  }
+}
+
+/* Biến thể dùng trên nền sáng: lớp lấp đầy màu mực, chữ chuyển trắng */
+.btn-fill-ink::before {
+  background: var(--color-text-main);
+}
+
+@media (hover: hover) {
+  .btn-fill-ink:hover {
+    color: var(--color-text-inverse);
+    box-shadow: var(--shadow-md);
+  }
+}
+
+/* SplitText & Reveal primitives (kế thừa từ HTDNSK primitives.tsx) */
+.split-word-mask {
+  display: inline-block;
+  vertical-align: bottom;
+  clip-path: inset(-0.68em -0.25em -0.18em -0.25em);
+}
+
+.split-word {
+  display: inline-block;
+  transform-origin: bottom left;
+  transform: translate3d(0, 115%, 0) rotate(3.5deg);
+  transition: transform 1050ms var(--ease-out);
+  transition-delay: var(--word-delay, 0ms);
+}
+
+.split-line.is-visible .split-word {
+  transform: translate3d(0, 0, 0) rotate(0deg);
+}
+
+.reveal-block {
+  opacity: 0;
+  transform: translate3d(var(--reveal-x, 0px), var(--reveal-y, 32px), 0);
+  transition:
+    opacity 950ms var(--ease-out),
+    transform 950ms var(--ease-out);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+.reveal-block.is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+/* Lưới nền kiến trúc mảnh cho khung sân khấu tối */
+.hero-grid {
+  background-image:
+  linear-gradient(rgba(199, 227, 254, 0.04) 1px, transparent 1px),
+  linear-gradient(90deg, rgba(199, 227, 254, 0.04) 1px, transparent 1px);
+  background-size: calc(60 * var(--px)) calc(60 * var(--px));
+  -webkit-mask-image: radial-gradient(ellipse 75% 65% at 50% 18%, var(--brand-navy) 15%, transparent 78%);
+  mask-image: radial-gradient(ellipse 75% 65% at 50% 18%, var(--brand-navy) 15%, transparent 78%);
 }

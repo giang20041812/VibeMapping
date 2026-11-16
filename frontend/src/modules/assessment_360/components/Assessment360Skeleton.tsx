@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, Skeleton, SkeletonRegion } from '../../../components/common';
-import { GLOBE_NODES } from '../assessment360.constants';
+import { RATER_NODES } from '../assessment360.constants';
 import './GlobeSwitch.css';
 import './Assessment360.css';
 import './Assessment360Skeleton.css';
@@ -8,7 +8,7 @@ import './Assessment360Skeleton.css';
 const REVIEW_TABS = [0, 1, 2];
 const REVIEW_ROWS = [0, 1, 2];
 
-/** Khung chờ của công tắc quả địa cầu: quả cầu, tiêu đề, nhãn trạng thái, bốn nhóm người đánh giá và công tắc */
+/** Khung chờ của công tắc 360°: sơ đồ, tiêu đề, nhãn trạng thái, bốn nhóm người đánh giá và công tắc */
 export const GlobeSwitchSkeleton: React.FC = () => (
   <SkeletonRegion className="globe-switch is-off is-skeleton">
     <span className="globe-switch-globe" aria-hidden="true">
@@ -18,7 +18,7 @@ export const GlobeSwitchSkeleton: React.FC = () => (
       <Skeleton shape="text" width={45} className="globe-skeleton-title" />
       <Skeleton shape="chip" width={20} className="globe-skeleton-state" />
       <span className="globe-switch-groups">
-        {GLOBE_NODES.map((node) => (
+        {RATER_NODES.map((node) => (
           <Skeleton key={node.key} shape="text" className="globe-skeleton-group" />
         ))}
       </span>

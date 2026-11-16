@@ -28,19 +28,22 @@
   text-align: left;
 }
 
+/* Đầu bảng là chữ trần trên đường kẻ đậm hơn, hàng rê chuột dâng nền mờ như hàng trọng tâm trang chủ */
 .app-table th {
-  background-color: var(--color-bg-subtle);
+  background-color: transparent;
   font-size: var(--font-size-sm);
-  font-weight: 600;
-  color: var(--color-text-secondary);
+  font-weight: 700;
+  color: var(--color-text-muted);
   white-space: nowrap;
+  border-bottom-color: var(--ink-300);
 }
 
 .app-table .align-center { text-align: center; }
 .app-table .align-right { text-align: right; }
 .app-table td.is-nowrap { white-space: nowrap; }
 
-.app-table tbody tr:hover { background-color: var(--color-primary-light); }
+.app-table tbody tr { transition: background-color 360ms var(--ease-out); }
+.app-table tbody tr:hover { background-color: var(--ink-wash); }
 .app-table tbody tr.is-clickable { cursor: pointer; }
 
 .app-table td .app-table-skeleton-action { margin-left: auto; }
@@ -52,23 +55,3 @@
   text-align: center;
   color: var(--color-text-muted);
 }
-
-/* Phía học sinh: bảng kiểu hình dán, viền mực dày, đầu bảng vàng phẳng */
-[data-ui='cartoon'] .app-table-scroll {
-  background: var(--color-bg-surface);
-  border: var(--cartoon-stroke) solid var(--cartoon-ink);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--cartoon-pop);
-}
-[data-ui='cartoon'] .app-table th {
-  background: var(--brand-gold);
-  color: var(--cartoon-ink);
-  font-weight: 800;
-  border-bottom: var(--cartoon-stroke) solid var(--cartoon-ink);
-}
-[data-ui='cartoon'] .app-table td { border-bottom: var(--cartoon-stroke-thin) dashed var(--cartoon-line); }
-[data-ui='cartoon'] .app-table tbody tr:last-child td { border-bottom: 0; }
-[data-ui='cartoon'] .app-table tbody tr:hover { background-color: var(--tone-yellow-bg); }
-[data-ui='cartoon'] .app-table th,
-[data-ui='cartoon'] .app-table td { text-align: center; }
-[data-ui='cartoon'] .app-table .align-right { text-align: center; }

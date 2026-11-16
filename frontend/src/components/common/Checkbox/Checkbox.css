@@ -1,7 +1,7 @@
 .app-checkbox {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: var(--space-2);
   min-width: var(--touch-target);
   min-height: var(--touch-target);
@@ -14,10 +14,10 @@
 }
 
 .app-checkbox-input {
-  width: calc(18 * var(--px));
-  height: calc(18 * var(--px));
+  width: calc(16 * var(--px));
+  height: calc(16 * var(--px));
   margin: 0;
-  accent-color: var(--color-primary);
+  accent-color: var(--hope-blue);
   cursor: inherit;
 }
 

@@ -200,7 +200,7 @@
 @media (min-width: 900px) {
   .question-options { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--space-3); }
   .question-option { flex-direction: column; align-items: flex-start; gap: var(--space-3); min-height: 132px; padding: var(--space-4); }
-  .question-option:not(.is-disabled):hover { transform: translateY(-3px); }
+  .question-option:not(.is-disabled):hover { border-color: var(--ink-300); }
   .question-text { font-size: var(--font-size-3xl); }
 }
 

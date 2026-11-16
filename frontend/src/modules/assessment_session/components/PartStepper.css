@@ -15,12 +15,12 @@
 .part-step:not(:last-child)::after {
   content: '';
   position: absolute;
-  top: 22px;
+  top: 23px;
   left: calc(50% + 24px);
   right: calc(-50% + 24px);
-  height: 3px;
+  height: 2px;
   background: linear-gradient(var(--step), var(--step)) left / 0 100% no-repeat, var(--color-border);
-  border-radius: var(--radius-sm);
+  border-radius: 0;
   transition: background-size var(--transition-slow);
 }
 .part-step.is-done:not(:last-child)::after { background-size: 100% 100%, auto; }
@@ -37,7 +37,7 @@
   border-radius: var(--radius-md);
   transition: color var(--transition-fast), transform var(--transition-normal);
 }
-.part-step-button:not([aria-disabled='true']):hover { transform: translateY(-2px); }
+.part-step-button:not([aria-disabled='true']):hover { opacity: 0.8; }
 .part-step-button:focus-visible { outline: 3px solid var(--step-glow); outline-offset: 2px; }
 
 .part-step-marker {

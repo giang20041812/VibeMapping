@@ -24,8 +24,12 @@
 .trait-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); }
 .trait-name { font-size: var(--font-size-md); font-weight: 700; color: var(--color-text-main); }
 .trait-value { font-size: var(--font-size-xl); font-weight: 800; color: var(--trait-text); font-variant-numeric: tabular-nums; }
-.trait-bar { --progress-color: var(--trait); --progress-track: var(--trait-bg); height: 12px; }
-.trait-bar .progress-fill::after { top: 3px; }
+.app-progress.trait-bar,
+.app-progress.trait-bar.is-complete {
+  height: 4px;
+  --progress-fill: linear-gradient(90deg, var(--trait), color-mix(in srgb, var(--trait) 55%, white));
+  --progress-track: color-mix(in srgb, var(--trait) 16%, var(--color-bg-surface));
+}
 
 /* Ba thẻ Holland */
 .holland-list {
@@ -50,7 +54,7 @@
   background: var(--h-bg);
   border: 1.5px solid transparent;
   border-top: 4px solid var(--h);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
 }
 /* Sắc theo mã Holland; chữ trên nền vàng dùng màu tối cho dễ đọc */
 .holland-r { --h: var(--tone-blue); --h-text: var(--tone-blue); --h-bg: var(--tone-blue-bg); }
@@ -60,7 +64,7 @@
 .holland-e { --h: var(--tone-red); --h-text: var(--tone-red); --h-bg: var(--tone-red-bg); }
 .holland-c { --h: var(--tone-slate); --h-text: var(--tone-slate); --h-bg: var(--tone-slate-bg); }
 
-.holland-card-1 { animation-delay: 60ms; color: var(--h-ink); background: var(--h); border-color: var(--h); box-shadow: 0 12px 26px -14px var(--h); }
+.holland-card-1 { animation-delay: 60ms; color: var(--h-ink); background: var(--h); border-color: var(--h); box-shadow: var(--shadow-sm); }
 
 .holland-letter { font-size: 56px; font-weight: 800; line-height: 1; letter-spacing: -0.02em; }
 .holland-card:not(.holland-card-1) .holland-letter,

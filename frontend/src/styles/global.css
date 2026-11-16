@@ -58,12 +58,30 @@
   border-width: 0;
 }
 
+/* Chuyển động xuất hiện chung của khối nội dung: trồi nhẹ từ dưới lên, dừng êm */
+@keyframes ui-rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Tên trang: cùng cỡ chữ, nét đậm co sát và xanh hy vọng như tiêu đề lớn trang giới thiệu */
+.module-page > h1,
+.page-heading {
+  margin: 0;
+  font-size: clamp(calc(28 * var(--px)), 3.2vw, calc(52 * var(--px)));
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.045em;
+  color: var(--color-heading);
+  text-wrap: balance;
+}
+
 /* Tiêu đề một khối nội dung trong trang */
 .section-title {
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-3xl);
   font-weight: 800;
   line-height: var(--line-tight);
-  letter-spacing: -0.025em;
+  letter-spacing: -0.035em;
   color: var(--color-text-main);
 }
 
@@ -218,6 +236,80 @@
 
   .btn-fill:hover .btn-arrow-up {
     transform: translate(2px, -2px) rotate(45deg);
+  }
+}
+
+/* Rê chuột kiểu kẻ dòng (hàng trọng tâm trang chủ, thanh trên, thanh bên):
+   nền mờ dâng lên từ dưới, vạch cam chạy dọc mép trên; mép dưới với .hover-sweep-bottom.
+   .is-active giữ nguyên trạng thái đã rê; .hover-sweep-arrow xoay khi rê; nhóm .hover-sweep-group làm mờ mục khác. */
+.hover-sweep {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.hover-sweep::before,
+.hover-sweep::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+
+.hover-sweep::before {
+  inset: 0;
+  z-index: -1;
+  background: var(--ink-wash);
+  transform: scaleY(0);
+  transform-origin: bottom center;
+  transition: transform 560ms var(--ease-out);
+}
+
+.hover-sweep::after {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--brand-coral);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 620ms var(--ease-out);
+}
+
+.hover-sweep-bottom::after {
+  top: auto;
+  bottom: 0;
+}
+
+.hover-sweep.is-active::before,
+.hover-sweep.is-active::after {
+  transform: none;
+}
+
+.hover-sweep-arrow {
+  flex-shrink: 0;
+  color: var(--ink-300);
+  transition:
+    transform 560ms var(--ease-out),
+    color 420ms var(--ease-out);
+}
+
+@media (hover: hover) {
+  .hover-sweep:hover::before {
+    transform: scaleY(1);
+  }
+
+  .hover-sweep:hover::after {
+    transform: scaleX(1);
+  }
+
+  .hover-sweep:hover .hover-sweep-arrow {
+    color: var(--color-text-main);
+    transform: rotate(45deg) scale(1.1);
+  }
+
+  .hover-sweep-group:hover > .hover-sweep:not(:hover),
+  .hover-sweep-group:hover > * > .hover-sweep:not(:hover) {
+    opacity: 0.42;
   }
 }
 

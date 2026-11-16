@@ -5,6 +5,7 @@ import { AuthLayout } from './components/layout/AuthLayout';
 import { AppLayout } from './components/layout/AppLayout';
 import { PublicLayout } from './components/layout/PublicLayout';
 import { ShellLayout } from './components/layout/ShellLayout';
+import { ScrollToTop } from './components/layout/ScrollToTop';
 import { GuestOnly, RequireAuth, RequireCompleteProfile, RequireRole, RequireSession } from './components/layout/RouteGuards';
 import { PackageAssignmentsPage } from './modules/admin/pages/PackageAssignmentsPage';
 import { QuestionBankPage } from './modules/admin/pages/QuestionBankPage';
@@ -72,6 +73,7 @@ const LegacySessionRedirect: React.FC = () => {
 
 export const App: React.FC = () => (
   <BrowserRouter>
+    <ScrollToTop />
     <AuthProvider>
       <Routes>
         <Route element={<GuestOnly />}>

@@ -30,67 +30,40 @@ function createBespokeIcon(displayName: string, renderPaths: () => React.ReactNo
    NHÓM NGƯỜI ĐÁNH GIÁ 360° (PHỤ HUYNH, GIÁO VIÊN, BẠN BÈ, NGƯỜI HƯỚNG DẪN)
    ========================================================================== */
 
-/** Phụ huynh: Mái ấm gia đình với hai bậc cha mẹ đồng hành, che chở cho con ở giữa */
+/** Phụ huynh: Người lớn dắt tay người con, nét gọn để rõ ở kích thước nhỏ */
 export const ParentRaterIcon: LucideIcon = createBespokeIcon('ParentRaterIcon', () => (
   <>
-    {/* Mái nhà ấm áp phía trên */}
-    <path d="M3 10.2 12 3l9 7.2" opacity="0.85" />
-    {/* Hai bậc phụ huynh hai bên */}
-    <circle cx="7.2" cy="11.2" r="2.1" fill="currentColor" fillOpacity="0.18" />
-    <circle cx="16.8" cy="11.2" r="2.1" fill="currentColor" fillOpacity="0.18" />
-    <path d="M3.4 19.8c0-2.3 1.7-3.9 3.8-3.9 1.1 0 2.1.4 2.8 1.1" />
-    <path d="M20.6 19.8c0-2.3-1.7-3.9-3.8-3.9-1.1 0-2.1.4-2.8 1.1" />
-    {/* Người con ở chính giữa được che chở */}
-    <circle cx="12" cy="13.8" r="1.8" fill="currentColor" fillOpacity="0.28" />
-    <path d="M8.8 20.5c0-1.8 1.4-3.1 3.2-3.1s3.2 1.3 3.2 3.1" />
+    <circle cx="8.5" cy="6.5" r="2.8" fill="currentColor" fillOpacity="0.2" />
+    <path d="M3.5 20.5v-2.2a5 5 0 0 1 10 0v2.2" />
+    <circle cx="17.2" cy="11" r="2.1" fill="currentColor" fillOpacity="0.2" />
+    <path d="M14.2 20.5v-1.3a3 3 0 0 1 6 0v1.3" />
   </>
 ));
 
-/** Giáo viên: Mũ học vị tri thức, bảng giảng dạy và cuốn sách mở dẫn dắt học trò */
+/** Giáo viên: Mũ học vị tri thức */
 export const TeacherRaterIcon: LucideIcon = createBespokeIcon('TeacherRaterIcon', () => (
   <>
-    {/* Mũ cử nhân / học vị trên đỉnh */}
-    <path d="M12 2.8 4.2 6.4 12 10l7.8-3.6L12 2.8Z" fill="currentColor" fillOpacity="0.22" />
-    <path d="M19.8 6.4v4.2" />
-    <path d="M7.5 8.1v2.6c0 1.4 2 2.5 4.5 2.5s4.5-1.1 4.5-2.5V8.1" />
-    {/* Cuốn sách mở nâng đỡ bên dưới */}
-    <path
-      d="M4 15.2c2.5-.6 5.2-.2 8 1.3 2.8-1.5 5.5-1.9 8-1.3v5.2c-2.5-.6-5.2-.2-8 1.3-2.8-1.5-5.5-1.9-8-1.3v-5.2Z"
-      fill="currentColor"
-      fillOpacity="0.14"
-    />
-    <path d="M12 16.5v5.2" />
+    <path d="M12 4 2.5 8.8 12 13.6l9.5-4.8L12 4Z" fill="currentColor" fillOpacity="0.2" />
+    <path d="M6.5 11v4.6c0 1.6 2.5 3 5.5 3s5.5-1.4 5.5-3V11" />
+    <path d="M21.5 8.8v5.4" />
   </>
 ));
 
-/** Bạn bè: Hai người bạn đồng trang lứa gắn kết cùng ngôi sao chia sẻ tương tác */
+/** Bạn bè: Hai người bạn ngang hàng đứng cạnh nhau */
 export const FriendRaterIcon: LucideIcon = createBespokeIcon('FriendRaterIcon', () => (
   <>
-    {/* Hai người bạn ngang hàng */}
-    <circle cx="8.2" cy="9.2" r="2.5" fill="currentColor" fillOpacity="0.2" />
-    <circle cx="15.8" cy="9.2" r="2.5" fill="currentColor" fillOpacity="0.2" />
-    {/* Khoác vai kết nối */}
-    <path d="M3.5 20c0-3 2.1-5.2 4.9-5.2 1.6 0 2.9.7 3.6 1.8.7-1.1 2-1.8 3.6-1.8 2.8 0 4.9 2.2 4.9 5.2" />
-    {/* Tia sáng / bong bóng kết nối phía trên */}
-    <path d="M12 3.2v2.2M10.9 4.3h2.2" />
+    <circle cx="8.5" cy="8" r="2.8" fill="currentColor" fillOpacity="0.2" />
+    <path d="M3.5 20v-1.5a5 5 0 0 1 10 0V20" />
+    <circle cx="16" cy="8" r="2.8" fill="currentColor" fillOpacity="0.2" />
+    <path d="M15.6 13.5a5 5 0 0 1 4.9 5V20" />
   </>
 ));
 
-/** Người hướng dẫn (Mentor): La bàn định hướng chiến lược kết hợp ngôi sao dẫn đường */
+/** Người hướng dẫn (Mentor): La bàn định hướng */
 export const MentorRaterIcon: LucideIcon = createBespokeIcon('MentorRaterIcon', () => (
   <>
-    {/* Vòng la bàn định hướng */}
     <circle cx="12" cy="12" r="9" fill="currentColor" fillOpacity="0.12" />
-    <circle cx="12" cy="12" r="6.4" strokeDasharray="2 2" opacity="0.6" />
-    {/* Kim la bàn chỉ hướng Bắc - Đông Bắc */}
-    <polygon
-      points="15.6,8.4 13.3,13.3 8.4,15.6 10.7,10.7"
-      fill="currentColor"
-      fillOpacity="0.28"
-    />
-    <circle cx="12" cy="12" r="1.2" fill="currentColor" />
-    {/* Bốn mốc phương hướng */}
-    <path d="M12 3v1.6M12 19.4V21M3 12h1.6M19.4 12H21" />
+    <path d="m15.8 8.2-2.3 5.3-5.3 2.3 2.3-5.3 5.3-2.3Z" fill="currentColor" fillOpacity="0.35" />
   </>
 ));
 
@@ -193,16 +166,16 @@ export const InterestGroupIcon: LucideIcon = createBespokeIcon('InterestGroupIco
   </>
 ));
 
-/** G7 – Động lực: Tên lửa bứt phá vươn tới mục tiêu */
+/** G7 – Động lực: Tên lửa đứng phóng lên, thân – cửa sổ – cánh – lửa tách bạch để rõ ở kích thước nhỏ */
 export const MotivationGroupIcon: LucideIcon = createBespokeIcon('MotivationGroupIcon', () => (
   <>
     <path
-      d="M14.5 4.2c2.8-.5 5.3.2 5.3.2s.7 2.5.2 5.3c-.5 2.6-2.4 5.2-4.8 7l-4.4-4.4c1.8-2.4 4.4-4.3 7-4.8Z"
+      d="M12 2.5c2.8 2.1 4.2 5.1 4.2 8.7V16H7.8v-4.8c0-3.6 1.4-6.6 4.2-8.7Z"
       fill="currentColor"
       fillOpacity="0.2"
     />
-    <path d="M10.8 12.3 7.2 13l-2.4 2.4 3.4.8.8 3.4 2.4-2.4.7-3.6" />
-    <circle cx="15.2" cy="8.8" r="1.3" fill="currentColor" />
-    <path d="M4.5 19.5c1.2-.2 2.4-.9 3.1-1.9" />
+    <circle cx="12" cy="9.6" r="1.7" />
+    <path d="M7.8 12 5 14.8V18l2.8-2M16.2 12l2.8 2.8V18l-2.8-2" />
+    <path d="M10.3 16v1.4c0 1.4.6 2.7 1.7 4.1 1.1-1.4 1.7-2.7 1.7-4.1V16" />
   </>
 ));

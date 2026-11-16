@@ -46,7 +46,9 @@ const RINGS = [25, 50, 75, 100];
 const TONE_COUNT = 7;
 
 const fmt = (n: number) => n.toFixed(2);
-const toneOf = (index: number) => (index % TONE_COUNT) + 1;
+/** Số thứ tự tông màu (1..7) của trục theo vị trí, dùng chung cho các danh sách đi kèm biểu đồ */
+export const polygonToneOf = (index: number) => (index % TONE_COUNT) + 1;
+const toneOf = polygonToneOf;
 const clampScore = (value: number | null | undefined) => (value === null || value === undefined ? 0 : Math.max(0, Math.min(value, 100)));
 
 interface Point {

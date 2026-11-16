@@ -1,7 +1,8 @@
 import React from 'react';
 import { CalendarDays, Download } from 'lucide-react';
 import { downloadPdf, printOrientationProfile } from '../../../lib/printProfile';
-import { Alert, Badge, Button, Input } from '../../../components/common';
+import { Alert, Badge, Button, Input, ProgressBar } from '../../../components/common';
+import { INTEREST_NAME } from '../../career_explorer/careerFit.constants';
 import { SearchableSelect } from '../../../components/filters/SearchableSelect/SearchableSelect';
 import type { AssessmentResultListItem } from '../assessmentResult.service';
 import type { ResultInsights } from '../resultInsights.service';
@@ -19,6 +20,23 @@ const WEIGHT_NOTE: Record<string, string | null> = {
   equal_fallback: 'Mọi bài 360° đã chấp nhận có mức thấu hiểu thấp nhất (TH = 3) nên được chia đều trọng số (tham số zero_weight_equal_fallback).',
   pending_review: 'Bài 360° đã chấp nhận đang chờ chấm định tính nên chưa được tính vào điểm tổng hợp.',
 };
+
+const HOLLAND_RANK_LABEL = ['Nổi trội nhất', 'Nổi trội thứ hai', 'Nổi trội thứ ba'];
+
+/** Mã Holland: từng chữ cái một ô, ô đầu là nhóm nổi trội nhất; ghi rõ tên nhóm và thứ hạng */
+export const HollandCode: React.FC<{ code: string }> = ({ code }) => (
+  <ol className="holland-code" aria-label={`Mã Holland ${code}`}>
+    {code.split('').slice(0, 3).map((letter, index) => (
+      <li key={`${letter}-${index}`} className={index === 0 ? 'is-first' : undefined}>
+        <b className="holland-code-letter">{letter}</b>
+        <span className="holland-code-body">
+          <span className="holland-code-name">{INTEREST_NAME[letter] ?? letter}</span>
+          <span className="holland-code-rank">{HOLLAND_RANK_LABEL[index]}</span>
+        </span>
+      </li>
+    ))}
+  </ol>
+);
 
 const toDateKey = (iso: string) => {
   const date = new Date(iso);
@@ -133,13 +151,13 @@ export const ResultProfileHeader: React.FC<HeaderProps> = ({ insights, history, 
             {insights.validity.kind === 'active' && <Badge variant="success">Đang dùng</Badge>}
             {insights.validity.kind === 'reassess' && <Badge variant="warning">Cần đánh giá lại</Badge>}
             {insights.validity.kind === 'policy_pending' && <Badge>Chưa có mốc hiệu lực</Badge>}
-            {insights.holland && <Badge>Holland {insights.holland}</Badge>}
             {insights.validity.expiresAt && (
               <span className="result-profile-expiry">
                 Hiệu lực đến {new Date(insights.validity.expiresAt).toLocaleDateString('vi-VN')} ({insights.validity.months} tháng)
               </span>
             )}
           </div>
+          {insights.holland && <HollandCode code={insights.holland} />}
           {weightNote && <Alert variant="warning">{weightNote}</Alert>}
         </>
       )}
@@ -155,8 +173,15 @@ export const ResultProfileFooter: React.FC<{ insights: ResultInsights | null }> 
       {insights.coreValues.length > 0 && (
         <section>
           <h3>Giá trị cốt lõi</h3>
-          <ol className="result-profile-values">
-            {insights.coreValues.map((value) => <li key={value}>{value}</li>)}
+          <ol className="core-ranking">
+            {insights.coreValues.map((value, index, all) => (
+              <li key={value} className={index === 0 ? 'is-first' : undefined}>
+                <span className="core-ranking-no">{index + 1}</span>
+                <span className="core-ranking-name">{value}</span>
+                {index === 0 && <Badge variant="highlight" size="sm">Quan trọng nhất</Badge>}
+                <ProgressBar value={((all.length - index) / all.length) * 100} label={`Mức quan trọng của ${value}`} className="core-ranking-bar" />
+              </li>
+            ))}
           </ol>
         </section>
       )}

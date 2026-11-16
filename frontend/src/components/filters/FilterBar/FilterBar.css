@@ -2,11 +2,13 @@
   /* Danh sách thả xuống phải nằm trên phần nội dung bên dưới thanh lọc */
   position: relative;
   z-index: var(--z-dropdown);
+  /* Khung phẳng trên nền sáng: hai đường kẻ mảnh trên và dưới như các nhóm thông tin trang giới thiệu */
   background: var(--color-bg-surface);
-  border: 1px solid var(--surface-border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-4);
-  box-shadow: var(--surface-shadow);
+  border: 1px solid var(--color-border);
+  border-top: 2px solid var(--color-text-main);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4) var(--space-5);
+  box-shadow: none;
   margin-bottom: var(--space-5);
 }
 
@@ -17,12 +19,9 @@
 }
 
 .filter-count-badge {
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  background-color: var(--color-bg-subtle);
-  padding: 4px 10px;
-  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-text-muted);
 }
 
 .filter-bar-content {
@@ -120,10 +119,7 @@
   color: var(--color-text-main);
 }
 
-/* Thanh lọc dạng thẻ cho các trang khám phá */
+/* Thanh lọc các trang khám phá: cùng khung phẳng, chừa khoảng thở rộng hơn dưới thanh */
 .app-filter-bar.is-sticker {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
   margin-bottom: var(--space-6);
 }

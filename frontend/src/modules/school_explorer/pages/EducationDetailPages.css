@@ -9,7 +9,7 @@
   align-items: center;
   gap: 8px;
   padding: 8px 14px;
-  border-radius: 999px;
+  border-radius: var(--radius-xs);
   border: 1px solid var(--color-border);
   background: var(--color-bg-surface);
   color: var(--color-text-main);
@@ -266,6 +266,29 @@
   font-weight: 800;
   color: var(--color-text-secondary);
   font-variant-numeric: tabular-nums;
+
+/* ===== Đồng bộ với trang giới thiệu: mặt giấy trắng, vạch mực mép trên, hàng kẻ mảnh, không nhấc khối ===== */
+.edu-map-node { padding: var(--space-2) var(--space-4); font-weight: 600; transition: border-color var(--transition-fast), color var(--transition-fast); }
+.edu-map-node:hover { border-color: var(--ink-300); }
+.edu-map-career { background: var(--color-text-main); border-color: var(--color-text-main); color: var(--color-text-inverse); }
+.edu-map-career:hover { border-color: var(--color-text-main); }
+.edu-map-major { background: var(--hope-blue-soft); border-color: var(--hope-blue-border); color: var(--hope-blue-deep); }
+.edu-map-majors,
+.edu-map-schools { border-left-color: var(--color-border-hover); }
+
+.major-group {
+  border-top: 2px solid var(--color-text-main);
+  border-radius: var(--radius-sm);
+  box-shadow: none;
+  transition: border-color var(--transition-fast);
+}
+.major-group::before { display: none; }
+.major-group:hover { transform: none; box-shadow: none; border-color: var(--color-border-hover); border-top-color: var(--color-text-main); }
+.major-group-head { background: transparent; }
+.major-group-icon { color: var(--hope-blue-deep); background: var(--hope-blue-soft); border: 0; border-radius: var(--radius-xs); }
+.major-program-row:hover { background-color: var(--ink-wash); }
+.major-program-row + .major-program-row { border-top-style: solid; }
+.major-program-link:hover { color: var(--hope-blue-deep); }
 }
 
 @media (max-width: 640px) {

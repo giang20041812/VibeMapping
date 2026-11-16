@@ -22,6 +22,8 @@ const TABLE_LABEL: Record<string, string> = {
   criteria_rater_visibility: 'hiển thị tiêu chí',
   questions: 'câu hỏi',
   operation_parameters: 'tham số vận hành',
+  formulas: 'công thức',
+  formula_versions: 'phiên bản công thức',
 };
 
 const OPERATION_LABEL: Record<string, string> = {

@@ -33,6 +33,7 @@ import type {
   RequirementInput,
   SourceJd,
 } from '../career_admin.types';
+import { CareerLevelFrameworksPanel } from '../components/CareerLevelFrameworksPanel';
 import './AdminPages.css';
 
 const EMPTY_INFO: CareerInfoInput = {
@@ -47,6 +48,7 @@ const TAB_ITEMS = [
   { value: 'info', label: 'Thông tin' },
   { value: 'requirements', label: 'Yêu cầu năng lực' },
   { value: 'holland', label: 'Holland' },
+  { value: 'levels', label: 'Khung theo cấp' },
   { value: 'jd', label: 'JD nguồn' },
   { value: 'history', label: 'Lịch sử' },
 ];
@@ -280,6 +282,8 @@ export const CareerAdminDetailPage: React.FC = () => {
           </div>
         </Card>
       )}
+
+      {tab === 'levels' && career && <CareerLevelFrameworksPanel careerId={career.id} />}
 
       {tab === 'jd' && detail && (
         <Card noPadding>

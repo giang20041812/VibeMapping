@@ -151,10 +151,11 @@ export const RoadmapPlan: React.FC<Props> = ({
             </Alert>
           )}
 
-          {ordered.map((stage) => (
+          {ordered.map((stage, index) => (
             <RoadmapStageCard
               key={stage.key}
               stage={stage}
+              index={index}
               open={openKeys.has(stage.key)}
               readOnly={readOnly}
               busy={busy}

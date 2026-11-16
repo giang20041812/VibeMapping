@@ -1,35 +1,30 @@
+/* Thanh tiến độ là một đường thẳng mảnh, không bo góc. Phần đã đạt chuyển màu từ sắc chính sang sắc nhạt hơn cùng họ,
+   rãnh là nền nhạt cùng sắc. Khi xuất hiện, đường dài ra từ trái; đạt 100% thì chuyển sang xanh lá. */
 .app-progress {
+  --progress-fill: var(--progress-gradient);
   position: relative;
   width: 100%;
-  height: 8px;
+  height: 3px;
   overflow: hidden;
-  background: var(--brand-ice);
-  border-radius: var(--radius-full);
+  background: var(--progress-track, var(--progress-track-tint));
 }
 .progress-fill {
   position: absolute;
   inset: 0 auto 0 0;
   width: calc(var(--progress, 0) * 100%);
-  background: var(--gradient-brand);
-  border-radius: var(--radius-full);
+  background: var(--progress-fill);
   /* Chỉ giữ khung đầu (backwards): giữ cả khung cuối thì animation đè lên width, chặn transition và thanh nhảy cóc */
   animation: progress-grow 900ms var(--ease-out) backwards;
   transition: width 700ms var(--ease-out);
 }
-.progress-secondary .progress-fill { background: var(--brand-light); }
-
-/* Màu nhấn phẳng do nơi dùng đặt qua --progress-color / --progress-track; đầu thanh có chấm trắng */
-.progress-accent { height: 10px; background: var(--progress-track, var(--tone-blue-bg)); }
-.progress-accent .progress-fill { background: var(--progress-color, var(--tone-blue)); }
-.progress-accent .progress-fill::after {
-  content: '';
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  width: 6px;
-  height: 6px;
-  background: var(--brand-white);
-  border-radius: 50%;
+/* Nơi dùng muốn màu riêng thì đặt --progress-fill và --progress-track trên chính thanh (xem --bar-gradient ở tokens.css) */
+.progress-secondary {
+  --progress-fill: var(--ink-300);
+  --progress-track: var(--ink-100);
+}
+.app-progress.is-complete {
+  --progress-fill: linear-gradient(90deg, var(--color-success), color-mix(in srgb, var(--color-success) 55%, #a7f3d0));
+  --progress-track: color-mix(in srgb, var(--color-success) 16%, var(--color-bg-surface));
 }
 
 @keyframes progress-grow { from { width: 0; } }

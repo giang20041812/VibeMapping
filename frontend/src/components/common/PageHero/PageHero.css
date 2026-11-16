@@ -1,11 +1,26 @@
-/* Tiêu đề trang: ô biểu tượng chàm nhạt, tên trang lớn, số kết quả là nhãn trung tính */
+/* Tiêu đề trang: cùng ngôn ngữ với trang giới thiệu. Tên trang rất lớn, mực xanh hy vọng, chữ đậm co sát;
+   số kết quả là chữ trần; một đường kẻ mảnh ở đáy vẽ dần khi trang hiện ra. */
 .page-hero {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-4) var(--space-5);
   min-width: 0;
+  padding-bottom: var(--space-5);
   margin-bottom: var(--space-6);
+}
+.page-hero::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--color-border);
+  transform: scaleX(0);
+  transform-origin: left center;
+  animation: page-hero-rule 1200ms var(--ease-out) 300ms forwards;
 }
 .page-hero-icon {
   flex: none;
@@ -13,57 +28,63 @@
   place-items: center;
   width: calc(56 * var(--px));
   height: calc(56 * var(--px));
-  color: var(--sticker-accent);
-  background: var(--sticker-bg);
-  border-radius: var(--radius-lg);
+  color: var(--hope-blue-deep);
+  background: var(--hope-blue-soft);
+  border-radius: var(--radius-md);
   animation: page-hero-rise var(--duration-enter) var(--ease-decelerate) both;
 }
 .page-hero-icon svg { width: 50%; height: 50%; }
 .page-hero-text {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2) var(--space-4);
+  align-items: baseline;
+  gap: var(--space-2) var(--space-5);
   flex: 1 1 auto;
   min-width: 0;
 }
 .page-hero-title {
   margin: 0;
   min-width: 0;
-  font-size: var(--font-size-4xl);
+  font-size: clamp(calc(30 * var(--px)), 3.6vw, calc(60 * var(--px)));
   font-weight: 800;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  color: var(--color-text-main);
+  line-height: 1.05;
+  letter-spacing: -0.045em;
+  color: var(--color-heading);
+  text-wrap: balance;
   animation: page-hero-rise var(--duration-enter) var(--ease-decelerate) var(--stagger) both;
 }
 .page-hero-count {
   display: inline-flex;
   align-items: baseline;
   gap: var(--space-1);
-  padding: var(--space-1) var(--space-3);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-md);
   font-weight: 600;
-  color: var(--color-text-secondary);
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
+  color: var(--color-text-muted);
   animation: page-hero-rise var(--duration-enter) var(--ease-decelerate) calc(var(--stagger) * 2) both;
 }
-.page-hero-count b { font-size: var(--font-size-md); font-weight: 700; font-variant-numeric: tabular-nums; color: var(--color-text-main); }
+.page-hero-count b {
+  font-size: var(--font-size-2xl);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-main);
+}
 .page-hero-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-left: auto; }
 
 @keyframes page-hero-rise {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: none; }
 }
+@keyframes page-hero-rule {
+  to { transform: scaleX(1); }
+}
 
 @media (max-width: 640px) {
-  .page-hero { gap: var(--space-3); margin-bottom: var(--space-4); }
+  .page-hero { gap: var(--space-3); padding-bottom: var(--space-4); margin-bottom: var(--space-4); }
   .page-hero-icon { width: calc(44 * var(--px)); height: calc(44 * var(--px)); }
-  .page-hero-title { font-size: var(--font-size-3xl); }
 }
 @media (prefers-reduced-motion: reduce) {
+  .page-hero::after { transform: scaleX(1); animation: none; }
   .page-hero-icon,
   .page-hero-title,
   .page-hero-count { animation: none; }

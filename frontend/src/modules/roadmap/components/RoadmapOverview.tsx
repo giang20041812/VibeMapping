@@ -34,6 +34,15 @@ interface Props {
 export const RoadmapOverview: React.FC<Props> = ({ roadmap, stages, progress, monthsLeft, daysLeft, readOnly, onPickStage, onRegenerate }) => {
   const start = [roadmap.education_level, roadmap.school_year].filter(Boolean).join(' · ') || 'Điểm xuất phát';
   const goal = [roadmap.career_name, roadmap.program_title].filter(Boolean).join(' · ');
+  /* Đoạn đường thứ k nối mốc k với mốc k+1 (mốc 0 là xuất phát, mốc cuối là mục tiêu): đầy bao nhiêu thì chặng tương ứng xong bấy nhiêu */
+  const count = stages.length;
+  const segment = (k: number) => {
+    if (count === 0) return 0;
+    const value = k < count ? stages[k].actualPercent / 100 : stages[count - 1].status === 'done' ? 1 : 0;
+    return Math.max(0, Math.min(1, value));
+  };
+  const fill = (inSeg: number | null, outSeg: number | null) =>
+    ({ '--in': inSeg === null ? 0 : segment(inSeg), '--out': outSeg === null ? 0 : segment(outSeg) }) as React.CSSProperties;
   const remaining = daysLeft !== null && daysLeft < 0 ? 'Quá hạn' : monthsLeft === null ? '—' : `${monthsLeft} tháng`;
 
   return (
@@ -50,15 +59,15 @@ export const RoadmapOverview: React.FC<Props> = ({ roadmap, stages, progress, mo
         </dl>
 
         <ol className="roadmap-path" aria-label="Bản đồ đường đi">
-          <li className="roadmap-node is-start">
+          <li className="roadmap-node is-start" style={fill(null, 0)}>
             <div className="roadmap-node-body">
               <span className="roadmap-node-dot" aria-hidden="true" />
               <b>Xuất phát</b>
               <small>{start}</small>
             </div>
           </li>
-          {stages.map((stage) => (
-            <li key={stage.key} className={`roadmap-node is-${stage.status}`}>
+          {stages.map((stage, index) => (
+            <li key={stage.key} className={`roadmap-node is-${stage.status}`} style={fill(index, index + 1)}>
               <button type="button" className="roadmap-node-body" onClick={() => onPickStage(stage.key)}>
                 <span className="roadmap-node-dot" aria-hidden="true" />
                 <b>{stage.key === 'none' ? 'Chưa hạn' : `T${stage.key.slice(5, 7)}/${stage.key.slice(2, 4)}`}</b>
@@ -66,7 +75,7 @@ export const RoadmapOverview: React.FC<Props> = ({ roadmap, stages, progress, mo
               </button>
             </li>
           ))}
-          <li className="roadmap-node is-goal">
+          <li className="roadmap-node is-goal" style={fill(count, null)}>
             <div className="roadmap-node-body">
               <span className="roadmap-node-dot" aria-hidden="true"><Flag size={14} /></span>
               <b>Mục tiêu</b>

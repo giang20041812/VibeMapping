@@ -29,7 +29,6 @@ import { CompareSidebar } from '../components/CompareSidebar';
 import { CareerProfile } from '../components/CareerProfile';
 import { CriterionExplanation } from '../components/CriterionExplanation';
 import { FitBars } from '../components/FitBars';
-import { FitRing } from '../components/FitRing';
 import './CareerPages.css';
 import './CareerFit.css';
 
@@ -161,12 +160,18 @@ export const CareerDetailPage: React.FC = () => {
     <div className="module-page career-detail">
       <Breadcrumb items={[{ label: subjectUserId ? 'Kết quả được chia sẻ' : 'Danh sách nghề', to: backHref }, { label: detail.career.career_name }]} />
       <header className="career-detail-head">
-        {showFit && <FitRing percent={fit} size={104} />}
+        {showFit && (
+          <div className="career-score" role="img" aria-label={`Phù hợp ${Math.round(fit)}%`}>
+            <b>{Math.round(fit)}<small>%</small></b>
+            <span className="career-score-label">Phù hợp</span>
+            <span className="fit-bar-track"><span className="fit-bar-fill" style={{ width: `${Math.round(fit)}%` }} /></span>
+          </div>
+        )}
         <div className="career-detail-title">
           <h1>{detail.career.career_name}</h1>
           <div className="career-chips">
             {showFit && detail.statusLabel && <Badge variant="info">{RESULT_STATUS_LABEL[detail.statusLabel] ?? detail.statusLabel}</Badge>}
-            {showFit && detail.rank !== null && <Badge variant="success">Hạng {detail.rank}</Badge>}
+            {showFit && detail.rank !== null && <Badge variant={detail.rank === 1 ? 'highlight' : 'default'}>Hạng {detail.rank}</Badge>}
             {showFit && fit <= policy.minFitPercent && <Badge variant="warning">Nghề gần đạt</Badge>}
             {showFit && components.componentCompleteness < 1 && <Badge>Dữ liệu {Math.round(components.componentCompleteness * 100)}%</Badge>}
             {marks.has('target') && <Badge variant="success">Mục tiêu</Badge>}
@@ -218,27 +223,29 @@ export const CareerDetailPage: React.FC = () => {
           <h2>Vì sao phù hợp</h2>
           {reason && <p className="career-reason">{reason}</p>}
           <div className="career-why">
-            <FitBars result={components} />
+            <div className="career-why-main">
+              <FitBars result={components} />
+              {unmet.length === 0 ? (
+                <Alert variant="success">Bạn đã đáp ứng toàn diện tiêu chuẩn năng lực của nghề này.</Alert>
+              ) : (
+                <div className="career-gaps">
+                  <h3>Cần bổ sung</h3>
+                  <ul className="career-chips">
+                    {unmet.slice(0, 8).map((row) => (
+                      <li key={row.criteriaId}><Badge variant="warning">{row.name ?? row.dimensionCode} · thiếu {formatScore(row.gap)}</Badge></li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
             {axes.length >= 3 && (
               <div className="career-why-chart">
                 <PolygonChart axes={axes} valueLabel="Bạn" referenceLabel="Yêu cầu nghề" showReadout={false} showNodeValues autoCycleMs={0} />
               </div>
             )}
           </div>
-          {unmet.length === 0 ? (
-            <Alert variant="success">Bạn đã đáp ứng toàn diện tiêu chuẩn năng lực của nghề này.</Alert>
-          ) : (
-            <div className="career-gaps">
-              <h3>Cần bổ sung</h3>
-              <ul className="career-chips">
-                {unmet.slice(0, 8).map((row) => (
-                  <li key={row.criteriaId}><Badge variant="warning">{row.name ?? row.dimensionCode} · thiếu {formatScore(row.gap)}</Badge></li>
-                ))}
-              </ul>
-            </div>
-          )}
           <details className="career-more">
-            <summary>Xem vì sao</summary>
+            <summary>Xem giải thích</summary>
             <CriterionExplanation result={components} rows={components.criteriaEvaluations} />
           </details>
         </section>

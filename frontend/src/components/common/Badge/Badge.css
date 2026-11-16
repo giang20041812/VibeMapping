@@ -1,42 +1,45 @@
-/* Thẻ: nền gradient pha màu theo trạng thái, viền cùng tông, chấm có vầng sáng và vệt bóng phía trên */
+/* Nhãn trạng thái: khối chữ nhật góc cạnh, nền pha 10% màu trạng thái, chữ màu đậm, một chấm tròn nhỏ ở đầu.
+   Viền là vòng mảnh trong cùng tông (không phải border) nên nhãn không bị nhảy kích thước; xuất hiện bằng hiệu ứng nở nhẹ. */
 .app-badge {
   --dot: var(--color-text-muted);
   --tone: var(--dot);
-  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: 6px;
   font-weight: 700;
-  letter-spacing: 0.01em;
-  color: var(--color-text-main);
-  background:
-    linear-gradient(180deg, color-mix(in srgb, #fff 55%, transparent) 0%, transparent 55%),
-    linear-gradient(135deg, color-mix(in srgb, var(--tone) 20%, var(--color-bg-surface)), color-mix(in srgb, var(--tone) 8%, var(--color-bg-surface)));
-  border: 1px solid color-mix(in srgb, var(--tone) 38%, transparent);
-  border-radius: var(--radius-full);
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, #fff 80%, transparent),
-    0 1px 2px color-mix(in srgb, var(--tone) 18%, transparent),
-    0 4px 10px -4px color-mix(in srgb, var(--tone) 40%, transparent);
+  letter-spacing: 0.005em;
   line-height: 1;
   white-space: nowrap;
+  color: var(--color-text-main);
+  background: color-mix(in srgb, var(--tone) 10%, var(--color-bg-surface));
+  border-radius: var(--radius-xs);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tone) 24%, transparent);
+  animation: badge-in 380ms var(--ease-out) both;
 }
 .app-badge::before {
   content: '';
   flex: none;
-  width: 8px;
-  height: 8px;
-  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, #fff 60%, var(--dot)), var(--dot) 65%);
-  border-radius: 50%;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--dot) 24%, transparent), 0 0 8px color-mix(in srgb, var(--dot) 55%, transparent);
+  width: 6px;
+  height: 6px;
+  background: var(--dot);
+  border-radius: 0;
 }
 
-.badge-sm { padding: 5px 11px; font-size: var(--font-size-xs); }
-.badge-md { padding: 6px 13px; font-size: var(--font-size-xs); }
+.badge-sm { padding: 4px 9px; font-size: var(--font-size-xs); }
+.badge-md { padding: 5px 11px; font-size: var(--font-size-sm); }
 
 .badge-success { --dot: var(--color-success); color: var(--color-success-text); }
 .badge-warning { --dot: var(--color-warning); color: var(--color-warning-text); }
 .badge-danger { --dot: var(--color-danger); color: var(--color-danger-text); }
-.badge-info { --dot: var(--brand-sky); color: var(--color-info-text); }
-.badge-default { --dot: var(--color-text-muted); color: var(--color-text-secondary); }
+.badge-info { --dot: var(--hope-blue); color: var(--hope-blue-deep); }
+.badge-highlight { --dot: var(--brand-coral); color: var(--color-highlight-text); }
+.badge-default { --dot: var(--ink-300); color: var(--color-text-secondary); }
+
+@keyframes badge-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-badge { animation: none; }
+}

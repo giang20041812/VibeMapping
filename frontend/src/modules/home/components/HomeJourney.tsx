@@ -7,7 +7,9 @@ import {
   Check,
   ClipboardCheck,
   Compass,
+  Gauge,
   MapPin,
+  Orbit,
   Route,
   Scale,
   Star,
@@ -16,16 +18,16 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import {
+  Badge,
   Magnetic,
   RollText,
   SplitText,
   trackPointer,
 } from '../../../components/common';
-import { PolygonChart, type PolygonAxis, type PolygonLevel } from '../../../components/charts/PolygonChart/PolygonChart';
 import { PolygonChartSkeleton } from '../../../components/charts/PolygonChart/PolygonChartSkeleton';
-import type { RaterNode } from '../../../components/charts/Rater360/Rater360';
-import { PARTS } from '../../assessment_session/assessmentSession.constants';
-import { Rater360Scene } from './Rater360Scene';
+import { PolygonChart, type PolygonAxis, type PolygonLevel } from '../../../components/charts/PolygonChart/PolygonChart';
+import { Rater360, type RaterNode } from '../../../components/charts/Rater360/Rater360';
+import { StatSticker } from './StatSticker';
 import './HomeJourney.css';
 
 export interface HomeJourneyProps {
@@ -53,10 +55,17 @@ interface Step {
 }
 
 /* ==========================================================================
-   BƯỚC 1: TỰ ĐÁNH GIÁ
+   BƯỚC 1: TỰ ĐÁNH GIÁ (biểu đồ đa giác kiểu hình dán, nhãn dán trung bình & nổi bật)
    ========================================================================== */
 
-const SELF_CORE_VALUES = ['Tư duy logic', 'Sáng tạo công nghệ', 'Học hỏi liên tục'];
+/** Điểm trung bình và nhóm nổi bật nhất của biểu đồ, hiện thành nhãn dán trên hình */
+function summarize(axes: PolygonAxis[]) {
+  const scored = axes.filter((a): a is PolygonAxis & { value: number } => a.value !== null);
+  if (scored.length === 0) return null;
+  const average = Math.round(scored.reduce((sum, a) => sum + a.value, 0) / scored.length);
+  const top = scored.reduce((best, a) => (a.value > best.value ? a : best));
+  return { average, top: top.shortLabel ?? top.label };
+}
 
 const SelfAssessmentArtifact: React.FC<{
   axes: PolygonAxis[];
@@ -64,89 +73,38 @@ const SelfAssessmentArtifact: React.FC<{
   isOwnResult: boolean;
   isLoading: boolean;
 }> = ({ axes, levels, isOwnResult, isLoading }) => {
-  const topGroups = axes
-    .filter((a): a is PolygonAxis & { value: number } => a.value !== null)
-    .sort((a, b) => b.value - a.value)
-    .slice(0, 4);
-
+  const summary = summarize(axes);
   return (
-    <div className="artifact-window artifact-self">
-      <div className="artifact-topbar">
-        <ol className="artifact-part-stepper" aria-label="Bốn phần tự đánh giá">
-          {PARTS.map((part) => (
-            <li key={part.number} className="artifact-part-item">
-              <span className="artifact-part-check" aria-hidden="true">
-                <Check size={11} strokeWidth={3} />
-              </span>
-              <span>{part.short}</span>
-            </li>
-          ))}
-        </ol>
-        <span className="artifact-tag">{isOwnResult ? 'Kết quả của bạn' : 'Mẫu 50 câu'}</span>
-      </div>
-
-      <div className="artifact-self-grid">
-        <div className="artifact-self-radar">
-          {isLoading ? (
-            <PolygonChartSkeleton />
-          ) : (
-            <PolygonChart axes={axes} levels={levels} showReadout={false} autoCycleMs={0} />
-          )}
-        </div>
-
-        <div className="artifact-self-side">
-          <div className="artifact-panel-block">
-            <div className="artifact-panel-head">
-              <span className="artifact-panel-title">Tố chất nổi bật</span>
-              <span className="artifact-tag">Holland: I-R-C</span>
-            </div>
-            <ul className="artifact-score-list">
-              {topGroups.map((group, idx) => {
-                const GroupIcon = group.icon;
-                return (
-                  <li
-                    key={group.key}
-                    className={`artifact-score-row ${idx === 0 ? 'is-top' : ''}`}
-                    style={{ '--w': `${Math.round(group.value)}%` } as React.CSSProperties}
-                  >
-                    <span className="artifact-score-icon" aria-hidden="true">
-                      <GroupIcon strokeWidth={2} />
-                    </span>
-                    <div className="artifact-score-body">
-                      <span className="artifact-score-name">{group.label}</span>
-                      <span className="scene-track">
-                        <span className="scene-fill is-static" />
-                      </span>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-
-          <div className="artifact-panel-block">
-            <span className="artifact-panel-title">Giá trị cốt lõi</span>
-            <div className="artifact-chip-row">
-              {SELF_CORE_VALUES.map((val) => (
-                <span key={val} className="artifact-value-chip">
-                  {val}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="artifact-window artifact-sticker-stage">
+      {!isLoading && (
+        <span className="artifact-sticker-badge">
+          <Badge variant={isOwnResult ? 'success' : 'default'}>{isOwnResult ? 'Đánh giá của bạn' : 'Ví dụ'}</Badge>
+        </span>
+      )}
+      {isLoading ? (
+        <PolygonChartSkeleton />
+      ) : (
+        <PolygonChart axes={axes} levels={levels} showReadout={false} showNodeValues />
+      )}
+      {!isLoading && summary && (
+        <>
+          <StatSticker place="top-left" tone="violet" icon={Gauge} value={`${summary.average}%`} label="Trung bình" />
+          <StatSticker place="bottom-right" tone="gold" icon={Trophy} value={summary.top} label="Nổi bật" />
+        </>
+      )}
     </div>
   );
 };
 
 /* ==========================================================================
-   BƯỚC 2: ĐÁNH GIÁ 360°
+   BƯỚC 2: ĐÁNH GIÁ 360° (hình người biểu tượng cho bản thân, các nhóm quay quanh)
    ========================================================================== */
 
-const Rater360Artifact: React.FC<{ raters: RaterNode[] }> = ({ raters }) => (
-  <div className="artifact-window artifact-360">
-    <Rater360Scene raters={raters} centerLabel="Bạn" />
+const Rater360Artifact: React.FC<{ raters: RaterNode[]; active: boolean }> = ({ raters, active }) => (
+  <div className="artifact-window artifact-sticker-stage">
+    <Rater360 nodes={raters} centerLabel="Bạn" paused={!active} />
+    <StatSticker place="top-left" tone="cyan" icon={Orbit} value="360°" label="Đa góc nhìn" />
+    <StatSticker place="bottom-right" tone="magenta" icon={Users} value={`${raters.length} + Bạn`} label="Người đánh giá" />
   </div>
 );
 
@@ -214,7 +172,7 @@ const CareerFitArtifact: React.FC = () => (
                 <strong>{bar.value}%</strong>
               </div>
               <span className="scene-track">
-                <span className="scene-fill is-coral" />
+                <span className="scene-fill" />
               </span>
             </li>
           ))}
@@ -407,6 +365,9 @@ const RoadmapArtifact: React.FC = () => (
               {stage.statusLabel} · {stage.percent}%
             </span>
           </div>
+          <span className="scene-track">
+            <span className="scene-fill" style={{ '--w': `${stage.percent}%`, '--bar-i': idx } as React.CSSProperties} />
+          </span>
 
           <ul className="artifact-roadmap-tasks">
             {stage.items.map((item) => (
@@ -553,7 +514,7 @@ export const HomeJourney: React.FC<HomeJourneyProps> = ({
         'Đối chiếu điểm tự đánh giá & góc nhìn 360°',
       ],
       icon: Users,
-      scene: <Rater360Artifact raters={raters} />,
+      scene: <Rater360Artifact raters={raters} active={shown === 1} />,
     },
     {
       key: 'fit',

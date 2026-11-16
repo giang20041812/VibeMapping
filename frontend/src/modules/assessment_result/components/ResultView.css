@@ -26,7 +26,7 @@
   font-weight: 800;
   color: var(--color-text-main);
 }
-.result-progress .app-progress { height: 10px; }
+.result-progress .app-progress { height: 3px; }
 
 /* Lưới nội dung: biểu đồ và điểm theo nhóm cùng phủ hết chiều ngang */
 .result-grid {
@@ -66,7 +66,7 @@
   color: var(--color-warning-text);
   background: var(--alert-warning-bg);
   border: 1px solid var(--alert-warning-border);
-  border-radius: var(--radius-full, 999px);
+  border-radius: var(--radius-xs);
 }
 .result-note svg { color: var(--alert-warning-icon); }
 
@@ -140,18 +140,20 @@
 
 /* Thanh điểm có màu theo nhóm, điểm tựa tròn ở đúng giá trị */
 .group-meter { position: relative; display: flex; align-items: center; }
-.group-row .app-progress { height: 10px; background: var(--group-track); }
-.group-row .app-progress .progress-fill { background: var(--group-color); }
+.group-row .app-progress,
+.group-row .app-progress.is-complete {
+  height: 3px;
+  --progress-fill: linear-gradient(90deg, var(--group-color), color-mix(in srgb, var(--group-color) 55%, white));
+  --progress-track: color-mix(in srgb, var(--group-color) 16%, var(--color-bg-surface));
+}
 .group-meter-thumb {
   position: absolute;
   top: 50%;
   left: calc(var(--progress, 0) * 100%);
-  width: 16px;
-  height: 16px;
-  background: var(--brand-white);
-  border: 3px solid var(--group-color);
-  border-radius: 50%;
-  box-shadow: var(--shadow-sm);
+  width: 3px;
+  height: 13px;
+  background: var(--group-color);
+  border-radius: 0;
   transform: translate(-50%, -50%);
   animation: thumb-slide 900ms var(--ease-out) both;
 }
@@ -216,7 +218,7 @@
   font-variant-numeric: tabular-nums;
   color: var(--color-text-main);
 }
-.group-row .criterion-bar { grid-column: 1 / -1; height: 4px; }
+.group-row .criterion-bar { grid-column: 1 / -1; height: 2px; }
 .score-compare {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 5.5em 5.5em;

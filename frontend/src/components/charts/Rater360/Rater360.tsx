@@ -1,18 +1,17 @@
-import React, { useEffect, useId, useState } from 'react';
+import React, { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { LearnerCenterIcon } from '../ArtifactIcons';
-import { trackPointer } from '../../common/MotionPrimitives';
 import { useInView } from '../../../hooks/useInView';
+import { useReducedMotion } from '../../../hooks/useReducedMotion';
 import './Rater360.css';
 
-/** Một nhóm người đánh giá đặt xung quanh người được đánh giá */
+/** Một nhóm người đánh giá quay quanh người được đánh giá */
 export interface RaterNode {
   key: string;
   label: string;
   Icon: LucideIcon;
   /** Thông tin phụ hiển thị dưới tên nhóm (ví dụ: "2/2 bài") */
   meta?: string;
-  /** Số liệu nổi bật ở cạnh phải thẻ (ví dụ: "94%") */
+  /** Số liệu nổi bật cạnh tên nhóm (ví dụ: "94%") */
   value?: string;
 }
 
@@ -22,77 +21,70 @@ export interface Rater360Props {
   centerLabel?: string;
   /** Phụ đề nhỏ dưới nhãn trung tâm */
   centerSub?: string;
-  /** Tắt: chuyển xám */
+  /** Tắt: chuyển xám, các nhóm dừng quay */
   active?: boolean;
   /** Bản thu gọn làm hình của nút gạt: không nhãn, chỉ hiện biểu tượng */
   compact?: boolean;
+  /** Tạm dừng quay (giữ nguyên vị trí), ví dụ khi cảnh đang bị che */
+  paused?: boolean;
   className?: string;
 }
 
-interface Layout {
-  w: number;
-  h: number;
-  /** Tọa độ 4 góc cân xứng, nối thẳng một mạch từ tâm ra từng nhóm */
-  nodes: { x: number; y: number }[];
-  /** Bán kính vòng quỹ đạo; điểm nối nằm đúng trên vòng này */
-  orbit: number;
-  halo: number;
-  inner: number;
+/* Hệ tọa độ cảnh; tỷ lệ W/H phải trùng aspect-ratio trong Rater360.css */
+const W = 400;
+const H = 300;
+const CX = 200;
+const ORBIT = { cy: 162, rx: 172, ry: 48, tilt: -9 };
+/** Một vòng quay hết bao nhiêu giây */
+const TURN_SECONDS = 28;
+/** Bảng màu nhóm theo thứ tự INVITE_GROUPS: phụ huynh, bạn bè, giáo viên, người hướng dẫn */
+const TONES = ['gold', 'cyan', 'violet', 'magenta'] as const;
+
+const TILT_RAD = (ORBIT.tilt * Math.PI) / 180;
+const COS_T = Math.cos(TILT_RAD);
+const SIN_T = Math.sin(TILT_RAD);
+
+/** Vị trí một điểm trên quỹ đạo nghiêng; depth = 1 là gần nhất (phía trước), -1 là xa nhất (sau lưng) */
+function orbitPoint(angle: number) {
+  const ex = ORBIT.rx * Math.cos(angle);
+  const ey = ORBIT.ry * Math.sin(angle);
+  return {
+    x: CX + ex * COS_T - ey * SIN_T,
+    y: ORBIT.cy + ex * SIN_T + ey * COS_T,
+    depth: Math.sin(angle),
+  };
 }
 
-/* Tỷ lệ w/h của từng bố cục phải trùng aspect-ratio trong Rater360.css */
+/**
+ * Đặt một nhóm lên quỹ đạo bằng transform (chạy trên GPU, không bắt trình duyệt dàn lại bố cục mỗi khung hình).
+ * Bong bóng theo lớp trước/sau hình người; nhãn luôn nằm trên cùng để không bị vành che và không đổi cỡ để chữ không rung.
+ */
+function placeNode(bubble: HTMLElement | null, label: HTMLElement | null, angle: number, width: number, height: number) {
+  const p = orbitPoint(angle);
+  const move = `translate3d(${((p.x / W) * width).toFixed(2)}px, ${((p.y / H) * height).toFixed(2)}px, 0)`;
+  const behind = p.depth <= 0;
+  if (bubble) {
+    bubble.style.transform = move;
+    bubble.style.setProperty('--depth-scale', (0.78 + ((p.depth + 1) / 2) * 0.26).toFixed(3));
+    const zIndex = p.depth > 0 ? '5' : '2';
+    if (bubble.style.zIndex !== zIndex) bubble.style.zIndex = zIndex;
+    if (bubble.classList.contains('is-behind') !== behind) bubble.classList.toggle('is-behind', behind);
+  }
+  if (label) {
+    label.style.transform = move;
+    if (label.classList.contains('is-behind') !== behind) label.classList.toggle('is-behind', behind);
+  }
+}
 
-/** Khung rộng (máy tính, máy tính bảng): thẻ ngang ở 4 góc */
-const WIDE: Layout = {
-  w: 540,
-  h: 300,
-  nodes: [
-    { x: 104, y: 58 },
-    { x: 436, y: 58 },
-    { x: 436, y: 242 },
-    { x: 104, y: 242 },
-  ],
-  orbit: 104,
-  halo: 126,
-  inner: 54,
-};
-
-/** Khung hẹp (điện thoại): sơ đồ cao hơn để thẻ dựng đứng không chồng lên nhau */
-const NARROW: Layout = {
-  w: 360,
-  h: 340,
-  nodes: [
-    { x: 76, y: 62 },
-    { x: 284, y: 62 },
-    { x: 284, y: 278 },
-    { x: 76, y: 278 },
-  ],
-  orbit: 78,
-  halo: 98,
-  inner: 42,
-};
-
-/** Bản thu gọn trong nút gạt: khung vuông */
-const COMPACT: Layout = {
-  w: 300,
-  h: 300,
-  nodes: [
-    { x: 66, y: 66 },
-    { x: 234, y: 66 },
-    { x: 234, y: 234 },
-    { x: 66, y: 234 },
-  ],
-  orbit: 84,
-  halo: 110,
-  inner: 46,
-};
-
-/** Dưới bề rộng này (px) chuyển sang bố cục khung hẹp */
-const NARROW_BELOW = 460;
+/** Nửa sau (phía trên) và nửa trước (phía dưới) của vành quỹ đạo */
+const ARC_BACK = `M ${-ORBIT.rx} 0 A ${ORBIT.rx} ${ORBIT.ry} 0 0 1 ${ORBIT.rx} 0`;
+const ARC_FRONT = `M ${ORBIT.rx} 0 A ${ORBIT.rx} ${ORBIT.ry} 0 0 1 ${-ORBIT.rx} 0`;
+const ORBIT_TRANSFORM = `translate(${CX} ${ORBIT.cy}) rotate(${ORBIT.tilt})`;
 
 /**
- * Sơ đồ đánh giá 360° hiện đại:
- * Tâm ở giữa, 4 đường thẳng nối trực tiếp tới 4 thẻ nhóm đánh giá ở 4 góc thoáng đãng.
+ * Sơ đồ 360° phong cách hiện đại (khối phẳng, đường kẻ mảnh): hình người biểu tượng cho bản thân đứng trên bệ ở giữa,
+ * các nhóm người đánh giá quay quanh trên vành quỹ đạo nghiêng (vòng sau đi sau lưng, vòng trước vắt qua người).
+ * Rê chuột thì quay chậm lại, rê vào một nhóm thì nhóm đó nổi lên. Tắt thì chuyển xám và dừng.
  */
 export const Rater360: React.FC<Rater360Props> = ({
   nodes,
@@ -100,123 +92,199 @@ export const Rater360: React.FC<Rater360Props> = ({
   centerSub,
   active = true,
   compact = false,
+  paused = false,
   className = '',
 }) => {
-  const { ref, seen } = useInView<HTMLElement>(0.15);
-  const haloId = `rater360-halo-${useId().replace(/:/g, '')}`;
-  const gradId = `rater360-line-${useId().replace(/:/g, '')}`;
+  const uid = useId().replace(/:/g, '');
+  const reduced = useReducedMotion();
+  const { ref, inView, seen } = useInView<HTMLElement>(0.2);
+  const stageRef = useRef<HTMLDivElement | null>(null);
+  const sizeRef = useRef({ width: W, height: H });
+  const nodeRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const labelRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const angleRef = useRef(0);
+  const speedRef = useRef(1);
+  const slowRef = useRef(false);
   const [hoverKey, setHoverKey] = useState<string | null>(null);
-  const [narrow, setNarrow] = useState(false);
+
+  const count = Math.max(nodes.length, 1);
+  /* Góc xuất phát: các nhóm cách đều, lệch nửa bước để không nhóm nào đứng đúng sau lưng */
+  const baseAngle = (i: number) => (Math.PI * 2 * i) / count + Math.PI / count + Math.PI / 2;
+  const placeAll = () => {
+    const { width, height } = sizeRef.current;
+    nodes.forEach((_, i) => placeNode(nodeRefs.current[i], labelRefs.current[i], baseAngle(i) + angleRef.current, width, height));
+  };
+
+  /* Đo khung cảnh một lần rồi chỉ đo lại khi đổi kích thước, không đọc kích thước trong vòng vẽ */
+  useLayoutEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const measure = () => {
+      const rect = stage.getBoundingClientRect();
+      sizeRef.current = { width: rect.width || W, height: rect.height || H };
+      placeAll();
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(stage);
+    return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nodes.length]);
 
   useEffect(() => {
-    const element = ref.current;
-    if (compact || !element || typeof ResizeObserver === 'undefined') return;
-    const observer = new ResizeObserver(([entry]) => setNarrow(entry.contentRect.width < NARROW_BELOW));
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, [compact, ref]);
+    slowRef.current = hoverKey !== null;
+  }, [hoverKey]);
 
-  const layout = compact ? COMPACT : narrow ? NARROW : WIDE;
-  const { w: W, h: H } = layout;
-  const CX = W / 2;
-  const CY = H / 2;
-  const pctX = (value: number) => `${((value / W) * 100).toFixed(2)}%`;
-  const pctY = (value: number) => `${((value / H) * 100).toFixed(2)}%`;
-  const points = nodes.map((_, i) => layout.nodes[i % layout.nodes.length]);
+  useEffect(() => {
+    if (reduced || paused || !inView) return;
+    let raf = 0;
+    let last = 0;
+    const tick = (now: number) => {
+      const dt = last ? Math.min(now - last, 64) / 1000 : 0;
+      last = now;
+      const target = !active ? 0 : slowRef.current ? 0.12 : 1;
+      speedRef.current += (target - speedRef.current) * 0.06;
+      angleRef.current += ((Math.PI * 2) / TURN_SECONDS) * dt * speedRef.current;
+      placeAll();
+      /* Đã tắt và quay chậm gần như dừng thì nghỉ vòng vẽ */
+      if (!active && speedRef.current < 0.002) {
+        raf = 0;
+        return;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reduced, paused, inView, active, nodes.length]);
+
+  const g = (name: string) => `${uid}-${name}`;
 
   return (
     <figure
       ref={ref}
-      className={`rater360 ${seen ? 'is-visible' : ''} ${active ? '' : 'is-off'} ${compact ? 'is-compact' : ''} ${narrow && !compact ? 'is-narrow' : ''} ${className}`}
+      className={`rater360 ${seen ? 'is-visible' : ''} ${active ? '' : 'is-off'} ${compact ? 'is-compact' : ''} ${className}`}
     >
-      <div className="rater360-stage">
-        <svg className="rater360-svg" viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
+      <div className="rater360-stage" ref={stageRef}>
+        {/* Lớp sau: quầng sàn và nửa sau vành quỹ đạo */}
+        <svg className="rater360-layer rater360-layer-back" viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
           <defs>
-            <radialGradient id={haloId} cx="50%" cy="50%" r="50%">
-              <stop offset="0%" className="rater360-halo-in" />
-              <stop offset="100%" className="rater360-halo-out" />
+            <radialGradient id={g('floor')} cx="50%" cy="50%" r="50%">
+              <stop offset="0%" className="rater360-floor-in" />
+              <stop offset="100%" className="rater360-floor-out" />
             </radialGradient>
-            <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="var(--brand-soft)" stopOpacity="0.85" />
-              <stop offset="100%" stopColor="var(--brand-coral)" stopOpacity="0.9" />
+          </defs>
+          <ellipse cx={CX} cy={230} rx={150} ry={42} fill={`url(#${g('floor')})`} />
+          <g transform={ORBIT_TRANSFORM}>
+            <path d={ARC_BACK} className="rater360-orbit-casing" />
+            <path d={ARC_BACK} className="rater360-orbit" />
+          </g>
+        </svg>
+
+        {/* Hình người biểu tượng cho bản thân, đứng trên bệ */}
+        <svg className="rater360-layer rater360-layer-figure" viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
+          <defs>
+            <linearGradient id={g('body')} x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" className="rater360-self-hi" />
+              <stop offset="55%" className="rater360-self-mid" />
+              <stop offset="100%" className="rater360-self-lo" />
+            </linearGradient>
+            <radialGradient id={g('head')} cx="36%" cy="30%" r="75%">
+              <stop offset="0%" className="rater360-self-hi" />
+              <stop offset="55%" className="rater360-self-mid" />
+              <stop offset="100%" className="rater360-self-lo" />
+            </radialGradient>
+            <linearGradient id={g('base')} x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" className="rater360-base-hi" />
+              <stop offset="100%" className="rater360-base-lo" />
             </linearGradient>
           </defs>
 
-          <circle cx={CX} cy={CY} r={layout.halo} className="rater360-halo" fill={`url(#${haloId})`} />
-          <circle cx={CX} cy={CY} r={layout.orbit} className="rater360-ring rater360-orbit" pathLength={1} />
-          <circle cx={CX} cy={CY} r={layout.inner} className="rater360-ring rater360-inner" pathLength={1} />
+          <g className="rater360-figure">
+            {/* Bệ đứng hình trụ dẹt */}
+            <path d="M 132 214 L 132 228 A 68 18 0 0 0 268 228 L 268 214 Z" fill={`url(#${g('base')})`} className="rater360-ink" />
+            <ellipse cx={CX} cy={214} rx={68} ry={18} className="rater360-base-top rater360-ink" />
 
-          {/* Đường thẳng nối trực tiếp từ tâm ra 4 nhóm đánh giá */}
-          {points.map((p, i) => {
-            const key = nodes[i]?.key ?? String(i);
-            const lit = key === hoverKey;
-            const len = Math.hypot(p.x - CX, p.y - CY);
-            const jointX = CX + ((p.x - CX) * layout.orbit) / len;
-            const jointY = CY + ((p.y - CY) * layout.orbit) / len;
-            return (
-              <g key={key} className={`rater360-link ${lit ? 'is-lit' : ''}`} style={{ '--i': i } as React.CSSProperties}>
-                <line x1={CX} y1={CY} x2={p.x} y2={p.y} className="rater360-line" pathLength={1} />
-                <line
-                  x1={CX}
-                  y1={CY}
-                  x2={p.x}
-                  y2={p.y}
-                  className="rater360-line-accent"
-                  stroke={`url(#${gradId})`}
-                  pathLength={1}
-                />
-                {!compact && <circle cx={jointX} cy={jointY} r={3.5} className="rater360-joint" />}
-              </g>
-            );
-          })}
+            {/* Bóng đổ dưới chân */}
+            <ellipse cx={CX} cy={212} rx={44} ry={10} className="rater360-shadow" />
+
+            {/* Thân: vai tròn, đáy bo theo phối cảnh */}
+            <path
+              d="M 152 206 C 152 168 170 144 200 144 C 230 144 248 168 248 206 A 48 12 0 0 1 152 206 Z"
+              fill={`url(#${g('body')})`}
+              className="rater360-ink"
+            />
+            <path d="M 166 186 C 166 166 178 154 194 152" className="rater360-shine" />
+
+            {/* Đầu cầu với vệt sáng */}
+            <circle cx={CX} cy={110} r={30} fill={`url(#${g('head')})`} className="rater360-ink" />
+            <ellipse cx={189} cy={98} rx={9} ry={6} className="rater360-gloss" transform="rotate(-28 189 98)" />
+          </g>
         </svg>
 
-        <span className="rater360-center" aria-hidden="true">
-          <span className="rater360-avatar">
-            <LearnerCenterIcon strokeWidth={2} />
-          </span>
-          {!compact && (
-            <span className="rater360-center-tag">
-              <span className="rater360-center-label">{centerLabel}</span>
-              {centerSub && <span className="rater360-center-sub">{centerSub}</span>}
-            </span>
-          )}
-        </span>
+        {/* Lớp trước: nửa trước vành quỹ đạo vắt qua người */}
+        <svg className="rater360-layer rater360-layer-front" viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
+          <g transform={ORBIT_TRANSFORM}>
+            <path d={ARC_FRONT} className="rater360-orbit-casing" />
+            <path d={ARC_FRONT} className="rater360-orbit" />
+          </g>
+        </svg>
 
-        {nodes.map(({ key, label, Icon, meta, value }, i) => {
-          const p = points[i];
+        {nodes.map((node, i) => {
+          const Icon = node.Icon;
           return (
             <span
-              key={key}
-              className={`rater360-node spotlight rater360-tone-${(i % 4) + 1} ${key === hoverKey ? 'is-active' : ''}`}
-              style={
-                {
-                  left: pctX(p.x),
-                  top: pctY(p.y),
-                  '--i': i,
-                } as React.CSSProperties
-              }
-              onPointerMove={trackPointer}
-              onPointerEnter={() => setHoverKey(key)}
-              onPointerLeave={() => setHoverKey(null)}
+              key={node.key}
+              ref={(el) => {
+                nodeRefs.current[i] = el;
+              }}
+              className={`rater360-node rater360-tone-${TONES[i % TONES.length]} ${hoverKey === node.key ? 'is-hover' : ''}`}
+              style={{ '--i': i } as React.CSSProperties}
+              onPointerEnter={() => setHoverKey(node.key)}
+              onPointerLeave={() => setHoverKey((k) => (k === node.key ? null : k))}
             >
-              <span className="rater360-badge" aria-hidden="true">
-                <Icon strokeWidth={2} />
-              </span>
-              {!compact && (
-                <span className="rater360-caption">
-                  <span className="rater360-label">{label}</span>
-                  {meta && <span className="rater360-meta">{meta}</span>}
+              <span className="rater360-node-pop">
+                <span className="rater360-bubble" aria-hidden="true">
+                  <Icon strokeWidth={2.2} />
                 </span>
-              )}
-              {!compact && value && <span className="rater360-value">{value}</span>}
+              </span>
             </span>
           );
         })}
+
+        {!compact &&
+          nodes.map((node, i) => (
+            <span
+              key={`label-${node.key}`}
+              ref={(el) => {
+                labelRefs.current[i] = el;
+              }}
+              className={`rater360-label ${hoverKey === node.key ? 'is-hover' : ''}`}
+              style={{ '--i': i } as React.CSSProperties}
+              aria-hidden="true"
+            >
+              <span className="rater360-chip">
+                <span className="rater360-chip-label">{node.label}</span>
+                {(node.meta || node.value) && (
+                  <span className="rater360-chip-meta">{[node.value, node.meta].filter(Boolean).join(' · ')}</span>
+                )}
+              </span>
+            </span>
+          ))}
+
+        {!compact && (
+          <span className="rater360-center">
+            <span className="rater360-center-label">{centerLabel}</span>
+            {centerSub && <span className="rater360-center-sub">{centerSub}</span>}
+          </span>
+        )}
       </div>
-      <figcaption className="sr-only">
-        {centerLabel}: {nodes.map((n) => n.label).join(', ')}
-      </figcaption>
+
+      {!compact && (
+        <figcaption className="sr-only">
+          {centerLabel} ở giữa, xung quanh là {nodes.map((n) => n.label).join(', ')}
+        </figcaption>
+      )}
     </figure>
   );
 };

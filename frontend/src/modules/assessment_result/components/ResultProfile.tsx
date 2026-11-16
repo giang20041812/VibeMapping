@@ -1,7 +1,8 @@
 import React from 'react';
 import { CalendarDays, Download } from 'lucide-react';
 import { downloadPdf, printOrientationProfile } from '../../../lib/printProfile';
-import { Alert, Badge, Button, Input, Select } from '../../../components/common';
+import { Alert, Badge, Button, Input } from '../../../components/common';
+import { SearchableSelect } from '../../../components/filters/SearchableSelect/SearchableSelect';
 import type { AssessmentResultListItem } from '../assessmentResult.service';
 import type { ResultInsights } from '../resultInsights.service';
 import './ResultProfile.css';
@@ -100,24 +101,27 @@ export const ResultProfileHeader: React.FC<HeaderProps> = ({ insights, history, 
 
   return (
     <div className="result-profile-head">
-      <div className="result-profile-toolbar no-print">
-        <Input
-          type="date"
-          aria-label="Chọn ngày xem kết quả"
-          leftIcon={<CalendarDays size={16} aria-hidden="true" />}
-          value={dateValue}
-          min={oldest}
-          max={newest}
-          onChange={(event) => pickDate(event.target.value)}
-          className="result-profile-date"
-        />
-        <Select
-          aria-label="Chọn lần kết quả"
-          options={options}
-          value={selectedId ?? ''}
-          onChange={onSelect}
-          className="result-profile-history"
-        />
+      <div className="result-profile-toolbar filter-controls no-print">
+        <div className="result-profile-fields">
+          <Input
+            type="date"
+            label="Ngày xem"
+            leftIcon={<CalendarDays size={16} aria-hidden="true" />}
+            value={dateValue}
+            min={oldest}
+            max={newest}
+            onChange={(event) => pickDate(event.target.value)}
+            className="result-profile-date"
+          />
+          <SearchableSelect
+            label="Lần đánh giá"
+            options={options}
+            value={selectedId ?? ''}
+            onChange={onSelect}
+            isSearchable
+            className="result-profile-history"
+          />
+        </div>
         <Button type="button" variant="outline" leftIcon={<Download size={16} />} onClick={exportPdf} disabled={!insights}>
           Tải PDF
         </Button>

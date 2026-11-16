@@ -40,7 +40,7 @@ html:has(.journey) {
   font-weight: 800;
   line-height: 1.04;
   letter-spacing: -0.045em;
-  color: var(--j-ink);
+  color: var(--color-heading);
   text-wrap: balance;
 }
 
@@ -584,191 +584,21 @@ html:has(.journey) {
   transition: none;
 }
 
-/* ---------- Bước 1: tự đánh giá ---------- */
-.artifact-part-stepper {
-  display: flex;
-  flex-wrap: wrap;
+/* ---------- Bước 1 & 2: hình minh họa kiểu hình dán (biểu đồ đa giác, quả cầu 360°) ---------- */
+.artifact-sticker-stage {
+  position: relative;
   align-items: center;
-  gap: var(--space-2) var(--space-4);
-  list-style: none;
-}
-
-.artifact-part-item {
-  display: inline-flex;
-  align-items: center;
-  gap: calc(6 * var(--px));
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  color: var(--color-text-secondary);
-}
-
-.artifact-part-check {
-  display: grid;
-  place-items: center;
-  width: calc(15 * var(--px));
-  height: calc(15 * var(--px));
-  color: var(--color-text-inverse);
-  background: var(--color-primary);
-  border-radius: var(--radius-full);
-}
-
-.artifact-self-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
-  align-items: center;
-  gap: var(--space-6);
-  min-width: 0;
-}
-
-.artifact-self-radar {
-  min-width: 0;
-  padding: var(--space-1);
-}
-
-.artifact-self-radar [class*='polygon-tone-'] {
-  --tone: var(--color-primary);
-}
-
-.artifact-self-radar .polygon-node-badge {
-  width: calc(40 * var(--px));
-  height: calc(40 * var(--px));
-  color: var(--color-primary);
-  background: var(--color-bg-surface);
-  border-color: var(--brand-pale);
-  box-shadow: var(--shadow-xs);
-}
-
-.artifact-self-radar .polygon-node-badge svg {
-  width: 58%;
-  height: 58%;
-  stroke-width: 2;
-}
-
-.artifact-self-radar .polygon-node.is-active .polygon-node-badge {
-  color: var(--color-text-inverse);
-  background: var(--color-primary);
-}
-
-.artifact-self-radar .polygon-node-name {
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-}
-
-.artifact-self-radar .polygon-node-value {
-  font-size: var(--font-size-xs);
-}
-
-.artifact-self-side {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-5);
-  min-width: 0;
-}
-
-.artifact-panel-block {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.artifact-panel-block + .artifact-panel-block {
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--j-line);
-}
-
-.artifact-panel-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-}
-
-.artifact-panel-title {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  color: var(--j-muted);
-}
-
-.artifact-score-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  list-style: none;
-}
-
-.artifact-score-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.artifact-score-icon {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: calc(26 * var(--px));
-  height: calc(26 * var(--px));
-  color: var(--color-primary);
-}
-
-.artifact-score-row.is-top .artifact-score-icon {
-  color: var(--brand-coral);
-}
-
-.artifact-score-row.is-top .scene-fill {
-  background: var(--brand-coral);
-}
-
-.artifact-score-icon svg {
-  width: 100%;
-  height: 100%;
-}
-
-.artifact-score-body {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: calc(6 * var(--px));
-  min-width: 0;
-}
-
-.artifact-score-name {
-  font-size: var(--font-size-sm);
-  font-weight: 700;
-  color: var(--j-ink);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.artifact-chip-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
-.artifact-value-chip {
-  padding: calc(4 * var(--px)) var(--space-3);
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  color: var(--j-ink);
-  border: 1px solid var(--j-line);
-  border-radius: var(--radius-xs);
-  transition: border-color 360ms var(--ease-out), color 360ms var(--ease-out);
-}
-
-.artifact-value-chip:hover {
-  color: var(--color-primary);
-  border-color: var(--color-primary);
-}
-
-/* ---------- Bước 2: 360° ---------- */
-.artifact-360 {
   justify-content: center;
+  max-width: calc(600 * var(--px));
+  margin: 0 auto;
+  padding: var(--space-6) 0;
+}
+
+.artifact-sticker-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
 }
 
 /* ---------- Bước 3: nghề phù hợp ---------- */
@@ -1199,18 +1029,6 @@ html:has(.journey) {
 }
 
 /* ---------- Responsive ---------- */
-@media (max-width: 1080px) {
-  .artifact-self-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .artifact-self-radar {
-    max-width: calc(280 * var(--px));
-    margin: 0 auto;
-    width: 100%;
-  }
-}
-
 @media (max-width: 960px) {
   .journey {
     --stage-h: min(calc(480 * var(--px)), 56vh);
@@ -1300,4 +1118,48 @@ html:has(.journey) {
   .journey-meta {
     transition: none;
   }
+}
+
+/* ===== Đồng bộ với các trang cá nhân: cùng đường tiến độ một nét, ô tick vuông, nhãn trạng thái chữ nhật ===== */
+.scene-track {
+  height: 3px;
+  background: var(--progress-track-tint);
+}
+
+.scene-fill {
+  background: var(--progress-gradient);
+}
+
+.artifact-task-box {
+  border-radius: var(--radius-xs);
+}
+
+.artifact-roadmap-status {
+  padding: calc(3 * var(--px)) var(--space-2);
+  border-radius: var(--radius-xs);
+  box-shadow: inset 0 0 0 1px currentColor;
+}
+
+.artifact-roadmap-status.is-done {
+  background: color-mix(in srgb, var(--color-success) 10%, var(--color-bg-surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-success) 28%, transparent);
+}
+
+.artifact-roadmap-status.is-current {
+  color: var(--hope-blue-deep);
+  background: var(--hope-blue-soft);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--hope-blue) 28%, transparent);
+}
+
+.artifact-roadmap-stage.is-current {
+  background-color: var(--hope-blue-soft);
+  box-shadow: inset 3px 0 0 var(--hope-blue);
+}
+
+.artifact-roadmap-stage.is-current .artifact-roadmap-code {
+  color: var(--hope-blue);
+}
+
+.artifact-fit-big-score {
+  color: var(--hope-blue);
 }

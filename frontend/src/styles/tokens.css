@@ -28,6 +28,19 @@
    --brand-violet: #8b5cf6;
    --brand-white: #ffffff;
 
+   /* Xanh dương hy vọng: màu chữ của mọi tiêu đề lớn và trạng thái đang lọc/đang chọn.
+     --hope-blue đủ tương phản cho chữ lớn (4,7:1); chữ nhỏ trên nền nhạt dùng --hope-blue-deep (8:1) */
+   --hope-blue-deep: #1450b4;
+   --hope-blue: #1f6fe5;
+   --hope-blue-bright: #3b8cff;
+   --hope-blue-soft: #e8f1ff;
+   --hope-blue-border: #b4d2fb;
+   --hope-blue-ring: rgba(31, 111, 229, 0.28);
+   --color-heading: var(--hope-blue);
+   /* Thanh tiến độ: đường thẳng chuyển từ xanh dương hy vọng sang xanh lơ; rãnh là nền xanh nhạt cùng sắc */
+   --progress-gradient: linear-gradient(90deg, var(--hope-blue) 0%, var(--soft-cyan) 100%);
+   --progress-track-tint: color-mix(in srgb, var(--hope-blue) 13%, var(--color-bg-surface));
+
    /* Primary */
    --color-primary: var(--brand-blue);
    --color-primary-hover: var(--brand-azure);
@@ -51,10 +64,10 @@
    --color-highlight-text: #a8361a;
 
    /* Surface & Background: trung tính lạnh, chỉ phảng phất sắc chàm */
-   --color-bg-app: #f5f7fb;
+   --color-bg-app: #f6f7f9;
    --color-bg-surface: #ffffff;
-   --color-bg-subtle: #eff3f9;
-   --color-bg-hover: #e6ecf6;
+   --color-bg-subtle: #f0f2f5;
+   --color-bg-hover: #e8ebf0;
    --color-bg-cream: var(--brand-cream);
 
    /* Nền trang: phẳng, một vầng sáng rất nhạt ở đầu trang. Không kẻ lưới, không cố định khi cuộn. */
@@ -92,14 +105,14 @@
 
 
    /* Borders & Dividers */
-   --color-border: #e1e6ef;
-   --color-border-hover: #c9d2e3;
+   --color-border: #e3e6eb;
+   --color-border-hover: #cbd0d9;
    --color-border-focus: var(--brand-blue);
 
    /* Typography / Text hierarchy: mực đậm gần đen để dễ đọc; màu chàm để dành cho hành động */
-   --color-text-main: #0b1640;
-   --color-text-secondary: #46506e;
-   --color-text-muted: #687290;
+   --color-text-main: #0c1222;
+   --color-text-secondary: #454d62;
+   --color-text-muted: #667085;
    --color-text-inverse: #ffffff;
    --color-text-brand: var(--brand-blue);
 
@@ -223,7 +236,7 @@
    --ink-500: #707789;
    --ink-300: #a6adbb;
    --ink-200: #d0d4de;
-   --ink-100: #e7e9ef;
+   --ink-100: #e6e8ed;
    --ink-wash: rgba(35, 40, 51, 0.045);
    --shadow-ink: 0 8px 18px -8px rgba(35, 40, 51, 0.32);
    /* Màu tươi cho biểu đồ đa giác, quả cầu 360 và các nhóm kết quả */
@@ -313,13 +326,13 @@
    /* Lề ngang của khung trang: rộng dần theo màn hình, không đặt trần chiều rộng */
    --page-gutter: clamp(16px, 2.6vw, 64px);
 
-   /* Border Radii: bo mềm hiện đại. --radius-full chỉ dành cho hình tròn thật. */
-   --radius-xs: 6px;
-   --radius-sm: 8px;
-   --radius-md: 12px;
-   --radius-lg: 16px;
-   --radius-xl: 20px;
-   --radius-2xl: 28px;
+   /* Border Radii: góc cạnh, gọn gàng (2–6px). --radius-full chỉ dành cho hình tròn thật (chấm, ảnh đại diện). */
+   --radius-xs: 2px;
+   --radius-sm: 2px;
+   --radius-md: 3px;
+   --radius-lg: 4px;
+   --radius-xl: 6px;
+   --radius-2xl: 8px;
    --radius-full: 9999px;
 
    /* Độ nổi: bóng mềm nhiều lớp, tông mực trung tính. Mỗi bậc một vai trò:

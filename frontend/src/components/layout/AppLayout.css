@@ -29,7 +29,8 @@
 }
 
 .page-enter {
-  animation: page-enter var(--transition-normal) both;
+  /* backwards: hết animation không giữ transform, tránh bẫy phần tử position: fixed bên trong */
+  animation: page-enter var(--transition-normal) backwards;
 }
 
 @keyframes page-enter {
@@ -40,7 +41,7 @@
 
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
   }
 }
 

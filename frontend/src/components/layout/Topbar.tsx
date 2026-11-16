@@ -60,13 +60,13 @@ export const Topbar: React.FC<TopbarProps> = ({ open, onToggle, onClose }) => {
             </span>
           </Link>
 
-          <nav id="topbar-links" className="topbar-links" aria-label="Điều hướng chính">
+          <nav id="topbar-links" className="topbar-links hover-sweep-group" aria-label="Điều hướng chính">
             {topbarItemsFor(isGuest).map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
                 end={item.end}
-                className={({ isActive }) => `topbar-link ${isActive ? 'is-active' : ''}`}
+                className={({ isActive }) => `topbar-link hover-sweep hover-sweep-bottom ${isActive ? 'is-active' : ''}`}
                 onClick={onClose}
               >
                 <span className="roll">

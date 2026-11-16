@@ -1,38 +1,55 @@
 /* Trang nghề nghiệp: thẻ nghề phù hợp, danh mục, khay so sánh */
 .career-tabs {
   display: flex;
-  gap: var(--space-2);
+  gap: 0 var(--space-6);
   overflow-x: auto;
   scrollbar-width: none;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .career-tabs::-webkit-scrollbar {
   display: none;
 }
 
+/* Tab như tab chọn nhanh trang chủ: chữ trần, vạch cam chạy dưới tab đang xem */
 .career-tab {
+  position: relative;
   min-height: 44px;
-  padding: 0 var(--space-5);
+  padding: 0;
   font: inherit;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
+  font-weight: 700;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 0;
   cursor: pointer;
   white-space: nowrap;
-  transition: color var(--transition-fast), border-color var(--transition-fast);
+  transition: color 360ms var(--ease-out);
+}
+
+.career-tab::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--brand-coral);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 520ms var(--ease-out);
 }
 
 .career-tab:hover {
-  border-color: var(--brand-soft);
-  color: var(--color-primary);
+  color: var(--color-text-main);
+}
+
+.career-tab:hover::after,
+.career-tab.is-active::after {
+  transform: scaleX(1);
 }
 
 .career-tab.is-active {
-  color: var(--brand-white);
-  background: var(--gradient-cta);
-  border-color: transparent;
+  color: var(--color-text-main);
 }
 
 .career-tab:focus-visible {
@@ -54,11 +71,8 @@
   align-items: center;
   gap: var(--space-3) var(--space-4);
   min-width: 0;
-  padding: var(--space-3) var(--space-4);
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
+  padding: var(--space-2) 0 var(--space-3);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .fit-completeness {
@@ -80,9 +94,6 @@
 .fit-completeness .fit-bar-track {
   width: calc(160 * var(--px));
   max-width: 100%;
-  height: 10px;
-  border: 1px solid var(--color-border);
-  background: var(--color-bg-subtle);
 }
 
 .fit-next {
@@ -91,132 +102,34 @@
   align-items: center;
   gap: var(--space-1-5, var(--space-2));
   min-height: var(--touch-target);
-  padding: 0 var(--space-4);
+  padding: 0;
   font-size: var(--font-size-sm);
-  font-weight: 800;
-  color: var(--color-text-main);
-  background: var(--tone-yellow-bg);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
+  font-weight: 700;
+  color: var(--hope-blue-deep);
   text-decoration: none;
-  transition: transform var(--transition-fast), background-color var(--transition-fast);
+  transition: color var(--transition-fast);
 }
 
-.fit-next:hover {
-  background: var(--brand-gold);
-  transform: translateY(-1px);
-}
+.fit-next svg { transition: transform var(--transition-fast); }
+
+.fit-next:hover { color: var(--hope-blue); }
+
+.fit-next:hover svg { transform: translateX(3px); }
 
 .fit-next:focus-visible {
   outline: 3px solid var(--color-primary-ring);
   outline-offset: 2px;
 }
 
-/* Thẻ hạng 1 nổi bật */
-.fit-hero {
-  position: relative;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: var(--space-6);
-  padding: calc(var(--space-6) + 8px) var(--space-6) var(--space-6);
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.fit-hero::before {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto;
-  height: 10px;
-  background: var(--gradient-rainbow);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.fit-hero-visual {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-3);
-  background: var(--tone-yellow-bg);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-}
-
-.fit-hero-crown {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: 3px var(--space-3);
-  font-size: var(--font-size-xs);
-  font-weight: 800;
-  color: var(--color-text-main);
-  background: var(--brand-gold);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-}
-
-.fit-hero-body {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-3);
-  min-width: 0;
-}
-
-.fit-hero-top {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2) var(--space-3);
-  width: 100%;
-}
-
-.fit-hero-body h2 {
-  margin: 0;
-  font-size: var(--font-size-2xl);
-  font-weight: 800;
-  line-height: 1.25;
-  color: var(--color-text-main);
-}
-
-.fit-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: 3px var(--space-2);
-  font-size: var(--font-size-xs);
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--color-text-main);
-  background: var(--tone-purple-bg);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-}
-
-.fit-eyebrow svg {
-  color: var(--brand-violet);
-}
-
 .fit-holland-tag {
   display: inline-flex;
   align-items: center;
-  padding: 3px var(--space-2);
+  padding: 4px 10px;
   font-size: var(--font-size-xs);
   font-weight: 700;
-  color: var(--color-text-secondary);
-  background: var(--color-bg-subtle);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  color: var(--hope-blue-deep);
+  background: var(--hope-blue-soft);
+  border-radius: var(--radius-xs);
 }
 
 .fit-actions {
@@ -225,49 +138,6 @@
   align-items: center;
   gap: var(--space-2);
   padding-top: var(--space-1);
-}
-
-/* Vòng phần trăm */
-.fit-ring {
-  position: relative;
-  flex: none;
-  display: grid;
-  place-items: center;
-  font-size: var(--font-size-md);
-}
-
-.fit-ring svg {
-  position: absolute;
-  inset: 0;
-}
-
-.fit-ring-track {
-  stroke: var(--color-bg-subtle);
-}
-
-.fit-ring-stop-a {
-  stop-color: var(--brand-violet);
-}
-
-.fit-ring-stop-b {
-  stop-color: var(--soft-cyan);
-}
-
-.fit-ring-bar {
-  transition: stroke-dashoffset var(--transition-slow);
-}
-
-.fit-ring-value {
-  position: relative;
-  font-weight: 800;
-  font-size: 1.5em;
-  color: var(--color-text-main);
-  font-variant-numeric: tabular-nums;
-}
-
-.fit-ring-value small {
-  font-size: 0.55em;
-  font-weight: 700;
 }
 
 /* Ba thanh thành phần: Năng lực, Sở thích, Động lực */
@@ -279,8 +149,7 @@
   flex-direction: column;
   gap: var(--space-2);
   width: 100%;
-  background: var(--color-bg-app);
-  border: 1px solid var(--color-border);
+  background: var(--color-bg-subtle);
   border-radius: var(--radius-md);
 }
 
@@ -306,194 +175,22 @@
 
 .fit-bar-track {
   display: block;
-  height: 8px;
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
+  height: 3px;
+  background: var(--progress-track-tint);
   overflow: hidden;
 }
 
 .fit-bar-fill {
   display: block;
   height: 100%;
-  border-radius: var(--radius-full);
-  background: var(--gradient-brand);
+  background: var(--progress-gradient);
+  transform-origin: left center;
+  animation: fit-bar-grow 900ms var(--ease-out) backwards;
   transition: width var(--transition-slow);
 }
 
-.fit-bar-sky .fit-bar-fill {
-  background: linear-gradient(90deg, var(--soft-sky), var(--soft-cyan));
-}
-
-.fit-bar-magenta .fit-bar-fill {
-  background: linear-gradient(90deg, var(--soft-violet), var(--soft-magenta));
-}
-
-.fit-bar-gold .fit-bar-fill {
-  background: linear-gradient(90deg, var(--soft-gold), var(--soft-coral));
-}
-
-/* Lưới các nghề phù hợp tiếp theo */
-.fit-grid {
-  list-style: none;
-  margin: 0;
-  padding: 0 0 var(--space-1);
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(320 * var(--px))), 1fr));
-  gap: var(--space-5);
-}
-
-.fit-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  min-width: 0;
-  padding: calc(var(--space-4) + 8px) var(--space-5) var(--space-4);
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.fit-card::before {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto;
-  height: 8px;
-  background: var(--sticker-accent, var(--brand-soft));
-  border-bottom: 1px solid var(--color-border);
-}
-
-.fit-card-head {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  min-width: 0;
-}
-
-.fit-card-heading {
-  flex: 1 1 auto;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-1);
-}
-
-.fit-card-meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-1);
-}
-
-.fit-card-rank {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2px var(--space-2);
-  font-size: var(--font-size-xs);
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  color: var(--color-text-main);
-  background: var(--sticker-bg, var(--brand-ice));
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-}
-
-.fit-card-title {
-  font-size: var(--font-size-lg);
-  font-weight: 800;
-  line-height: 1.3;
-  color: var(--color-text-main);
-  text-decoration: none;
-  overflow-wrap: anywhere;
-}
-
-.fit-hero h2 .fit-card-title {
-  font-size: inherit;
-}
-
-.fit-card-title:hover {
-  color: var(--color-primary);
-}
-
-/* Cả thẻ là vùng bấm: liên kết tiêu đề phủ kín thẻ, chân thẻ và nút nổi lên trên */
-.fit-card-title::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  z-index: 0;
-}
-
-.fit-hero:hover,
-.fit-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
-}
-
-.fit-hero:has(.fit-card-title:focus-visible),
-.fit-card:has(.fit-card-title:focus-visible) {
-  outline: 3px solid var(--color-primary-ring);
-  outline-offset: 2px;
-}
-
-.fit-hero .fit-actions,
-.fit-card-foot {
-  position: relative;
-  z-index: 1;
-}
-
-.fit-card-foot {
-  margin-top: auto;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-  padding-top: var(--space-3);
-  border-top: 1px dashed var(--color-border);
-}
-
-.fit-targets {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  margin-top: var(--space-2);
-}
-
-.fit-targets h3 {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  margin: 0;
-  font-size: var(--font-size-lg);
-  font-weight: 800;
-  color: var(--color-text-main);
-}
-
-.fit-targets h3 svg {
-  color: var(--brand-gold);
-}
-
-.fit-card-missing {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 68px;
-  height: 68px;
-  padding: var(--space-1);
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  text-align: center;
-  color: var(--color-text-muted);
-  background: var(--color-bg-subtle);
-  border: 1px dashed var(--color-border);
-  border-radius: var(--radius-full);
+@keyframes fit-bar-grow {
+  from { transform: scaleX(0); }
 }
 
 .career-reason {
@@ -525,7 +222,7 @@
   color: var(--brand-violet);
   background: var(--color-bg-surface);
   border: 1px dashed var(--color-border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
 }
 
 .fit-empty h2 {
@@ -568,7 +265,7 @@
 }
 
 .career-mine-block h3 svg {
-  color: var(--brand-gold);
+  color: var(--brand-coral);
 }
 
 .career-mine-block h3 {
@@ -605,8 +302,9 @@
   padding: var(--space-3);
   background: var(--color-bg-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-lg);
+  border-top: 2px solid var(--color-text-main);
+  box-shadow: var(--shadow-lg);
   animation: compare-side-in 280ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
 }
 
@@ -632,9 +330,8 @@
   width: calc(36 * var(--px));
   height: calc(36 * var(--px));
   color: var(--color-bg-surface);
-  background: var(--color-primary);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  background: var(--color-text-main);
+  border-radius: var(--radius-sm);
 }
 
 .compare-side-count {
@@ -644,7 +341,7 @@
   font-weight: 700;
   color: var(--color-primary);
   background: var(--color-primary-light);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-xs);
 }
 
 .compare-side-close,
@@ -711,9 +408,9 @@
   height: calc(28 * var(--px));
   font-size: var(--font-size-sm);
   font-weight: 800;
-  color: var(--color-primary);
-  background: var(--color-primary-light);
-  border-radius: var(--radius-full);
+  color: var(--hope-blue-deep);
+  background: var(--hope-blue-soft);
+  border-radius: var(--radius-xs);
 }
 
 .compare-side-name {
@@ -866,8 +563,8 @@
   padding: var(--space-5) var(--space-6);
   background: var(--color-bg-surface);
   border: 1px solid var(--surface-border);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--surface-shadow);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
 }
 
 .career-detail-title {
@@ -880,6 +577,12 @@
 
 .career-detail-title h1 {
   margin: 0;
+  font-size: clamp(calc(28 * var(--px)), 3vw, calc(48 * var(--px)));
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.045em;
+  color: var(--color-heading);
+  text-wrap: balance;
 }
 
 .career-chips {
@@ -898,13 +601,15 @@
   padding: var(--space-5) var(--space-6);
   background: var(--color-bg-surface);
   border: 1px solid var(--surface-border);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--surface-shadow);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
 }
 
 .career-block h2 {
   margin: 0;
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-2xl);
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
 .career-block h3 {
@@ -1093,22 +798,15 @@
   align-items: center;
   gap: var(--space-1-5, var(--space-2));
   min-height: var(--touch-target);
-  padding: 0 var(--space-4);
+  padding: 0;
   font-size: var(--font-size-sm);
-  font-weight: 800;
-  color: var(--color-text-main);
-  background: var(--tone-yellow-bg);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
+  font-weight: 700;
+  color: var(--hope-blue-deep);
   text-decoration: none;
-  transition: transform var(--transition-fast), background-color var(--transition-fast);
+  transition: color var(--transition-fast);
 }
 
-.career-map-link:hover {
-  background: var(--brand-gold);
-  transform: translateY(-1px);
-}
+.career-map-link:hover { color: var(--hope-blue); }
 
 .career-major-columns {
   list-style: none;
@@ -1350,4 +1048,148 @@
   .career-major-columns {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/* ===== Chi tiết nghề: cùng ngôn ngữ trang giới thiệu — mặt giấy trắng, vạch mực mép trên, số lớn một đường thẳng ===== */
+.career-detail-head,
+.career-block {
+  border: 1px solid var(--color-border);
+  border-top: 2px solid var(--color-text-main);
+  border-radius: var(--radius-sm);
+  box-shadow: none;
+}
+
+.career-detail-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-4) var(--space-6);
+  padding: var(--space-5) var(--space-6);
+}
+.career-detail-head > .fit-actions { padding-top: 0; justify-content: flex-end; }
+.career-detail-title h1 { font-size: clamp(calc(26 * var(--px)), 2.4vw, calc(40 * var(--px))); }
+
+.career-score {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: calc(96 * var(--px));
+  padding-right: var(--space-6);
+  border-right: 1px solid var(--color-border);
+}
+.career-score b {
+  font-size: clamp(calc(40 * var(--px)), 4vw, calc(56 * var(--px)));
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--hope-blue);
+}
+.career-score b small { margin-left: 2px; font-size: 0.45em; font-weight: 700; letter-spacing: 0; }
+.career-score-label { font-size: var(--font-size-xs); font-weight: 700; color: var(--color-text-muted); }
+.career-score .fit-bar-track { margin-top: var(--space-1); }
+
+.career-why {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
+}
+.career-why-chart { max-width: calc(460 * var(--px)); margin: 0 auto; width: 100%; }
+
+.fit-bars {
+  padding: 0;
+  gap: var(--space-4);
+  background: transparent;
+}
+.career-why .fit-bars { padding-top: var(--space-2); }
+.fit-bar { grid-template-columns: calc(84 * var(--px)) 1fr calc(48 * var(--px)); gap: var(--space-3); font-size: var(--font-size-md); }
+.fit-bar-label { color: var(--color-text-muted); }
+.fit-bar-value { font-size: var(--font-size-lg); letter-spacing: -0.02em; }
+
+
+@media (max-width: 900px) {
+  .career-detail-head { grid-template-columns: minmax(0, 1fr); }
+  .career-score { flex-direction: row; align-items: baseline; flex-wrap: wrap; padding-right: 0; border-right: 0; padding-bottom: var(--space-3); border-bottom: 1px solid var(--color-border); }
+  .career-score .fit-bar-track { flex: 1 1 100%; }
+  .career-detail-head > .fit-actions { justify-content: flex-start; }
+  .career-why { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Hồ sơ nghề: khối trắng, vạch mực mép trên, biểu tượng xanh nhạt; không tô nền theo từng khối, không nhấc lên */
+.career-profile-item {
+  --pi-fill: var(--hope-blue);
+  --pi-bg: var(--color-bg-surface);
+  padding: var(--space-4) var(--space-5);
+  border-top: 2px solid var(--color-text-main);
+  border-radius: var(--radius-sm);
+  box-shadow: none;
+  animation: ui-rise var(--duration-enter) var(--ease-decelerate) both;
+}
+.career-profile-item::before { display: none; }
+.career-profile-item:hover { transform: none; box-shadow: none; }
+.career-profile-icon {
+  color: var(--hope-blue-deep);
+  background: var(--hope-blue-soft);
+  border: 0;
+  border-radius: var(--radius-xs);
+  box-shadow: none;
+}
+.career-profile-item:hover .career-profile-icon { transform: none; }
+
+/* Vì sao phù hợp: cột trái gồm ba thanh và phần cần bổ sung, biểu đồ nhỏ gọn bên phải, không để trống */
+.career-why {
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: var(--space-6);
+}
+.career-why-main { display: flex; flex-direction: column; gap: var(--space-5); min-width: 0; }
+.career-why-main .career-gaps h3 { margin-bottom: var(--space-3); font-size: var(--font-size-md); font-weight: 800; }
+.career-why-chart { max-width: calc(380 * var(--px)); }
+.career-block { gap: var(--space-3); }
+
+/* Nút mở phần giải thích: viền mực đậm, rê chuột thì lớp mực dâng lên như nút chính ở trang giới thiệu */
+.career-more > summary {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--control-height-md);
+  padding: 0 var(--space-5);
+  font-weight: 700;
+  color: var(--color-text-main);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-text-main);
+  border-radius: var(--radius-sm);
+  list-style: none;
+  cursor: pointer;
+  transition: color 420ms var(--ease-out);
+}
+.career-more > summary::-webkit-details-marker { display: none; }
+.career-more > summary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--color-text-main);
+  transform: translateY(101%);
+  transition: transform 520ms var(--ease-out);
+}
+.career-more > summary::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  margin-left: var(--space-1);
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 320ms var(--ease-out);
+}
+.career-more[open] > summary::after { transform: translateY(1px) rotate(-135deg); }
+.career-more > summary:hover { color: var(--color-text-inverse); }
+.career-more > summary:hover::before { transform: translateY(0); }
+.career-more > summary:focus-visible { outline: 3px solid var(--hope-blue-ring); outline-offset: 2px; }
+.career-more[open] > summary { margin-bottom: var(--space-4); }
+
+@media (max-width: 900px) {
+  .career-why { grid-template-columns: minmax(0, 1fr); }
 }

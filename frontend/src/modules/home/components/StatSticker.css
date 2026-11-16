@@ -1,0 +1,56 @@
+/* Nhãn dán kiểu hơi hoạt hình: viền màu dày, bóng đặc lệch xuống, bồng bềnh nhẹ */
+.stat-tone-violet { --stat: var(--soft-violet); --stat-glow: var(--soft-glow-violet); }
+.stat-tone-cyan { --stat: var(--soft-cyan); --stat-glow: var(--soft-glow-cyan); }
+.stat-tone-magenta { --stat: var(--soft-magenta); --stat-glow: var(--soft-glow-magenta); }
+.stat-tone-gold { --stat: var(--soft-gold); --stat-glow: var(--soft-glow-gold); }
+.stat-tone-teal { --stat: var(--soft-teal); --stat-glow: var(--soft-glow-teal); }
+.stat-tone-sky { --stat: var(--soft-sky); --stat-glow: var(--soft-glow-sky); }
+
+/* Nhãn dán nổi trên hình: góc đặt theo vị trí, hơi nghiêng, bồng bềnh lên xuống */
+.stat-sticker {
+  position: absolute;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-2);
+  background: var(--color-bg-surface);
+  border: 2px solid var(--stat);
+  border-radius: var(--radius-full);
+  box-shadow: 0 4px 0 var(--stat-glow), var(--shadow-md);
+  pointer-events: none;
+  animation: sticker-float 4s ease-in-out infinite;
+}
+.stat-sticker-top-left { top: 6%; left: 0; --tilt: -4deg; }
+.stat-sticker-top-right { top: 6%; right: 0; --tilt: 4deg; animation-delay: -1s; }
+.stat-sticker-bottom-left { bottom: 8%; left: 0; --tilt: 3deg; animation-delay: -2s; }
+.stat-sticker-bottom-right { bottom: 8%; right: 0; --tilt: -3deg; animation-delay: -3s; }
+
+.stat-sticker-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: calc(30 * var(--px));
+  height: calc(30 * var(--px));
+  color: var(--brand-white);
+  background: var(--stat);
+  border-radius: var(--radius-full);
+}
+.stat-sticker-text { display: flex; flex-direction: column; line-height: 1.15; }
+.stat-sticker-value { font-size: var(--font-size-lg); font-weight: 800; color: var(--color-text-main); white-space: nowrap; }
+.stat-sticker-label { font-size: var(--font-size-xs); font-weight: 600; color: var(--color-text-secondary); white-space: nowrap; }
+
+@keyframes sticker-float {
+  0%, 100% { transform: translateY(0) rotate(var(--tilt, 0deg)); }
+  50% { transform: translateY(-6px) rotate(var(--tilt, 0deg)); }
+}
+
+@media (max-width: 520px) {
+  .stat-sticker { padding: var(--space-1) var(--space-2) var(--space-1) var(--space-1); }
+  .stat-sticker-icon { width: calc(24 * var(--px)); height: calc(24 * var(--px)); }
+  .stat-sticker-value { font-size: var(--font-size-md); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stat-sticker { animation: none; transform: rotate(var(--tilt, 0deg)); }
+}

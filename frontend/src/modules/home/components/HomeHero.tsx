@@ -1,10 +1,9 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowDown, ArrowRight, ArrowUpRight, BookOpen, Building2, Compass, Layers, Target, Users } from 'lucide-react';
 import { Magnetic, Reveal, RollText, SplitText, trackPointer } from '../../../components/common';
 import { useCountUp } from '../../../hooks/useCountUp';
 import { useInView } from '../../../hooks/useInView';
-import { useReducedMotion } from '../../../hooks/useReducedMotion';
 import { PARTS } from '../../assessment_session/assessmentSession.constants';
 import type { CatalogScale } from '../home.service';
 import './HomeHero.css';
@@ -24,9 +23,6 @@ const CORE_CAPABILITIES = [
   { targetId: 'step-roadmap', icon: Target, title: 'Lộ trình phát triển cá nhân' },
 ] as const;
 
-const MARQUEE_TOP = PARTS.map((part) => part.short);
-const MARQUEE_BOTTOM = ['Đánh giá 360°', 'Nghề phù hợp', 'So sánh phương án', 'Lộ trình'];
-
 const parseRange = (range: string): [number, number] | null => {
   const nums = range.match(/\d+/g)?.map(Number) ?? [];
   return nums.length >= 2 ? [nums[0], nums[1]] : null;
@@ -39,89 +35,6 @@ const CountUp: React.FC<{ value: number | null; active: boolean; delayMs?: numbe
   const current = useCountUp(active ? value : null, 1400, delayMs);
   if (value === null) return <>—</>;
   return <>{formatCount(active ? current : 0)}</>;
-};
-
-/** Dải chữ chạy vô hạn: tăng tốc và đổi chiều theo tốc độ cuộn trang, chậm lại khi rê chuột */
-const VelocityMarquee: React.FC<{ items: string[]; baseVelocity: number; outline?: boolean }> = ({
-  items,
-  baseVelocity,
-  outline = false,
-}) => {
-  const rowRef = useRef<HTMLDivElement>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
-  const reduced = useReducedMotion();
-
-  useEffect(() => {
-    const row = rowRef.current;
-    const track = trackRef.current;
-    if (!row || !track || reduced) return;
-
-    let x = 0;
-    let dir = 1;
-    let velocity = 0;
-    let speed = 1;
-    let targetSpeed = 1;
-    let lastTime = 0;
-    let lastY = window.scrollY;
-    let raf = 0;
-    let visible = false;
-
-    const tick = (now: number) => {
-      const dt = lastTime ? Math.min(now - lastTime, 64) / 1000 : 0;
-      lastTime = now;
-      const y = window.scrollY;
-      const instant = dt > 0 ? (y - lastY) / dt : 0;
-      lastY = y;
-      velocity += (instant - velocity) * 0.12;
-      const factor = velocity / 250;
-      if (factor < -0.05) dir = -1;
-      else if (factor > 0.05) dir = 1;
-      speed += (targetSpeed - speed) * 0.08;
-      x += dir * baseVelocity * dt * (1 + Math.min(Math.abs(factor), 6)) * speed;
-      x = ((((x + 25) % 25) + 25) % 25) - 50;
-      track.style.transform = `translate3d(${x.toFixed(3)}%, 0, 0)`;
-      raf = visible ? requestAnimationFrame(tick) : 0;
-    };
-
-    const observer = new IntersectionObserver(([entry]) => {
-      visible = entry.isIntersecting;
-      if (visible && !raf) {
-        lastTime = 0;
-        lastY = window.scrollY;
-        raf = requestAnimationFrame(tick);
-      }
-    });
-    observer.observe(row);
-
-    const slow = () => (targetSpeed = 0.18);
-    const resume = () => (targetSpeed = 1);
-    row.addEventListener('pointerenter', slow);
-    row.addEventListener('pointerleave', resume);
-
-    return () => {
-      observer.disconnect();
-      cancelAnimationFrame(raf);
-      row.removeEventListener('pointerenter', slow);
-      row.removeEventListener('pointerleave', resume);
-    };
-  }, [baseVelocity, reduced]);
-
-  return (
-    <div ref={rowRef} className={`hero-marquee-row ${outline ? 'is-outline' : ''}`}>
-      <div ref={trackRef} className="hero-marquee-track">
-        {[0, 1, 2, 3].map((copy) => (
-          <span key={copy} className="hero-marquee-copy">
-            {items.map((item) => (
-              <span key={item} className="hero-marquee-item">
-                <span className="hero-marquee-word">{item}</span>
-                <span className="hero-marquee-dot" />
-              </span>
-            ))}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
 };
 
 /**
@@ -242,14 +155,14 @@ export const HomeHero: React.FC<HomeHeroProps> = ({
             <Reveal y={22} delayMs={760 + idx * 90}>
               <a
                 href={`#${item.targetId}`}
-                className="hero-index-item"
+                className="hero-index-item hover-sweep"
                 onClick={(e) => scrollToTarget(e, item.targetId)}
               >
                 <span className="hero-index-num" aria-hidden="true">
                   <item.icon size={22} strokeWidth={1.8} />
                 </span>
                 <span className="hero-index-title">{item.title}</span>
-                <ArrowUpRight size={20} className="hero-index-arrow" aria-hidden="true" />
+                <ArrowUpRight size={20} className="hero-index-arrow hover-sweep-arrow" aria-hidden="true" />
               </a>
             </Reveal>
           </li>
@@ -279,11 +192,6 @@ export const HomeHero: React.FC<HomeHeroProps> = ({
           );
         })}
       </dl>
-
-      <div className="hero-marquee" aria-hidden="true">
-        <VelocityMarquee items={MARQUEE_TOP} baseVelocity={-1.8} />
-        <VelocityMarquee items={MARQUEE_BOTTOM} baseVelocity={1.8} outline />
-      </div>
     </section>
   );
 };

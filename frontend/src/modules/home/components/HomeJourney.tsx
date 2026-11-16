@@ -17,10 +17,8 @@ import {
 } from 'lucide-react';
 import {
   Magnetic,
-  Reveal,
   RollText,
   SplitText,
-  SpotlightCard,
   trackPointer,
 } from '../../../components/common';
 import { PolygonChart, type PolygonAxis, type PolygonLevel } from '../../../components/charts/PolygonChart/PolygonChart';
@@ -503,9 +501,8 @@ function useJourneyProgress(listRef: React.RefObject<HTMLOListElement | null>) {
 }
 
 /**
- * Hành trình 5 bước hướng nghiệp phong cách HTDNSK:
- * Thẻ bước SpotlightCard tương tác, khoảng cách cuộn rộng rãi, không dùng viền cạnh lệch,
- * sân khấu Artifact bên phải có chuyển động tầng bậc mượt mà.
+ * Hành trình 5 bước trên nền sáng: bước bên trái là chữ trần phân tách bằng đường kẻ,
+ * sân khấu bên phải là mặt giấy trắng viền mảnh, cảnh minh họa chuyển tầng bậc theo cuộn.
  */
 export const HomeJourney: React.FC<HomeJourneyProps> = ({
   id,
@@ -603,16 +600,7 @@ export const HomeJourney: React.FC<HomeJourneyProps> = ({
 
   return (
     <section id={id} className="journey" aria-labelledby={`${id}-title`}>
-      {/* Phần đầu phân tách rõ ràng với Hero */}
       <div className="journey-head">
-        <Reveal y={14}>
-          <div className="journey-eyebrow">
-            <span className="journey-eyebrow-line" aria-hidden="true" />
-            <span className="journey-eyebrow-code">02 //</span>
-            <span>Lộ trình định hướng 5 bước</span>
-          </div>
-        </Reveal>
-
         <div className="journey-head-row">
           <h2 id={`${id}-title`} className="journey-title">
             <SplitText text="Từ thấu hiểu bản thân đến mục tiêu nghề nghiệp" staggerMs={55} />
@@ -626,7 +614,6 @@ export const HomeJourney: React.FC<HomeJourneyProps> = ({
                   className={`journey-quick-tab roll-trigger ${idx === shown ? 'is-active' : idx < shown ? 'is-done' : ''}`}
                   onClick={() => scrollToStep(s.stepId)}
                 >
-                  <span className="journey-quick-num">0{idx + 1}</span>
                   <RollText text={s.title} />
                 </button>
               </li>
@@ -649,17 +636,12 @@ export const HomeJourney: React.FC<HomeJourneyProps> = ({
                   </span>
                   <span className="journey-segment" />
                 </span>
-                <SpotlightCard
-                  light
-                  className="journey-content"
-                  onClick={() => scrollToStep(step.stepId)}
-                >
+                <div className="journey-content" onClick={() => scrollToStep(step.stepId)}>
                   <div className="journey-step-top">
                     <span className="journey-step-icon" aria-hidden="true">
                       <Icon size={20} />
                     </span>
                     <div className="journey-step-heading">
-                      <span className="journey-step-code">Bước 0{i + 1}</span>
                       <h3 className="journey-step-title">{step.title}</h3>
                     </div>
                     <ArrowUpRight size={18} className="journey-step-arrow" aria-hidden="true" />
@@ -675,7 +657,7 @@ export const HomeJourney: React.FC<HomeJourneyProps> = ({
                       </li>
                     ))}
                   </ul>
-                </SpotlightCard>
+                </div>
               </li>
             );
           })}
@@ -690,7 +672,7 @@ export const HomeJourney: React.FC<HomeJourneyProps> = ({
             <div className="journey-end-cta">
               {canExplore && (
                 <Magnetic strength={0.15} className="journey-cta-wrap">
-                  <Link to={testPath} className="journey-cta-btn btn-fill">
+                  <Link to={testPath} className="journey-cta-btn btn-fill btn-fill-ink">
                     <RollText text="Bắt đầu làm bài đánh giá ngay" />
                     <ArrowRight size={18} className="btn-arrow-slide" aria-hidden="true" />
                   </Link>

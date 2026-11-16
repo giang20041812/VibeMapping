@@ -3,13 +3,13 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Save, Trash2 } from 'lucide-react';
 import { Alert, Badge, Breadcrumb, Button, Card, DataTable, Input, Select, Spinner, useConfirm } from '../../../components/common';
 import type { DataTableColumn } from '../../../components/common';
-import { formulaToLatex, type Expr } from '../../../domain/formula';
+import { formulaToLatex, isFormulaLive, type Expr } from '../../../domain/formula';
 import { useAuth } from '../../auth/AuthContext';
 import { ExprEditor } from '../components/ExprEditor';
 import { FormulaMath } from '../components/FormulaMath';
 import { buildEditorEnv, checkDraft, runTests, saveErrorText, type TestOutcome } from '../editor.logic';
 import { applyFormulaVersion, deleteFormulaDraft, getFormulaDraft, listFormulaTests, saveFormulaDraft } from '../formula.service';
-import { VERIFICATION_LABEL, VERIFICATION_OPTIONS, VERIFICATION_VARIANT, buildLatexContext, formatValue } from '../formula.logic';
+import { VERIFICATION_LABEL, VERIFICATION_OPTIONS, VERIFICATION_VARIANT, buildLatexContext, formatValue, liveStatus } from '../formula.logic';
 import type { FormulaTestRow } from '../formula.types';
 import { useFormulaLibrary } from '../useFormulaLibrary';
 import '../../admin/pages/AdminPages.css';
@@ -174,12 +174,17 @@ export const FormulaEditPage: React.FC = () => {
         <h1 className="page-title">{`Sửa: ${formula.formula_name}`}</h1>
         <div className="admin-badge-list">
           <Badge variant={VERIFICATION_VARIANT[formula.verification_level]}>{VERIFICATION_LABEL[formula.verification_level]}</Badge>
+          <Badge variant={liveStatus(formula.formula_code).variant}>{liveStatus(formula.formula_code).label}</Badge>
           {draftId && <Badge variant="warning">Có bản nháp</Badge>}
         </div>
       </div>
 
       <div className="admin-alert-slot">
-        <Alert variant="info">Phiên bản áp dụng được ghi vào thư viện công thức. Cách tính điểm đang chạy của hệ thống chưa đọc từ đây nên chưa thay đổi.</Alert>
+        {isFormulaLive(formula.formula_code) ? (
+          <Alert variant="info">Công thức này đã nối vào hệ thống tính. Bản áp dụng có hiệu lực từ lần tính kế tiếp, kết quả đã lưu không đổi.</Alert>
+        ) : (
+          <Alert variant="warning">Công thức này chưa nối vào hệ thống tính. Áp dụng chỉ lưu phiên bản, kết quả tính chưa thay đổi.</Alert>
+        )}
       </div>
       {message && (
         <div className="admin-alert-slot">

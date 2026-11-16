@@ -5,6 +5,9 @@
  *  - ca thử có hàm đối chiếu thì hàm thật trong assessmentRules.ts cũng phải ra đúng kết quả đó.
  * Chạy từ thư mục gốc: supabase/scripts/node_modules/.bin/tsx frontend/domain-checks/formula.ts
  */
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import katex from 'katex';
 import * as R from '../src/domain/assessmentRules';
 import {
@@ -24,9 +27,12 @@ import {
   formulaToLatex,
   validateExpression,
   valuesMatch,
+  LIVE_BINDINGS,
+  setFormulaOverrides,
   type Expr,
   type Value,
 } from '../src/domain/formula';
+import { buildFormulaFixtureSql } from './formula-fixture';
 import {
   GRAPH_NODE_HEIGHT,
   GRAPH_NODE_WIDTH,
@@ -481,6 +487,101 @@ check('trình soạn: ca thử phát hiện chỗ lệch khi sửa công thức'
 check('trình soạn: thông báo lỗi từ cơ sở dữ liệu', () => {
   must(saveErrorText('formula_cycle').includes('vòng lặp'), 'vòng lặp');
   must(saveErrorText('xyz').includes('Không lưu được'), 'lỗi chung');
+});
+
+// 7. Engine đọc công thức từ thư viện ------------------------------------------------------------------------------
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+const readRepo = (...parts: string[]): string => fs.readFileSync(path.join(repoRoot, ...parts), 'utf8');
+
+check('danh sách công thức đã nối khớp với mã nguồn', () => {
+  const sqlText = fs
+    .readdirSync(path.join(repoRoot, 'supabase', 'migrations'))
+    .filter((name) => name.includes('formula_runtime_wiring'))
+    .map((name) => readRepo('supabase', 'migrations', name))
+    .join('\n');
+  const tsText = readRepo('frontend', 'src', 'domain', 'assessmentRules.ts');
+  const sqlCodes = new Set([...sqlText.matchAll(/formula_apply_(?:num|label)\(\s*'([a-z0-9_]+)'/g)].map((m) => m[1]));
+  const tsCodes = new Set([...tsText.matchAll(/apply(?:Number|Label)\(\s*'([a-z0-9_]+)'/g)].map((m) => m[1]));
+  for (const [code, binding] of Object.entries(LIVE_BINDINGS)) {
+    must(FORMULAS_BY_CODE[code] !== undefined, `${code} không có trong danh mục`);
+    must(Boolean(binding.sql) === sqlCodes.has(code), `${code}: khai báo sql=${Boolean(binding.sql)} nhưng mã SQL ${sqlCodes.has(code) ? 'có' : 'không có'} lời gọi`);
+    must(Boolean(binding.ts) === tsCodes.has(code), `${code}: khai báo ts=${Boolean(binding.ts)} nhưng mã TS ${tsCodes.has(code) ? 'có' : 'không có'} lời gọi`);
+  }
+  for (const code of [...sqlCodes, ...tsCodes]) must(LIVE_BINDINGS[code] !== undefined, `${code} có lời gọi trong mã nguồn nhưng thiếu trong danh sách đã nối`);
+});
+check('tệp kiểm thử SQL sinh từ danh mục không bị cũ', () => {
+  const onDisk = readRepo('supabase', 'tests', 'formula_catalog_fixture.sql').replace(/\r\n/g, '\n');
+  must(onDisk === buildFormulaFixtureSql(), 'danh mục đã đổi: chạy npm run gen:formula-fixture');
+});
+
+const ACTIVE_EXPRESSIONS = Object.fromEntries(FORMULAS.map((f) => [f.code, f.expression]));
+const asOverrides = (codes: string[], edited: Record<string, Expr> = {}) =>
+  setFormulaOverrides({
+    formulas: Object.fromEntries(codes.map((code) => [code, { expression: edited[code] ?? FORMULAS_BY_CODE[code].expression, params: {} }])),
+    active: { ...ACTIVE_EXPRESSIONS, ...edited },
+    params: {},
+  });
+const tsCodesLive = Object.entries(LIVE_BINDINGS).filter(([, b]) => b.ts).map(([code]) => code);
+
+const DECISION_OPTIONS: R.DecisionOptionInput[] = [
+  { id: 'a', title: 'A', admissionFloor: 30, learnerScore: 28, tuitionPerYear: 20, careerFitPercent: 80, locationScore: null, city: 'TP.HCM' },
+  { id: 'b', title: 'B', admissionFloor: 900, learnerScore: 950, tuitionPerYear: 40, careerFitPercent: 75, locationScore: null, city: 'Hà Nội' },
+  { id: 'c', title: 'C', admissionFloor: null, learnerScore: 20, tuitionPerYear: 0, careerFitPercent: 60, locationScore: 40, city: null },
+  { id: 'd', title: 'D', admissionFloor: 25, learnerScore: null, tuitionPerYear: null, careerFitPercent: null, locationScore: null, city: 'Đà Nẵng' },
+];
+const DECISION_WEIGHTS = { careerFit: 3, admission: 3, finance: 2, location: 1 };
+const decisionRuns = () => [
+  R.compareDecisionOptions(DECISION_OPTIONS, DECISION_WEIGHTS, 30, 'TP.HCM'),
+  R.compareDecisionOptions(DECISION_OPTIONS, DECISION_WEIGHTS, null, 'hà nội'),
+  R.compareDecisionOptions(DECISION_OPTIONS, { ...DECISION_WEIGHTS, finance: 0 }, null, null),
+  R.compareDecisionOptions(DECISION_OPTIONS.slice(0, 2), DECISION_WEIGHTS, 25, null),
+];
+const ROADMAP_MILESTONES: R.RoadmapMilestoneProgressInput[] = [
+  { id: '1', pillar: 'knowledge', title: 'A', done: true, weight: 2, dueDate: '2026-01-10' },
+  { id: '2', pillar: 'knowledge', title: 'B', done: false, weight: 1, dueDate: '2026-02-01' },
+  { id: '3', pillar: 'experience', title: 'C', done: false, weight: 1, dueDate: '2026-01-20', isCheckpoint: true },
+];
+const roadmapRuns = () => [
+  R.evaluateRoadmapProgress(ROADMAP_MILESTONES, '2026-03-01', { startIso: '2026-01-01', targetIso: '2026-04-01' }),
+  R.evaluateRoadmapProgress(ROADMAP_MILESTONES, '2026-03-01'),
+  R.evaluateRoadmapProgress([], '2026-03-01', { startIso: '2026-01-01', targetIso: '2026-04-01' }),
+];
+const SUPPLEMENTAL_INPUT = { empathicAccuracy: [2, 1, 2, 1], solo: [4, 3, 5, 4], carkhuff: 4 };
+const supplementalRuns = () => (['parent', 'friend', 'teacher', 'mentor'] as const).map((g) => R.supplementalUnderstandingScore(g, SUPPLEMENTAL_INPUT));
+
+check('engine: đặt đúng biểu thức gốc thì kết quả giữ nguyên', () => {
+  setFormulaOverrides(null);
+  const before = JSON.stringify([decisionRuns(), roadmapRuns(), supplementalRuns()]);
+  asOverrides(tsCodesLive);
+  const after = JSON.stringify([decisionRuns(), roadmapRuns(), supplementalRuns()]);
+  setFormulaOverrides(null);
+  must(before === after, 'kết quả đổi dù biểu thức không đổi');
+});
+check('engine: sửa công thức thì kết quả đổi theo', () => {
+  setFormulaOverrides(null);
+  const baseline = decisionRuns()[0];
+  asOverrides(['option_total_score'], { option_total_score: { t: 'num', v: 50 } });
+  const edited = decisionRuns()[0];
+  must(edited.every((o) => o.totalScore === 50), 'điểm tổng phải theo công thức mới');
+  must(baseline.some((o) => o.totalScore !== 50), 'điểm gốc phải khác 50');
+  asOverrides(['roadmap_off_track'], { roadmap_off_track: { t: 'text', v: 'Đúng hướng' } });
+  must(R.evaluateRoadmapProgress(ROADMAP_MILESTONES, '2026-03-01', { startIso: '2026-01-01', targetIso: '2026-04-01' }).offTrack === false, 'cảnh báo chệch hướng phải theo công thức mới');
+  asOverrides(['supplemental_score'], { supplemental_score: { t: 'num', v: 42 } });
+  must(R.supplementalUnderstandingScore('mentor', SUPPLEMENTAL_INPUT) === 42, 'điểm bổ sung phải theo công thức mới');
+  setFormulaOverrides(null);
+});
+check('engine: biểu thức lỗi thì quay về kết quả sẵn có', () => {
+  setFormulaOverrides(null);
+  const baseline = JSON.stringify(decisionRuns());
+  const warn = console.warn;
+  console.warn = () => undefined;
+  try {
+    asOverrides(['admission_score'], { admission_score: { t: 'sym', id: 'budget' } });
+    must(JSON.stringify(decisionRuns()) === baseline, 'lỗi biểu thức không được làm đổi kết quả');
+  } finally {
+    console.warn = warn;
+    setFormulaOverrides(null);
+  }
 });
 
 console.log(`${passed} kiểm tra đạt, ${failed} thất bại; ${FORMULAS.length} công thức, ${SYMBOLS.length} ký hiệu`);

@@ -19,6 +19,7 @@ import {
   formatValue,
   formulaDependencies,
   formulaDependents,
+  liveStatus,
   numericParamValues,
   paramDependencies,
   symbolsInFormula,
@@ -206,6 +207,7 @@ export const FormulaDetailPage: React.FC = () => {
         <h1 className="page-title">{formula.formula_name}</h1>
         <div className="admin-badge-list">
           <Badge variant={VERIFICATION_VARIANT[formula.verification_level]}>{VERIFICATION_LABEL[formula.verification_level]}</Badge>
+          <Badge variant={liveStatus(formula.formula_code).variant}>{liveStatus(formula.formula_code).label}</Badge>
           <Badge>{formula.group_name}</Badge>
           {formula.version_no && <Badge>{`v${formula.version_no}`}</Badge>}
           <Button

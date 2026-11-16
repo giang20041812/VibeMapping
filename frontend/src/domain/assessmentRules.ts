@@ -7,6 +7,8 @@
  *  4) M04/M06/M07: Cho phép HS/SV đặt tối đa 2 nghề mục tiêu và lập lộ trình không bị khóa bởi assertFamilyGoal.
  */
 
+import { applyLabel, applyNumber } from './formula/runtime';
+
 export type RaterGroup = 'self' | 'parent' | 'friend' | 'teacher' | 'mentor';
 export type DisplayGroup = 'parent' | 'friend' | 'teacher' | 'mentor' | 'others';
 export type CompetencyLevel = 'very_high' | 'high' | 'medium' | 'low';
@@ -166,18 +168,36 @@ export function supplementalUnderstandingScore(group: RaterGroup, scores: Supple
   ) {
     throw new Error('SOLO cần 4 điểm nguyên từ 1 đến 5');
   }
-  const ea = (scores.empathicAccuracy.reduce((t, v) => t + v, 0) / 8) * 100;
-  const solo = (scores.solo.reduce((t, v) => t + v, 0) / 20) * 100;
-  if (group === 'friend') return Number((0.7 * ea + 0.3 * solo).toFixed(2));
+  const ea = applyNumber('ea_percent', (scores.empathicAccuracy.reduce((t, v) => t + v, 0) / 8) * 100, {
+    sets: { ea_items: scores.empathicAccuracy.map((v) => ({ ea_item: v })) },
+  }) as number;
+  const solo = applyNumber('solo_percent', (scores.solo.reduce((t, v) => t + v, 0) / 20) * 100, {
+    sets: { solo_items: scores.solo.map((v) => ({ solo_item: v })) },
+  }) as number;
 
-  const carkhuff = scores.carkhuff;
-  if (typeof carkhuff !== 'number' || !Number.isFinite(carkhuff) || carkhuff < 1 || carkhuff > 5) {
-    throw new Error('Carkhuff cần điểm trong khoảng 1..5 cho Phụ huynh, Giáo viên và Người hướng dẫn');
+  let carkhuffPct: number | null = null;
+  if (group !== 'friend') {
+    const carkhuff = scores.carkhuff;
+    if (typeof carkhuff !== 'number' || !Number.isFinite(carkhuff) || carkhuff < 1 || carkhuff > 5) {
+      throw new Error('Carkhuff cần điểm trong khoảng 1..5 cho Phụ huynh, Giáo viên và Người hướng dẫn');
+    }
+    carkhuffPct = applyNumber('carkhuff_percent', (carkhuff / 5) * 100, { vars: { carkhuff_score: carkhuff } });
   }
-  const carkhuffPct = (carkhuff / 5) * 100;
-  if (group === 'parent') return Number((0.5 * ea + 0.25 * solo + 0.25 * carkhuffPct).toFixed(2));
-  if (group === 'teacher') return Number((0.4 * ea + 0.4 * solo + 0.2 * carkhuffPct).toFixed(2));
-  return Number((0.35 * ea + 0.35 * solo + 0.3 * carkhuffPct).toFixed(2));
+  const ck = carkhuffPct ?? 0;
+  const native =
+    group === 'friend'
+      ? 0.7 * ea + 0.3 * solo
+      : group === 'parent'
+        ? 0.5 * ea + 0.25 * solo + 0.25 * ck
+        : group === 'teacher'
+          ? 0.4 * ea + 0.4 * solo + 0.2 * ck
+          : 0.35 * ea + 0.35 * solo + 0.3 * ck;
+  const raterGroupLabel = { parent: 'Phụ huynh', friend: 'Bạn bè', teacher: 'Giáo viên', mentor: 'Mentor' }[group];
+  const total = applyNumber('supplemental_score', native, {
+    vars: { rater_group: raterGroupLabel },
+    refs: { ea_percent: ea, solo_percent: solo, carkhuff_percent: carkhuffPct },
+  });
+  return Number((total ?? native).toFixed(2));
 }
 
 // ============================================================================
@@ -759,9 +779,13 @@ export function compareDecisionOptions(
     let scoreGap: number | null = null;
     if (opt.admissionFloor !== null && opt.admissionFloor > 0 && opt.learnerScore !== null) {
       const diff = Number((opt.admissionFloor - opt.learnerScore).toFixed(2));
-      if (diff > 0) {
+      const gap =
+        applyNumber('score_gap', diff > 0 ? diff : 0, {
+          vars: { floor_score: opt.admissionFloor, learner_exam_score: opt.learnerScore },
+        }) ?? 0;
+      if (gap > 0) {
         eligibility = 'NOT_MET';
-        scoreGap = diff;
+        scoreGap = Number(gap.toFixed(2));
       } else {
         eligibility = 'MET';
         scoreGap = 0;
@@ -770,36 +794,51 @@ export function compareDecisionOptions(
 
     let financeScore: number | null = null;
     if (opt.tuitionPerYear !== null && opt.tuitionPerYear >= 0) {
+      const financeVars = {
+        tuition: opt.tuitionPerYear,
+        budget: hasBudget ? budgetPerYear! : null,
+        min_tuition: minTuition,
+        max_tuition: maxTuition,
+      };
       if (hasBudget) {
-        financeScore =
+        const branch = applyNumber(
+          'finance_score_budget',
           opt.tuitionPerYear <= budgetPerYear!
             ? 100
-            : Math.max(0, 100 - ((opt.tuitionPerYear - budgetPerYear!) / budgetPerYear!) * 100);
+            : Math.max(0, 100 - ((opt.tuitionPerYear - budgetPerYear!) / budgetPerYear!) * 100),
+          { vars: financeVars },
+        );
+        financeScore = applyNumber('finance_score', branch, { vars: financeVars, refs: { finance_score_budget: branch } });
       } else if (minTuition !== null) {
+        let nativeRelative: number;
         if (opt.tuitionPerYear === 0) {
-          financeScore = 100;
+          nativeRelative = 100;
         } else if (minTuition === 0) {
-          financeScore = maxTuition && maxTuition > 0 ? Math.max(0, (1 - opt.tuitionPerYear / maxTuition) * 100) : 0;
+          nativeRelative = maxTuition && maxTuition > 0 ? Math.max(0, (1 - opt.tuitionPerYear / maxTuition) * 100) : 0;
         } else {
-          financeScore = Math.max(0, Math.min(100, (minTuition / opt.tuitionPerYear) * 100));
+          nativeRelative = Math.max(0, Math.min(100, (minTuition / opt.tuitionPerYear) * 100));
         }
+        const branch = applyNumber('finance_score_relative', nativeRelative, { vars: financeVars });
+        financeScore = applyNumber('finance_score', branch, { vars: financeVars, refs: { finance_score_relative: branch } });
       }
     }
 
     const admissionScore =
       eligibility === 'UNKNOWN' || opt.admissionFloor === null || opt.admissionFloor <= 0
         ? null
-        : eligibility === 'MET'
-          ? 100
-          : Math.max(0, 100 - ((scoreGap ?? 0) / opt.admissionFloor) * 450);
+        : applyNumber(
+            'admission_score',
+            eligibility === 'MET' ? 100 : Math.max(0, 100 - ((scoreGap ?? 0) / opt.admissionFloor) * 450),
+            { vars: { floor_score: opt.admissionFloor }, refs: { score_gap: scoreGap ?? 0 } },
+          );
 
     const locationVal =
       opt.locationScore !== null && opt.locationScore !== undefined
         ? opt.locationScore
         : prefCity && opt.city
-          ? opt.city.trim().toLowerCase() === prefCity.toLowerCase()
-            ? 100
-            : 0
+          ? applyNumber('location_score', opt.city.trim().toLowerCase() === prefCity.toLowerCase() ? 100 : 0, {
+              vars: { city: opt.city.trim().toLowerCase(), preferred_city: prefCity.toLowerCase() },
+            })
           : null;
 
     const pairs: Array<{ key: string; val: number | null; w: number }> = [
@@ -826,6 +865,21 @@ export function compareDecisionOptions(
       acc += p.val * p.w;
     }
 
+    const total = applyNumber('option_total_score', wSum > 0 ? acc / wSum : null, {
+      vars: {
+        weight_career_fit: weights.careerFit,
+        weight_admission: weights.admission,
+        weight_finance: weights.finance,
+        weight_location: weights.location,
+      },
+      refs: {
+        career_fit: opt.careerFitPercent ?? null,
+        admission_score: admissionScore,
+        finance_score: financeScore,
+        location_score: locationVal,
+      },
+    });
+
     return {
       ...opt,
       locationScore: locationVal,
@@ -833,7 +887,7 @@ export function compareDecisionOptions(
       scoreGap,
       overBudget: Boolean(hasBudget && opt.tuitionPerYear !== null && opt.tuitionPerYear > budgetPerYear!),
       financeScore: financeScore !== null ? Number(financeScore.toFixed(1)) : null,
-      totalScore: wSum > 0 ? Number((acc / wSum).toFixed(1)) : null,
+      totalScore: total !== null ? Number(total.toFixed(1)) : null,
       rank: 0,
       criteriaCount,
       missingCriteria,
@@ -874,31 +928,49 @@ export function evaluateRoadmapProgress(
     const items = milestones.filter((m) => m.pillar === pillar);
     const w = items.reduce((s, m) => s + weightOf(m), 0);
     const doneW = items.filter((m) => m.done).reduce((s, m) => s + weightOf(m), 0);
+    const pillarPercent = applyNumber('roadmap_pillar_percent', w > 0 ? (doneW / w) * 100 : null, {
+      sets: { milestones: items.map((m) => ({ milestone_weight: weightOf(m), milestone_done: m.done ? 1 : 0 })) },
+    });
     return {
       pillar,
       total: items.length,
       done: items.filter((m) => m.done).length,
-      percent: w > 0 ? Number(((doneW / w) * 100).toFixed(1)) : (null as number | null),
+      percent: pillarPercent !== null ? Number(pillarPercent.toFixed(1)) : (null as number | null),
     };
   });
   const counted = byPillar.filter((p) => p.percent !== null);
-  const actualPercent =
-    counted.length > 0 ? Number((counted.reduce((s, p) => s + (p.percent ?? 0), 0) / counted.length).toFixed(1)) : 0;
+  const actualNative = counted.length > 0 ? counted.reduce((s, p) => s + (p.percent ?? 0), 0) / counted.length : null;
+  const actualHooked = applyNumber('roadmap_actual_percent', actualNative, {
+    sets: { pillars: byPillar.map((p) => ({ roadmap_pillar_percent: p.percent })) },
+  });
+  const actualPercent = actualHooked !== null ? Number(actualHooked.toFixed(1)) : 0;
 
   let plannedPercent: number;
   if (range?.targetIso) {
     const start = Date.parse(range.startIso.slice(0, 10));
     const end = Date.parse(range.targetIso.slice(0, 10));
     const now = Date.parse(todayIso);
-    plannedPercent = end > start ? Number((Math.max(0, Math.min(1, (now - start) / (end - start))) * 100).toFixed(1)) : 100;
+    const plannedNative = end > start ? Math.max(0, Math.min(1, (now - start) / (end - start))) * 100 : 100;
+    const plannedHooked = applyNumber('roadmap_planned_percent', plannedNative, {
+      vars: { elapsed_days: Math.round((now - start) / DAY_MS), total_days: Math.round((end - start) / DAY_MS) },
+    });
+    plannedPercent = Number((plannedHooked ?? plannedNative).toFixed(1));
   } else {
     const totalWeight = milestones.reduce((s, m) => s + weightOf(m), 0);
     const dueWeight = milestones.filter((m) => m.dueDate && m.dueDate <= todayIso).reduce((s, m) => s + weightOf(m), 0);
     plannedPercent = totalWeight > 0 ? Number(((dueWeight / totalWeight) * 100).toFixed(1)) : 0;
   }
-  const delayPercent = milestones.length === 0 ? 0 : Number(Math.max(0, plannedPercent - actualPercent).toFixed(1));
+  const delayNative = Math.max(0, plannedPercent - actualPercent);
+  const delayHooked = applyNumber('roadmap_delay', delayNative, {
+    refs: { roadmap_planned_percent: plannedPercent, roadmap_actual_percent: actualPercent },
+  });
+  const delayPercent = milestones.length === 0 ? 0 : Number((delayHooked ?? delayNative).toFixed(1));
   const missedCheckpoints = milestones.filter((m) => m.isCheckpoint && !m.done && m.dueDate && m.dueDate < todayIso);
-  const offTrack = delayPercent > 20 || missedCheckpoints.length > 0;
+  const offTrack =
+    applyLabel('roadmap_off_track', delayPercent > 20 || missedCheckpoints.length > 0 ? 'off' : 'on', { 'Chệch hướng': 'off', 'Đúng hướng': 'on' }, {
+      vars: { missed_checkpoints: missedCheckpoints.length },
+      refs: { roadmap_delay: delayPercent },
+    }) === 'off';
   return { actualPercent, plannedPercent, delayPercent, offTrack, missedCheckpoints, byPillar };
 }
 

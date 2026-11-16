@@ -8,7 +8,7 @@ import { SearchableSelect } from '../../../components/filters/SearchableSelect/S
 import { ADMIN_PAGE_SIZE } from '../../admin/admin.constants';
 import { useAdminFilter } from '../../admin/useAdminFilter';
 import { FormulaMath } from '../components/FormulaMath';
-import { VERIFICATION_LABEL, VERIFICATION_OPTIONS, VERIFICATION_VARIANT, formulaDependencies, matchesFormulaFilter } from '../formula.logic';
+import { VERIFICATION_LABEL, VERIFICATION_OPTIONS, VERIFICATION_VARIANT, formulaDependencies, liveStatus, matchesFormulaFilter } from '../formula.logic';
 import type { FormulaFilter, FormulaRecord } from '../formula.types';
 import { useFormulaLibrary } from '../useFormulaLibrary';
 import '../../admin/pages/AdminPages.css';
@@ -67,6 +67,15 @@ export const FormulaListPage: React.FC = () => {
         header: 'Trạng thái',
         nowrap: true,
         render: (row) => <Badge variant={VERIFICATION_VARIANT[row.verification_level]}>{VERIFICATION_LABEL[row.verification_level]}</Badge>,
+      },
+      {
+        key: 'live',
+        header: 'Áp dụng',
+        nowrap: true,
+        render: (row) => {
+          const status = liveStatus(row.formula_code);
+          return <Badge variant={status.variant}>{status.label}</Badge>;
+        },
       },
       { key: 'version_no', header: 'Phiên bản', align: 'center', nowrap: true, render: (row) => (row.version_no ? `v${row.version_no}` : '—') },
       { key: 'uses', header: 'Dùng', align: 'center', nowrap: true, render: (row) => formulaDependencies(row).length },

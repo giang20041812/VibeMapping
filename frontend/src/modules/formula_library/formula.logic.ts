@@ -1,4 +1,4 @@
-import { collectDependencies, formatNumber, walkExpr, type LatexContext, type SymbolDef, type Value } from '../../domain/formula';
+import { collectDependencies, formatNumber, isFormulaLive, walkExpr, type LatexContext, type SymbolDef, type Value } from '../../domain/formula';
 import { normalizeSearchText } from '../../lib/searchText';
 import type { FormulaFilter, FormulaLibrary, FormulaRecord } from './formula.types';
 
@@ -15,6 +15,11 @@ export const VERIFICATION_VARIANT: Record<string, 'success' | 'warning' | 'dange
   pending_ba: 'warning',
   blocked: 'danger',
 };
+
+/** Công thức đã nối vào hệ thống tính thì bản áp dụng có hiệu lực khi tính điểm */
+export function liveStatus(code: string): { label: string; variant: 'success' | 'default' } {
+  return isFormulaLive(code) ? { label: 'Đang dùng khi tính', variant: 'success' } : { label: 'Chỉ lưu phiên bản', variant: 'default' };
+}
 
 export const VERIFICATION_OPTIONS = Object.entries(VERIFICATION_LABEL).map(([value, label]) => ({ value, label }));
 

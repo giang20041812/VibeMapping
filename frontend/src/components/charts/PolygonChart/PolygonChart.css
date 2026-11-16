@@ -1,25 +1,27 @@
-/* Biểu đồ radar gọn: lưới mảnh trung tính, một vùng điểm chuyển sắc chàm, nút trục là ô tròn trắng có biểu tượng màu nhóm.
+/* Biểu đồ đa giác phong cách hiện đại: nền sáng, đường kẻ mảnh, múi màu phẳng, không viền dày, không bóng đặc.
    Chuyển động chỉ có một lần khi hiện ra và khi chọn trục; chỉ dùng transform và opacity (chạy trên GPU). */
 .polygon-chart {
-  --axis-1: var(--soft-cyan);
-  --axis-2: var(--soft-sky);
-  --axis-3: var(--soft-violet);
-  --axis-4: var(--soft-magenta);
-  --axis-5: var(--soft-coral);
-  --axis-6: var(--soft-gold);
-  --axis-7: var(--soft-teal);
+  --axis-1: color-mix(in srgb, var(--soft-cyan) 68%, var(--ink-300));
+  --axis-2: color-mix(in srgb, var(--soft-sky) 68%, var(--ink-300));
+  --axis-3: color-mix(in srgb, var(--soft-violet) 68%, var(--ink-300));
+  --axis-4: color-mix(in srgb, var(--soft-magenta) 68%, var(--ink-300));
+  --axis-5: color-mix(in srgb, var(--soft-coral) 68%, var(--ink-300));
+  --axis-6: color-mix(in srgb, var(--soft-gold) 68%, var(--ink-300));
+  --axis-7: color-mix(in srgb, var(--soft-teal) 68%, var(--ink-300));
 
-  --chart-line: var(--color-border);
-  --chart-line-strong: var(--color-border-hover);
-  --chart-plate: var(--color-bg-surface);
-  --chart-fill-start: var(--brand-light);
-  --chart-fill-end: var(--color-primary);
-  --chart-edge: var(--color-primary);
-  --chart-reference: var(--color-highlight);
+  --chart-ink: var(--color-text-main);
+  --chart-line: var(--ink-200);
+  --chart-line-strong: var(--ink-300);
   --chart-text: var(--color-text-secondary);
   --chart-text-strong: var(--color-text-main);
   --chart-text-muted: var(--color-text-muted);
-  --chart-paper: var(--color-bg-surface);
+  --chart-paper: var(--brand-white);
+  --chart-band: var(--brand-ice);
+  --chart-wedge-gap: var(--brand-white);
+  --chart-wedge: 0.8;
+  --chart-wedge-active: 1;
+  --chart-dot: var(--brand-white);
+  --chart-dot-empty: var(--brand-ice);
 
   display: flex;
   flex-direction: column;
@@ -61,15 +63,16 @@
   pointer-events: none;
 }
 
-/* Thang đo: nền trắng, các vòng mảnh trung tính, vòng ngoài đậm hơn một bậc */
+/* Thang đo: các dải xen kẽ trắng và xanh băng nhạt, đường kẻ mảnh */
 .polygon-ring {
-  fill: none;
+  fill: var(--chart-paper);
   stroke: var(--chart-line);
   stroke-width: 1px;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
 }
-.polygon-ring.is-outer { fill: var(--chart-plate); stroke: var(--chart-line-strong); }
+.polygon-ring.is-tinted { fill: var(--chart-band); }
+.polygon-ring.is-outer { stroke: var(--chart-line-strong); stroke-width: 1.5px; }
 
 .polygon-spoke {
   stroke: var(--chart-line);
@@ -78,62 +81,64 @@
   vector-effect: non-scaling-stroke;
   transition: stroke var(--transition-normal), stroke-width var(--transition-normal);
 }
-.polygon-spoke.is-active { stroke: var(--chart-edge); stroke-width: 1.5px; }
+.polygon-spoke.is-active { stroke: var(--color-primary); stroke-width: 1.6px; }
 
-/* Lưới hiện dần lên, rồi vùng điểm nở ra từ tâm và dừng êm kiểu Apple/Google */
+/* Cả biểu đồ hiện lên nhẹ, rồi đa giác dữ liệu nở ra, sau đó đứng yên */
 .polygon-stage { opacity: 0; }
-.polygon-chart.is-visible .polygon-stage { animation: polygon-rise 850ms var(--ease-out) both; }
-.polygon-svg-data { opacity: 0; transform: scale(0.32); transform-origin: 50% 50%; }
-.polygon-chart.is-visible .polygon-svg-data { animation: polygon-grow 960ms var(--ease-out) 160ms both; }
-.polygon-node { opacity: 0; }
-.polygon-chart.is-visible .polygon-node { animation: polygon-node-in 760ms var(--ease-out) calc(220ms + var(--i, 0) * 65ms) both; }
+.polygon-chart.is-visible .polygon-stage { animation: polygon-stage-pop 560ms var(--ease-out) both; }
+.polygon-svg-data { opacity: 0; transform: scale(0.4); transform-origin: 50% 50%; }
+.polygon-chart.is-visible .polygon-svg-data { animation: polygon-grow 800ms var(--ease-out) 240ms both; }
 
-.polygon-fill-start { stop-color: var(--chart-fill-start); stop-opacity: 0.45; }
-.polygon-fill-end { stop-color: var(--chart-fill-end); stop-opacity: 0.32; }
-.polygon-area { stroke: none; }
+/* Không còn bóng đặc lệch xuống */
+.polygon-shadow { display: none; }
+
+/* Mỗi múi một màu phẳng của trục, ngăn nhau bằng đường trắng mảnh */
+.polygon-wedge {
+  fill: var(--tone);
+  fill-opacity: var(--chart-wedge);
+  stroke: var(--chart-wedge-gap);
+  stroke-width: 1.5px;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  transition: fill-opacity var(--transition-normal);
+}
+.polygon-wedge.is-active { fill-opacity: var(--chart-wedge-active); }
+
+/* Đường mục tiêu: nét vàng liền, viền trắng mỏng tách khỏi đa giác, bật ra sau khi đa giác đã nở */
+.polygon-reference {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+}
+.polygon-chart.is-visible .polygon-reference { animation: polygon-target-pop 600ms var(--ease-out) 900ms both; }
+.polygon-reference-casing,
+.polygon-reference-line {
+  fill: none;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.polygon-reference-casing { stroke: var(--brand-white); stroke-width: 6px; }
+.polygon-reference-line { stroke: color-mix(in srgb, var(--brand-gold) 80%, var(--ink-300)); stroke-width: 2.5px; }
+
 .polygon-edge {
   fill: none;
-  stroke: var(--chart-edge);
-  stroke-width: 2px;
+  stroke: var(--chart-ink);
+  stroke-opacity: 0.75;
+  stroke-width: 1.5px;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
 }
-
-/* Đường mục tiêu: nét vàng đứt, màu nhấn dành cho thông tin quan trọng */
-.polygon-reference {
-  fill: none;
-  stroke: var(--chart-reference);
-  stroke-width: 2.5px;
-  stroke-dasharray: 6 4;
-  stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
-}
-.polygon-chart.is-visible .polygon-reference { animation: polygon-fade-in 500ms var(--ease-decelerate) 800ms both; }
 
 .polygon-dot {
-  fill: var(--chart-paper);
-  stroke: var(--chart-edge);
+  fill: var(--chart-dot);
+  stroke: var(--tone);
   stroke-width: 2px;
   vector-effect: non-scaling-stroke;
   transform-box: fill-box;
   transform-origin: center;
-  transition: transform var(--transition-normal) var(--ease-decelerate), fill var(--transition-fast);
+  transition: transform var(--transition-normal), fill var(--transition-fast);
 }
-.polygon-dot.is-active { fill: var(--chart-edge); transform: scale(1.35); }
-.polygon-dot.is-empty { stroke: var(--chart-line-strong); stroke-dasharray: 2 2; }
-
-/* Quầng nhạt quanh đỉnh đang chọn */
-.polygon-halo {
-  fill: var(--tone);
-  fill-opacity: 0.18;
-  stroke: var(--tone);
-  stroke-opacity: 0.5;
-  stroke-width: 1px;
-  vector-effect: non-scaling-stroke;
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: polygon-pop 320ms var(--ease-decelerate) both;
-}
+.polygon-dot.is-active { fill: var(--tone); transform: scale(1.6); }
+.polygon-dot.is-empty { fill: var(--chart-dot-empty); stroke: var(--chart-line-strong); stroke-dasharray: 2 2; }
 
 .polygon-hit {
   fill: transparent;
@@ -141,7 +146,22 @@
   cursor: pointer;
 }
 
-/* Nút trục: ô tròn trắng viền mảnh, biểu tượng màu nhóm; đang chọn thì tô màu nhóm */
+/* Đỉnh đang chọn: vòng mảnh và bốn vạch tia cùng màu trục, hiện ra một lần rồi giữ nguyên */
+.polygon-burst { animation: polygon-pop 360ms var(--ease-out) both; }
+.polygon-burst-ring {
+  fill: none;
+  stroke: var(--tone);
+  stroke-width: 1.6px;
+  vector-effect: non-scaling-stroke;
+}
+.polygon-burst-ray {
+  stroke: var(--tone);
+  stroke-width: 1.6px;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Nút trục: chấm màu phẳng có vòng trắng, bóng mềm màu của trục */
 .polygon-node {
   position: absolute;
   display: flex;
@@ -149,50 +169,51 @@
   align-items: center;
   gap: var(--space-1);
   padding: 0;
-  font: inherit;
   font-size: var(--font-size-xs);
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.2;
-  color: var(--chart-text);
+  color: var(--chart-ink);
   background: none;
-  border: 0;
   border-radius: var(--radius-lg);
-  cursor: pointer;
   transform: translate(-50%, -50%);
+  transition: transform var(--transition-normal);
 }
-.polygon-node:focus-visible { outline: 3px solid var(--color-primary-ring); outline-offset: 4px; }
+.polygon-node:focus-visible { outline: 2px solid var(--color-border-focus); outline-offset: 4px; }
+.polygon-node.is-active { transform: translate(-50%, -50%) scale(1.08); }
 
 .polygon-node-badge {
+  position: relative;
   display: grid;
   place-items: center;
-  width: calc(38 * var(--px));
-  height: calc(38 * var(--px));
-  color: var(--tone);
-  background: var(--chart-paper);
-  border: 1px solid var(--chart-line);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-xs);
-  transition:
-    transform var(--transition-normal) var(--ease-decelerate),
-    color var(--transition-fast),
-    background-color var(--transition-fast),
-    border-color var(--transition-fast);
-}
-.polygon-node:hover .polygon-node-badge { transform: translateY(-2px); border-color: var(--chart-line-strong); }
-.polygon-node.is-active { color: var(--chart-text-strong); }
-.polygon-node.is-active .polygon-node-badge {
+  width: calc(var(--touch-target) + 4px);
+  height: calc(var(--touch-target) + 4px);
   color: var(--brand-white);
   background: var(--tone);
-  border-color: transparent;
-  transform: scale(1.06);
+  border-radius: var(--radius-full);
+  box-shadow:
+    0 0 0 3px var(--brand-white),
+    0 6px 14px -6px color-mix(in srgb, var(--tone) 40%, transparent);
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
 }
+.polygon-node:hover .polygon-node-badge {
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 0 3px var(--brand-white),
+    0 10px 20px -6px color-mix(in srgb, var(--tone) 45%, transparent);
+}
+.polygon-node:active .polygon-node-badge { transform: translateY(0) scale(0.96); }
 
-.polygon-node-name { white-space: nowrap; }
+/* Tên và số là chữ mực thường, không khung */
+.polygon-node-name,
+.polygon-node-value {
+  padding: 0 var(--space-1);
+  color: var(--chart-ink);
+  white-space: nowrap;
+}
 .polygon-node-value {
   font-size: var(--font-size-md);
   font-weight: 800;
   font-variant-numeric: tabular-nums;
-  color: var(--chart-text-strong);
 }
 
 /* Số đọc */
@@ -211,10 +232,10 @@
   max-width: 100%;
   padding: var(--space-2) var(--space-4);
   background: var(--chart-paper);
-  border: 1px solid var(--chart-line);
-  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
-  animation: polygon-fade 300ms var(--ease-decelerate) both;
+  animation: polygon-fade 300ms var(--ease-out) both;
 }
 .polygon-readout-dot {
   flex: none;
@@ -237,30 +258,26 @@
   padding: 0 var(--space-3);
   font-size: var(--font-size-xs);
   font-weight: 700;
-  color: var(--chart-text-strong);
-  background: color-mix(in srgb, var(--tone) 16%, var(--chart-paper));
-  border-radius: var(--radius-sm);
+  color: var(--chart-ink);
+  background: color-mix(in srgb, var(--tone) 16%, var(--brand-white));
+  border-radius: var(--radius-xs);
 }
 .polygon-readout-reference { font-size: var(--font-size-sm); font-weight: 600; color: var(--chart-text-muted); }
 
 @keyframes polygon-grow {
-  from { opacity: 0; transform: scale(0.5); }
-  to { opacity: 1; transform: scale(1); }
+  0% { opacity: 0; transform: scale(0.4); }
+  100% { opacity: 1; transform: scale(1); }
 }
-@keyframes polygon-rise {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: none; }
+@keyframes polygon-stage-pop {
+  0% { opacity: 0; translate: 0 12px; }
+  100% { opacity: 1; translate: 0 0; }
 }
-@keyframes polygon-node-in {
-  from { opacity: 0; transform: translate(-50%, calc(-50% + 10px)); }
-  to { opacity: 1; transform: translate(-50%, -50%); }
-}
-@keyframes polygon-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+@keyframes polygon-target-pop {
+  0% { opacity: 0; transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1); }
 }
 @keyframes polygon-pop {
-  from { opacity: 0; transform: scale(0.4); }
+  from { opacity: 0; transform: scale(0.6); }
   to { opacity: 1; transform: scale(1); }
 }
 @keyframes polygon-fade {
@@ -275,9 +292,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .polygon-chart .polygon-svg-data,
-  .polygon-chart.is-visible .polygon-svg-data,
-  .polygon-chart .polygon-node,
-  .polygon-chart.is-visible .polygon-node { opacity: 1; transform: none; animation: none; }
+  .polygon-chart.is-visible .polygon-svg-data { opacity: 1; transform: none; animation: none; }
   .polygon-chart .polygon-stage { opacity: 1; }
-  .polygon-chart * { animation: none; transition: none; }
+  .polygon-chart *,
+  .polygon-chart *::after { animation: none; transition: none; }
 }

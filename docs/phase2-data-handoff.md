@@ -129,3 +129,25 @@ File research không có bảng nghề ↔ ngành. Liên kết sinh tự động
 - Trang nghề của người dùng ưu tiên nội dung quản trị nhập (tóm tắt, kỹ năng, lương, lộ trình) thay cho phần tổng hợp từ JD cùng loại.
 - Thanh điều hướng công khai có danh mục nghề thả xuống; đăng ký chọn được vai trò; trang so sánh phương án có lịch sử quyết định và nút "Đặt làm mục tiêu" (`set_decision_goal`: cần phương án ưu tiên có nghề, cần phụ huynh đồng thuận nếu đã chia sẻ báo cáo, tối đa 2 nghề mục tiêu); kỹ năng mềm lấy từ 360° chỉ gồm G2–G5.
 - Kiểm thử: `supabase/tests/phase2_career_publish.sql`, `phase2_career_admin.sql`, `phase3_decision_goal.sql`.
+
+## 9. Khung JD theo cấp (2026-11-16)
+
+Mỗi nghề có các bậc L0–L7 (Thực tập sinh, Fresher, Junior, Middle, Senior, Trưởng nhóm, Quản lý, Lãnh đạo — thang cũ của `career_job_descriptions.career_level`, thêm L0). Mỗi bậc một khung: thông tin chung + các dòng nội dung chia theo mục, mục yêu cầu và quyền lợi có mức Bắt buộc / Thường gặp / Lợi thế.
+
+| Thành phần | File |
+|---|---|
+| Bảng, RLS, RPC quản trị | `supabase/migrations/20261116000100_career_level_frameworks.sql` |
+| Khóa nguồn chữ cho JD (`source_key`, `source_file`; `source_id` thôi bắt buộc) | `supabase/migrations/20261116000200_career_jd_source_key.sql` |
+| Đọc file Word khung JD | `supabase/scripts/jd-framework-docx.ts` |
+| Nạp JD + khung | `supabase/scripts/import-jd-frameworks.ts` · `npm run import:jd-frameworks:dry` / `import:jd-frameworks [-- --step jds|frameworks] [--publish] [--json-out f] [--json-in f]` |
+| Kiểm thử | `supabase/tests/career_level_frameworks.sql` (39 kiểm tra) |
+| Quản trị | `/quan-tri/nghe/:id` tab "Khung theo cấp" (`modules/admin/components/CareerLevelFrameworksPanel.tsx`) |
+| Học sinh, khách | khối "Cấp bậc" trên `/nghe/:id` và `/danh-muc-nghe/:id` (`modules/career_explorer/components/CareerLevelLadder.tsx`) |
+
+- `career_level_frameworks` (một dòng mỗi nghề × bậc) và `career_level_framework_items` (`section` quyết định nghĩa các cột `group_label/content/detail/note`, xem chú thích trong migration). Học sinh và khách chỉ đọc khung `published` của nghề `published`; `pass_threshold` và `interview_question` chỉ quản trị đọc (chặn bằng RLS).
+- RPC: `admin_save_level_framework` (tạo/sửa, có `items` thì thay toàn bộ dòng), `admin_set_level_framework_status` (công bố cần ít nhất một nhiệm vụ), `admin_delete_level_framework`, `admin_copy_level_framework` (sao chép sang nghề/bậc khác thành Nháp, bỏ số tin căn cứ).
+- Quản trị tạo khung cho một bậc bằng ba cách: khung trống; dựng từ JD cùng bậc (tách ý, gộp cách viết giống nhau, từ 5 JD xếp mức theo 40% / 20%, ít hơn để "chưa xếp mức"); sao chép từ khung khác. Phần lớn nghề chỉ có 1 JD ở 1 bậc nên cách sao chép thường hữu ích hơn.
+- Dữ liệu BA: `RESEARCH JOB BA.xlsx` cho 281 JD sau khi bỏ trùng (sheet Senior lặp 52 dòng; tin ở "Trên senior" trùng sheet cấp được bỏ). Trưởng nhóm/Quản lý Phân tích nghiệp vụ là L5/L6 của nghề `G1-01:chuyen-vien-phan-tich-nghiep-vu`; Chủ sở hữu sản phẩm, Quản lý sản phẩm, Kiến trúc sư giải pháp, Quản lý dự án CNTT là nghề riêng ở L4 (L5 nếu chức danh Lead/Head). JD mới không có cột "Dimension liên quan" nên không vào ma trận Career Fit.
+- `KHUNG JD.docx` cho 10 khung: BA L0–L6, PO/PM, Solution Architect, Project Manager (mỗi nghề L4). Hướng phát triển được nối sang nghề đích theo từ khóa (BA Senior → Chủ sở hữu sản phẩm, BA Middle → Trưởng nhóm…). Khung trên Senior chỉ có lương "tối đa … USD" hoặc không công bố nên ô số để trống, giữ chữ gốc.
+- Nạp lại không ghi đè khung quản trị đã sửa (`updated_by` có giá trị) và không xóa JD đã nạp.
+- **Chờ BA:** Required Level của các bậc (hiện chỉ Middle = 3,5 theo docx); cột Required Level của sheet Middle bị Excel đổi thành ngày `2026-05-03` nên JD Middle để trống. Nghề nháp "Trưởng nhóm Phân tích nghiệp vụ" (2 JD từ Career_Profile) chưa gộp vào nghề BA.

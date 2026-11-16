@@ -1,0 +1,318 @@
+/* Cấp bậc của nghề: dải bậc nối nhau bằng một đường mực, chi tiết bậc trên mặt giấy trắng */
+.level-steps {
+  display: flex;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0 0 var(--space-2);
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+}
+
+.level-steps > li {
+  flex: 1 0 calc(150 * var(--px));
+  min-width: 0;
+  scroll-snap-align: start;
+}
+
+.level-step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  width: 100%;
+  min-height: 44px;
+  height: 100%;
+  padding: var(--space-3) var(--space-4);
+  font: inherit;
+  text-align: left;
+  color: var(--color-text-main);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-top: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color var(--duration-enter) var(--ease-standard), background-color var(--duration-enter) var(--ease-standard);
+}
+
+.level-step:hover {
+  border-color: var(--color-border-hover);
+}
+
+.level-step:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.level-step.is-active {
+  background: var(--hope-blue-soft);
+  border-color: var(--hope-blue-border);
+  border-top-color: var(--hope-blue);
+}
+
+.level-step-name {
+  font-size: var(--font-size-md);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+/* Kinh nghiệm đầy đủ nằm ở phần chi tiết; thẻ bậc chỉ giữ hai dòng để các thẻ cao bằng nhau */
+.level-step-meta {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.level-step-salary {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--hope-blue-deep);
+}
+
+.level-detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.level-summary {
+  margin: 0;
+  max-width: 80ch;
+  font-size: var(--font-size-md);
+  color: var(--color-text-secondary);
+}
+
+.level-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(200 * var(--px))), 1fr));
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.level-facts > div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--color-border);
+  min-width: 0;
+}
+
+.level-facts dt {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.level-facts dd {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.level-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.level-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.level-sub {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.level-list,
+.level-tasks,
+.level-pairs,
+.level-variants,
+.level-salaries,
+.level-competencies,
+.level-moves,
+.level-req ul {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.level-list li {
+  position: relative;
+  padding-left: var(--space-4);
+}
+
+.level-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.65em;
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--hope-blue);
+}
+
+.level-tasks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(320 * var(--px))), 1fr));
+  gap: var(--space-3);
+}
+
+.level-tasks li,
+.level-variants li,
+.level-competencies li,
+.level-moves li {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  min-width: 0;
+}
+
+.level-tasks p,
+.level-variants p,
+.level-competencies p,
+.level-moves p {
+  margin: 0;
+}
+
+.level-task-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.level-pairs li {
+  display: grid;
+  grid-template-columns: minmax(calc(140 * var(--px)), 0.4fr) minmax(0, 1fr);
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.level-req-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(300 * var(--px))), 1fr));
+  gap: var(--space-4);
+}
+
+.level-req {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-top: 2px solid var(--color-text-main);
+  min-width: 0;
+}
+
+.level-req li {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+  border-bottom: 1px dashed var(--color-border);
+}
+
+.level-req li > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.level-req li .app-badge,
+.level-task-head .app-badge {
+  flex-shrink: 0;
+}
+
+.level-variants,
+.level-competencies,
+.level-moves {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(300 * var(--px))), 1fr));
+  gap: var(--space-3);
+}
+
+.level-salaries li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-4);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.level-salaries b {
+  font-size: var(--font-size-xl);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--hope-blue-deep);
+}
+
+.level-salaries .level-sub {
+  grid-column: 1 / -1;
+}
+
+.level-next {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 44px;
+  padding: var(--space-3) var(--space-4);
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  color: var(--hope-blue-deep);
+  background: var(--hope-blue-soft);
+  border: 1px solid var(--hope-blue-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.level-next svg {
+  margin-left: auto;
+}
+
+.level-move-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 44px;
+  font-weight: 700;
+  color: var(--hope-blue-deep);
+}
+
+@media (max-width: 600px) {
+  .level-steps > li {
+    flex-basis: calc(140 * var(--px));
+  }
+
+  .level-pairs li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-1);
+  }
+}

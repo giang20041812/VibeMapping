@@ -46,6 +46,9 @@ check('ghi chú tăng 2026 trong ngoặc không bị loại', '- Học phí 1 k�
 check('trọn khóa N năm', '- Học phí trọn khóa 2 năm: 52.800.000 đồng (đã bao gồm lệ phí đầu vào và đầu ra)', null, {
   status: 'amount', basis: 'total', isEstimate: true, perYear: [26.4 * M, 26.4 * M], total: [52.8 * M, 52.8 * M],
 });
+check('chương trình học phí cao ghi theo năm', '- Học phí niêm yết AY 2026-2027: 815.850.000 đồng/năm (≈407.925.000 đồng/kỳ; 27.195.000 đồng/tín chỉ khi tính theo tín chỉ)\n- Tổng 4 năm (niêm yết): ≈3.263 triệu đồng\n- Chưa gồm quỹ hỗ trợ 35% của Vingroup áp dụng cho mọi sinh viên trúng tuyển (≈530 triệu đồng/năm sau hỗ trợ theo trang FAQ); học bổng 50–100% tính riêng', 4, {
+  status: 'amount', basis: 'year', isEstimate: false, perYear: [815_850_000, 815_850_000],
+});
 check('chưa có dữ liệu ngắn gọn', 'Chưa có dữ liệu', 4, { status: 'unpublished', perYear: null });
 
 console.log(`tuition-parser: ${count} ca đạt`);

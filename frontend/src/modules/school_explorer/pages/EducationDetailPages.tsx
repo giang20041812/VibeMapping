@@ -25,6 +25,8 @@ import { readProgramCompare } from '../../../lib/selectionCart';
 import type { FilterOption } from '../../../types/filter';
 import { useAdminFilter } from '../../admin/useAdminFilter';
 import { addProgramToDecisionCompare } from '../compareProgram';
+import { TuitionBreakdown, TuitionSummary } from '../components/TuitionInfo';
+import { formatMoney } from '../tuition';
 import { INSTITUTION_TYPE_LABEL, OWNERSHIP_LABEL } from '../school_explorer.constants';
 import { distinctVariantParts, formatTuition, loadCareerMap, loadInstitution, loadMajor, loadProgram, programVariant, type ProgramSummary } from '../education.service';
 import '../../career_explorer/pages/CareerPages.css';
@@ -144,7 +146,7 @@ const MajorProgramRow: React.FC<{ program: ProgramSummary; added: string[]; onAd
     </div>
     {program.faculty && <div className="program-row-sub">{program.faculty}</div>}
     <div className="major-program-foot">
-      <span className="major-program-tuition">{formatTuition(program)}</span>
+      <TuitionSummary program={program} />
       <CompareButton program={program} added={added} onAdd={onAdd} />
     </div>
   </li>
@@ -203,7 +205,7 @@ const ProgramList: React.FC<{ programs: ProgramSummary[]; show: 'institution' | 
     },
     ...(show === 'institution' ? [{ key: 'city', header: 'Tỉnh/thành', nowrap: true, render: (p: ProgramSummary) => p.city ?? '–' }] : []),
     { key: 'type', header: 'Hệ đào tạo', render: (p) => p.programType ?? '–' },
-    { key: 'tuition', header: 'Học phí', nowrap: true, render: (p) => formatTuition(p) },
+    { key: 'tuition', header: 'Học phí', render: (p) => <TuitionSummary program={p} /> },
     {
       key: 'status',
       header: 'Dữ liệu',
@@ -250,13 +252,12 @@ const ProgramList: React.FC<{ programs: ProgramSummary[]; show: 'institution' | 
 };
 
 const tuitionRange = (programs: ProgramSummary[]): string => {
-  const lows = programs.map((p) => p.tuitionMin).filter((v): v is number => v !== null);
+  const lows = programs.map((p) => p.tuitionYearMin).filter((v): v is number => v !== null);
   if (lows.length === 0) return 'Đang cập nhật';
-  const fmt = (v: number) => (v / 1_000_000).toLocaleString('vi-VN', { maximumFractionDigits: 1 });
   const low = Math.min(...lows);
-  const high = Math.max(...programs.map((p) => p.tuitionMax ?? p.tuitionMin ?? 0));
+  const high = Math.max(...programs.map((p) => p.tuitionYearMax ?? p.tuitionYearMin ?? 0));
   if (low === 0 && high === 0) return 'Miễn học phí';
-  return low === high ? `${fmt(low)} triệu` : `${fmt(low)}–${fmt(high)} triệu`;
+  return low === high ? formatMoney(low) : `${formatMoney(low)}–${formatMoney(high)}`;
 };
 
 export const InstitutionDetailPage: React.FC = () => {
@@ -292,7 +293,7 @@ export const InstitutionDetailPage: React.FC = () => {
       <div className="school-facts">
         <StatTile label="Chương trình" tone="blue" icon={<Layers />} value={data.programs.length} />
         <StatTile label="Ngành" tone="violet" icon={<BookMarked />} value={majorCount} />
-        <StatTile label="Học phí mỗi kỳ" tone="gold" icon={<Wallet />} value={tuitionRange(data.programs)} />
+        <StatTile label="Học phí mỗi năm" tone="gold" icon={<Wallet />} value={tuitionRange(data.programs)} />
       </div>
       <section className="school-programs-section" aria-labelledby="school-programs-heading">
         <div className="school-programs-header">
@@ -362,13 +363,15 @@ export const ProgramDetailPage: React.FC = () => {
           <li><span>Hệ đào tạo</span><span>{p.programType ?? 'Đang cập nhật'}</span></li>
           <li><span>Khoa</span><span>{data.faculty ?? 'Đang cập nhật'}</span></li>
           <li><span>Thời gian</span><span>{data.studyYears ? `${data.studyYears} năm` : 'Đang cập nhật'}</span></li>
-          <li><span>Học phí</span><span>{formatTuition(p)}</span></li>
           <li><span>Trạng thái dữ liệu</span><Badge>{RESEARCH_LABEL[p.researchStatus] ?? p.researchStatus}</Badge></li>
         </ul>
         {data.summary && <p>{data.summary}</p>}
         {data.url && <a href={data.url} target="_blank" rel="noopener noreferrer">Trang chương trình <ExternalLink size={14} aria-hidden="true" /></a>}
         {data.source && <p className="explain-note">Nguồn: {data.source}</p>}
         <AddProgramButton program={p} admission={data.admissions} />
+      </Card>
+      <Card title="Học phí">
+        <TuitionBreakdown program={p} />
       </Card>
       <Card title="Tuyển sinh và điểm chuẩn lịch sử">
         {data.admissions.length === 0 ? (

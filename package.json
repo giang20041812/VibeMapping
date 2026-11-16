@@ -25,7 +25,9 @@
     "seed:formulas:dry": "npm --prefix supabase/scripts run seed:formulas:dry",
     "seed:formulas:verify": "npm --prefix supabase/scripts run seed:formulas:verify",
     "check:formulas": "npm --prefix supabase/scripts run check:formulas",
-    "gen:formula-fixture": "npm --prefix supabase/scripts run gen:formula-fixture"
+    "gen:formula-fixture": "npm --prefix supabase/scripts run gen:formula-fixture",
+    "import:jd-frameworks": "npm --prefix supabase/scripts run import:jd-frameworks --",
+    "import:jd-frameworks:dry": "npm --prefix supabase/scripts run import:jd-frameworks:dry --"
   },
   "keywords": [
     "typescript",

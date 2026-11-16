@@ -49,6 +49,12 @@ Thumbs.db
 TEAM BA/
 *.docx
 *.zip
+/*.xlsx
+
+# Dự án tham khảo và ảnh dùng tạm
+HTDNSK/
+extracted_images/
+screenshots/
 
 # Build cache
 *.tsbuildinfo

@@ -2802,7 +2802,7 @@ export type Database = {
         Insert: {
           id?: string;
           formula_id: string;
-          version_no: number;
+          version_no?: number;
           expression: Json;
           status?: string;
           note?: string | null;

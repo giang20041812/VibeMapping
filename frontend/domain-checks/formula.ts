@@ -5,6 +5,9 @@
  *  - ca thử có hàm đối chiếu thì hàm thật trong assessmentRules.ts cũng phải ra đúng kết quả đó.
  * Chạy từ thư mục gốc: supabase/scripts/node_modules/.bin/tsx frontend/domain-checks/formula.ts
  */
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import katex from 'katex';
 import * as R from '../src/domain/assessmentRules';
 import {
@@ -18,24 +21,44 @@ import {
 import {
   collectDependencies,
   collectFallbacks,
+  collectNeeds,
   evaluate,
   findCycle,
   formulaToLatex,
   validateExpression,
   valuesMatch,
+  LIVE_BINDINGS,
+  setFormulaOverrides,
   type Expr,
   type Value,
 } from '../src/domain/formula';
+import { buildFormulaFixtureSql } from './formula-fixture';
 import {
   GRAPH_NODE_HEIGHT,
   GRAPH_NODE_WIDTH,
   buildEdges,
   computeDepths,
+  dependencyLevels,
   layoutGraph,
   relatedCodes,
   visibleCodes,
   type GraphFormula,
 } from '../src/modules/formula_library/formula.graph';
+import { contextFromState, parseCell, stateFromInputs } from '../src/modules/formula_library/formula.trial';
+import {
+  FN_ARITY,
+  KIND_OPTIONS,
+  allowedRefs,
+  buildEditorEnv,
+  changeNodeKind,
+  checkDraft,
+  defaultCond,
+  defaultNode,
+  fitFnArgs,
+  runTests,
+  saveErrorText,
+} from '../src/modules/formula_library/editor.logic';
+import type { FormulaLibrary, FormulaRecord, FormulaTestRow } from '../src/modules/formula_library/formula.types';
 import { parseTuition } from '../../supabase/scripts/tuition-parser';
 
 type Args = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -317,6 +340,248 @@ check('sơ đồ: bố cục không chồng nút và mọi dây đi từ trái s
 check('sơ đồ: bộ lọc rỗng cho bố cục rỗng', () => {
   const layout = layoutGraph(graphFormulas, graphEdges, new Set());
   must(layout.nodes.length === 0 && layout.edges.length === 0, 'phải rỗng');
+});
+
+// 6. Tính thử và khai triển --------------------------------------------------------------------------------------------
+check('cần nhập gì: điểm tiêu chí tổng hợp', () => {
+  const needs = collectNeeds(FORMULAS_BY_CODE.criterion_score_360.expression);
+  must(needs.params.join() === 'self_weight', `tham số ${needs.params.join()}`);
+  must(needs.refs.join() === 'rater_rs', `công thức ${needs.refs.join()}`);
+  const fields = needs.sets.raters?.fields.map((f) => `${f.kind}:${f.key}`).sort().join() ?? '';
+  must(fields === 'ref:rater_rs,ref:rater_share', `trường dòng ${fields}`);
+});
+check('cần nhập gì: tập viết thẳng của độ phù hợp nghề chỉ cần công thức và tham số', () => {
+  const needs = collectNeeds(FORMULAS_BY_CODE.career_fit.expression);
+  must(Object.keys(needs.sets).length === 0, 'không cần tập dòng');
+  must(needs.refs.length === 3 && needs.params.length === 3 && needs.vars.length === 0, JSON.stringify(needs));
+});
+check('cần nhập gì: đủ để tính mọi công thức không báo thiếu đầu vào', () => {
+  for (const f of FORMULAS) {
+    const needs = collectNeeds(f.expression);
+    const sets = Object.fromEntries(Object.entries(needs.sets).map(([name]) => [name, [] as Record<string, Value>[]]));
+    const vars: Record<string, Value> = {};
+    for (const key of [...needs.vars, ...needs.params]) vars[key] = null;
+    const refs: Record<string, Value> = {};
+    for (const key of needs.refs) refs[key] = null;
+    try {
+      evaluate(f.expression, { vars, refs, sets });
+    } catch (error) {
+      throw new Error(`${f.code}: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+});
+check('tính thử: mọi ca thử đi qua ô nhập dạng chữ vẫn ra đúng kết quả', () => {
+  for (const f of FORMULAS) {
+    const needs = collectNeeds(f.expression);
+    for (const test of f.tests) {
+      const context = contextFromState(stateFromInputs(needs, test.inputs, {}));
+      const actual = evaluate(f.expression, context);
+      must(valuesMatch(actual, test.expected, test.tolerance ?? 0.0001), `${f.code} – ${test.name}: ${show(actual)}, mong đợi ${show(test.expected)}`);
+    }
+  }
+});
+check('tính thử: đọc ô nhập', () => {
+  must(parseCell('') === null && parseCell('  ') === null, 'ô trống là không có dữ liệu');
+  must(parseCell('4,25') === 4.25 && parseCell('-3') === -3 && parseCell('0.5') === 0.5, 'đọc số có dấu phẩy');
+  must(parseCell('Phụ huynh') === 'Phụ huynh' && parseCell('12abc') === '12abc', 'chữ giữ nguyên');
+});
+check('tính thử: tham số hiện hành điền vào khi ca thử không có', () => {
+  const needs = collectNeeds(FORMULAS_BY_CODE.th_percent.expression);
+  const state = stateFromInputs(needs, { vars: { th_score: 6 } }, { understanding_percent_floor: 5 });
+  must(state.vars.understanding_percent_floor === '5' && state.vars.th_score === '6', JSON.stringify(state.vars));
+});
+check('khai triển theo cấp', () => {
+  const levels = dependencyLevels('career_fit', graphFormulas);
+  const codes = (n: number) => levels[n - 1].map((f) => f.formula_code).sort().join();
+  must(codes(1) === 'match_g1_g5,match_g7,riasec_match', `cấp 1: ${codes(1)}`);
+  must(levels[1].some((f) => f.formula_code === 'criterion_fit') && levels.length === 2, `số cấp ${levels.length}`);
+  const all = levels.flat().map((f) => f.formula_code);
+  must(new Set(all).size === all.length && !all.includes('career_fit'), 'mỗi công thức chỉ một lần và không có chính nó');
+  must(dependencyLevels('rater_rs', graphFormulas).length === 0, 'công thức không dùng công thức khác thì không có cấp');
+  const deep = dependencyLevels('trust_label', graphFormulas);
+  must(deep.flat().some((f) => f.formula_code === 'trust_effective_seconds'), 'phải đi tới tận công thức đầu chuỗi');
+});
+
+// 7. Trình soạn ---------------------------------------------------------------------------------------------------------
+const library: FormulaLibrary = {
+  groups: [],
+  symbols: SYMBOLS,
+  formulas: FORMULAS.map<FormulaRecord>((f, index) => ({
+    id: f.code,
+    formula_code: f.code,
+    formula_name: f.name,
+    group_id: f.group,
+    group_name: f.group,
+    output_symbol: f.output.symbol,
+    output_unit: null,
+    verification_level: f.verification,
+    sort_order: index,
+    version_no: 1,
+    effective_from: null,
+    expression: f.expression,
+  })),
+};
+const editorSelf = 'career_fit';
+const editorEnv = buildEditorEnv(library, editorSelf);
+
+check('trình soạn: mỗi loại nút có giá trị mặc định dựng được thành công thức hiển thị được', () => {
+  for (const option of KIND_OPTIONS) {
+    const node = defaultNode(option.value, editorEnv);
+    must(node.t === option.value, `${option.value}: loại nút sai`);
+    katex.renderToString(formulaToLatex({ output: { symbol: 'x', latex: 'X', name: 'X' }, expression: node }, latexContext), { throwOnError: true, strict: 'ignore' });
+  }
+  for (const kind of ['cmp', 'notnull', 'and', 'or'] as const) must(defaultCond(kind).c === kind, `điều kiện ${kind}`);
+});
+check('trình soạn: nút mặc định tính được và không báo lỗi cấu trúc', () => {
+  const needsOf = (node: Expr) => {
+    const needs = collectNeeds(node);
+    return { vars: Object.fromEntries([...needs.vars, ...needs.params].map((k) => [k, 1])), refs: Object.fromEntries(needs.refs.map((k) => [k, 1])), sets: Object.fromEntries(Object.keys(needs.sets).map((k) => [k, [{}]])) };
+  };
+  for (const option of KIND_OPTIONS) {
+    const node = defaultNode(option.value, editorEnv);
+    const issues = validateExpression(node, { symbols: SYMBOLS_BY_CODE, formulaCodes: new Set(FORMULAS.map((f) => f.code)) });
+    must(issues.length === 0, `${option.value}: ${issues.map((i) => i.message).join('; ')}`);
+    evaluate(node, needsOf(node));
+  }
+});
+check('trình soạn: đổi giữa phép tính và phân số giữ nguyên hai vế', () => {
+  const bin: Expr = { t: 'bin', op: '+', l: { t: 'num', v: 3 }, r: { t: 'num', v: 4 } };
+  const div = changeNodeKind(bin, 'div', editorEnv);
+  must(div.t === 'div' && div.n.t === 'num' && div.n.v === 3 && div.d.t === 'num' && div.d.v === 4, JSON.stringify(div));
+  const back = changeNodeKind(div, 'bin', editorEnv);
+  must(back.t === 'bin' && back.op === '*', JSON.stringify(back));
+  must(changeNodeKind(bin, 'bin', editorEnv) === bin, 'cùng loại thì giữ nguyên');
+});
+check('trình soạn: số đối số khớp với hàm', () => {
+  for (const [name, [min, max]] of Object.entries(FN_ARITY)) {
+    const fitted = fitFnArgs(name as keyof typeof FN_ARITY, []);
+    must(fitted.length === min, `${name}: ${fitted.length} đối số`);
+    const many = fitFnArgs(name as keyof typeof FN_ARITY, Array.from({ length: 5 }, () => ({ t: 'num', v: 1 }) as Expr));
+    must(many.length === (Number.isFinite(max) ? max : 5), `${name}: cắt còn ${many.length}`);
+  }
+});
+check('trình soạn: không cho chọn công thức tạo vòng lặp', () => {
+  const codes = allowedRefs(editorSelf, library.formulas).map((f) => f.formula_code);
+  must(!codes.includes(editorSelf), 'không được chọn chính nó');
+  for (const user of ['option_total_score', 'career_rank_band', 'career_fit_class']) must(!codes.includes(user), `${user} đang dùng career_fit`);
+  for (const dependency of ['match_g1_g5', 'criterion_fit', 'th_percent']) must(codes.includes(dependency), `${dependency} phải chọn được`);
+});
+check('trình soạn: kiểm tra bản đang soạn', () => {
+  must(checkDraft(FORMULAS_BY_CODE.career_fit.expression, editorSelf, library).length === 0, 'công thức hiện hành phải sạch');
+  const cycle = checkDraft({ t: 'ref', formula: 'option_total_score' }, editorSelf, library);
+  must(cycle.some((i) => i.blocking && i.message.includes('vòng lặp')), 'phải báo vòng lặp');
+  const unknown = checkDraft({ t: 'sym', id: 'khong_co' }, editorSelf, library);
+  must(unknown.some((i) => i.blocking), 'ký hiệu chưa khai báo phải chặn');
+  const risky = checkDraft({ t: 'div', n: { t: 'num', v: 1 }, d: { t: 'sym', id: 'budget' } }, editorSelf, library);
+  must(risky.length === 1 && !risky[0].blocking, 'chia cho 0 chỉ là cảnh báo');
+});
+check('trình soạn: ca thử phát hiện chỗ lệch khi sửa công thức', () => {
+  const f = FORMULAS_BY_CODE.th_percent;
+  const tests: FormulaTestRow[] = f.tests.map((t, i) => ({ id: String(i), case_name: t.name, inputs: t.inputs, expected: t.expected, tolerance: t.tolerance ?? 0.0001 }));
+  must(runTests(f.expression, tests).every((o) => o.state === 'match'), 'công thức gốc phải khớp hết');
+  const edited: Expr = { t: 'bin', op: '*', l: f.expression, r: { t: 'num', v: 2 } };
+  must(runTests(edited, tests).some((o) => o.state === 'mismatch'), 'sửa nhân đôi phải làm lệch ca thử');
+  const broken: Expr = { t: 'sym', id: 'khong_co' };
+  must(runTests(broken, tests).every((o) => o.state === 'error'), 'thiếu đầu vào phải báo lỗi chứ không treo');
+});
+check('trình soạn: thông báo lỗi từ cơ sở dữ liệu', () => {
+  must(saveErrorText('formula_cycle').includes('vòng lặp'), 'vòng lặp');
+  must(saveErrorText('xyz').includes('Không lưu được'), 'lỗi chung');
+});
+
+// 7. Engine đọc công thức từ thư viện ------------------------------------------------------------------------------
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+const readRepo = (...parts: string[]): string => fs.readFileSync(path.join(repoRoot, ...parts), 'utf8');
+
+check('danh sách công thức đã nối khớp với mã nguồn', () => {
+  const sqlText = fs
+    .readdirSync(path.join(repoRoot, 'supabase', 'migrations'))
+    .filter((name) => name.includes('formula_runtime_wiring'))
+    .map((name) => readRepo('supabase', 'migrations', name))
+    .join('\n');
+  const tsText = readRepo('frontend', 'src', 'domain', 'assessmentRules.ts');
+  const sqlCodes = new Set([...sqlText.matchAll(/formula_apply_(?:num|label)\(\s*'([a-z0-9_]+)'/g)].map((m) => m[1]));
+  const tsCodes = new Set([...tsText.matchAll(/apply(?:Number|Label)\(\s*'([a-z0-9_]+)'/g)].map((m) => m[1]));
+  for (const [code, binding] of Object.entries(LIVE_BINDINGS)) {
+    must(FORMULAS_BY_CODE[code] !== undefined, `${code} không có trong danh mục`);
+    must(Boolean(binding.sql) === sqlCodes.has(code), `${code}: khai báo sql=${Boolean(binding.sql)} nhưng mã SQL ${sqlCodes.has(code) ? 'có' : 'không có'} lời gọi`);
+    must(Boolean(binding.ts) === tsCodes.has(code), `${code}: khai báo ts=${Boolean(binding.ts)} nhưng mã TS ${tsCodes.has(code) ? 'có' : 'không có'} lời gọi`);
+  }
+  for (const code of [...sqlCodes, ...tsCodes]) must(LIVE_BINDINGS[code] !== undefined, `${code} có lời gọi trong mã nguồn nhưng thiếu trong danh sách đã nối`);
+});
+check('tệp kiểm thử SQL sinh từ danh mục không bị cũ', () => {
+  const onDisk = readRepo('supabase', 'tests', 'formula_catalog_fixture.sql').replace(/\r\n/g, '\n');
+  must(onDisk === buildFormulaFixtureSql(), 'danh mục đã đổi: chạy npm run gen:formula-fixture');
+});
+
+const ACTIVE_EXPRESSIONS = Object.fromEntries(FORMULAS.map((f) => [f.code, f.expression]));
+const asOverrides = (codes: string[], edited: Record<string, Expr> = {}) =>
+  setFormulaOverrides({
+    formulas: Object.fromEntries(codes.map((code) => [code, { expression: edited[code] ?? FORMULAS_BY_CODE[code].expression, params: {} }])),
+    active: { ...ACTIVE_EXPRESSIONS, ...edited },
+    params: {},
+  });
+const tsCodesLive = Object.entries(LIVE_BINDINGS).filter(([, b]) => b.ts).map(([code]) => code);
+
+const DECISION_OPTIONS: R.DecisionOptionInput[] = [
+  { id: 'a', title: 'A', admissionFloor: 30, learnerScore: 28, tuitionPerYear: 20, careerFitPercent: 80, locationScore: null, city: 'TP.HCM' },
+  { id: 'b', title: 'B', admissionFloor: 900, learnerScore: 950, tuitionPerYear: 40, careerFitPercent: 75, locationScore: null, city: 'Hà Nội' },
+  { id: 'c', title: 'C', admissionFloor: null, learnerScore: 20, tuitionPerYear: 0, careerFitPercent: 60, locationScore: 40, city: null },
+  { id: 'd', title: 'D', admissionFloor: 25, learnerScore: null, tuitionPerYear: null, careerFitPercent: null, locationScore: null, city: 'Đà Nẵng' },
+];
+const DECISION_WEIGHTS = { careerFit: 3, admission: 3, finance: 2, location: 1 };
+const decisionRuns = () => [
+  R.compareDecisionOptions(DECISION_OPTIONS, DECISION_WEIGHTS, 30, 'TP.HCM'),
+  R.compareDecisionOptions(DECISION_OPTIONS, DECISION_WEIGHTS, null, 'hà nội'),
+  R.compareDecisionOptions(DECISION_OPTIONS, { ...DECISION_WEIGHTS, finance: 0 }, null, null),
+  R.compareDecisionOptions(DECISION_OPTIONS.slice(0, 2), DECISION_WEIGHTS, 25, null),
+];
+const ROADMAP_MILESTONES: R.RoadmapMilestoneProgressInput[] = [
+  { id: '1', pillar: 'knowledge', title: 'A', done: true, weight: 2, dueDate: '2026-01-10' },
+  { id: '2', pillar: 'knowledge', title: 'B', done: false, weight: 1, dueDate: '2026-02-01' },
+  { id: '3', pillar: 'experience', title: 'C', done: false, weight: 1, dueDate: '2026-01-20', isCheckpoint: true },
+];
+const roadmapRuns = () => [
+  R.evaluateRoadmapProgress(ROADMAP_MILESTONES, '2026-03-01', { startIso: '2026-01-01', targetIso: '2026-04-01' }),
+  R.evaluateRoadmapProgress(ROADMAP_MILESTONES, '2026-03-01'),
+  R.evaluateRoadmapProgress([], '2026-03-01', { startIso: '2026-01-01', targetIso: '2026-04-01' }),
+];
+const SUPPLEMENTAL_INPUT = { empathicAccuracy: [2, 1, 2, 1], solo: [4, 3, 5, 4], carkhuff: 4 };
+const supplementalRuns = () => (['parent', 'friend', 'teacher', 'mentor'] as const).map((g) => R.supplementalUnderstandingScore(g, SUPPLEMENTAL_INPUT));
+
+check('engine: đặt đúng biểu thức gốc thì kết quả giữ nguyên', () => {
+  setFormulaOverrides(null);
+  const before = JSON.stringify([decisionRuns(), roadmapRuns(), supplementalRuns()]);
+  asOverrides(tsCodesLive);
+  const after = JSON.stringify([decisionRuns(), roadmapRuns(), supplementalRuns()]);
+  setFormulaOverrides(null);
+  must(before === after, 'kết quả đổi dù biểu thức không đổi');
+});
+check('engine: sửa công thức thì kết quả đổi theo', () => {
+  setFormulaOverrides(null);
+  const baseline = decisionRuns()[0];
+  asOverrides(['option_total_score'], { option_total_score: { t: 'num', v: 50 } });
+  const edited = decisionRuns()[0];
+  must(edited.every((o) => o.totalScore === 50), 'điểm tổng phải theo công thức mới');
+  must(baseline.some((o) => o.totalScore !== 50), 'điểm gốc phải khác 50');
+  asOverrides(['roadmap_off_track'], { roadmap_off_track: { t: 'text', v: 'Đúng hướng' } });
+  must(R.evaluateRoadmapProgress(ROADMAP_MILESTONES, '2026-03-01', { startIso: '2026-01-01', targetIso: '2026-04-01' }).offTrack === false, 'cảnh báo chệch hướng phải theo công thức mới');
+  asOverrides(['supplemental_score'], { supplemental_score: { t: 'num', v: 42 } });
+  must(R.supplementalUnderstandingScore('mentor', SUPPLEMENTAL_INPUT) === 42, 'điểm bổ sung phải theo công thức mới');
+  setFormulaOverrides(null);
+});
+check('engine: biểu thức lỗi thì quay về kết quả sẵn có', () => {
+  setFormulaOverrides(null);
+  const baseline = JSON.stringify(decisionRuns());
+  const warn = console.warn;
+  console.warn = () => undefined;
+  try {
+    asOverrides(['admission_score'], { admission_score: { t: 'sym', id: 'budget' } });
+    must(JSON.stringify(decisionRuns()) === baseline, 'lỗi biểu thức không được làm đổi kết quả');
+  } finally {
+    console.warn = warn;
+    setFormulaOverrides(null);
+  }
 });
 
 console.log(`${passed} kiểm tra đạt, ${failed} thất bại; ${FORMULAS.length} công thức, ${SYMBOLS.length} ký hiệu`);

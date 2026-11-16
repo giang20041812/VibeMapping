@@ -1,11 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Network } from 'lucide-react';
+import { Network, Pencil } from 'lucide-react';
 import { Alert, Badge, Breadcrumb, Button, Card, Checkbox, DataTable, Spinner, Tabs } from '../../../components/common';
 import type { DataTableColumn } from '../../../components/common';
-import { collectFallbacks, evaluate, formulaToLatex, valuesMatch, type SymbolDef, type Value } from '../../../domain/formula';
+import { collectFallbacks, formulaToLatex, type SymbolDef } from '../../../domain/formula';
+import { runTests, type TestOutcome } from '../editor.logic';
 import { formatDateTime } from '../../admin/admin.logic';
+import { FormulaExpansion } from '../components/FormulaExpansion';
 import { FormulaMath } from '../components/FormulaMath';
+import { FormulaTrial } from '../components/FormulaTrial';
 import { listCurrentParamValues, listFormulaTests, listFormulaVersions } from '../formula.service';
 import {
   SYMBOL_KIND_LABEL,
@@ -16,6 +19,7 @@ import {
   formatValue,
   formulaDependencies,
   formulaDependents,
+  liveStatus,
   numericParamValues,
   paramDependencies,
   symbolsInFormula,
@@ -26,6 +30,8 @@ import '../../admin/pages/AdminPages.css';
 import './FormulaLibrary.css';
 
 const TAB_ITEMS = [
+  { value: 'trial', label: 'Tính thử' },
+  { value: 'expansion', label: 'Khai triển' },
   { value: 'tests', label: 'Ca thử' },
   { value: 'versions', label: 'Phiên bản' },
 ];
@@ -33,17 +39,12 @@ const TAB_ITEMS = [
 const VERSION_STATUS_LABEL = { draft: 'Bản nháp', active: 'Đang hiệu lực', retired: 'Đã thay' } as const;
 const VERSION_STATUS_VARIANT = { draft: 'warning', active: 'success', retired: 'default' } as const;
 
-interface TestResult {
-  test: FormulaTestRow;
-  actual: Value | undefined;
-  state: 'match' | 'mismatch' | 'error';
-}
-
 export const FormulaDetailPage: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { library, isLoading, error } = useFormulaLibrary();
-  const [tab, setTab] = useState('tests');
+  const [tab, setTab] = useState('trial');
+  const [extraLoaded, setExtraLoaded] = useState(false);
   const [showParamValues, setShowParamValues] = useState(false);
   const [paramValues, setParamValues] = useState<Record<string, unknown>>({});
   const [tests, setTests] = useState<FormulaTestRow[]>([]);
@@ -64,7 +65,8 @@ export const FormulaDetailPage: React.FC = () => {
         setParamValues(params);
         setExtraError(null);
       })
-      .catch(() => active && setExtraError('Không tải được ca thử và phiên bản.'));
+      .catch(() => active && setExtraError('Không tải được ca thử và phiên bản.'))
+      .finally(() => active && setExtraLoaded(true));
     return () => {
       active = false;
     };
@@ -96,18 +98,7 @@ export const FormulaDetailPage: React.FC = () => {
   );
   const usedBy = useMemo(() => (formula && library ? formulaDependents(formula.formula_code, library.formulas) : []), [formula, library]);
 
-  const testResults = useMemo<TestResult[]>(() => {
-    if (!formula?.expression) return [];
-    const expression = formula.expression;
-    return tests.map((test) => {
-      try {
-        const actual = evaluate(expression, test.inputs);
-        return { test, actual, state: valuesMatch(actual, test.expected, test.tolerance) ? 'match' : 'mismatch' };
-      } catch {
-        return { test, actual: undefined, state: 'error' };
-      }
-    });
-  }, [formula, tests]);
+  const testResults = useMemo<TestOutcome[]>(() => (formula?.expression ? runTests(formula.expression, tests) : []), [formula, tests]);
 
   const formulaIdByCode = useMemo(() => new Map((library?.formulas ?? []).map((item) => [item.formula_code, item.id])), [library]);
 
@@ -145,7 +136,7 @@ export const FormulaDetailPage: React.FC = () => {
     [formulaIdByCode, paramValues],
   );
 
-  const testColumns = useMemo<DataTableColumn<TestResult>[]>(
+  const testColumns = useMemo<DataTableColumn<TestOutcome>[]>(
     () => [
       { key: 'case_name', header: 'Ca thử', render: (row) => <span className="admin-cell-text">{row.test.case_name}</span> },
       { key: 'expected', header: 'Mong đợi', nowrap: true, render: (row) => formatValue(row.test.expected) },
@@ -184,7 +175,7 @@ export const FormulaDetailPage: React.FC = () => {
     );
   }
 
-  if (error || !library || !formula) {
+  if (error || !library || !formula || !latexContext) {
     return (
       <>
         <Breadcrumb items={[{ label: 'Công thức', to: '/quan-tri/cong-thuc' }, { label: 'Không tìm thấy' }]} />
@@ -216,6 +207,7 @@ export const FormulaDetailPage: React.FC = () => {
         <h1 className="page-title">{formula.formula_name}</h1>
         <div className="admin-badge-list">
           <Badge variant={VERIFICATION_VARIANT[formula.verification_level]}>{VERIFICATION_LABEL[formula.verification_level]}</Badge>
+          <Badge variant={liveStatus(formula.formula_code).variant}>{liveStatus(formula.formula_code).label}</Badge>
           <Badge>{formula.group_name}</Badge>
           {formula.version_no && <Badge>{`v${formula.version_no}`}</Badge>}
           <Button
@@ -226,6 +218,9 @@ export const FormulaDetailPage: React.FC = () => {
             onClick={() => navigate(`/quan-tri/cong-thuc/so-do?chon=${encodeURIComponent(formula.formula_code)}`)}
           >
             Xem trên sơ đồ
+          </Button>
+          <Button type="button" size="sm" leftIcon={<Pencil size={14} />} onClick={() => navigate(`/quan-tri/cong-thuc/${formula.id}/sua`)}>
+            Sửa công thức
           </Button>
         </div>
       </div>
@@ -276,13 +271,19 @@ export const FormulaDetailPage: React.FC = () => {
 
         <Card noPadding>
           <div className="formula-tabs">
-            <Tabs items={TAB_ITEMS} value={tab} onChange={setTab} label="Ca thử và phiên bản" />
+            <Tabs items={TAB_ITEMS} value={tab} onChange={setTab} label="Tính thử, khai triển, ca thử và phiên bản" />
           </div>
-          {tab === 'tests' ? (
-            <DataTable columns={testColumns} rows={testResults} rowKey={(row) => row.test.id} emptyText="Chưa có ca thử" caption="Ca thử" />
-          ) : (
-            <DataTable columns={versionColumns} rows={versions} rowKey={(row) => row.id} emptyText="Chưa có phiên bản" caption="Phiên bản" />
-          )}
+          {tab === 'trial' &&
+            (extraLoaded ? (
+              <FormulaTrial key={formula.id} formula={formula} library={library} latexContext={latexContext} tests={tests} currentParams={paramValues} />
+            ) : (
+              <div className="formula-loading">
+                <Spinner />
+              </div>
+            ))}
+          {tab === 'expansion' && <FormulaExpansion key={formula.id} formula={formula} library={library} latexContext={latexContext} />}
+          {tab === 'tests' && <DataTable columns={testColumns} rows={testResults} rowKey={(row) => row.test.id} emptyText="Chưa có ca thử" caption="Ca thử" />}
+          {tab === 'versions' && <DataTable columns={versionColumns} rows={versions} rowKey={(row) => row.id} emptyText="Chưa có phiên bản" caption="Phiên bản" />}
         </Card>
       </div>
     </>

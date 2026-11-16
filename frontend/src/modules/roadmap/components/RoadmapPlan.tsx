@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { MapPinned, Plus, Save, Sparkles, Undo2 } from 'lucide-react';
 import { Alert, Button } from '../../../components/common';
+import { useFormulaOverrides } from '../../formula_library/formulaOverrides';
 import { progressOf } from '../roadmap.logic';
 import type { Milestone, Roadmap, RoadmapPillar, SoftSkill, Stage } from '../roadmap.types';
 import type { AddInitial } from './RoadmapAddDialog';
@@ -47,7 +48,9 @@ export const RoadmapPlan: React.FC<Props> = ({
   onApplyDue,
   onRegenerate,
 }) => {
-  const progress = useMemo(() => progressOf(roadmap), [roadmap]);
+  const formulaVersion = useFormulaOverrides();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const progress = useMemo(() => progressOf(roadmap), [roadmap, formulaVersion]);
   const [openKeys, setOpenKeys] = useState<Set<string>>(
     () => new Set(stages.filter((s) => s.status === 'current' || s.status === 'late').map((s) => s.key)),
   );

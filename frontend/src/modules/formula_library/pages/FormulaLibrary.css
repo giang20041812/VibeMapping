@@ -237,3 +237,223 @@
     display: block;
   }
 }
+
+/* Tính thử và khai triển */
+.formula-tab-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+  padding: var(--space-4);
+}
+
+.formula-trial-case {
+  max-width: 320px;
+}
+
+.formula-trial-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.formula-trial-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.formula-trial-table-wrap {
+  min-width: 0;
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.formula-trial-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.formula-trial-table th,
+.formula-trial-table td {
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.formula-trial-table th {
+  min-width: 120px;
+  font-weight: 600;
+  background-color: var(--color-bg-subtle);
+}
+
+.formula-trial-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.formula-steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.formula-step {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-2) var(--space-3);
+  overflow-x: auto;
+  background-color: var(--color-bg-subtle);
+  border-radius: var(--radius-md);
+}
+
+.formula-step-value {
+  font-weight: 700;
+  color: var(--color-text-main);
+}
+
+.formula-result {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  font-size: var(--font-size-xl);
+  background-color: var(--color-primary-light);
+  border-radius: var(--radius-md);
+}
+
+.formula-expansion-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.formula-expansion-count {
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.formula-expansion-level,
+.formula-expansion-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.formula-expansion-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.formula-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.formula-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  background-color: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+/* Trình soạn công thức theo khối */
+.expr-node {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-3);
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-info-border);
+  border-radius: var(--radius-md);
+}
+
+.expr-node .expr-node {
+  background-color: var(--color-bg-subtle);
+}
+
+.expr-node-head {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.expr-node-head .app-select-group {
+  width: auto;
+  min-width: 160px;
+  max-width: 260px;
+}
+
+.expr-caption {
+  align-self: center;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-text-brand);
+}
+
+.expr-preview {
+  min-width: 0;
+  overflow-x: auto;
+  font-size: var(--font-size-md);
+  color: var(--color-text-secondary);
+}
+
+.expr-node-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.expr-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: var(--space-3);
+}
+
+.expr-cond {
+  border-left-color: var(--color-warning-border);
+}
+
+.expr-cond-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.expr-cond-item > .expr-node {
+  flex: 1;
+  min-width: 0;
+}
+
+.formula-edit-actions {
+  flex-wrap: wrap;
+}

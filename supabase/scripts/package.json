@@ -18,6 +18,7 @@
     "seed:formulas": "tsx seed-formulas.ts",
     "seed:formulas:dry": "tsx seed-formulas.ts --dry-run",
     "seed:formulas:verify": "tsx seed-formulas.ts --verify",
+    "gen:formula-fixture": "tsx gen-formula-fixture.ts",
     "import:phase2": "tsx import-phase2-data.ts",
     "import:phase2:dry": "tsx import-phase2-data.ts --dry-run",
     "import:phase2:career": "tsx import-phase2-data.ts --step career",

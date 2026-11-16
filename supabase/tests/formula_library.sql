@@ -98,6 +98,23 @@ UPDATE formula_versions SET expression = '{"t":"ref","formula":"fa"}'::jsonb WHE
 SELECT public.t_assert((SELECT count(*) FROM formula_dependencies d JOIN formula_versions v ON v.id = d.version_id WHERE v.status = 'draft' AND d.depends_on_formula_id IS NOT NULL) = 1, 'sửa bản nháp thì liên kết ghi lại theo nội dung mới');
 SELECT public.t_expect_error($q$UPDATE formula_versions SET status = 'active' WHERE status = 'retired'$q$, 'formula_version_retired', 'bản đã ngừng dùng không bật lại');
 
+-- Xóa phiên bản: chỉ bản nháp; mỗi công thức một bản nháp; nhật ký ghi lại thay đổi ---------------------------------
+SELECT public.t_expect_error($q$INSERT INTO formula_versions (formula_id, expression, status)
+  SELECT id, '{"t":"num","v":2}'::jsonb, 'draft' FROM formulas WHERE formula_code = 'fc'$q$, 'uq_formula_versions_draft', 'mỗi công thức một bản nháp');
+SELECT public.t_expect_error($q$DELETE FROM formula_versions WHERE status = 'active'$q$, 'formula_version_not_deletable', 'không xóa bản đã hiệu lực');
+SELECT public.t_expect_error($q$DELETE FROM formula_versions WHERE status = 'retired'$q$, 'formula_version_not_deletable', 'không xóa bản đã thay');
+DELETE FROM formula_versions WHERE status = 'draft';
+SELECT public.t_assert((SELECT count(*) FROM formula_versions WHERE status = 'draft') = 0, 'xóa được bản nháp');
+UPDATE formulas SET verification_level = 'demo' WHERE formula_code = 'fa';
+SELECT public.t_assert((SELECT count(*) FROM audit_logs WHERE target_type = 'formula_versions' AND action = 'insert:formula_versions') >= 3, 'ghi nhật ký khi thêm phiên bản');
+SELECT public.t_assert((SELECT count(*) FROM audit_logs WHERE target_type = 'formulas' AND action = 'update:formulas') = 1, 'ghi nhật ký khi đổi trạng thái công thức');
+SELECT public.t_assert((SELECT details -> 'verification_level' ->> 'new' FROM audit_logs WHERE target_type = 'formulas' AND action = 'update:formulas') = 'demo', 'nhật ký ghi giá trị mới');
+
+-- Số phiên bản tự đếm kể cả khi giao diện không gửi
+INSERT INTO formula_versions (formula_id, expression, status)
+SELECT id, '{"t":"num","v":5}'::jsonb, 'draft' FROM formulas WHERE formula_code = 'fb';
+SELECT public.t_assert((SELECT version_no FROM formula_versions v JOIN formulas f ON f.id = v.formula_id WHERE f.formula_code = 'fb' AND v.status = 'draft') = 2, 'bản nháp nhận số phiên bản kế tiếp');
+
 -- Ca thử ------------------------------------------------------------------------------------------------------------
 INSERT INTO formula_test_cases (formula_id, case_name, inputs, expected)
 SELECT id, 'ca 1', '{"vars":{"x":2}}'::jsonb, '4'::jsonb FROM formulas WHERE formula_code = 'fa';

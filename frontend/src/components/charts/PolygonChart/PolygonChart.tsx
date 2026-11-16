@@ -2,7 +2,6 @@ import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { useCountUp } from '../../../hooks/useCountUp';
 import { useInView } from '../../../hooks/useInView';
-import { useReducedMotion } from '../../../hooks/useReducedMotion';
 import './PolygonChart.css';
 
 export interface PolygonAxis {
@@ -245,13 +244,12 @@ export const PolygonChart: React.FC<PolygonChartProps> = ({
   const [hoverKey, setHoverKey] = useState<string | null>(null);
   const [pinnedKey, setPinnedKey] = useState<string | null>(null);
   const [cycleIndex, setCycleIndex] = useState(0);
-  const reducedMotion = useReducedMotion();
 
   const count = axes.length;
   const valid = count >= 3;
   const interacting = hoverKey !== null || pinnedKey !== null;
   /* Khuất khỏi màn hình thì thôi tự chuyển nhóm: mỗi lần chuyển là vẽ lại cả biểu đồ, làm giật hình khác đang chạy trên trang */
-  const cycling = valid && inView && !interacting && !reducedMotion && autoCycleMs > 0;
+  const cycling = valid && inView && !interacting && autoCycleMs > 0;
 
   useEffect(() => {
     if (!cycling) return;

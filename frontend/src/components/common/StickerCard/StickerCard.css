@@ -173,13 +173,6 @@
   100% { opacity: 1; transform: none; }
 }
 @keyframes sticker-pulse { 50% { opacity: 0.5; } }
-@media (prefers-reduced-motion: reduce) {
-  .sticker-card,
-  .sticker-skeleton-line,
-  .sticker-skeleton-chip { animation: none; }
-  .sticker-card::after { transition: none; }
-}
-
 /* Thanh phân trang dưới lưới thẻ */
 .sticker-pagination { margin-top: var(--space-5); }
 .sticker-pagination .app-pagination {

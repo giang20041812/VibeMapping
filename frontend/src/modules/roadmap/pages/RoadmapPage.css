@@ -425,10 +425,6 @@ button.roadmap-node-body:focus-visible {
   from { --in: 0; --out: 0; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .roadmap-node::before { animation: none; }
-}
-
 .roadmap-node-dot {
   position: absolute;
   top: 0;
@@ -1043,16 +1039,6 @@ button.roadmap-node-body:focus-visible {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .roadmap-stage {
-    animation: none;
-  }
-
-  .roadmap-career-option:hover {
-    transform: none;
-  }
-}
-
 /* Cùng một kiểu rê chuột với toàn ứng dụng: vạch cam chạy dọc mép trên, không nhấc khối lên */
 .roadmap-block,
 .roadmap-overview,
@@ -1072,11 +1058,6 @@ button.roadmap-node-body:focus-visible {
 .roadmap-block,
 .roadmap-overview {
   animation: ui-rise var(--duration-enter) var(--ease-decelerate) both;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .roadmap-block,
-  .roadmap-overview { animation: none; }
 }
 
 /* ===== Đồng bộ với cảnh lộ trình ở trang giới thiệu: mặt giấy trắng, đường kẻ mảnh, mã chặng, số liệu to ===== */

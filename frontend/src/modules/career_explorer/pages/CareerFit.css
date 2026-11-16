@@ -521,14 +521,6 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-
-  .compare-side,
-  .compare-side-item {
-    animation: none;
-  }
-}
-
 @media (max-width: 640px) {
   .fit-hero {
     grid-template-columns: minmax(0, 1fr);

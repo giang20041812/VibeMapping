@@ -188,7 +188,3 @@
     justify-content: space-between;
   }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .fit-row { animation: none; }
-}

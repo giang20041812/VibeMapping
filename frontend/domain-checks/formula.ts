@@ -29,10 +29,24 @@ import {
   valuesMatch,
   LIVE_BINDINGS,
   setFormulaOverrides,
+  walkExpr,
+  type Cond,
   type Expr,
   type Value,
 } from '../src/domain/formula';
 import { buildFormulaFixtureSql } from './formula-fixture';
+import {
+  condToTokens,
+  exprToLine,
+  exprToTokens,
+  lineToExpr,
+  parseTypedNumber,
+  tok,
+  tokensToCond,
+  tokensToExpr,
+  type Token,
+  type TokenBody,
+} from '../src/modules/formula_library/formula.tokens';
 import {
   GRAPH_NODE_HEIGHT,
   GRAPH_NODE_WIDTH,
@@ -582,6 +596,81 @@ check('engine: biểu thức lỗi thì quay về kết quả sẵn có', () => 
     console.warn = warn;
     setFormulaOverrides(null);
   }
+});
+
+// Soạn công thức dạng chuỗi thẻ ------------------------------------------------------------------------------------
+const tokenCtx = { symbols: SYMBOLS_BY_CODE };
+const sameTree = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
+const typed = (...bodies: TokenBody[]): Token[] => bodies.map(tok);
+const n = (v: number): TokenBody => ({ k: 'val', expr: { t: 'num', v } });
+
+check('chuỗi thẻ: mọi công thức chuyển sang thẻ rồi đọc lại ra đúng cây', () => {
+  for (const f of FORMULAS) {
+    const back = lineToExpr(exprToLine(f.expression), tokenCtx);
+    must(back.ok && sameTree(back.expr, f.expression), `${f.code}: ${back.ok ? 'khác cây' : back.error.message}`);
+  }
+});
+check('chuỗi thẻ: mọi biểu thức con và điều kiện bên trong thẻ khối cũng đọc lại đúng', () => {
+  const conds: Cond[] = [];
+  for (const f of FORMULAS) {
+    walkExpr(f.expression, (node) => {
+      const back = tokensToExpr(exprToTokens(node), tokenCtx);
+      must(back.ok && sameTree(back.value, node), `${f.code}: biểu thức con ${node.t}`);
+      if (node.t === 'cases') conds.push(...node.branches.map((branch) => branch.when));
+      if (node.t === 'agg' && node.where) conds.push(node.where);
+    });
+  }
+  for (const cond of conds) {
+    const back = tokensToCond(condToTokens(cond), tokenCtx);
+    must(back.ok && sameTree(back.value, cond), `điều kiện ${JSON.stringify(cond)}`);
+  }
+});
+check('chuỗi thẻ: ngoặc giữ đúng thứ tự tính', () => {
+  const a: Expr = { t: 'sym', id: 'th_score' };
+  const b: Expr = { t: 'num', v: 2 };
+  const c: Expr = { t: 'num', v: 3 };
+  const trees: Expr[] = [
+    { t: 'bin', op: '-', l: a, r: { t: 'bin', op: '-', l: b, r: c } },
+    { t: 'bin', op: '+', l: a, r: { t: 'bin', op: '+', l: b, r: c } },
+    { t: 'bin', op: '*', l: a, r: { t: 'div', n: b, d: c } },
+    { t: 'div', n: a, d: { t: 'bin', op: '*', l: b, r: c } },
+    { t: 'bin', op: '*', l: { t: 'bin', op: '+', l: a, r: b }, r: c },
+  ];
+  for (const tree of trees) {
+    const back = tokensToExpr(exprToTokens(tree), tokenCtx);
+    must(back.ok && sameTree(back.value, tree), JSON.stringify(tree));
+  }
+  const nested: Cond = { c: 'and', items: [{ c: 'or', items: [{ c: 'notnull', e: a }, { c: 'cmp', op: '>', l: a, r: b }] }, { c: 'cmp', op: '<', l: a, r: c }] };
+  const back = tokensToCond(condToTokens(nested), tokenCtx);
+  must(back.ok && sameTree(back.value, nested), 'hoặc lồng trong và');
+});
+check('chuỗi thẻ: gõ 3 + 4 × 2 nhân trước cộng sau', () => {
+  const parsed = tokensToExpr(typed(n(3), { k: 'op', op: '+' }, n(4), { k: 'op', op: '*' }, n(2)), tokenCtx);
+  must(parsed.ok && evaluate(parsed.value, {}) === 11, parsed.ok ? String(evaluate(parsed.value, {})) : parsed.message);
+});
+check('chuỗi thẻ: báo lỗi đúng chỗ khi gõ thiếu', () => {
+  const missing = tokensToExpr(typed(n(3), { k: 'op', op: '+' }), tokenCtx);
+  must(!missing.ok && missing.at === 1, 'thiếu giá trị sau dấu cộng');
+  const extra = tokensToExpr(typed(n(3), { k: 'close' }), tokenCtx);
+  must(!extra.ok && extra.at === 1, 'dấu đóng ngoặc thừa');
+  const gap = tokensToExpr(typed(n(3), n(4)), tokenCtx);
+  must(!gap.ok && gap.at === 1, 'thiếu dấu giữa hai số');
+  const unclosed = tokensToExpr(typed({ k: 'fn', name: 'max' }, n(1), { k: 'comma' }, n(2)), tokenCtx);
+  must(!unclosed.ok, 'thiếu đóng ngoặc của hàm');
+  must(!tokensToCond(typed(n(1)), tokenCtx).ok, 'điều kiện thiếu phép so sánh');
+});
+check('chuỗi thẻ: dấu chia mới gõ tự bỏ giá trị khi mẫu bằng 0 nếu mẫu chắc chắn khác 0', () => {
+  const div: TokenBody = { k: 'op', op: '/', ifZero: { t: 'na' }, auto: true };
+  const byNumber = tokensToExpr(typed({ k: 'val', expr: { t: 'sym', id: 'th_score' } }, div, n(9)), tokenCtx);
+  must(byNumber.ok && byNumber.value.t === 'div' && byNumber.value.ifZero === undefined, 'chia cho 9 không cần nhánh dự phòng');
+  const bySymbol = tokensToExpr(typed(n(1), div, { k: 'val', expr: { t: 'sym', id: 'n_questions' } }), tokenCtx);
+  must(bySymbol.ok && bySymbol.value.t === 'div' && bySymbol.value.ifZero?.t === 'na', 'chia cho ký hiệu có thể bằng 0 thì giữ "không có giá trị"');
+});
+check('chuỗi thẻ: đọc số người dùng gõ', () => {
+  must(parseTypedNumber('0,5') === 0.5 && parseTypedNumber('0.5') === 0.5 && parseTypedNumber('-3') === -3, 'số thập phân và số âm');
+  must(parseTypedNumber('5.000.000') === 5000000 && parseTypedNumber('1.250,5') === 1250.5, 'dấu chấm ngăn hàng nghìn');
+  must(parseTypedNumber('0.250') === 0.25, '0.250 là số thập phân');
+  must(parseTypedNumber('abc') === null && parseTypedNumber('') === null && parseTypedNumber('-') === null, 'không phải số');
 });
 
 console.log(`${passed} kiểm tra đạt, ${failed} thất bại; ${FORMULAS.length} công thức, ${SYMBOLS.length} ký hiệu`);

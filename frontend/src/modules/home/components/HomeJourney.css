@@ -1102,24 +1102,6 @@ html:has(.journey) {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .journey-scene,
-  .journey-scene .artifact-stagger,
-  .scene-fill {
-    transition: none;
-    transform: none;
-    opacity: 1;
-    filter: none;
-  }
-
-  .journey-dot,
-  .journey-dot-core,
-  .journey-step-title,
-  .journey-meta {
-    transition: none;
-  }
-}
-
 /* ===== Đồng bộ với các trang cá nhân: cùng đường tiến độ một nét, ô tick vuông, nhãn trạng thái chữ nhật ===== */
 .scene-track {
   height: 3px;

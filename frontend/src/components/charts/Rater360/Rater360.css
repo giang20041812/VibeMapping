@@ -296,14 +296,3 @@
     font-size: calc(11 * var(--px));
   }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .rater360 .rater360-figure,
-  .rater360 .rater360-bubble,
-  .rater360 .rater360-chip,
-  .rater360 .rater360-center {
-    opacity: 1;
-    transform: none;
-    animation: none;
-  }
-}

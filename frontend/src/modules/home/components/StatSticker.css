@@ -50,7 +50,3 @@
   .stat-sticker-icon { width: calc(24 * var(--px)); height: calc(24 * var(--px)); }
   .stat-sticker-value { font-size: var(--font-size-md); }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .stat-sticker { animation: none; transform: rotate(var(--tilt, 0deg)); }
-}

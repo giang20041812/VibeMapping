@@ -289,11 +289,3 @@
   .polygon-node-name { display: none; }
   .polygon-readout-line { gap: var(--space-1) var(--space-2); padding: var(--space-2) var(--space-3); }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .polygon-chart .polygon-svg-data,
-  .polygon-chart.is-visible .polygon-svg-data { opacity: 1; transform: none; animation: none; }
-  .polygon-chart .polygon-stage { opacity: 1; }
-  .polygon-chart *,
-  .polygon-chart *::after { animation: none; transition: none; }
-}

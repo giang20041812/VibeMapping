@@ -578,24 +578,3 @@
     border-top: 1px solid var(--hero-line);
   }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .hero-index::before,
-  .hero-stats::before {
-    transform: scaleX(1);
-    animation: none;
-  }
-
-  .hero-stat {
-    opacity: 1;
-    transform: none;
-  }
-
-  .hero-stat + .hero-stat::before {
-    transform: scaleY(1);
-  }
-
-  .hero-bg-halo {
-    animation: none;
-  }
-}

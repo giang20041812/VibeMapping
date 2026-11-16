@@ -1,7 +1,6 @@
 import React, { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { useInView } from '../../../hooks/useInView';
-import { useReducedMotion } from '../../../hooks/useReducedMotion';
 import './Rater360.css';
 
 /** Một nhóm người đánh giá quay quanh người được đánh giá */
@@ -96,7 +95,6 @@ export const Rater360: React.FC<Rater360Props> = ({
   className = '',
 }) => {
   const uid = useId().replace(/:/g, '');
-  const reduced = useReducedMotion();
   const { ref, inView, seen } = useInView<HTMLElement>(0.2);
   const stageRef = useRef<HTMLDivElement | null>(null);
   const sizeRef = useRef({ width: W, height: H });
@@ -136,7 +134,7 @@ export const Rater360: React.FC<Rater360Props> = ({
   }, [hoverKey]);
 
   useEffect(() => {
-    if (reduced || paused || !inView) return;
+    if (paused || !inView) return;
     let raf = 0;
     let last = 0;
     const tick = (now: number) => {
@@ -156,7 +154,7 @@ export const Rater360: React.FC<Rater360Props> = ({
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reduced, paused, inView, active, nodes.length]);
+  }, [paused, inView, active, nodes.length]);
 
   const g = (name: string) => `${uid}-${name}`;
 

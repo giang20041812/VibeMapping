@@ -83,9 +83,3 @@
   .page-hero { gap: var(--space-3); padding-bottom: var(--space-4); margin-bottom: var(--space-4); }
   .page-hero-icon { width: calc(44 * var(--px)); height: calc(44 * var(--px)); }
 }
-@media (prefers-reduced-motion: reduce) {
-  .page-hero::after { transform: scaleX(1); animation: none; }
-  .page-hero-icon,
-  .page-hero-title,
-  .page-hero-count { animation: none; }
-}

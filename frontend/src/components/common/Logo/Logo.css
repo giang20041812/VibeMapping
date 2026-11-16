@@ -154,11 +154,3 @@
   from { fill-opacity: 0; stroke-opacity: 1; }
   to { fill-opacity: 1; stroke-opacity: 0; }
 }
-
-/* Giảm chuyển động: hiện logo hoàn chỉnh ngay, không chờ */
-@media (prefers-reduced-motion: reduce) {
-  .logo-svg.is-drawing .logo-disc,
-  .logo-svg.is-drawing .logo-cap,
-  .logo-svg.is-drawing .logo-dot,
-  .logo-svg.is-drawing .logo-pin { animation: none; stroke: none; }
-}

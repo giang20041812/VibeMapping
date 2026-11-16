@@ -10,11 +10,24 @@ import './ResultView.css';
 
 const formatPercent = (value: number | null) => (value === null ? '–' : `${Math.round(value)}%`);
 
+/** Một đường thẳng xám cho điểm cuối; vạch đứng nhỏ đánh dấu điểm tự đánh giá khi khác điểm sau 360° (chi tiết nằm ở chú thích khi rê chuột) */
+const ScoreLine: React.FC<{ value: number | null; self: number | null; label: string; className?: string }> = ({ value, self, label, className = '' }) => {
+  const hasTick = self !== null && value !== null && Math.round(self) !== Math.round(value);
+  const title = [self !== null ? `Tự đánh giá ${Math.round(self)}%` : null, value !== null && hasTick ? `Sau 360° ${Math.round(value)}%` : null]
+    .filter(Boolean)
+    .join(' · ');
+  return (
+    <span className={`score-line ${className}`} title={title || undefined}>
+      <ProgressBar value={value} label={label} />
+      {hasTick && <span className="score-line-tick" style={{ left: `${Math.max(0, Math.min(self, 100))}%` }} aria-hidden="true" />}
+    </span>
+  );
+};
+
 const GroupRow: React.FC<{ group: GroupScore; index: number }> = ({ group, index }) => {
   const headline = group.combined ?? group.self;
   const animated = useCountUp(headline, 900, 200 + index * 70);
   const hasDetail = group.criteria.length > 0 || group.self !== null || group.combined !== null;
-  const percent = headline === null ? 0 : Math.max(0, Math.min(headline, 100));
 
   return (
     <li className="group-row" data-group={group.groupCode} tabIndex={hasDetail ? 0 : undefined}>
@@ -26,36 +39,27 @@ const GroupRow: React.FC<{ group: GroupScore; index: number }> = ({ group, index
       </div>
       <div className="group-meter">
         <ProgressBar value={headline} label={group.name} />
-        {headline !== null && (
-          <span className="group-meter-thumb" style={{ '--progress': percent / 100 } as React.CSSProperties} />
-        )}
       </div>
       {hasDetail && (
         <div className="group-detail" role="group" aria-label={`Tiêu chí – ${group.name}`}>
-          <div className="score-compare score-compare-head" aria-hidden="true">
-            <span />
-            <span>Tự đánh giá</span>
-            <span>Sau 360°</span>
-          </div>
           {group.criteria.length > 0 && (
             <ul className="criterion-list">
               {group.criteria.map((criterion) => {
                 const value = criterion.combined ?? criterion.self;
                 return (
                   <li key={criterion.dimensionCode} className="criterion-row">
-                    <span className="criterion-name">{criterion.name}</span>
-                    <span className="criterion-score">{formatPercent(criterion.self)}</span>
-                    <span className="criterion-score">{formatPercent(criterion.combined)}</span>
-                    <ProgressBar value={value} label={criterion.name} className="criterion-bar" />
+                    <span className="criterion-name" title={criterion.name}>{criterion.name}</span>
+                    <span className="criterion-score">{formatPercent(value)}</span>
+                    <ScoreLine value={value} self={criterion.self} label={criterion.name} className="criterion-bar" />
                   </li>
                 );
               })}
             </ul>
           )}
-          <div className="score-compare group-detail-self">
-            <span>Cả nhóm</span>
-            <span>{formatPercent(group.self)}</span>
-            <span>{formatPercent(group.combined)}</span>
+          <div className="group-detail-total">
+            <span className="criterion-name">Cả nhóm</span>
+            <span className="criterion-score">{formatPercent(headline)}</span>
+            <ScoreLine value={headline} self={group.self} label={`Cả nhóm ${group.name}`} className="criterion-bar" />
           </div>
         </div>
       )}

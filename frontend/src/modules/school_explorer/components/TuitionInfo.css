@@ -1,0 +1,71 @@
+.tuition-summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.tuition-summary-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  min-width: 0;
+}
+
+.tuition-headline {
+  font-size: var(--font-size-sm);
+  font-weight: 800;
+  color: var(--color-text-main);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.tuition-yearly {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.tuition-breakdown {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  min-width: 0;
+  max-width: 100%;
+}
+
+.tuition-breakdown .explain-table-wrap {
+  align-self: stretch;
+}
+
+.tuition-table th {
+  white-space: nowrap;
+}
+
+.tuition-table .is-derived .tuition-figure-value {
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
+.tuition-figure-value {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.tuition-figure-note {
+  color: var(--color-text-secondary);
+}
+
+.tuition-figure-tag {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.tuition-source {
+  margin: 0;
+  color: var(--color-text-secondary);
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}

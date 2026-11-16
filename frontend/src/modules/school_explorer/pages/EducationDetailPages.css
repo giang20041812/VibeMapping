@@ -261,11 +261,11 @@
   padding-top: var(--space-1);
 }
 
-.major-program-tuition {
-  font-size: var(--font-size-sm);
-  font-weight: 800;
-  color: var(--color-text-secondary);
-  font-variant-numeric: tabular-nums;
+@media (max-width: 640px) {
+  .major-group-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 
 /* ===== Đồng bộ với trang giới thiệu: mặt giấy trắng, vạch mực mép trên, hàng kẻ mảnh, không nhấc khối ===== */
 .edu-map-node { padding: var(--space-2) var(--space-4); font-weight: 600; transition: border-color var(--transition-fast), color var(--transition-fast); }
@@ -289,10 +289,3 @@
 .major-program-row:hover { background-color: var(--ink-wash); }
 .major-program-row + .major-program-row { border-top-style: solid; }
 .major-program-link:hover { color: var(--hope-blue-deep); }
-}
-
-@media (max-width: 640px) {
-  .major-group-list {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}

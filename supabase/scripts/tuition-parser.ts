@@ -33,7 +33,7 @@ export interface TuitionParse {
 
 /** Một năm học phí hợp lý của chương trình đại học/sau đại học ở Việt Nam */
 export const YEAR_MIN = 3_000_000;
-export const YEAR_MAX = 600_000_000;
+export const YEAR_MAX = 1_000_000_000;
 const DEFAULT_SEMESTERS_PER_YEAR = 2;
 const CONFLICT_RATIO = 0.3;
 

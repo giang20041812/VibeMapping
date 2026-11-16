@@ -1,23 +1,11 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  ArrowDown,
-  ArrowRight,
-  ArrowUpRight,
-  BookOpen,
-  Building2,
-  Compass,
-  Layers,
-  Target,
-  Users,
-} from 'lucide-react';
-import {
-  Magnetic,
-  Reveal,
-  RollText,
-  SplitText,
-  SpotlightCard,
-} from '../../../components/common';
+import { ArrowDown, ArrowRight, ArrowUpRight, BookOpen, Building2, Compass, Layers, Target, Users } from 'lucide-react';
+import { Magnetic, Reveal, RollText, SplitText, trackPointer } from '../../../components/common';
+import { useCountUp } from '../../../hooks/useCountUp';
+import { useInView } from '../../../hooks/useInView';
+import { useReducedMotion } from '../../../hooks/useReducedMotion';
+import { PARTS } from '../../assessment_session/assessmentSession.constants';
 import type { CatalogScale } from '../home.service';
 import './HomeHero.css';
 
@@ -31,33 +19,114 @@ export interface HomeHeroProps {
 }
 
 const CORE_CAPABILITIES = [
-  {
-    num: '01',
-    targetId: 'step-self',
-    icon: Users,
-    title: 'Đánh giá năng lực 360°',
-    meta: '7 nhóm tố chất · 4 góc nhìn khách quan',
-  },
-  {
-    num: '02',
-    targetId: 'step-fit',
-    icon: Compass,
-    title: 'Đối chiếu nghề – ngành – trường',
-    meta: 'Xếp hạng tương thích · Điểm chuẩn · Học phí',
-  },
-  {
-    num: '03',
-    targetId: 'step-roadmap',
-    icon: Target,
-    title: 'Lộ trình phát triển cá nhân',
-    meta: 'Kiến thức · Kỹ năng · Dự án thực tế',
-  },
+  { targetId: 'step-self', icon: Users, title: 'Đánh giá năng lực 360°' },
+  { targetId: 'step-fit', icon: Compass, title: 'Đối chiếu nghề – ngành – trường' },
+  { targetId: 'step-roadmap', icon: Target, title: 'Lộ trình phát triển cá nhân' },
 ] as const;
 
+const MARQUEE_TOP = PARTS.map((part) => part.short);
+const MARQUEE_BOTTOM = ['Đánh giá 360°', 'Nghề phù hợp', 'So sánh phương án', 'Lộ trình'];
+
+const parseRange = (range: string): [number, number] | null => {
+  const nums = range.match(/\d+/g)?.map(Number) ?? [];
+  return nums.length >= 2 ? [nums[0], nums[1]] : null;
+};
+
+const formatCount = (value: number | null) => (value === null ? '—' : Math.round(value).toLocaleString('vi-VN'));
+
+/** Số đếm từ 0 khi khối chỉ số lần đầu lọt vào khung nhìn */
+const CountUp: React.FC<{ value: number | null; active: boolean; delayMs?: number }> = ({ value, active, delayMs = 0 }) => {
+  const current = useCountUp(active ? value : null, 1400, delayMs);
+  if (value === null) return <>—</>;
+  return <>{formatCount(active ? current : 0)}</>;
+};
+
+/** Dải chữ chạy vô hạn: tăng tốc và đổi chiều theo tốc độ cuộn trang, chậm lại khi rê chuột */
+const VelocityMarquee: React.FC<{ items: string[]; baseVelocity: number; outline?: boolean }> = ({
+  items,
+  baseVelocity,
+  outline = false,
+}) => {
+  const rowRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const reduced = useReducedMotion();
+
+  useEffect(() => {
+    const row = rowRef.current;
+    const track = trackRef.current;
+    if (!row || !track || reduced) return;
+
+    let x = 0;
+    let dir = 1;
+    let velocity = 0;
+    let speed = 1;
+    let targetSpeed = 1;
+    let lastTime = 0;
+    let lastY = window.scrollY;
+    let raf = 0;
+    let visible = false;
+
+    const tick = (now: number) => {
+      const dt = lastTime ? Math.min(now - lastTime, 64) / 1000 : 0;
+      lastTime = now;
+      const y = window.scrollY;
+      const instant = dt > 0 ? (y - lastY) / dt : 0;
+      lastY = y;
+      velocity += (instant - velocity) * 0.12;
+      const factor = velocity / 250;
+      if (factor < -0.05) dir = -1;
+      else if (factor > 0.05) dir = 1;
+      speed += (targetSpeed - speed) * 0.08;
+      x += dir * baseVelocity * dt * (1 + Math.min(Math.abs(factor), 6)) * speed;
+      x = ((((x + 25) % 25) + 25) % 25) - 50;
+      track.style.transform = `translate3d(${x.toFixed(3)}%, 0, 0)`;
+      raf = visible ? requestAnimationFrame(tick) : 0;
+    };
+
+    const observer = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      if (visible && !raf) {
+        lastTime = 0;
+        lastY = window.scrollY;
+        raf = requestAnimationFrame(tick);
+      }
+    });
+    observer.observe(row);
+
+    const slow = () => (targetSpeed = 0.18);
+    const resume = () => (targetSpeed = 1);
+    row.addEventListener('pointerenter', slow);
+    row.addEventListener('pointerleave', resume);
+
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(raf);
+      row.removeEventListener('pointerenter', slow);
+      row.removeEventListener('pointerleave', resume);
+    };
+  }, [baseVelocity, reduced]);
+
+  return (
+    <div ref={rowRef} className={`hero-marquee-row ${outline ? 'is-outline' : ''}`}>
+      <div ref={trackRef} className="hero-marquee-track">
+        {[0, 1, 2, 3].map((copy) => (
+          <span key={copy} className="hero-marquee-copy">
+            {items.map((item) => (
+              <span key={item} className="hero-marquee-item">
+                <span className="hero-marquee-word">{item}</span>
+                <span className="hero-marquee-dot" />
+              </span>
+            ))}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 /**
- * Phần mở đầu trang chủ phong cách HTDNSK:
- * SplitText trồi từng chữ, CTA Magnetic + btn-fill + RollText,
- * 3 thẻ SpotlightCard tương tác và 4 thẻ quy mô (Câu hỏi, Nghề, Ngành, Trường) phân tách rõ ràng.
+ * Phần mở đầu trang chủ: nền trắng liền mạch với trang, chữ mực đậm, không khung bo góc.
+ * Tiêu đề lớn trồi từng chữ, dòng nhấn được tô dần; ba trọng tâm và bốn chỉ số chỉ phân tách bằng đường kẻ thẳng.
  */
 export const HomeHero: React.FC<HomeHeroProps> = ({
   canExplore,
@@ -67,171 +136,153 @@ export const HomeHero: React.FC<HomeHeroProps> = ({
   minuteRange,
   scale,
 }) => {
-  const careersCount = scale?.careers != null ? scale.careers.toLocaleString('vi-VN') : '120+';
-  const majorsCount = scale?.majors != null ? scale.majors.toLocaleString('vi-VN') : '180+';
-  const schoolsCount = scale?.schools != null ? scale.schools.toLocaleString('vi-VN') : '250+';
+  const { ref: statsRef, seen: statsSeen } = useInView<HTMLDListElement>(0.3);
+  const questions = parseRange(questionRange);
+  const minutes = minuteRange.replace('′', '');
 
   const scrollToTarget = (e: React.MouseEvent, targetId: string) => {
     const el = document.getElementById(targetId);
     if (!el) return;
     e.preventDefault();
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.scrollIntoView({ behavior: 'smooth', block: targetId === journeyId ? 'start' : 'center' });
   };
 
+  /* Mục danh mục không đọc được (null sau khi tải xong) thì ẩn; trong lúc tải vẫn giữ chỗ */
+  const hidden = (value: number | null | undefined) => scale !== null && value == null;
+
+  const stats = [
+    {
+      key: 'questions',
+      isHidden: false,
+      icon: Layers,
+      label: 'Quy mô bài đánh giá',
+      value: questions ? (
+        <>
+          <CountUp value={questions[0]} active={statsSeen} />
+          <span className="hero-stat-dash">–</span>
+          <CountUp value={questions[1]} active={statsSeen} delayMs={120} />
+          <span className="hero-stat-unit">câu</span>
+        </>
+      ) : (
+        questionRange
+      ),
+      sub: `${minutes} phút thực hiện · ${PARTS.length} phần`,
+    },
+    {
+      key: 'careers',
+      isHidden: hidden(scale?.careers),
+      icon: Compass,
+      label: 'Nghề nghiệp chuẩn hóa',
+      value: <CountUp value={scale?.careers ?? null} active={statsSeen} delayMs={90} />,
+      sub: 'Ma trận tiêu chí & mã Holland',
+    },
+    {
+      key: 'majors',
+      isHidden: hidden(scale?.majors),
+      icon: BookOpen,
+      label: 'Ngành đào tạo',
+      value: <CountUp value={scale?.majors ?? null} active={statsSeen} delayMs={180} />,
+      sub: 'Liên kết chuẩn nghề nghiệp',
+    },
+    {
+      key: 'schools',
+      isHidden: hidden(scale?.schools),
+      icon: Building2,
+      label: 'Trường ĐH & Cao đẳng',
+      value: <CountUp value={scale?.schools ?? null} active={statsSeen} delayMs={270} />,
+      sub: 'Điểm chuẩn & học phí cập nhật',
+    },
+  ].filter((stat) => !stat.isHidden);
+
   return (
-    <section className="hero" aria-labelledby="hero-title">
+    <section className="hero" aria-labelledby="hero-title" onPointerMove={trackPointer}>
       <div className="hero-bg" aria-hidden="true">
-        <span className="hero-grid-layer hero-grid" />
-        <span className="hero-ambient-top" />
-        <span className="hero-ambient-corner" />
+        <span className="hero-bg-grid" />
+        <span className="hero-bg-spot" />
+        <span className="hero-bg-halo" />
       </div>
 
-      <div className="hero-inner">
-        {/* Khối 1: Tiêu đề & Nút kêu gọi hành động */}
-        <div className="hero-header-block">
-          <Reveal y={16} delayMs={20}>
-            <div className="hero-eyebrow">
-              <span className="hero-eyebrow-line" aria-hidden="true" />
-              <span className="hero-eyebrow-code">01 //</span>
-              <span>Hệ thống định hướng nghề nghiệp & phát triển năng lực</span>
-            </div>
-          </Reveal>
+      <div className="hero-top">
+        <h1 id="hero-title" className="hero-title">
+          <SplitText text="Biết mình là ai," className="hero-title-line" delayMs={60} staggerMs={80} />
+          <SplitText
+            text="vững bước tương lai."
+            className="hero-title-line hero-title-accent"
+            delayMs={340}
+            staggerMs={80}
+          />
+        </h1>
 
-          <h1 id="hero-title" className="hero-title">
-            <SplitText text="Biết mình là ai," delayMs={60} staggerMs={75} />
-            <SplitText
-              text="vững bước tương lai."
-              className="hero-title-accent"
-              delayMs={320}
-              staggerMs={75}
-            />
-          </h1>
-
-          <Reveal y={20} delayMs={480} className="hero-actions">
-            {canExplore && (
-              <Magnetic strength={0.16} className="hero-cta-wrap">
-                <Link to={testPath} className="hero-cta-primary btn-fill">
-                  <RollText text="Bắt đầu làm bài đánh giá" />
-                  <ArrowRight size={18} className="btn-arrow-slide" aria-hidden="true" />
-                </Link>
-              </Magnetic>
-            )}
-
-            <Magnetic strength={0.12} className="hero-cta-wrap">
-              <a
-                href={`#${journeyId}`}
-                className="hero-cta-secondary roll-trigger"
-                onClick={(e) => {
-                  const el = document.getElementById(journeyId);
-                  if (el) {
-                    e.preventDefault();
-                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                  }
-                }}
-              >
-                <RollText text="Khám phá lộ trình 5 bước" />
-                <ArrowDown size={17} className="hero-arrow-down" aria-hidden="true" />
-              </a>
+        <Reveal y={20} delayMs={620} className="hero-actions">
+          {canExplore && (
+            <Magnetic strength={0.16} className="hero-cta-wrap">
+              <Link to={testPath} className="hero-cta-primary btn-fill btn-fill-ink">
+                <RollText text="Bắt đầu làm bài đánh giá" />
+                <ArrowRight size={18} className="btn-arrow-slide" aria-hidden="true" />
+              </Link>
             </Magnetic>
-          </Reveal>
-        </div>
+          )}
 
-        {/* Khối 2: 3 Trụ cột năng lực cốt lõi (Spotlight Cards đồng nhất, không dùng viền cạnh lệch) */}
-        <div className="hero-section-group">
-          <div className="hero-divider-bar">
-            <span className="hero-divider-label">Trọng tâm hệ thống</span>
-            <span className="hero-divider-line" aria-hidden="true" />
-          </div>
+          <a
+            href={`#${journeyId}`}
+            className="hero-cta-link roll-trigger"
+            onClick={(e) => scrollToTarget(e, journeyId)}
+          >
+            <RollText text="Khám phá lộ trình 5 bước" />
+            <span className="hero-cta-link-icon" aria-hidden="true">
+              <ArrowDown size={16} />
+            </span>
+          </a>
+        </Reveal>
+      </div>
 
-          <div className="hero-capabilities" role="list" aria-label="Ba trọng tâm cốt lõi">
-            {CORE_CAPABILITIES.map((item, idx) => {
-              const Icon = item.icon;
-              return (
-                <Reveal key={item.num} y={28} delayMs={560 + idx * 90} className="hero-capability-cell">
-                  <SpotlightCard
-                    role="listitem"
-                    className="hero-capability-card"
-                    onClick={(e) => scrollToTarget(e, item.targetId)}
-                  >
-                    <div className="hero-capability-top">
-                      <span className="hero-capability-num">{item.num}</span>
-                      <span className="hero-capability-icon" aria-hidden="true">
-                        <Icon size={18} />
-                      </span>
-                      <ArrowUpRight size={17} className="hero-capability-arrow" aria-hidden="true" />
-                    </div>
-                    <div className="hero-capability-body">
-                      <strong className="hero-capability-title">{item.title}</strong>
-                      <span className="hero-capability-meta">{item.meta}</span>
-                    </div>
-                  </SpotlightCard>
-                </Reveal>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Khối 3: Quy mô hệ thống (Số câu hỏi · Số nghề · Số ngành · Số trường) */}
-        <div className="hero-section-group">
-          <div className="hero-divider-bar">
-            <span className="hero-divider-label">Quy mô dữ liệu chuẩn hóa</span>
-            <span className="hero-divider-line" aria-hidden="true" />
-          </div>
-
-          <dl className="hero-stats" aria-label="Quy mô hệ thống">
-            <Reveal y={24} delayMs={760}>
-              <SpotlightCard className="hero-stat">
-                <dt className="hero-stat-label">
-                  <span className="hero-stat-icon" aria-hidden="true">
-                    <Layers size={15} />
-                  </span>
-                  <span>Quy mô bài đánh giá</span>
-                </dt>
-                <dd className="hero-stat-value">{questionRange} câu</dd>
-                <dd className="hero-stat-sub">{minuteRange.replace('′', '')} phút thực hiện · 4 phần</dd>
-              </SpotlightCard>
+      <ul className="hero-index" aria-label="Trọng tâm">
+        {CORE_CAPABILITIES.map((item, idx) => (
+          <li key={item.targetId} className="hero-index-cell">
+            <Reveal y={22} delayMs={760 + idx * 90}>
+              <a
+                href={`#${item.targetId}`}
+                className="hero-index-item"
+                onClick={(e) => scrollToTarget(e, item.targetId)}
+              >
+                <span className="hero-index-num" aria-hidden="true">
+                  <item.icon size={22} strokeWidth={1.8} />
+                </span>
+                <span className="hero-index-title">{item.title}</span>
+                <ArrowUpRight size={20} className="hero-index-arrow" aria-hidden="true" />
+              </a>
             </Reveal>
+          </li>
+        ))}
+      </ul>
 
-            <Reveal y={24} delayMs={830}>
-              <SpotlightCard className="hero-stat">
-                <dt className="hero-stat-label">
-                  <span className="hero-stat-icon" aria-hidden="true">
-                    <Compass size={15} />
-                  </span>
-                  <span>Nghề nghiệp chuẩn hóa</span>
-                </dt>
-                <dd className="hero-stat-value">{careersCount}</dd>
-                <dd className="hero-stat-sub">Ma trận tiêu chí & mã Holland</dd>
-              </SpotlightCard>
-            </Reveal>
+      <dl
+        ref={statsRef}
+        className={`hero-stats ${statsSeen ? 'is-visible' : ''}`}
+        style={{ '--stat-cols': stats.length } as React.CSSProperties}
+      >
+        {stats.map((stat, idx) => {
+          const Icon = stat.icon;
+          return (
+            <div
+              key={stat.key}
+              className="hero-stat"
+              style={{ '--stat-i': idx } as React.CSSProperties}
+            >
+              <dt className="hero-stat-label">
+                <Icon size={16} className="hero-stat-icon" aria-hidden="true" />
+                <span>{stat.label}</span>
+              </dt>
+              <dd className="hero-stat-value">{stat.value}</dd>
+              <dd className="hero-stat-sub">{stat.sub}</dd>
+            </div>
+          );
+        })}
+      </dl>
 
-            <Reveal y={24} delayMs={900}>
-              <SpotlightCard className="hero-stat">
-                <dt className="hero-stat-label">
-                  <span className="hero-stat-icon" aria-hidden="true">
-                    <BookOpen size={15} />
-                  </span>
-                  <span>Ngành đào tạo</span>
-                </dt>
-                <dd className="hero-stat-value">{majorsCount}</dd>
-                <dd className="hero-stat-sub">Liên kết chuẩn nghề nghiệp</dd>
-              </SpotlightCard>
-            </Reveal>
-
-            <Reveal y={24} delayMs={970}>
-              <SpotlightCard className="hero-stat">
-                <dt className="hero-stat-label">
-                  <span className="hero-stat-icon" aria-hidden="true">
-                    <Building2 size={15} />
-                  </span>
-                  <span>Trường ĐH & Cao đẳng</span>
-                </dt>
-                <dd className="hero-stat-value">{schoolsCount}</dd>
-                <dd className="hero-stat-sub">Điểm chuẩn & học phí cập nhật</dd>
-              </SpotlightCard>
-            </Reveal>
-          </dl>
-        </div>
+      <div className="hero-marquee" aria-hidden="true">
+        <VelocityMarquee items={MARQUEE_TOP} baseVelocity={-1.8} />
+        <VelocityMarquee items={MARQUEE_BOTTOM} baseVelocity={1.8} outline />
       </div>
     </section>
   );

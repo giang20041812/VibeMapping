@@ -51,6 +51,7 @@
 }
 
 @media (max-width: 768px) {
+
   .btn-sm,
   .btn-md {
     min-height: var(--touch-target);
@@ -73,6 +74,7 @@
     box-shadow 480ms var(--ease-out),
     transform 480ms var(--ease-out);
 }
+
 .btn-primary::before {
   content: '';
   position: absolute;
@@ -85,81 +87,100 @@
     transform 560ms var(--ease-out),
     border-radius 560ms var(--ease-out);
 }
-.btn-primary:focus-visible { outline-color: var(--color-cta-ring); }
-@media (hover: hover) {
-  .btn-primary:hover:not(:disabled) {
-    color: var(--brand-navy);
-    box-shadow: var(--shadow-cta-hover);
-    transform: translateY(-2px);
+
+.btn-primary:focus-visible {
+  outline-color: var(--color-cta-ring);
+}
+
+
+  @media (hover: hover) {
+    .btn-primary:hover:not(:disabled) {
+      color: var(--brand-navy);
+      box-shadow: var(--shadow-cta-hover);
+      transform: translateY(-2px);
+    }
+
+    .btn-primary:hover:not(:disabled)::before {
+      transform: translateY(0);
+      border-radius: inherit;
+    }
   }
-  .btn-primary:hover:not(:disabled)::before {
-    transform: translateY(0);
-    border-radius: inherit;
+
+  .btn-primary:active:not(:disabled) {
+    background: var(--color-cta-active);
+    box-shadow: var(--shadow-cta);
+    transform: translateY(0) scale(0.98);
   }
-}
-.btn-primary:active:not(:disabled) {
-  background: var(--color-cta-active);
-  box-shadow: var(--shadow-cta);
-  transform: translateY(0) scale(0.98);
-}
-.btn-primary:disabled { box-shadow: none; }
 
-.btn-secondary {
-  color: var(--color-text-brand);
-  background: var(--color-primary-light);
-}
-.btn-secondary:hover:not(:disabled) { background: var(--brand-mist); }
-
-.btn-outline {
-  color: var(--color-text-main);
-  background: var(--color-bg-surface);
-  border-color: var(--color-border-hover);
-  box-shadow: var(--shadow-xs);
-}
-.btn-outline:hover:not(:disabled) {
-  color: var(--color-text-brand);
-  background: var(--color-primary-light);
-  border-color: var(--brand-soft);
-}
-
-.btn-danger {
-  background: var(--color-danger);
-  color: var(--color-text-inverse);
-}
-.btn-danger:hover:not(:disabled) { background: var(--color-danger-text); }
-
-.btn-ghost {
-  background-color: transparent;
-  color: var(--color-text-secondary);
-}
-.btn-ghost:hover:not(:disabled) {
-  background-color: var(--color-bg-subtle);
-  color: var(--color-text-brand);
-}
-
-/* Loading Spinner */
-.btn-spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid currentColor;
-  border-right-color: transparent;
-  border-radius: 50%;
-  animation: btn-spin 0.6s linear infinite;
-}
-
-@keyframes btn-spin {
-  to {
-    transform: rotate(360deg);
+  .btn-primary:disabled {
+    box-shadow: none;
   }
-}
 
-.btn-icon-left,
-.btn-icon-right {
-  display: inline-flex;
-  align-items: center;
-  font-size: 1.1em;
-  transition: transform 480ms var(--ease-out);
-}
-.app-button:hover:not(:disabled) .btn-icon-right {
-  transform: translateX(5px);
-}
+  .btn-secondary {
+    color: var(--color-text-brand);
+    background: var(--color-primary-light);
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    background: var(--brand-mist);
+  }
+
+  .btn-outline {
+    color: var(--color-text-main);
+    background: var(--color-bg-surface);
+    border-color: var(--color-border-hover);
+    box-shadow: var(--shadow-xs);
+  }
+
+  .btn-outline:hover:not(:disabled) {
+    color: var(--color-text-brand);
+    background: var(--color-primary-light);
+    border-color: var(--brand-soft);
+  }
+
+  .btn-danger {
+    background: var(--color-danger);
+    color: var(--color-text-inverse);
+  }
+
+  .btn-danger:hover:not(:disabled) {
+    background: var(--color-danger-text);
+  }
+
+  .btn-ghost {
+    background-color: transparent;
+    color: var(--color-text-secondary);
+  }
+
+  .btn-ghost:hover:not(:disabled) {
+    background-color: var(--color-bg-subtle);
+    color: var(--color-text-brand);
+  }
+
+  /* Loading Spinner */
+  .btn-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: btn-spin 0.6s linear infinite;
+  }
+
+  @keyframes btn-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .btn-icon-left,
+  .btn-icon-right {
+    display: inline-flex;
+    align-items: center;
+    font-size: 1.1em;
+    transition: transform 480ms var(--ease-out);
+  }
+
+  .app-button:hover:not(:disabled) .btn-icon-right {
+    transform: translateX(5px);
+  }

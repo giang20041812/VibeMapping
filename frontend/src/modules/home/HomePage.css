@@ -1,4 +1,4 @@
-/* Trang giới thiệu: phần mở đầu navy rộng, hành trình cùng một khung nội dung, nhịp dọc rộng rãi */
+/* Trang giới thiệu: phần mở đầu và hành trình chung một khung nội dung trên nền sáng, nhịp dọc rộng rãi */
 .home {
   --home-width: calc(1280 * var(--px));
   position: relative;
@@ -11,4 +11,3 @@
   padding-bottom: var(--space-16);
 }
 .home > * { width: 100%; max-width: var(--home-width); min-width: 0; }
-.home > .hero { max-width: calc(1360 * var(--px)); }

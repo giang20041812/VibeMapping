@@ -95,6 +95,27 @@ export async function listFormulaTests(formulaId: string): Promise<FormulaTestRo
   }));
 }
 
+/** Ca thử của mọi công thức, theo mã công thức (formula_id) */
+export async function listAllFormulaTests(): Promise<Record<string, FormulaTestRow[]>> {
+  const { data, error } = await supabase
+    .from('formula_test_cases')
+    .select('id, formula_id, case_name, inputs, expected, tolerance')
+    .order('case_name')
+    .limit(5000);
+  if (error) fail('ca thử', error.message);
+  const byFormula: Record<string, FormulaTestRow[]> = {};
+  for (const row of data) {
+    (byFormula[row.formula_id] ??= []).push({
+      id: row.id,
+      case_name: row.case_name,
+      inputs: row.inputs as unknown as EvalContext,
+      expected: row.expected as Value,
+      tolerance: Number(row.tolerance),
+    });
+  }
+  return byFormula;
+}
+
 /** Giá trị hiện hành của các tham số vận hành, theo mã tham số */
 export async function listCurrentParamValues(codes: string[]): Promise<Record<string, unknown>> {
   if (codes.length === 0) return {};

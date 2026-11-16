@@ -219,7 +219,7 @@ export const FormulaDetailPage: React.FC = () => {
           >
             Xem trên sơ đồ
           </Button>
-          <Button type="button" size="sm" leftIcon={<Pencil size={14} />} onClick={() => navigate(`/quan-tri/cong-thuc/${formula.id}/sua`)}>
+          <Button type="button" size="sm" leftIcon={<Pencil size={14} />} onClick={() => navigate(`/quan-tri/cong-thuc?sua=${formula.id}`)}>
             Sửa công thức
           </Button>
         </div>

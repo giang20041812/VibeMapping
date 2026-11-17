@@ -54,6 +54,7 @@ Chỉ ghi việc đọc được trong hai nguồn đó. Không tick từng dòn
 | FR09.01.09 | Quản trị thành viên và chủ đề | `CommunityAdminPage`, hàm `list_community_admin`, `remove_community_member`, `add_community_topic` |
 | FR08.02.01–04, BR-030, BR-031 | So hồ sơ năng lực với JD; % đạt; xếp hạng kỹ năng thiếu; biểu đồ | `/nang-luc?tab=phan-tich`: chọn bậc JD đã công bố (`career_level_frameworks`), `skillGap.logic.ts` so từng kỹ năng của mục Kiến thức, Kỹ năng chuyên môn, Kỹ năng mềm, Công cụ, Ngoại ngữ, Chứng chỉ. Kỹ năng JD chưa có trong hồ sơ là Chưa đạt. Biểu đồ cột 0–5 và radar theo nhóm. Bản chụp lưu ở `skill_gap_analyses` |
 | FR08.03.01–02 | Gợi ý theo kỹ năng thiếu; thêm vào lộ trình | `course_project_suggestions.skill_keywords`; kỹ năng không có gợi ý hiện "Đang cập nhật"; hộp thoại thêm vào lộ trình chọn trụ cột và hạn (`RoadmapAddDialog`) |
+| FR09.01.01, 05, 08, 11, 13, 14 | Tìm cộng đồng; Hỏi đáp; hạn chế tác giả; chi tiết sự kiện; hồ sơ và tìm người hướng dẫn | `/cong-dong` có ba tab và bộ lọc; `/cong-dong/nhom/:id` bảng tin lọc Bài viết / Hỏi đáp; `/cong-dong/su-kien/:id`; `/cong-dong/nguoi-huong-dan/:id`. Migration `20261117000200_community_m09.sql`: `post_type`, `restricted_until`, `restrict_community_author`, hồ sơ người hướng dẫn có lĩnh vực, chủ đề, số năm |
 
 Các mã P05, P08–P13, P16, P17, P19, P21, P22, P24, P25, P27, P35–P38, P40–P45 được gán `verification_level = demo` trong `20261031000200_phase3_parameters_and_m03_m09.sql`. Số đang chạy là số seed trong file đó. SRS mục 5.3 STT 12 ghi các số Demo này chưa có căn cứ PO.
 
@@ -87,8 +88,7 @@ Các mã P05, P08–P13, P16, P17, P19, P21, P22, P24, P25, P27, P35–P38, P40�
 | UI_04 khám phá nghề khi chưa đăng nhập | Có `/danh-muc-nghe`. Menu thả từng nghề trên thanh điều hướng thì chưa có; thanh trên có một liên kết “Nghề nghiệp” |
 | UI_07-S01 đến S04 | Gộp một trang `/lo-trinh`. Có mục “Bản đồ đường đi” theo tháng, chưa phải sơ đồ các nút nối nhau |
 | UI_08-S01 đến S08 | Gộp một trang `/nang-luc` hai tab: Hồ sơ và Phân tích khoảng cách (chọn vị trí → kết quả). Có hộp thoại thêm gợi ý vào lộ trình |
-| UI_09-S06 | Không có trang chi tiết sự kiện. Sự kiện nằm trong `/cong-dong` |
-| UI_09-S07 | Không có trang tìm người hướng dẫn riêng. Danh sách người đã xác minh nằm trong `/cong-dong` |
+| UI_09-S07 | Tab Người hướng dẫn trong `/cong-dong`, lọc theo lĩnh vực và chủ đề; hồ sơ từng người ở `/cong-dong/nguoi-huong-dan/:id` |
 | UI_10-S08 | Có trong `/quan-tri/cong-dong`: đưa thành viên ra khỏi nhóm, thêm và xóa chủ đề |
 
 ## Chỗ tài liệu tự không thống nhất

@@ -9,11 +9,9 @@ import {
   NEAR_FIT_NOTE,
   PRELIMINARY_NOTE,
   RESULT_STATUS_LABEL,
-  interestLabel,
   nextSurveyStep,
 } from '../careerFit.constants';
-import type { CareerComponentResult } from '../../../domain/assessmentRules';
-import './TopCareers.css';
+import { FitListHead, FitMeter, FitRow } from './FitRow';
 import '../pages/CareerFit.css';
 
 interface Props {
@@ -23,98 +21,6 @@ interface Props {
   /** Phụ huynh xem nghề phù hợp của con đã chia sẻ kết quả: chỉ đọc */
   subjectUserId?: string;
 }
-
-const PARTS: Array<{ key: 'g1toG5' | 'g6' | 'g7'; label: string }> = [
-  { key: 'g1toG5', label: 'Năng lực' },
-  { key: 'g6', label: 'Sở thích' },
-  { key: 'g7', label: 'Động lực' },
-];
-
-interface RowItem {
-  careerId: string;
-  careerName: string;
-  fitPercent: number | null;
-  nearThreshold: boolean;
-  hollandTop3?: string | null;
-  rank?: number;
-  isTarget?: boolean;
-  result: CareerComponentResult;
-}
-
-const Meter: React.FC<{ percent: number | null }> = ({ percent }) => (
-  <span className="fit-bar-track">
-    <span className="fit-bar-fill" style={{ width: `${percent ?? 0}%` }} />
-  </span>
-);
-
-interface RowProps {
-  item: RowItem;
-  href: string;
-  isTop?: boolean;
-  compare: React.ReactNode;
-}
-
-/** Một dòng nghề: hạng, tên cùng thẻ thông tin, mức phù hợp tổng và ba thành phần, mỗi số kèm một đường thẳng */
-const FitRow: React.FC<RowProps> = ({ item, href, isTop = false, compare }) => {
-  const { result } = item;
-  const unmet = result.unmetCriteriaCount;
-  const completeness = Math.round(result.componentCompleteness * 100);
-  return (
-    <li className={`fit-row${isTop ? ' is-top' : ''}`}>
-      <span className="fit-row-rank">{item.rank ?? '–'}</span>
-      <div className="fit-row-main">
-        <Link to={href} className="fit-row-title">{item.careerName}</Link>
-        <div className="fit-row-tags">
-          {isTop && <Badge variant="highlight" size="sm">{item.nearThreshold ? 'Gần phù hợp nhất' : 'Phù hợp nhất'}</Badge>}
-          {item.isTarget && <Badge variant="success" size="sm">Mục tiêu</Badge>}
-          {item.nearThreshold && !isTop && <Badge variant="warning" size="sm">Nghề gần đạt</Badge>}
-          {item.hollandTop3 && <span className="fit-holland-tag">{interestLabel(item.hollandTop3)}</span>}
-          {unmet > 0 && <span className="fit-row-meta">Chưa đạt {unmet} tiêu chí</span>}
-          {completeness < 100 && <span className="fit-row-meta">Dữ liệu {completeness}%</span>}
-        </div>
-      </div>
-      <div className="fit-row-total">
-        {item.fitPercent === null ? (
-          <b className="is-missing">–</b>
-        ) : (
-          <b>{Math.round(item.fitPercent)}<small>%</small></b>
-        )}
-        <Meter percent={item.fitPercent} />
-      </div>
-      <ul className="fit-row-parts">
-        {PARTS.map(({ key, label }) => {
-          const percent = result[key].matchPercent;
-          return (
-            <li key={key}>
-              <span className="fit-row-part-label">{label}</span>
-              <b>{percent === null ? '–' : `${Math.round(percent)}%`}</b>
-              <Meter percent={percent} />
-            </li>
-          );
-        })}
-      </ul>
-      <div className="fit-row-actions">
-        {compare}
-        <Link to={href} className="sticker-link" aria-label={`Xem chi tiết ${item.careerName}`}>
-          Chi tiết
-          <ArrowRight size={15} aria-hidden="true" />
-        </Link>
-      </div>
-    </li>
-  );
-};
-
-const ListHead: React.FC = () => (
-  <div className="fit-list-head" aria-hidden="true">
-    <span>Hạng</span>
-    <span>Nghề</span>
-    <span>Phù hợp</span>
-    <span className="fit-list-head-parts">
-      {PARTS.map(({ key, label }) => <span key={key}>{label}</span>)}
-    </span>
-    <span />
-  </div>
-);
 
 /** Nghề phù hợp nhất và các nghề tiếp theo (R20), nghề mục tiêu ngoài danh sách vẫn hiện */
 export const TopCareers: React.FC<Props> = ({ picked = [], onToggleCompare, onBrowse, subjectUserId }) => {
@@ -167,7 +73,7 @@ export const TopCareers: React.FC<Props> = ({ picked = [], onToggleCompare, onBr
         {statusBadge}
         <span className="fit-completeness">
           <span>Độ đầy đủ dữ liệu <b>{completeness}%</b></span>
-          <Meter percent={completeness} />
+          <FitMeter percent={completeness} />
         </span>
         {next && <Link className="fit-next" to={next.to}>{next.label} <ArrowRight size={15} aria-hidden="true" /></Link>}
       </div>
@@ -188,7 +94,7 @@ export const TopCareers: React.FC<Props> = ({ picked = [], onToggleCompare, onBr
         <>
           {data.belowThreshold && <Alert variant="warning">{NEAR_FIT_NOTE}</Alert>}
           <div className="fit-list">
-            <ListHead />
+            <FitListHead />
             <ol className="fit-rows" aria-label="Các nghề phù hợp">
               {data.items.map((item, index) => (
                 <FitRow
@@ -208,7 +114,7 @@ export const TopCareers: React.FC<Props> = ({ picked = [], onToggleCompare, onBr
         <section className="fit-targets">
           <h3><Target size={16} aria-hidden="true" /> Nghề mục tiêu</h3>
           <div className="fit-list">
-            <ListHead />
+            <FitListHead />
             <ol className="fit-rows">
               {extraTargets.map((item) => (
                 <FitRow

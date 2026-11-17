@@ -3,12 +3,13 @@ import { Link } from 'react-router-dom';
 import {
   ArrowRight,
   ArrowUpRight,
-  Briefcase,
+  CalendarClock,
   Check,
+  ChevronDown,
+  ChevronRight,
   ClipboardCheck,
   Compass,
   Gauge,
-  MapPin,
   Orbit,
   Route,
   Scale,
@@ -19,7 +20,9 @@ import {
 } from 'lucide-react';
 import {
   Badge,
+  Checkbox,
   Magnetic,
+  ProgressBar,
   RollText,
   SplitText,
   trackPointer,
@@ -27,6 +30,14 @@ import {
 import { PolygonChartSkeleton } from '../../../components/charts/PolygonChart/PolygonChartSkeleton';
 import { PolygonChart, type PolygonAxis, type PolygonLevel } from '../../../components/charts/PolygonChart/PolygonChart';
 import { Rater360, type RaterNode } from '../../../components/charts/Rater360/Rater360';
+import type { CareerComponentResult, ComponentMatch } from '../../../domain/assessmentRules';
+import { FitListHead, FitMeter, FitRow, type FitRowItem } from '../../career_explorer/components/FitRow';
+import { RESULT_STATUS_LABEL } from '../../career_explorer/careerFit.constants';
+import { PillarBadge } from '../../roadmap/components/PillarBadge';
+import { STAGE_STATUS_LABEL, STAGE_STATUS_VARIANT } from '../../roadmap/components/RoadmapStageCard';
+import { ACTIVITY_TYPE_LABEL, formatDate, stageLabel } from '../../roadmap/roadmap.logic';
+import type { ActivityType, RoadmapPillar, StageStatus } from '../../roadmap/roadmap.types';
+import '../../roadmap/pages/RoadmapPage.css';
 import { StatSticker } from './StatSticker';
 import './HomeJourney.css';
 
@@ -112,94 +123,70 @@ const Rater360Artifact: React.FC<{ raters: RaterNode[]; active: boolean }> = ({ 
    BƯỚC 3: NGHỀ PHÙ HỢP
    ========================================================================== */
 
-const TOP_CAREER_BARS = [
-  { label: 'Năng lực chuyên môn', value: 95 },
-  { label: 'Sở thích nghề nghiệp (Holland I-R-C)', value: 93 },
-  { label: 'Giá trị & Động lực phát triển', value: 92 },
+/** Trọng số mặc định của mức phù hợp: Năng lực 0,4 · Sở thích 0,3 · Động lực 0,3 */
+const FIT_WEIGHTS = { g1toG5: 0.4, g6: 0.3, g7: 0.3 } as const;
+
+const samplePart = (percent: number, weight: number): ComponentMatch => ({
+  match: percent / 100,
+  matchPercent: percent,
+  originalWeight: weight,
+  appliedWeight: weight,
+  usedCriteria: 1,
+  missingUserScores: 0,
+});
+
+/** Nghề mẫu: mức phù hợp tổng tính từ ba thành phần theo đúng trọng số như trang Nghề phù hợp */
+function sampleCareer(
+  rank: number,
+  careerName: string,
+  hollandTop3: string,
+  parts: { g1toG5: number; g6: number; g7: number },
+  isTarget = false,
+): FitRowItem {
+  const fit = parts.g1toG5 * FIT_WEIGHTS.g1toG5 + parts.g6 * FIT_WEIGHTS.g6 + parts.g7 * FIT_WEIGHTS.g7;
+  const result: CareerComponentResult = {
+    g1toG5: samplePart(parts.g1toG5, FIT_WEIGHTS.g1toG5),
+    g6: { ...samplePart(parts.g6, FIT_WEIGHTS.g6), method: 'profile_6d_demo' },
+    g7: samplePart(parts.g7, FIT_WEIGHTS.g7),
+    careerFitPercent: fit,
+    rankBand: Math.floor(fit),
+    componentCompleteness: 1,
+    highestWeightGap: 0,
+    unmetCriteriaCount: 0,
+    criteriaEvaluations: [],
+    status: 'ready',
+    notice: '',
+  };
+  return { careerId: `sample-${rank}`, careerName, fitPercent: fit, nearThreshold: false, hollandTop3, rank, isTarget, result };
+}
+
+const SAMPLE_CAREERS: FitRowItem[] = [
+  sampleCareer(1, 'Kỹ sư phần mềm', 'IRC', { g1toG5: 92, g6: 95, g7: 88 }, true),
+  sampleCareer(2, 'Kỹ sư dữ liệu', 'ICR', { g1toG5: 88, g6: 90, g7: 85 }),
+  sampleCareer(3, 'Kỹ sư điện toán đám mây', 'RIC', { g1toG5: 84, g6: 82, g7: 86 }),
 ];
 
-const NEXT_CAREERS = [
-  {
-    rank: 2,
-    name: 'Kỹ sư dữ liệu & Trí tuệ nhân tạo (Data / AI Engineer)',
-    holland: 'I-R-C · Nghiên cứu – Kỹ thuật',
-    fit: 89,
-  },
-  {
-    rank: 3,
-    name: 'Kỹ sư hệ thống & Điện toán đám mây (Cloud / DevOps)',
-    holland: 'R-I-C · Kỹ thuật – Nghiên cứu',
-    fit: 84,
-  },
-];
+const TOP_CAREER = SAMPLE_CAREERS[0];
+const TOP_CAREER_LABEL = `${TOP_CAREER.careerName} · ${Math.round(TOP_CAREER.fitPercent ?? 0)}%`;
 
 const CareerFitArtifact: React.FC = () => (
   <div className="artifact-window artifact-fit">
-    <div className="artifact-topbar">
-      <span className="artifact-status-line">Hồ sơ 360° · Độ đầy đủ dữ liệu 96%</span>
-      <span className="artifact-tag is-coral">
-        <Trophy size={12} aria-hidden="true" />
-        Hạng 1 phù hợp nhất
+    <div className="fit-status artifact-stagger" style={{ '--stagger-i': 0 } as React.CSSProperties}>
+      <Badge variant="success">{RESULT_STATUS_LABEL.final_360}</Badge>
+      <span className="fit-completeness">
+        <span>Độ đầy đủ dữ liệu <b>96%</b></span>
+        <FitMeter percent={96} />
       </span>
     </div>
 
-    <div
-      className="artifact-fit-hero spotlight artifact-stagger"
-      style={{ '--stagger-i': 0 } as React.CSSProperties}
-      onPointerMove={trackPointer}
-    >
-      <div className="artifact-fit-score-box">
-        <span className="artifact-fit-rank-label">Hạng 1 · Mục tiêu</span>
-        <strong className="artifact-fit-big-score">94%</strong>
-        <span className="artifact-fit-score-sub">Độ tương thích</span>
-      </div>
-
-      <div className="artifact-fit-main">
-        <div className="artifact-fit-head">
-          <h4 className="artifact-fit-title">Kỹ sư phần mềm (Software Engineer)</h4>
-          <span className="artifact-fit-sub">Công nghệ thông tin · Holland: I-R-C</span>
-        </div>
-
-        <ul className="artifact-fit-bars">
-          {TOP_CAREER_BARS.map((bar, idx) => (
-            <li
-              key={bar.label}
-              className="artifact-fit-bar-item"
-              style={{ '--bar-i': idx, '--w': `${bar.value}%` } as React.CSSProperties}
-            >
-              <div className="artifact-fit-bar-head">
-                <span>{bar.label}</span>
-                <strong>{bar.value}%</strong>
-              </div>
-              <span className="scene-track">
-                <span className="scene-fill" />
-              </span>
-            </li>
-          ))}
-        </ul>
-      </div>
+    <div className="fit-list is-static artifact-stagger" style={{ '--stagger-i': 1 } as React.CSSProperties}>
+      <FitListHead withActions={false} />
+      <ol className="fit-rows">
+        {SAMPLE_CAREERS.map((item, index) => (
+          <FitRow key={item.careerId} item={item} isTop={index === 0} />
+        ))}
+      </ol>
     </div>
-
-    <ul className="artifact-fit-next">
-      {NEXT_CAREERS.map((row, idx) => (
-        <li
-          key={row.rank}
-          className="artifact-fit-next-row spotlight artifact-stagger"
-          style={{ '--stagger-i': idx + 1 } as React.CSSProperties}
-          onPointerMove={trackPointer}
-        >
-          <span className="artifact-fit-rank">#{row.rank}</span>
-          <span className="artifact-fit-next-icon" aria-hidden="true">
-            <Briefcase size={16} />
-          </span>
-          <div className="artifact-fit-next-body">
-            <strong className="artifact-fit-next-name">{row.name}</strong>
-            <span className="artifact-fit-next-holland">{row.holland}</span>
-          </div>
-          <strong className="artifact-fit-next-score">{row.fit}%</strong>
-        </li>
-      ))}
-    </ul>
   </div>
 );
 
@@ -213,7 +200,7 @@ const COMPARE_PLANS = [
     preferred: true,
     school: 'ĐH Bách khoa Hà Nội (HUST)',
     program: 'Khoa học Máy tính (IT1)',
-    career: 'Kỹ sư phần mềm · 94%',
+    career: TOP_CAREER_LABEL,
     cutoff: '26.85 (A00)',
     admissionStatus: 'Đạt (+0.65đ)',
     tuition: '34 triệu / năm',
@@ -225,7 +212,7 @@ const COMPARE_PLANS = [
     preferred: false,
     school: 'ĐH Công nghệ – ĐHQGHN (UET)',
     program: 'Kỹ thuật Phần mềm (CN8)',
-    career: 'Kỹ sư phần mềm · 94%',
+    career: TOP_CAREER_LABEL,
     cutoff: '26.40 (A00)',
     admissionStatus: 'Đạt (+1.10đ)',
     tuition: '31.5 triệu / năm',
@@ -298,105 +285,136 @@ const DecisionCompareArtifact: React.FC = () => (
    BƯỚC 5: LỘ TRÌNH CÁ NHÂN
    ========================================================================== */
 
-interface SampleRoadmapStage {
-  stepCode: string;
+interface SampleActivity {
+  pillar: RoadmapPillar;
   title: string;
-  statusLabel: string;
-  statusKind: 'done' | 'current';
-  percent: number;
-  items: { pillar: string; text: string; done: boolean }[];
+  done: boolean;
+  type: ActivityType | null;
 }
 
-const SAMPLE_ROADMAP_STAGES: SampleRoadmapStage[] = [
+interface SampleStage {
+  /** Tháng của hạn (YYYY-MM), cùng cách chia giai đoạn như trang Lộ trình */
+  key: string;
+  status: StageStatus;
+  due: string;
+  items: SampleActivity[];
+}
+
+/** Giai đoạn đang thực hiện đứng đầu, rồi đến giai đoạn sau và giai đoạn đã qua, như trang Lộ trình */
+const SAMPLE_STAGES: SampleStage[] = [
   {
-    stepCode: 'Chặng 01',
-    title: 'Nền tảng lập trình & Tư duy máy tính',
-    statusLabel: 'Đã xong',
-    statusKind: 'done',
-    percent: 100,
+    key: '2026-11',
+    status: 'current',
+    due: '2026-11-30',
     items: [
-      { pillar: 'Kiến thức', text: 'Học ngôn ngữ C++ & Lập trình hướng đối tượng (OOP)', done: true },
-      { pillar: 'Kỹ năng', text: 'Sử dụng Git/GitHub & Giải 100 bài toán tư duy logic', done: true },
+      { pillar: 'knowledge', title: 'Hoàn thành khóa Cấu trúc dữ liệu và giải thuật', done: true, type: 'course' },
+      { pillar: 'experience', title: 'Xây dựng ứng dụng web quản lý công việc', done: false, type: 'project' },
+      { pillar: 'exploration', title: 'Tham gia ngày hội việc làm công nghệ', done: false, type: null },
     ],
   },
   {
-    stepCode: 'Chặng 02',
-    title: 'Cấu trúc dữ liệu, Giải thuật & Cơ sở dữ liệu',
-    statusLabel: 'Đã xong',
-    statusKind: 'done',
-    percent: 100,
+    key: '2026-12',
+    status: 'upcoming',
+    due: '2026-12-31',
     items: [
-      { pillar: 'Kiến thức', text: 'Học Cấu trúc dữ liệu & Giải thuật (Mảng, Cây, Đồ thị)', done: true },
-      { pillar: 'Kỹ năng', text: 'Thiết kế Cơ sở dữ liệu SQL & Xây dựng RESTful API', done: true },
+      { pillar: 'knowledge', title: 'Đọc sách Clean Code', done: false, type: 'book' },
+      { pillar: 'experience', title: 'Đóng góp một dự án mã nguồn mở', done: false, type: 'project' },
+      { pillar: 'exploration', title: 'Phỏng vấn một kỹ sư phần mềm', done: false, type: null },
     ],
   },
   {
-    stepCode: 'Chặng 03',
-    title: 'Xây dựng dự án thực tế & Thực tập doanh nghiệp',
-    statusLabel: 'Đang học',
-    statusKind: 'current',
-    percent: 50,
+    key: '2026-10',
+    status: 'done',
+    due: '2026-10-31',
     items: [
-      { pillar: 'Trải nghiệm', text: 'Xây dựng Web bán hàng Full-stack (React, TypeScript, Node.js)', done: true },
-      { pillar: 'Trải nghiệm', text: 'Triển khai Docker, CI/CD & Thực tập tại doanh nghiệp', done: false },
+      { pillar: 'knowledge', title: 'Học lập trình hướng đối tượng', done: true, type: 'course' },
+      { pillar: 'experience', title: 'Giải 50 bài tập lập trình', done: true, type: 'exercise' },
+      { pillar: 'exploration', title: 'Tham quan công ty phần mềm', done: true, type: null },
     ],
   },
 ];
 
+const doneOf = (stage: SampleStage) => stage.items.filter((item) => item.done).length;
+const percentOf = (stage: SampleStage) => Math.round((doneOf(stage) / stage.items.length) * 100);
+const ROADMAP_TOTAL = SAMPLE_STAGES.reduce((sum, stage) => sum + stage.items.length, 0);
+const ROADMAP_DONE = SAMPLE_STAGES.reduce((sum, stage) => sum + doneOf(stage), 0);
+const keepChecked = () => undefined;
+
 const RoadmapArtifact: React.FC = () => (
   <div className="artifact-window artifact-roadmap">
-    <div className="artifact-topbar">
-      <span className="artifact-status-line">ĐH Bách khoa Hà Nội · Khoa học Máy tính</span>
-      <span className="artifact-tag is-coral">Tiến độ: 83%</span>
+    <div className="artifact-stagger" style={{ '--stagger-i': 0 } as React.CSSProperties}>
+      <section className="roadmap-overview">
+        <dl className="roadmap-kpis">
+          <div><dt>Hoàn thành</dt><dd>{Math.round((ROADMAP_DONE / ROADMAP_TOTAL) * 100)}%</dd></div>
+          <div><dt>Kế hoạch đến hôm nay</dt><dd>52%</dd></div>
+          <div><dt>Còn lại</dt><dd>19 tháng</dd></div>
+          <div>
+            <dt>Trạng thái</dt>
+            <dd><Badge variant="success">Đúng hướng</Badge></dd>
+          </div>
+        </dl>
+      </section>
     </div>
 
-    <ol className="artifact-roadmap-list">
-      {SAMPLE_ROADMAP_STAGES.map((stage, idx) => (
-        <li
-          key={stage.stepCode}
-          className={`artifact-roadmap-stage spotlight artifact-stagger is-${stage.statusKind}`}
-          style={{ '--stagger-i': idx } as React.CSSProperties}
-          onPointerMove={trackPointer}
-        >
-          <div className="artifact-roadmap-stage-head">
-            <span className="artifact-roadmap-code">{stage.stepCode}</span>
-            <strong className="artifact-roadmap-title">{stage.title}</strong>
-            <span className={`artifact-roadmap-status is-${stage.statusKind}`}>
-              {stage.statusLabel} · {stage.percent}%
-            </span>
-          </div>
-          <span className="scene-track">
-            <span className="scene-fill" style={{ '--w': `${stage.percent}%`, '--bar-i': idx } as React.CSSProperties} />
-          </span>
+    <div className="roadmap-stages artifact-stagger" style={{ '--stagger-i': 1 } as React.CSSProperties}>
+      {SAMPLE_STAGES.map((stage, index) => {
+        const code = `Chặng ${String(index + 1).padStart(2, '0')}`;
+        const label = stageLabel(stage.key);
+        const percent = percentOf(stage);
+        const badge = <Badge variant={STAGE_STATUS_VARIANT[stage.status]} size="sm">{STAGE_STATUS_LABEL[stage.status]}</Badge>;
 
-          <ul className="artifact-roadmap-tasks">
-            {stage.items.map((item) => (
-              <li key={item.text} className={`artifact-roadmap-task ${item.done ? 'is-done' : ''}`}>
-                <span className="artifact-task-box" aria-hidden="true">
-                  {item.done && <Check size={11} strokeWidth={3} />}
-                </span>
-                <span className="artifact-task-pillar">{item.pillar}</span>
-                <span className="artifact-task-text">{item.text}</span>
-              </li>
-            ))}
-          </ul>
-        </li>
-      ))}
+        if (stage.status !== 'current') {
+          return (
+            <article key={stage.key} className={`roadmap-stage is-collapsed is-${stage.status}`}>
+              <div className="roadmap-stage-toggle">
+                <ChevronRight size={18} aria-hidden="true" />
+                <span className="roadmap-stage-code">{code}</span>
+                <span className="roadmap-stage-name">{label}</span>
+                {badge}
+                <span className="roadmap-stage-count">{doneOf(stage)}/{stage.items.length} hoạt động</span>
+                <span className="roadmap-stage-percent">{percent}%</span>
+              </div>
+            </article>
+          );
+        }
 
-      <li
-        className="artifact-roadmap-goal spotlight artifact-stagger"
-        style={{ '--stagger-i': SAMPLE_ROADMAP_STAGES.length } as React.CSSProperties}
-        onPointerMove={trackPointer}
-      >
-        <span className="artifact-goal-pin" aria-hidden="true">
-          <MapPin size={18} />
-        </span>
-        <div className="artifact-goal-body">
-          <span className="artifact-goal-eyebrow">Mục tiêu quyết định</span>
-          <strong className="artifact-goal-title">Trở thành Lập trình viên (Kỹ sư phần mềm)</strong>
-        </div>
-      </li>
-    </ol>
+        return (
+          <article key={stage.key} className="roadmap-stage is-current">
+            <header className="roadmap-stage-head">
+              <div className="roadmap-stage-toggle">
+                <CalendarClock size={18} aria-hidden="true" />
+                <span className="roadmap-stage-code">{code}</span>
+                <span className="roadmap-stage-name">{label}</span>
+                {badge}
+                <span className="roadmap-stage-count">Hạn {formatDate(stage.due)}</span>
+                <span className="roadmap-stage-count">{doneOf(stage)}/{stage.items.length}</span>
+                <span className="roadmap-stage-percent">{percent}%</span>
+                <ChevronDown size={18} aria-hidden="true" />
+              </div>
+              <ProgressBar value={percent} label={`Hoàn thành ${label}`} />
+            </header>
+
+            <ul className="roadmap-activities">
+              {stage.items.map((item) => (
+                <li key={item.title} className={item.done ? 'is-done' : undefined}>
+                  <div className="roadmap-activity-line">
+                    <PillarBadge pillar={item.pillar} />
+                    <Checkbox
+                      className="roadmap-activity-check"
+                      label={item.title}
+                      checked={item.done}
+                      onChange={keepChecked}
+                      tabIndex={-1}
+                    />
+                    {item.type && <Badge size="sm">{ACTIVITY_TYPE_LABEL[item.type]}</Badge>}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </article>
+        );
+      })}
+    </div>
   </div>
 );
 
@@ -405,7 +423,10 @@ const RoadmapArtifact: React.FC = () => (
    ========================================================================== */
 
 const LINE_DESKTOP = 0.5;
-const LINE_MOBILE = 0.65;
+/** Màn hình hẹp: các bước thành dải thẻ lướt ngang, bước đang xem là thẻ nằm ở mép trái dải */
+const MOBILE_QUERY = '(max-width: 960px)';
+
+const startPadding = (list: HTMLElement) => parseFloat(getComputedStyle(list).paddingLeft) || 0;
 
 function useJourneyProgress(listRef: React.RefObject<HTMLOListElement | null>) {
   const [active, setActive] = useState(0);
@@ -413,13 +434,33 @@ function useJourneyProgress(listRef: React.RefObject<HTMLOListElement | null>) {
   useEffect(() => {
     const list = listRef.current;
     if (!list) return;
-    const mobile = window.matchMedia('(max-width: 960px)');
+    const mobile = window.matchMedia(MOBILE_QUERY);
     let frame = 0;
     let near = false;
 
+    const updateSwipe = () => {
+      const cards = Array.from(list.querySelectorAll<HTMLElement>('[data-step]:not(.journey-end)'));
+      const start = list.getBoundingClientRect().left + startPadding(list);
+      let next = 0;
+      let best = Infinity;
+      cards.forEach((card, i) => {
+        const distance = Math.abs(card.getBoundingClientRect().left - start);
+        if (distance < best) {
+          best = distance;
+          next = i;
+        }
+      });
+      if (list.scrollLeft > 0 && list.scrollLeft + list.clientWidth >= list.scrollWidth - 2) next = cards.length - 1;
+      setActive((prev) => (prev === next ? prev : next));
+    };
+
     const update = () => {
       frame = 0;
-      const line = window.innerHeight * (mobile.matches ? LINE_MOBILE : LINE_DESKTOP);
+      if (mobile.matches) {
+        updateSwipe();
+        return;
+      }
+      const line = window.innerHeight * LINE_DESKTOP;
       const items = Array.from(list.querySelectorAll<HTMLElement>('[data-step]'));
       const centers = items.map((item) => {
         const dot = item.querySelector<HTMLElement>('.journey-dot');
@@ -438,6 +479,9 @@ function useJourneyProgress(listRef: React.RefObject<HTMLOListElement | null>) {
     const schedule = () => {
       if (near && !frame) frame = requestAnimationFrame(update);
     };
+    const scheduleSwipe = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -450,10 +494,14 @@ function useJourneyProgress(listRef: React.RefObject<HTMLOListElement | null>) {
     observer.observe(list);
     window.addEventListener('scroll', schedule, { passive: true });
     window.addEventListener('resize', schedule);
+    list.addEventListener('scroll', scheduleSwipe, { passive: true });
+    mobile.addEventListener('change', scheduleSwipe);
     return () => {
       observer.disconnect();
       window.removeEventListener('scroll', schedule);
       window.removeEventListener('resize', schedule);
+      list.removeEventListener('scroll', scheduleSwipe);
+      mobile.removeEventListener('change', scheduleSwipe);
       cancelAnimationFrame(frame);
     };
   }, [listRef]);
@@ -523,7 +571,7 @@ export const HomeJourney: React.FC<HomeJourneyProps> = ({
       title: 'Nghề phù hợp',
       facts: [
         careers !== null ? `Đối chiếu ${careers.toLocaleString('vi-VN')} nghề nghiệp chuẩn hóa` : 'Đối chiếu danh mục nghề nghiệp chuẩn hóa',
-        'Xếp hạng theo Năng lực, Sở thích & Giá trị',
+        'Xếp hạng theo Năng lực, Sở thích & Động lực',
         'Chọn nghề mục tiêu để lập phương án',
       ],
       icon: Compass,
@@ -546,9 +594,9 @@ export const HomeJourney: React.FC<HomeJourneyProps> = ({
       stepId: 'step-roadmap',
       title: 'Lộ trình',
       facts: [
-        'Chia theo từng chặng từ nền tảng đến thực chiến',
-        '3 trụ cột: Kiến thức · Kỹ năng · Trải nghiệm',
-        'Theo dõi tiến độ tới mục tiêu nghề nghiệp',
+        'Chia chặng theo tháng, tick hoàn thành từng hoạt động',
+        '3 trụ cột: Kiến thức · Kinh nghiệm · Trải nghiệm',
+        'Theo dõi tiến độ so với kế hoạch tới mục tiêu nghề nghiệp',
       ],
       icon: Route,
       scene: <RoadmapArtifact />,
@@ -557,8 +605,22 @@ export const HomeJourney: React.FC<HomeJourneyProps> = ({
 
   const scrollToStep = (stepId: string) => {
     const el = document.getElementById(stepId);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (!el) return;
+    const list = listRef.current;
+    if (list && window.matchMedia(MOBILE_QUERY).matches) {
+      const offset = el.getBoundingClientRect().left - list.getBoundingClientRect().left - startPadding(list);
+      list.scrollBy({ left: offset, behavior: 'smooth' });
+      return;
+    }
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
+
+  const cta = canExplore && (
+    <Link to={testPath} className="journey-cta-btn btn-fill btn-fill-ink">
+      <RollText text="Bắt đầu làm bài đánh giá ngay" />
+      <ArrowRight size={18} className="btn-arrow-slide" aria-hidden="true" />
+    </Link>
+  );
 
   return (
     <section id={id} className="journey" aria-labelledby={`${id}-title`}>
@@ -632,12 +694,9 @@ export const HomeJourney: React.FC<HomeJourneyProps> = ({
               </span>
             </span>
             <div className="journey-end-cta">
-              {canExplore && (
+              {cta && (
                 <Magnetic strength={0.15} className="journey-cta-wrap">
-                  <Link to={testPath} className="journey-cta-btn btn-fill btn-fill-ink">
-                    <RollText text="Bắt đầu làm bài đánh giá ngay" />
-                    <ArrowRight size={18} className="btn-arrow-slide" aria-hidden="true" />
-                  </Link>
+                  {cta}
                 </Magnetic>
               )}
             </div>
@@ -686,6 +745,8 @@ export const HomeJourney: React.FC<HomeJourneyProps> = ({
           </div>
         </div>
       </div>
+
+      {cta && <div className="journey-swipe-cta">{cta}</div>}
     </section>
   );
 };

@@ -5,13 +5,13 @@ import { ACTIVITY_TYPE_LABEL, PILLAR_LABEL, formatDate } from '../roadmap.logic'
 import type { Milestone, RoadmapPillar, Stage, StageStatus } from '../roadmap.types';
 import { PillarBadge } from './PillarBadge';
 
-const STATUS_LABEL: Record<StageStatus, string> = {
+export const STAGE_STATUS_LABEL: Record<StageStatus, string> = {
   done: 'Đã xong',
   current: 'Đang thực hiện',
   late: 'Trễ hạn',
   upcoming: 'Sắp tới',
 };
-const STATUS_VARIANT: Record<StageStatus, 'success' | 'info' | 'danger' | 'default'> = {
+export const STAGE_STATUS_VARIANT: Record<StageStatus, 'success' | 'info' | 'danger' | 'default'> = {
   done: 'success',
   current: 'info',
   late: 'danger',
@@ -56,7 +56,7 @@ export const RoadmapStageCard: React.FC<Props> = ({ stage, index, open, readOnly
           <ChevronRight size={18} aria-hidden="true" />
           <span className="roadmap-stage-code">{code}</span>
           <span className="roadmap-stage-name">{stage.label}</span>
-          <Badge variant={STATUS_VARIANT[stage.status]} size="sm">{STATUS_LABEL[stage.status]}</Badge>
+          <Badge variant={STAGE_STATUS_VARIANT[stage.status]} size="sm">{STAGE_STATUS_LABEL[stage.status]}</Badge>
           <span className="roadmap-stage-count">{doneCount}/{stage.items.length} hoạt động</span>
           <span className="roadmap-stage-percent">{stage.actualPercent}%</span>
         </button>
@@ -71,7 +71,7 @@ export const RoadmapStageCard: React.FC<Props> = ({ stage, index, open, readOnly
           <CalendarClock size={18} aria-hidden="true" />
           <span className="roadmap-stage-code">{code}</span>
           <span className="roadmap-stage-name">{stage.label}</span>
-          <Badge variant={STATUS_VARIANT[stage.status]} size="sm">{STATUS_LABEL[stage.status]}</Badge>
+          <Badge variant={STAGE_STATUS_VARIANT[stage.status]} size="sm">{STAGE_STATUS_LABEL[stage.status]}</Badge>
           {sharedDue && <span className="roadmap-stage-count">Hạn {formatDate(sharedDue)}</span>}
           <span className="roadmap-stage-count">{doneCount}/{stage.items.length}</span>
           <span className="roadmap-stage-percent">{stage.actualPercent}%</span>

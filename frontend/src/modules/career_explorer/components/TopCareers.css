@@ -13,15 +13,18 @@
 .fit-list-head,
 .fit-row {
   display: grid;
-  grid-template-columns:
-    calc(44 * var(--px))
-    minmax(0, 2.6fr)
-    minmax(calc(84 * var(--px)), 1fr)
-    minmax(0, 3.6fr)
-    calc(120 * var(--px));
+  grid-template-columns: var(
+    --fit-columns,
+    calc(44 * var(--px)) minmax(0, 2.6fr) minmax(calc(84 * var(--px)), 1fr) minmax(0, 3.6fr) calc(120 * var(--px))
+  );
   align-items: center;
   gap: var(--space-4);
   padding: 0 var(--space-4);
+}
+
+/* Danh sách chỉ để xem (bản minh họa): bỏ cột hành động */
+.fit-list.is-static {
+  --fit-columns: calc(44 * var(--px)) minmax(0, 2.6fr) minmax(calc(84 * var(--px)), 1fr) minmax(0, 3.6fr);
 }
 
 /* Đầu cột dùng cùng lưới với dòng nghề để thẳng cột */

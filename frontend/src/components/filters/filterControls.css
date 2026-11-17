@@ -18,7 +18,7 @@
 :is(.filter-controls, .module-form) .select-label,
 :is(.filter-controls, .module-form) .select-field-label {
   font-size: var(--font-size-xs);
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.02em;
   color: var(--color-text-muted);
 }
@@ -88,7 +88,7 @@
 }
 
 :is(.filter-controls, .module-form) .select-trigger.has-value {
-  font-weight: 600;
+  font-weight: 500;
   color: var(--hope-blue-deep);
   background-color: var(--hope-blue-soft);
   border-color: var(--hope-blue-border);
@@ -169,7 +169,7 @@
 }
 
 :is(.filter-controls, .module-form) .select-option-item.is-selected {
-  font-weight: 600;
+  font-weight: 500;
   color: var(--hope-blue-deep);
   background-color: var(--hope-blue-soft);
   box-shadow: inset 3px 0 0 var(--hope-blue);

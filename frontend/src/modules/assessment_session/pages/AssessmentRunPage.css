@@ -31,7 +31,7 @@
 }
 
 .run-progress { display: flex; flex-direction: column; gap: var(--space-2); }
-.run-progress-text { font-size: var(--font-size-sm); font-weight: 700; color: var(--color-text-secondary); }
+.run-progress-text { font-size: var(--font-size-sm); font-weight: 600; color: var(--color-text-secondary); }
 .run-progress-count { color: var(--part-color, var(--color-text-main)); font-variant-numeric: tabular-nums; }
 
 /* Câu cuối đã trả lời: nút Hoàn thành phần nổi bật, đếm ngược rồi tự sang bước sau */
@@ -42,7 +42,7 @@
   background: var(--part-color, var(--color-primary));
 }
 .run-finish {
-  font-weight: 700;
+  font-weight: 600;
   box-shadow: 0 8px 20px -10px var(--part-color, var(--color-primary));
   animation:
     finish-enter 420ms var(--ease-spring),

@@ -1,0 +1,97 @@
+/* Phần kết trang giới thiệu: khẩu hiệu cỡ lớn nhất trang, rồi một hàng chân trang trên đường kẻ mảnh */
+.home-footer {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(var(--space-10), 6vw, calc(96 * var(--px)));
+  min-width: 0;
+  padding-top: clamp(var(--space-6), 3vw, var(--space-12));
+}
+
+.home-footer-slogan {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  font-size: clamp(calc(40 * var(--px)), 8.4vw, calc(148 * var(--px)));
+  font-family: var(--font-display);
+  font-weight: 500;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  color: var(--color-heading);
+  text-wrap: balance;
+}
+
+.home-footer-line {
+  display: block;
+}
+
+.home-footer-line .split-word {
+  cursor: default;
+}
+
+.home-footer-line:not(.split-accent) .split-word {
+  transition:
+    transform 1050ms var(--ease-out) var(--word-delay, 0ms),
+    color 380ms var(--ease-out);
+}
+
+@media (hover: hover) {
+  .home-footer-line:not(.split-accent) .split-word:hover {
+    color: var(--brand-coral);
+  }
+}
+
+.home-footer-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-8);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border);
+}
+
+.home-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-8);
+  min-width: 0;
+}
+
+.home-footer-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-target);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: color 420ms var(--ease-out);
+}
+
+.home-footer-link:hover {
+  color: var(--color-text-main);
+}
+
+.home-footer-link:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.home-footer-copy {
+  font-size: var(--font-size-sm);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 640px) {
+  .home-footer-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .home-footer-links {
+    gap: 0 var(--space-6);
+  }
+}

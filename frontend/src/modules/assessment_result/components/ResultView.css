@@ -18,12 +18,12 @@
   justify-content: space-between;
   gap: var(--space-3);
   font-size: var(--font-size-sm);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-text-secondary);
 }
 .result-progress-head strong {
   font-size: var(--font-size-lg);
-  font-weight: 800;
+  font-weight: 600;
   color: var(--color-text-main);
 }
 .result-progress .app-progress { height: 3px; }
@@ -62,7 +62,7 @@
   gap: var(--space-1);
   padding: 2px var(--space-2);
   font-size: var(--font-size-xs);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-warning-text);
   background: var(--alert-warning-bg);
   border: 1px solid var(--alert-warning-border);
@@ -122,19 +122,19 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   font-size: var(--font-size-md);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-main);
 }
 .group-row-score {
   flex: none;
   font-size: var(--font-size-xl);
-  font-weight: 800;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--brand-deep);
 }
 .group-row-score.is-empty {
   font-size: var(--font-size-sm);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-text-muted);
 }
 
@@ -219,13 +219,13 @@
 .criterion-score {
   text-align: right;
   font-size: var(--font-size-sm);
-  font-weight: 700;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--color-text-main);
 }
 .group-row .criterion-bar { grid-column: 1 / -1; }
 .group-row .criterion-bar .app-progress { height: 2px; }
-.group-detail-total .criterion-name { font-weight: 700; color: var(--color-text-main); }
+.group-detail-total .criterion-name { font-weight: 600; color: var(--color-text-main); }
 .criterion-list + .group-detail-total {
   padding-top: var(--space-3);
   border-top: 1px solid var(--color-border);

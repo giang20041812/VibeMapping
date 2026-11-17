@@ -170,7 +170,7 @@
   gap: var(--space-1);
   padding: 0;
   font-size: var(--font-size-xs);
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.2;
   color: var(--chart-ink);
   background: none;
@@ -212,7 +212,7 @@
 }
 .polygon-node-value {
   font-size: var(--font-size-md);
-  font-weight: 800;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
@@ -249,7 +249,7 @@
 .polygon-readout-value {
   min-width: 3ch;
   font-size: var(--font-size-xl);
-  font-weight: 800;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--chart-text-strong);
   text-align: right;
@@ -257,12 +257,12 @@
 .polygon-readout-level {
   padding: 0 var(--space-3);
   font-size: var(--font-size-xs);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--chart-ink);
   background: color-mix(in srgb, var(--tone) 16%, var(--brand-white));
   border-radius: var(--radius-xs);
 }
-.polygon-readout-reference { font-size: var(--font-size-sm); font-weight: 600; color: var(--chart-text-muted); }
+.polygon-readout-reference { font-size: var(--font-size-sm); font-weight: 500; color: var(--chart-text-muted); }
 
 @keyframes polygon-grow {
   0% { opacity: 0; transform: scale(0.4); }

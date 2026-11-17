@@ -463,7 +463,8 @@ function useJourneyProgress(listRef: React.RefObject<HTMLOListElement | null>) {
 
 /**
  * Hành trình 5 bước trên nền sáng: bước bên trái là chữ trần phân tách bằng đường kẻ,
- * sân khấu bên phải là mặt giấy trắng viền mảnh, cảnh minh họa chuyển tầng bậc theo cuộn.
+ * sân khấu bên phải là mặt giấy trắng viền mảnh, cảnh minh họa chuyển tầng bậc theo cuộn;
+ * thanh đầu sân khấu cho biết đang ở bước nào (số bước cuộn dọc, tên bước, vạch tiến độ).
  */
 export const HomeJourney: React.FC<HomeJourneyProps> = ({
   id,
@@ -646,23 +647,42 @@ export const HomeJourney: React.FC<HomeJourneyProps> = ({
         <div className="journey-aside">
           <div className="journey-stage" aria-hidden="true">
             <span className="journey-stage-glow" />
-            {steps.map((step, i) => (
-              <div
-                key={step.key}
-                className={`journey-scene journey-scene-${step.key} ${i === shown ? 'is-active' : ''}`}
-              >
-                {step.scene}
-              </div>
-            ))}
-            <ol className="journey-dots">
+
+            <div className="journey-stage-head">
+              <span className="journey-stage-count">
+                <span className="journey-stage-count-window">
+                  <span className="journey-stage-count-strip" style={{ '--count-i': shown } as React.CSSProperties}>
+                    {steps.map((step, i) => (
+                      <span key={step.key}>0{i + 1}</span>
+                    ))}
+                  </span>
+                </span>
+                <span className="journey-stage-total">/ 0{steps.length}</span>
+              </span>
+              <span key={steps[shown].key} className="journey-stage-title">
+                {steps[shown].title}
+              </span>
+              <ol className="journey-dots">
+                {steps.map((step, i) => (
+                  <li
+                    key={step.key}
+                    className={i === shown ? 'is-active' : i < shown ? 'is-done' : ''}
+                    onClick={() => scrollToStep(step.stepId)}
+                  />
+                ))}
+              </ol>
+            </div>
+
+            <div className="journey-stage-body">
               {steps.map((step, i) => (
-                <li
+                <div
                   key={step.key}
-                  className={i === shown ? 'is-active' : i < shown ? 'is-done' : ''}
-                  onClick={() => scrollToStep(step.stepId)}
-                />
+                  className={`journey-scene journey-scene-${step.key} ${i === shown ? 'is-active' : ''}`}
+                >
+                  {step.scene}
+                </div>
               ))}
-            </ol>
+            </div>
           </div>
         </div>
       </div>

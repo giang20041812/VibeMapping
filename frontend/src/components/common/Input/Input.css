@@ -8,7 +8,7 @@
 
 .input-label {
   font-size: var(--font-size-sm);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-text-secondary);
 }
 
@@ -93,7 +93,7 @@
   align-items: center;
   gap: var(--space-1);
   font-size: var(--font-size-xs);
-  font-weight: 500;
+  font-weight: 400;
   color: var(--color-danger-text);
   animation: input-error-in 220ms var(--ease-out) both;
 }

@@ -22,12 +22,12 @@
   align-self: flex-start;
   background: var(--color-primary);
   color: var(--color-text-inverse);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .edu-map-major {
   background: var(--color-primary-light);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .edu-map-majors,
@@ -56,7 +56,7 @@
 /* Chi tiết trường */
 .school-detail .page-hero { margin-bottom: 0; }
 .school-meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); min-width: 0; }
-.school-address { display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; font-weight: 700; color: var(--color-text-secondary); overflow-wrap: anywhere; }
+.school-address { display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; font-weight: 600; color: var(--color-text-secondary); overflow-wrap: anywhere; }
 .school-address svg { flex: none; }
 .school-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(200 * var(--px))), 1fr)); gap: var(--space-4); }
 .school-facts .stat-tile-value b { font-size: var(--font-size-3xl); }
@@ -79,7 +79,7 @@
 .school-programs-title {
   margin: 0;
   font-size: var(--font-size-2xl);
-  font-weight: 800;
+  font-weight: 600;
   color: var(--color-text-main);
 }
 
@@ -171,7 +171,7 @@
 
 .major-group-name {
   font-size: var(--font-size-md);
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1.3;
   color: var(--color-text-main);
   text-decoration: none;
@@ -186,7 +186,7 @@
 
 .major-group-count {
   font-size: var(--font-size-xs);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-secondary);
 }
 
@@ -228,7 +228,7 @@
 .major-program-link {
   flex: 1 1 calc(180 * var(--px));
   min-width: 0;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-main);
   text-decoration: none;
   line-height: 1.4;
@@ -268,7 +268,7 @@
 }
 
 /* ===== Đồng bộ với trang giới thiệu: mặt giấy trắng, vạch mực mép trên, hàng kẻ mảnh, không nhấc khối ===== */
-.edu-map-node { padding: var(--space-2) var(--space-4); font-weight: 600; transition: border-color var(--transition-fast), color var(--transition-fast); }
+.edu-map-node { padding: var(--space-2) var(--space-4); font-weight: 500; transition: border-color var(--transition-fast), color var(--transition-fast); }
 .edu-map-node:hover { border-color: var(--ink-300); }
 .edu-map-career { background: var(--color-text-main); border-color: var(--color-text-main); color: var(--color-text-inverse); }
 .edu-map-career:hover { border-color: var(--color-text-main); }

@@ -6,7 +6,7 @@
 .guest-title {
   min-width: 0;
   font-size: var(--font-size-3xl);
-  font-weight: 800;
+  font-weight: 600;
   line-height: var(--line-tight);
   letter-spacing: -0.02em;
   color: var(--color-text-main);
@@ -17,23 +17,23 @@
 .guest-state { display: flex; flex-direction: column; align-items: center; gap: var(--space-3); text-align: center; }
 .guest-state-warning { color: var(--color-warning-text); }
 .guest-state-success { color: var(--color-success); }
-.guest-state-text { font-size: var(--font-size-lg); font-weight: 600; color: var(--color-text-main); }
+.guest-state-text { font-size: var(--font-size-lg); font-weight: 500; color: var(--color-text-main); }
 .guest-thanks-title {
   font-size: var(--font-size-4xl);
-  font-weight: 800;
+  font-weight: 600;
   color: var(--color-text-main);
 }
 
 /* Làm bài */
 .guest-run { display: flex; flex-direction: column; gap: var(--space-4); }
 .guest-run-top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-2); }
-.guest-run-subject { min-width: 0; font-size: var(--font-size-md); font-weight: 800; color: var(--color-text-brand); overflow-wrap: anywhere; }
+.guest-run-subject { min-width: 0; font-size: var(--font-size-md); font-weight: 600; color: var(--color-text-brand); overflow-wrap: anywhere; }
 .guest-run-saved { font-size: var(--font-size-sm); color: var(--color-text-muted); }
 .guest-block-action { margin-top: var(--space-3); }
 
 .guest-run-body { display: flex; flex-direction: column; gap: var(--space-6); }
 .guest-progress { display: flex; flex-direction: column; gap: var(--space-2); }
-.guest-progress-text { font-size: var(--font-size-sm); font-weight: 700; color: var(--color-text-secondary); }
+.guest-progress-text { font-size: var(--font-size-sm); font-weight: 600; color: var(--color-text-secondary); }
 
 .guest-nav {
   display: flex;

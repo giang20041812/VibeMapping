@@ -102,11 +102,6 @@
    --stage-border-strong: rgba(199, 227, 254, 0.28);
    --stage-shadow: 0 32px 72px -24px rgba(2, 12, 48, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.14);
 
-   /* Khối thương hiệu trang đăng nhập: xanh sáng phẳng, chấm trắng mờ */
-   --auth-hero-bg:
-      linear-gradient(160deg, var(--brand-deep) 0%, var(--brand-sky) 100%);
-
-
    /* Borders & Dividers */
    --color-border: #e3e6eb;
    --color-border-hover: #cbd0d9;
@@ -348,8 +343,9 @@
    --shadow-dropdown: 0 14px 30px rgba(3, 18, 64, 0.14), 0 4px 10px rgba(3, 18, 64, 0.06);
    --shadow-sticky: 0 -6px 16px rgba(3, 18, 64, 0.07);
 
-   /* Typography: Be Vietnam Pro (thiết kế riêng cho dấu tiếng Việt, nét grotesk hiện đại) & JetBrains Mono cho mã số nhỏ */
-   --font-sans: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+   /* Typography: Inter (OFL, hỗ trợ đầy đủ tiếng Việt, dùng thương mại miễn phí) & JetBrains Mono (OFL) cho mã số nhỏ */
+   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-display: 'Noto Serif', 'Times New Roman', serif;
    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
    --font-size-xs: calc(12 * var(--px));
    --font-size-sm: calc(13 * var(--px));

@@ -28,74 +28,6 @@
 .topbar-brand {
   justify-self: start;
   align-self: center;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-3);
-  white-space: nowrap;
-  text-decoration: none;
-  font-size: var(--font-size-xl);
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.03em;
-}
-
-.topbar-brand:focus-visible {
-  outline: 2px solid var(--color-border-focus);
-  outline-offset: 4px;
-}
-
-.topbar-brand-mark {
-  flex: none;
-  display: block;
-  width: calc(36 * var(--px));
-  height: calc(36 * var(--px));
-  border-radius: var(--radius-full);
-  transition: transform 560ms var(--ease-out);
-}
-
-.topbar-brand:hover .topbar-brand-mark {
-  transform: rotate(-10deg) scale(1.06);
-}
-
-.topbar-brand-mark .logo-svg {
-  display: block;
-}
-
-.topbar-brand-text {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.topbar-brand-wordmark {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.22em;
-}
-
-.topbar-brand-vibe {
-  color: var(--color-text-main);
-}
-
-.topbar-brand-mapping {
-  color: var(--color-primary);
-  transition: color 420ms var(--ease-out);
-}
-
-.topbar-brand:hover .topbar-brand-mapping {
-  color: var(--brand-coral);
-}
-
-.topbar-brand-tag {
-  display: inline-flex;
-  align-items: center;
-  padding-left: var(--space-3);
-  font-size: calc(10 * var(--px));
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--color-text-muted);
-  border-left: 1px solid var(--color-border);
 }
 
 /* Hàng mục: ô chữ cao bằng thanh, ngăn bằng đường kẻ dọc */
@@ -119,7 +51,7 @@
   align-items: center;
   padding: 0 var(--space-6);
   font-size: var(--font-size-base);
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: -0.01em;
   white-space: nowrap;
   text-decoration: none;
@@ -141,7 +73,7 @@
 
 .topbar-link.is-active {
   color: var(--color-text-main);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .topbar-end {
@@ -158,10 +90,6 @@
 }
 
 @media (max-width: 1120px) {
-  .topbar-brand-tag {
-    display: none;
-  }
-
   .topbar-link {
     padding: 0 var(--space-4);
   }
@@ -273,7 +201,7 @@
 
 /* Điện thoại hẹp: chỉ giữ biểu tượng để nút đăng nhập, đăng ký và menu vừa một hàng */
 @media (max-width: 520px) {
-  .topbar-brand-text {
+  .topbar-brand .brand-link-text {
     display: none;
   }
 }

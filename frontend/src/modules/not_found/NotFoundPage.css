@@ -14,14 +14,14 @@
 .not-found-code {
   margin-top: var(--space-4);
   font-size: var(--font-size-5xl);
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1;
   color: var(--brand-sky);
 }
 
 .not-found-title {
   font-size: var(--font-size-xl);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-text-secondary);
 }
 
@@ -31,7 +31,7 @@
   min-height: var(--touch-target);
   margin-top: var(--space-4);
   padding: 0 var(--space-6);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-text-inverse);
   text-decoration: none;
   background: var(--color-primary);

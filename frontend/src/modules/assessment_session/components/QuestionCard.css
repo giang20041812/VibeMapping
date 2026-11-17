@@ -9,7 +9,7 @@
   align-self: flex-start;
   padding: var(--space-1) var(--space-3);
   font-size: var(--font-size-sm);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--part-color, var(--brand-deep));
   background: var(--part-bg, var(--brand-ice));
   border-radius: var(--radius-sm);
@@ -17,7 +17,7 @@
 
 .question-text {
   font-size: var(--font-size-2xl);
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.4;
   color: var(--color-text-main);
 }
@@ -71,7 +71,7 @@
   width: 40px;
   height: 40px;
   font-size: var(--font-size-lg);
-  font-weight: 800;
+  font-weight: 600;
   color: var(--opt);
   background: var(--opt-bg);
   border-radius: var(--radius-md);
@@ -85,7 +85,7 @@
 .question-option-label {
   min-width: 0;
   font-size: var(--font-size-md);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-text-main);
   overflow-wrap: anywhere;
 }
@@ -125,7 +125,7 @@
   min-height: var(--touch-target);
   padding: 0 var(--space-3) 0 var(--space-1);
   font-size: var(--font-size-base);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-text-secondary);
   border-radius: var(--radius-md);
   cursor: pointer;
@@ -141,7 +141,7 @@
   padding: 0 var(--space-1);
   font-family: inherit;
   font-size: var(--font-size-xs);
-  font-weight: 600;
+  font-weight: 500;
   line-height: 20px;
   text-align: center;
   color: var(--color-text-muted);

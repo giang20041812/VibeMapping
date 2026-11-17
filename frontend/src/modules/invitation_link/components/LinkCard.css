@@ -14,7 +14,7 @@
 .link-card.is-expired .link-card-qr { opacity: 0.35; filter: grayscale(1); }
 
 .link-card-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
-.link-card-title { font-size: var(--font-size-xl); font-weight: 800; color: var(--color-text-main); }
+.link-card-title { font-size: var(--font-size-xl); font-weight: 600; color: var(--color-text-main); }
 
 .link-card-main { display: flex; align-items: flex-start; gap: var(--space-5); min-width: 0; }
 
@@ -44,7 +44,7 @@
 }
 .link-card-url-input:focus { border-color: var(--color-border-focus); box-shadow: 0 0 0 3px var(--color-primary-ring); }
 
-.link-card-progress { display: flex; flex-direction: column; gap: var(--space-1); font-size: var(--font-size-sm); font-weight: 600; color: var(--color-text-secondary); }
+.link-card-progress { display: flex; flex-direction: column; gap: var(--space-1); font-size: var(--font-size-sm); font-weight: 500; color: var(--color-text-secondary); }
 .link-card-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 
 /* Mã QR đặt gọn trong thanh bật/tắt */

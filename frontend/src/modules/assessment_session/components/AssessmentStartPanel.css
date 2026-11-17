@@ -9,7 +9,7 @@
 .resume-card .card-body { padding: var(--space-5) var(--space-6); }
 .resume-content { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4); }
 .resume-icon { display: inline-flex; color: var(--hope-blue); }
-.resume-text { flex: 1 1 240px; min-width: 0; font-size: var(--font-size-lg); font-weight: 600; color: var(--color-text-main); }
+.resume-text { flex: 1 1 240px; min-width: 0; font-size: var(--font-size-lg); font-weight: 500; color: var(--color-text-main); }
 
 /* Chọn gói (rộng) cạnh bảng số câu theo phần */
 .start-choice {
@@ -70,16 +70,16 @@
 }
 .package-card.is-selected::before { height: 6px; }
 
-.package-name { font-size: var(--font-size-xl); font-weight: 800; letter-spacing: -0.025em; color: var(--color-text-main); }
+.package-name { font-size: var(--font-size-xl); font-weight: 600; letter-spacing: -0.025em; color: var(--color-text-main); }
 .package-count {
   align-self: flex-start;
   font-size: var(--font-size-4xl);
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1.1;
   color: var(--pack);
 }
 .package-card.is-selected .package-count { animation: package-pop 420ms var(--ease-spring); }
-.package-minutes { display: inline-flex; align-items: center; gap: var(--space-1); font-size: var(--font-size-sm); font-weight: 600; color: var(--color-text-secondary); }
+.package-minutes { display: inline-flex; align-items: center; gap: var(--space-1); font-size: var(--font-size-sm); font-weight: 500; color: var(--color-text-secondary); }
 .package-note { font-size: var(--font-size-sm); color: var(--color-text-muted); }
 
 .package-check {
@@ -114,8 +114,8 @@
 .parts-table th,
 .parts-table td { padding: var(--space-3) var(--space-6); text-align: left; border-bottom: 1px solid var(--color-border); }
 .parts-table tbody tr:last-child td { border-bottom: 0; }
-.parts-table th { font-size: var(--font-size-sm); font-weight: 700; color: var(--color-text-secondary); background: var(--color-bg-app); }
-.parts-table td { font-weight: 600; color: var(--color-text-main); }
+.parts-table th { font-size: var(--font-size-sm); font-weight: 600; color: var(--color-text-secondary); background: var(--color-bg-app); }
+.parts-table td { font-weight: 500; color: var(--color-text-main); }
 .parts-count-col { width: 120px; text-align: right !important; font-variant-numeric: tabular-nums; }
 .parts-number {
   display: inline-flex;
@@ -125,7 +125,7 @@
   height: 26px;
   margin-right: var(--space-3);
   font-size: var(--font-size-sm);
-  font-weight: 800;
+  font-weight: 600;
   color: var(--brand-deep);
   background: var(--brand-ice);
   border-radius: var(--radius-sm);

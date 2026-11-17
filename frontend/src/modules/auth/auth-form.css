@@ -1,36 +1,59 @@
-.auth-form-card {
+/* Form đăng nhập, đăng ký, quên mật khẩu, nhập mã OTP: nằm trần trên mặt giấy trắng của khung trang.
+   Tên trang lớn màu xanh hy vọng, một đường kẻ mảnh vẽ dần bên dưới; các khối lần lượt trồi lên khi vào trang. */
+.auth-form-card,
+.auth-success {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--space-6);
+  min-width: 0;
 }
 
+.auth-form-card > *,
+.auth-success > * {
+  animation: ui-rise var(--duration-enter) var(--ease-out) backwards;
+}
+.auth-form-card > :nth-child(2),
+.auth-success > :nth-child(2) { animation-delay: calc(var(--stagger) * 1); }
+.auth-form-card > :nth-child(3),
+.auth-success > :nth-child(3) { animation-delay: calc(var(--stagger) * 2); }
+.auth-form-card > :nth-child(4),
+.auth-success > :nth-child(4) { animation-delay: calc(var(--stagger) * 3); }
+.auth-form-card > :nth-child(n + 5),
+.auth-success > :nth-child(n + 5) { animation-delay: calc(var(--stagger) * 4); }
 
-/* Lưới trường nhập: tự chia cột theo bề rộng thẻ */
+/* Lưới trường nhập: tự chia cột theo bề rộng form */
 .auth-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(200 * var(--px))), 1fr));
   gap: var(--space-4);
 }
 .auth-grid-full { grid-column: 1 / -1; }
 
-.auth-form-title {
-  font-size: var(--font-size-4xl);
-  font-weight: 800;
-  line-height: var(--line-tight);
-  letter-spacing: -0.02em;
-  color: var(--color-text-main);
+/* Tên trang: cùng cỡ chữ, nét đậm co sát và màu xanh như tên trang ở các màn hình khác */
+.auth-form-title,
+.auth-success-title {
+  position: relative;
+  margin: 0;
+  padding-bottom: var(--space-5);
+  font-size: clamp(calc(32 * var(--px)), 3.4vw, calc(52 * var(--px)));
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.045em;
+  color: var(--color-heading);
+  text-wrap: balance;
 }
-/* Gạch chân kéo dài ra khi vào trang */
-.auth-form-title::after {
+.auth-form-title::after,
+.auth-success-title::after {
   content: '';
-  display: block;
-  width: 44px;
-  height: 4px;
-  margin-top: var(--space-2);
-  background: var(--brand-sky);
-  border-radius: var(--radius-xs);
-  transform-origin: left;
-  animation: auth-underline 700ms 320ms var(--ease-out) backwards;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--color-border);
+  transform: scaleX(0);
+  transform-origin: left center;
+  animation: auth-title-rule 1200ms var(--ease-out) 300ms forwards;
 }
 
 .auth-form {
@@ -42,39 +65,43 @@
 .auth-form-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: var(--space-3);
 }
 
 /* Biểu tượng trong ô nhập nảy lên khi ô được chọn */
 .auth-form .input-icon-left { transition: color var(--transition-fast), transform var(--transition-normal); }
 .auth-form .input-control-wrapper:focus-within .input-icon-left { transform: scale(1.18); }
-.auth-form .app-button.btn-primary:hover:not(:disabled) { transform: translateY(-1px); }
-.auth-form .app-button.btn-primary:active:not(:disabled) { transform: scale(0.97); }
 
+/* Liên kết chữ: gạch chân chạy ra từ trái khi rê chuột */
 .auth-link {
   display: inline-flex;
   align-items: center;
+  gap: var(--space-1);
   min-height: var(--touch-target);
   font-size: var(--font-size-sm);
   font-weight: 600;
-  color: var(--color-text-brand);
+  color: var(--hope-blue-deep);
   text-decoration: none;
-  background-image: linear-gradient(var(--brand-sky), var(--brand-sky));
+  background-image: linear-gradient(currentColor, currentColor);
   background-repeat: no-repeat;
   background-position: 0 calc(100% - 10px);
-  background-size: 0% 2px;
-  transition: background-size var(--transition-normal), color var(--transition-fast);
+  background-size: 0% 1.5px;
+  transition: background-size 520ms var(--ease-out), color var(--transition-fast);
 }
-.auth-link:hover { background-size: 100% 2px; color: var(--brand-navy); }
-.auth-link:focus-visible { outline: 3px solid var(--color-primary-ring); outline-offset: 2px; border-radius: var(--radius-xs); }
+.auth-link:hover { background-size: 100% 1.5px; color: var(--color-text-main); }
+.auth-link:focus-visible { outline: 2px solid var(--color-border-focus); outline-offset: 2px; }
+.auth-link-back { align-self: flex-start; }
+.auth-link-back svg { transition: transform 480ms var(--ease-out); }
+.auth-link-back:hover svg { transform: translateX(-4px); }
 
+/* Chữ ngăn giữa hai cách đăng nhập */
 .auth-divider {
   display: flex;
   align-items: center;
   gap: var(--space-3);
   font-size: var(--font-size-xs);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-text-muted);
 }
 .auth-divider::before,
@@ -85,27 +112,45 @@
   background: var(--color-border);
 }
 
+/* Tên nhóm trường trong form dài: chữ nhỏ giãn cách như dòng chữ cạnh logo, đường kẻ chạy hết bề ngang */
+.auth-section {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+  font-size: calc(11 * var(--px));
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+.auth-section::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+/* Đường về trang chủ trên thanh đầu trang và nút chữ "Gửi lại mã" */
 .auth-home {
-  align-self: flex-start;
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--space-2);
   min-height: var(--touch-target);
   padding: 0 var(--space-1);
   font-size: var(--font-size-sm);
   font-weight: 600;
-  color: var(--color-text-brand);
+  color: var(--color-text-secondary);
   text-decoration: none;
   background: transparent;
   border: 0;
   cursor: pointer;
+  transition: color 420ms var(--ease-out);
 }
-.auth-home:hover { color: var(--brand-navy); }
-.auth-home:focus-visible {
-  outline: 3px solid var(--color-primary-ring);
-  outline-offset: 2px;
-  border-radius: var(--radius-xs);
-}
+.auth-home svg { transition: transform 480ms var(--ease-out); }
+.auth-home:hover { color: var(--color-text-main); }
+.auth-home:hover svg { transform: translateX(-4px); }
+.auth-home:focus-visible { outline: 2px solid var(--color-border-focus); outline-offset: 2px; }
 
 .otp-digits {
   display: grid;
@@ -115,20 +160,22 @@
 
 .otp-digit {
   width: 100%;
-  height: 56px;
+  height: calc(60 * var(--px));
   padding: 0;
   text-align: center;
-  font-size: var(--font-size-2xl);
-  font-weight: 700;
+  font-size: var(--font-size-3xl);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
   color: var(--color-text-main);
   background: var(--color-bg-surface);
-  border: 1.5px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-hover);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-normal);
 }
+.otp-digit:hover { border-color: var(--ink-300); }
 .otp-digit:focus {
-  outline: 3px solid var(--color-primary-ring);
-  outline-offset: 2px;
-  border-color: var(--color-primary);
+  border-color: var(--hope-blue);
+  box-shadow: 0 0 0 3px var(--hope-blue-ring);
 }
 
 .otp-field {
@@ -143,8 +190,8 @@
 }
 
 .otp-digit.is-error:focus {
-  outline-color: var(--color-danger-border);
   border-color: var(--color-danger);
+  box-shadow: 0 0 0 4px var(--color-danger-border);
 }
 
 .otp-error {
@@ -152,15 +199,15 @@
   align-items: center;
   gap: var(--space-1);
   font-size: var(--font-size-xs);
-  font-weight: 500;
+  font-weight: 400;
   color: var(--color-danger-text);
 }
 
+/* Dòng chữ phụ: nơi nhận mã, chuyển giữa đăng nhập và đăng ký, đếm ngược gửi lại mã */
 .auth-switch {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
   gap: var(--space-1) var(--space-2);
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
@@ -170,75 +217,45 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: calc(20 * var(--px));
+  height: calc(20 * var(--px));
   font-size: var(--font-size-xs);
-  font-weight: 800;
-  color: var(--brand-deep);
-  background: var(--brand-ice);
-  border-radius: 50%;
+  font-weight: 600;
+  color: var(--hope-blue-deep);
+  background: var(--hope-blue-soft);
+  border-radius: var(--radius-full);
 }
 
-/* Trạng thái thành công sau đăng ký / gửi email */
-.auth-success {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-6) 0;
-  text-align: center;
-}
+/* Trạng thái thành công sau khi gửi email khôi phục: ô biểu tượng vuông như tiêu đề trang */
+.auth-success { align-items: flex-start; }
+.auth-success-title { align-self: stretch; }
 
 .auth-success-badge {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 84px;
-  height: 84px;
-  color: var(--brand-sky);
-  background: var(--brand-ice);
-  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  width: calc(56 * var(--px));
+  height: calc(56 * var(--px));
+  color: var(--hope-blue-deep);
+  background: var(--hope-blue-soft);
+  border-radius: var(--radius-md);
 }
-/* Hai vòng tỏa ra từ biểu tượng thành công */
-.auth-success-badge::before,
-.auth-success-badge::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border: 2px solid var(--brand-light);
-  border-radius: 50%;
-  opacity: 0;
-  animation: auth-ripple 2.4s 700ms var(--ease-out) infinite;
-}
-.auth-success-badge::after { animation-delay: 1.5s; }
-
-.auth-success-title {
-  font-size: var(--font-size-3xl);
-  font-weight: 800;
-  color: var(--color-text-main);
-}
+.auth-success-badge svg { width: 50%; height: 50%; }
 
 .auth-success-email {
   max-width: 100%;
-  font-weight: 700;
-  color: var(--color-text-brand);
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-text-main);
   overflow-wrap: anywhere;
 }
 
-@keyframes auth-form-in {
-  from { opacity: 0; transform: translateY(18px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-@keyframes auth-underline {
-  from { transform: scaleX(0); }
+@keyframes auth-title-rule {
   to { transform: scaleX(1); }
 }
-@keyframes auth-ripple {
-  0% { opacity: 0.7; transform: scale(1); }
-  100% { opacity: 0; transform: scale(1.9); }
-}
-@keyframes auth-pop {
-  from { opacity: 0; transform: scale(0.4) rotate(-12deg); }
-  to { opacity: 1; transform: scale(1) rotate(0); }
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-form-title::after,
+  .auth-success-title::after { transform: scaleX(1); animation: none; }
+  .auth-form-card > *,
+  .auth-success > * { animation: none; }
 }

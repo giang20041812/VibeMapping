@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
-import { LogoMark } from '../common';
 import { useAuth } from '../../modules/auth/AuthContext';
+import { BrandLink } from './BrandLink';
 import { topbarItemsFor } from './navigation';
 import { TopActions } from './TopActions';
 import './Topbar.css';
@@ -47,18 +47,7 @@ export const Topbar: React.FC<TopbarProps> = ({ open, onToggle, onClose }) => {
 
       <header className={`topbar ${open ? 'is-open' : ''} ${isScrolled ? 'is-scrolled' : ''}`}>
         <div className="topbar-inner">
-          <Link to="/" className="topbar-brand" aria-label="Vibe Mapping" onClick={onClose}>
-            <span className="topbar-brand-mark">
-              <LogoMark />
-            </span>
-            <span className="topbar-brand-text" aria-hidden="true">
-              <span className="topbar-brand-wordmark">
-                <span className="topbar-brand-vibe">Vibe</span>
-                <span className="topbar-brand-mapping">Mapping</span>
-              </span>
-              <span className="topbar-brand-tag">Định hướng 360°</span>
-            </span>
-          </Link>
+          <BrandLink className="topbar-brand" onClick={onClose} />
 
           <nav id="topbar-links" className="topbar-links hover-sweep-group" aria-label="Điều hướng chính">
             {topbarItemsFor(isGuest).map((item) => (

@@ -6,7 +6,7 @@
 .role-select-legend {
   margin-bottom: var(--space-2);
   font-size: var(--font-size-sm);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-text-secondary);
 }
 
@@ -78,7 +78,7 @@
 
 .role-option-label {
   font-size: var(--font-size-xs);
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.2;
 }
 

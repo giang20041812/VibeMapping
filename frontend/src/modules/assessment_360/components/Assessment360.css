@@ -1,7 +1,7 @@
 /* Công tắc ở trên cùng; thiết lập người đánh giá nằm trong hộp thoại */
 .t360-stack { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; }
 .t360-switch { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; }
-.t360-declined { font-size: var(--font-size-sm); font-weight: 700; color: var(--color-warning-text); }
+.t360-declined { font-size: var(--font-size-sm); font-weight: 600; color: var(--color-warning-text); }
 .t360-setup { display: flex; flex-direction: column; gap: var(--space-8); min-width: 0; }
 
 /* Nút "Ai đánh giá" kiểu hình dán, số bài chờ duyệt dán ở góc */
@@ -17,7 +17,7 @@
   height: 26px;
   padding: 0 var(--space-1);
   font-size: var(--font-size-xs);
-  font-weight: 800;
+  font-weight: 600;
   color: var(--brand-white);
   background: var(--soft-magenta);
   border: 1px solid var(--color-border);
@@ -49,8 +49,8 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xs);
 }
-.review-progress-chip strong { font-size: var(--font-size-lg); font-weight: 800; }
-.review-progress-name { font-weight: 600; }
+.review-progress-chip strong { font-size: var(--font-size-lg); font-weight: 600; }
+.review-progress-name { font-weight: 500; }
 
 /* Tab lọc */
 .review-tabs { display: flex; gap: 0 var(--space-6); overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--color-border); }
@@ -64,7 +64,7 @@
   position: relative;
   padding: 0;
   font-size: var(--font-size-base);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-muted);
   background: transparent;
   border: 0;
@@ -95,7 +95,7 @@
   padding: 0 var(--space-2);
   height: 24px;
   font-size: var(--font-size-xs);
-  font-weight: 800;
+  font-weight: 600;
   color: var(--color-text-secondary);
   background: var(--color-bg-subtle);
   border-radius: var(--radius-xs);
@@ -135,20 +135,20 @@
   justify-content: center;
   width: 44px;
   height: 44px;
-  font-weight: 800;
+  font-weight: 600;
   color: var(--brand-deep);
   background: var(--brand-ice);
   border-radius: var(--radius-md);
 }
 .review-who-text { display: flex; flex-direction: column; min-width: 0; }
-.review-name { font-size: var(--font-size-lg); font-weight: 800; color: var(--color-text-main); overflow-wrap: anywhere; }
-.review-meta { font-size: var(--font-size-sm); font-weight: 600; color: var(--color-text-secondary); }
+.review-name { font-size: var(--font-size-lg); font-weight: 600; color: var(--color-text-main); overflow-wrap: anywhere; }
+.review-meta { font-size: var(--font-size-sm); font-weight: 500; color: var(--color-text-secondary); }
 .review-time { font-size: var(--font-size-xs); color: var(--color-text-muted); }
 
 .review-quality { flex: 1 1 200px; display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-1); min-width: 0; }
-.review-level { font-size: var(--font-size-sm); font-weight: 700; color: var(--color-text-secondary); }
+.review-level { font-size: var(--font-size-sm); font-weight: 600; color: var(--color-text-secondary); }
 .review-badges { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-.review-flag { font-size: var(--font-size-xs); font-weight: 700; color: var(--color-warning-text); }
+.review-flag { font-size: var(--font-size-xs); font-weight: 600; color: var(--color-warning-text); }
 
 .review-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-2); margin-left: auto; }
 

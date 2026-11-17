@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, Mail, MailCheck } from 'lucide-react';
 import { Alert, Button, Input } from '../../../components/common';
 import { describeAuthError, requestPasswordReset } from '../auth.service';
-import { AuthHomeLink } from '../components/AuthHomeLink';
 import { validateEmail } from '../auth.validation';
 import '../auth-form.css';
 
@@ -35,13 +34,13 @@ export const ForgotPasswordPage: React.FC = () => {
   if (sentTo) {
     return (
       <section className="auth-success">
-        <AuthHomeLink />
         <span className="auth-success-badge">
-          <MailCheck size={40} aria-hidden="true" />
+          <MailCheck aria-hidden="true" />
         </span>
         <h1 className="auth-success-title">Kiểm tra email</h1>
         <p className="auth-success-email">{sentTo}</p>
-        <Link to="/dang-nhap" className="auth-link">
+        <Link to="/dang-nhap" className="auth-link auth-link-back">
+          <ArrowLeft size={16} aria-hidden="true" />
           Về trang đăng nhập
         </Link>
       </section>
@@ -50,7 +49,6 @@ export const ForgotPasswordPage: React.FC = () => {
 
   return (
     <section className="auth-form-card">
-      <AuthHomeLink />
       <h1 className="auth-form-title">Quên mật khẩu</h1>
 
       {formError && <Alert variant="danger">{formError}</Alert>}
@@ -74,9 +72,9 @@ export const ForgotPasswordPage: React.FC = () => {
         </Button>
       </form>
 
-      <Link to="/dang-nhap" className="auth-link">
+      <Link to="/dang-nhap" className="auth-link auth-link-back">
         <ArrowLeft size={16} aria-hidden="true" />
-        &nbsp;Đăng nhập
+        Đăng nhập
       </Link>
     </section>
   );

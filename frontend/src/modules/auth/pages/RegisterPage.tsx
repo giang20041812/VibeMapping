@@ -6,7 +6,6 @@ import { isLearnerRole, parseVietnameseDate } from '../../profile/profile.logic'
 import { describeAuthError, getEnabledProviders, loginWithGoogle, registerWithEmail } from '../auth.service';
 import type { LearnerInfo, LearnerInfoErrors, RegisterableRole } from '../auth.types';
 import { validateEmail, validateFullName, validateLearnerInfo, validatePassword, validatePhone } from '../auth.validation';
-import { AuthHomeLink } from '../components/AuthHomeLink';
 import { LearnerInfoFields } from '../components/LearnerInfoFields';
 import { PasswordRules } from '../components/PasswordRules';
 import '../auth-form.css';
@@ -110,13 +109,12 @@ export const RegisterPage: React.FC = () => {
 
   return (
     <section className="auth-form-card is-wide">
-      <AuthHomeLink />
       <h1 className="auth-form-title">Đăng ký</h1>
 
       {formError && <Alert variant="danger">{formError}</Alert>}
 
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
-        <div className="auth-divider">Thông tin cá nhân</div>
+        <div className="auth-section">Thông tin cá nhân</div>
         <div className="auth-grid">
           <Input
             label="Họ và tên"
@@ -134,7 +132,7 @@ export const RegisterPage: React.FC = () => {
             <LearnerInfoFields role={role} values={learnerInfo} errors={learnerErrors} onChange={handleLearnerInfoChange} />
           )}
         </div>
-        <div className="auth-divider">Tài khoản</div>
+        <div className="auth-section">Tài khoản</div>
         <div className="auth-grid">
           <Input
             label="Số điện thoại"

@@ -66,7 +66,7 @@
   z-index: 2;
   padding: var(--space-3);
   font-size: var(--font-size-sm);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-text-secondary);
   vertical-align: top;
   border-bottom: 2px solid var(--color-border-hover);
@@ -135,7 +135,7 @@
 }
 
 .grid-student-name {
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .grid-student-code {
@@ -148,7 +148,7 @@
   display: inline;
   padding: 0;
   font: inherit;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-text-main);
   text-align: left;
   background: none;
@@ -200,7 +200,7 @@
   height: 100%;
   min-height: 38px;
   font-size: var(--font-size-lg);
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1;
   border-radius: var(--radius-md);
   transition:
@@ -336,7 +336,7 @@
 }
 
 .grid-palette-option.is-current {
-  font-weight: 700;
+  font-weight: 600;
   background-color: var(--color-primary-light);
 }
 
@@ -347,7 +347,7 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  font-weight: 800;
+  font-weight: 600;
   border-radius: var(--radius-md);
 }
 
@@ -415,7 +415,7 @@
 
 .grade-group-title {
   font-size: var(--font-size-md);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-main);
 }
 
@@ -444,7 +444,7 @@
   margin-right: var(--space-1);
   font-family: inherit;
   font-size: var(--font-size-xs);
-  font-weight: 700;
+  font-weight: 600;
   text-align: center;
   opacity: 0.7;
 }

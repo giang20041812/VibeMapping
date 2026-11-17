@@ -69,7 +69,7 @@
 .page-heading {
   margin: 0;
   font-size: clamp(calc(28 * var(--px)), 3.2vw, calc(52 * var(--px)));
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1.05;
   letter-spacing: -0.045em;
   color: var(--color-heading);
@@ -79,7 +79,7 @@
 /* Tiêu đề một khối nội dung trong trang */
 .section-title {
   font-size: var(--font-size-3xl);
-  font-weight: 800;
+  font-weight: 600;
   line-height: var(--line-tight);
   letter-spacing: -0.035em;
   color: var(--color-text-main);
@@ -342,6 +342,62 @@
 
 .split-line.is-visible .split-word {
   transform: translate3d(0, 0, 0) rotate(0deg);
+}
+
+/* Dòng nhấn của tiêu đề lớn (.split-accent trên SplitText): chữ trồi lên ở màu nhạt rồi được tô xanh dần từng chữ;
+   rê chuột vào chữ nào thì chữ đó đổi sang cam san hô */
+@property --word-fill {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: transparent;
+}
+
+.split-accent .split-word {
+  --word-fill: var(--hope-blue-bright);
+  background-image: linear-gradient(90deg, var(--word-fill) 0 50%, var(--hope-blue-border) 50% 100%);
+  background-size: 200% 100%;
+  background-position: 100% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  /* Nền chỉ tô trong khung chữ: chừa đủ chỗ cho đuôi g, y và dấu nặng, lề âm giữ nguyên chiều cao dòng */
+  padding-bottom: 0.32em;
+  margin-bottom: -0.26em;
+  transition:
+    transform 1050ms var(--ease-out) var(--word-delay, 0ms),
+    background-position 1100ms var(--ease-out) calc(var(--word-delay, 0ms) + 650ms),
+    --word-fill 420ms var(--ease-out);
+}
+
+.split-accent.is-visible .split-word {
+  background-position: 0 0;
+}
+
+@media (hover: hover) {
+  .split-accent .split-word:hover {
+    --word-fill: var(--brand-coral);
+  }
+}
+
+/* Dải chữ chạy vô hạn (VelocityMarquee từ HTDNSK): bốn bản sao nối đuôi, vị trí do requestAnimationFrame điều khiển */
+.marquee {
+  display: flex;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.marquee-track {
+  display: flex;
+  flex: none;
+  white-space: nowrap;
+  transform: translate3d(-25%, 0, 0);
+  will-change: transform;
+}
+
+.marquee-copy {
+  display: flex;
+  flex: none;
 }
 
 .reveal-block {

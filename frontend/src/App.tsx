@@ -44,6 +44,7 @@ import { PortfolioPage } from './modules/portfolio/pages/PortfolioPage';
 import { CommunityPage } from './modules/community/pages/CommunityPage';
 import { CommunityFeedPage } from './modules/community/pages/CommunityFeedPage';
 import { EventDetailPage } from './modules/community/pages/EventDetailPage';
+import { MentorProfilePage } from './modules/community/pages/MentorProfilePage';
 import { GuardianConfirmPage, PrivacyPage } from './modules/privacy/pages/PrivacyPage';
 import { QualitativeReviewPage } from './modules/admin/pages/QualitativeReviewPage';
 import { CommunityAdminPage, ContentLibraryAdminPage } from './modules/admin/pages/AdminModulesPages';
@@ -135,6 +136,7 @@ export const App: React.FC = () => (
               <Route path="/cong-dong" element={<CommunityPage />} />
               <Route path="/cong-dong/nhom/:communityId" element={<CommunityFeedPage />} />
               <Route path="/cong-dong/su-kien/:eventId" element={<EventDetailPage />} />
+              <Route path="/cong-dong/nguoi-huong-dan/:mentorId" element={<MentorProfilePage />} />
               <Route path="/quyen-rieng-tu" element={<PrivacyPage />} />
               <Route path="/giam-ho/:token" element={<GuardianConfirmPage />} />
               <Route path="/bao-cao-con/:userId" element={<SharedResultPage />} />

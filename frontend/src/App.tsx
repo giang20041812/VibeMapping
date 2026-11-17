@@ -143,7 +143,7 @@ export const App: React.FC = () => (
               <Route element={<RequireRole roles={['parent']} />}>
                 <Route path="/bao-cao-duoc-chia-se" element={<SharedReportsPage />} />
               </Route>
-              <Route element={<RequireRole roles={['university_student']} />}>
+              <Route element={<RequireRole roles={['student', 'university_student']} />}>
                 <Route path="/nang-luc" element={<PortfolioPage />} />
               </Route>
               <Route element={<RequireRole roles={['student', 'university_student', 'teacher', 'school_admin']} />}>

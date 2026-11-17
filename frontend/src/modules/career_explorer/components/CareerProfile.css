@@ -1,0 +1,8 @@
+/* Nguồn và ngày cập nhật dữ liệu nghề cạnh tiêu đề Mô tả nghề */
+.career-source {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-sm);
+}

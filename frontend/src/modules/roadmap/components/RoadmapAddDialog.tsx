@@ -13,6 +13,8 @@ export interface AddInitial {
   kind: 'activity' | 'checkpoint';
   pillar: RoadmapPillar;
   due: string;
+  /** Nội dung điền sẵn, ví dụ gợi ý khóa học từ hồ sơ năng lực */
+  title?: string;
 }
 
 export interface AddInput {
@@ -36,7 +38,7 @@ export const RoadmapAddDialog: React.FC<Props> = ({ initial, busy, onClose, onSu
     kind: initial?.kind ?? 'activity',
     pillar: initial?.pillar ?? 'knowledge',
     due: initial?.due ?? '',
-    title: '',
+    title: initial?.title ?? '',
     passCriteria: '',
   });
 

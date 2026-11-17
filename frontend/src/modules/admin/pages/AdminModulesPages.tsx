@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Alert, Badge, Button, Card, Input, Select, Textarea } from '../../../components/common';
+import { Alert, Badge, Button, Card, Checkbox, Input, Select, Textarea, useAskText } from '../../../components/common';
+import { SUGGESTION_KIND_LABEL } from '../../portfolio/portfolio.constants';
+import { PILLAR_LABEL } from '../../roadmap/roadmap.logic';
 import { callRpc, db } from '../../../lib/rpc';
 import '../../career_explorer/pages/CareerPages.css';
 
@@ -106,15 +108,16 @@ interface EventDraft { title: string; description: string; location: string; sta
 
 /** INT-008 / M07–M08: thư viện khóa học và hoạt động lộ trình đã duyệt */
 export const ContentLibraryAdminPage: React.FC = () => {
-  const [suggestions, setSuggestions] = useState<Array<{ id: string; kind: string; title: string; provider: string | null; url: string | null; is_partner: boolean; is_active: boolean }>>([]);
+  const { ask, dialog: askDialog } = useAskText();
+  const [suggestions, setSuggestions] = useState<Array<{ id: string; kind: string; title: string; provider: string | null; url: string | null; is_partner: boolean; is_active: boolean; skill_keywords: string[] | null }>>([]);
   const [activities, setActivities] = useState<Array<{ id: string; pillar: string; title: string; duration_weeks: number; hours: number; is_active: boolean }>>([]);
-  const [suggest, setSuggest] = useState({ kind: 'course', title: '', provider: '', url: '', partner: false });
+  const [suggest, setSuggest] = useState({ kind: 'course', title: '', provider: '', url: '', partner: false, keywords: '' });
   const [activity, setActivity] = useState({ pillar: 'knowledge', title: '', weeks: '2', hours: '6' });
   const [message, setMessage] = useState<{ tone: 'success' | 'danger'; text: string } | null>(null);
 
   const reload = useCallback(async () => {
     const [s, a] = await Promise.all([
-      db.from('course_project_suggestions').select('id, kind, title, provider, url, is_partner, is_active').order('title'),
+      db.from('course_project_suggestions').select('id, kind, title, provider, url, is_partner, is_active, skill_keywords').order('title'),
       db.from('approved_roadmap_activities').select('id, pillar, title, duration_weeks, hours, is_active').order('pillar').order('title'),
     ]);
     if (s.error) throw s.error;
@@ -124,7 +127,7 @@ export const ContentLibraryAdminPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    reload().catch(() => setMessage({ tone: 'danger', text: 'Không tải được thư viện. Chạy migration Phase 4 nếu chưa có bảng.' }));
+    reload().catch(() => setMessage({ tone: 'danger', text: 'Không tải được thư viện.' }));
   }, [reload]);
 
   const run = async (fn: () => Promise<unknown>, ok: string) => {
@@ -141,25 +144,41 @@ export const ContentLibraryAdminPage: React.FC = () => {
     <div className="module-page">
       <h1>Thư viện gợi ý và hoạt động</h1>
       {message && <Alert variant={message.tone}>{message.text}</Alert>}
-      <Card title="Khóa học, dự án, chứng chỉ (INT-008)">
+      <Card title="Khóa học, dự án, chứng chỉ">
         <form className="module-form" onSubmit={(e) => { e.preventDefault(); void run(async () => {
           const { error } = await db.from('course_project_suggestions').insert({
             kind: suggest.kind, title: suggest.title.trim(), provider: suggest.provider || null, url: suggest.url || null, is_partner: suggest.partner, is_active: true,
+            skill_keywords: splitKeywords(suggest.keywords),
           });
           if (error) throw error;
+          setSuggest({ kind: suggest.kind, title: '', provider: '', url: '', partner: false, keywords: '' });
         }, 'Đã thêm gợi ý.'); }}>
           <Select label="Loại" value={suggest.kind} options={[{ value: 'course', label: 'Khóa học' }, { value: 'project', label: 'Dự án' }, { value: 'certificate', label: 'Chứng chỉ' }]} onChange={(v) => setSuggest({ ...suggest, kind: v })} />
           <Input label="Tên" value={suggest.title} onChange={(e) => setSuggest({ ...suggest, title: e.target.value })} />
           <Input label="Đơn vị" value={suggest.provider} onChange={(e) => setSuggest({ ...suggest, provider: e.target.value })} />
-          <Input label="Liên kết" value={suggest.url} onChange={(e) => setSuggest({ ...suggest, url: e.target.value })} />
+          <Input label="Liên kết" value={suggest.url} onChange={(e) => setSuggest({ ...suggest, url: e.target.value })} placeholder="https://" />
+          <Input label="Kỹ năng liên quan" value={suggest.keywords} onChange={(e) => setSuggest({ ...suggest, keywords: e.target.value })} placeholder="SQL, Power BI" />
+          <Checkbox label="Đối tác" checked={suggest.partner} onChange={(checked) => setSuggest({ ...suggest, partner: checked })} />
           <Button type="submit" disabled={suggest.title.trim().length < 3}>Thêm</Button>
         </form>
         <ul className="module-list">
           {suggestions.map((s) => (
             <li key={s.id}>
-              <Badge>{s.kind}</Badge>
+              <Badge>{SUGGESTION_KIND_LABEL[s.kind as keyof typeof SUGGESTION_KIND_LABEL] ?? s.kind}</Badge>
               <span>{s.title}</span>
               {s.is_partner && <Badge variant="info">Đối tác</Badge>}
+              {!s.is_active && <Badge>Đang ẩn</Badge>}
+              {(s.skill_keywords ?? []).map((k) => <Badge key={k} variant="highlight">{k}</Badge>)}
+              <Button type="button" size="sm" variant="ghost" onClick={() => void (async () => {
+                const next = await ask({ title: 'Kỹ năng liên quan', label: 'Kỹ năng', confirmLabel: 'Lưu', initialValue: (s.skill_keywords ?? []).join(', ') });
+                if (next === null) return;
+                await run(async () => {
+                  const { error } = await db.from('course_project_suggestions').update({ skill_keywords: splitKeywords(next) }).eq('id', s.id);
+                  if (error) throw error;
+                }, 'Đã cập nhật kỹ năng liên quan.');
+              })()}>
+                Sửa kỹ năng
+              </Button>
               <Button type="button" size="sm" variant="ghost" onClick={() => void run(async () => {
                 const { error } = await db.from('course_project_suggestions').update({ is_active: !s.is_active }).eq('id', s.id);
                 if (error) throw error;
@@ -186,13 +205,14 @@ export const ContentLibraryAdminPage: React.FC = () => {
         <ul className="module-list">
           {activities.map((a) => (
             <li key={a.id}>
-              <Badge>{a.pillar}</Badge>
+              <Badge>{PILLAR_LABEL[a.pillar as keyof typeof PILLAR_LABEL] ?? a.pillar}</Badge>
               <span>{a.title}</span>
               <span>{a.duration_weeks} tuần · {a.hours} giờ</span>
             </li>
           ))}
         </ul>
       </Card>
+      {askDialog}
     </div>
   );
 };
@@ -210,3 +230,8 @@ export const EventForm: React.FC<{ value: EventDraft; onChange: (v: EventDraft) 
     </form>
   </Card>
 );
+
+/** "SQL, Power BI" → ['SQL', 'Power BI'], bỏ trùng và ô trống */
+function splitKeywords(text: string): string[] {
+  return [...new Set(text.split(/[,;\n]/).map((k) => k.trim()).filter(Boolean))];
+}

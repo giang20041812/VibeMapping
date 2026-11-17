@@ -841,3 +841,87 @@
   flex-direction: column;
   gap: var(--space-4);
 }
+
+@media (max-width: 1100px) {
+  .pf-result-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  /* Cột phải trải vào dòng chảy chung để nút Phân tích dính đáy màn hình suốt danh sách vị trí */
+  .pf-step-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-4);
+  }
+
+  .pf-step-side {
+    display: contents;
+  }
+
+  .pf-analyse-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: var(--z-sticky);
+    padding: var(--space-3) 0 calc(var(--space-3) + var(--safe-bottom, 0px));
+    border-top: 1px solid var(--color-border);
+    background: var(--color-bg-surface);
+    box-shadow: var(--shadow-sticky);
+  }
+}
+
+@media (max-width: 768px) {
+  .pf-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+  }
+
+  .pf-stats .stat-tile-value b {
+    font-size: var(--font-size-2xl);
+  }
+
+  .pf-rank-list li {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .pf-rank-no {
+    display: none;
+  }
+
+  .pf-rank-list li .app-badge {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .pf-add-form .pf-level-btn,
+  .pf-level-btn {
+    width: var(--touch-target);
+    height: var(--touch-target);
+    font-size: var(--font-size-base);
+  }
+
+  .pf-icon-btn {
+    width: var(--touch-target);
+    height: var(--touch-target);
+  }
+
+  .pf-skill-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .pf-skill-row .pf-level {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .pf-bars {
+    --pf-label: minmax(0, calc(110 * var(--px)));
+    --pf-value: calc(56 * var(--px));
+  }
+
+  .pf-bar-tip {
+    display: none !important;
+  }
+}

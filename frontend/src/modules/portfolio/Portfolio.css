@@ -52,18 +52,17 @@
 }
 
 /* Ô chọn mức 1–5 */
-.pf-field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  min-width: 0;
-}
-
 .pf-field-label {
   font-size: var(--font-size-xs);
   font-weight: 600;
   letter-spacing: 0.02em;
   color: var(--color-text-muted);
+}
+
+.pf-field-hint {
+  font-weight: 400;
+  letter-spacing: normal;
+  color: var(--color-text-secondary);
 }
 
 .pf-level {
@@ -123,11 +122,6 @@
   opacity: 0.6;
 }
 
-.pf-level-caption {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-secondary);
-}
-
 /* Danh sách kỹ năng theo nhóm */
 .pf-profile {
   display: flex;
@@ -140,23 +134,19 @@
   align-items: end;
 }
 
-/* Tên mức nằm cạnh dãy nút để cả hàng thêm kỹ năng cao bằng nhau */
-.pf-add-form .pf-level {
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-}
-
+/* Nút mức cao bằng ô nhập để cả hàng thêm kỹ năng thẳng đáy; tên mức nằm trên nhãn */
 .pf-add-form .pf-level-btn {
   width: var(--control-height-md);
   height: var(--control-height-md);
 }
 
+/* Mỗi nhóm trải hết chiều ngang; kỹ năng trong nhóm tự chia cột theo độ rộng màn hình,
+   nên nhóm dài không để lại khoảng trống lớn bên cạnh */
 .pf-groups {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(420 * var(--px))), 1fr));
+  display: flex;
+  flex-direction: column;
   gap: var(--space-5);
+  min-width: 0;
 }
 
 .pf-group {
@@ -187,8 +177,9 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(420 * var(--px))), 1fr));
+  column-gap: var(--space-6);
   border-top: 1px solid var(--color-border);
 }
 
@@ -201,13 +192,28 @@
   border-bottom: 1px solid var(--color-border);
 }
 
+/* Tên trên, nhãn xác thực dưới: mọi hàng có nhãn cao bằng nhau dù tên dài hay ngắn */
 .pf-skill-name {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
   min-width: 0;
   overflow-wrap: anywhere;
+}
+
+.pf-verified {
+  display: inline-flex;
+  max-width: 100%;
+}
+
+/* Cột tên hẹp: nhãn xuống dòng trong cột, không tràn đè lên thang chấm 1–5 */
+.pf-skill-name .app-badge {
+  max-width: 100%;
+  justify-content: flex-start;
+  white-space: normal;
+  line-height: 1.3;
+  text-align: left;
 }
 
 .pf-icon-btn {
@@ -706,6 +712,8 @@
 }
 
 .pf-rank-list li {
+  /* Danh sách có max-height: không cho dòng co lại dưới chiều cao nội dung (tên + dòng mức thiếu) */
+  flex-shrink: 0;
   display: grid;
   grid-template-columns: auto calc(24 * var(--px)) minmax(0, 1fr) auto;
   align-items: center;
@@ -916,9 +924,21 @@
     grid-row: 2;
   }
 
-  .pf-bars {
-    --pf-label: minmax(0, calc(110 * var(--px)));
-    --pf-value: calc(56 * var(--px));
+  /* Tên kỹ năng thành dòng riêng phía trên thanh để đọc trọn tên trên màn hẹp */
+  .pf-bars-axis,
+  .pf-bar-row {
+    grid-template-columns: minmax(0, 1fr) calc(64 * var(--px));
+    row-gap: var(--space-1);
+  }
+
+  .pf-bars-axis > span:first-child {
+    display: none;
+  }
+
+  .pf-bar-label {
+    grid-column: 1 / -1;
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 
   .pf-bar-tip {

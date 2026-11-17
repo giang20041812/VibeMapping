@@ -62,14 +62,15 @@ export const GapResultView: React.FC<Props> = ({
       ),
     },
     { key: 'section', header: 'Loại', render: (row) => FRAMEWORK_SECTION_LABEL[row.section], nowrap: true },
-    { key: 'required', header: 'Yêu cầu', align: 'right', render: (row) => formatLevel(row.required_level) },
+    { key: 'required', header: 'Yêu cầu', align: 'right', nowrap: true, render: (row) => formatLevel(row.required_level) },
     {
       key: 'current',
       header: 'Hiện có',
       align: 'right',
+      nowrap: true,
       render: (row) => (row.current_level === null ? <span className="pf-muted" title="Chưa có trong hồ sơ">Chưa có</span> : formatLevel(row.current_level)),
     },
-    { key: 'gap', header: 'Chênh', align: 'right', render: (row) => (row.gap > 0 ? `−${formatLevel(row.gap)}` : '0') },
+    { key: 'gap', header: 'Chênh', align: 'right', nowrap: true, render: (row) => (row.gap > 0 ? `−${formatLevel(row.gap)}` : '0') },
     { key: 'impact', header: 'Ảnh hưởng', align: 'center', render: (row) => IMPACT_LABEL[row.impact], nowrap: true },
     { key: 'status', header: 'Kết quả', align: 'center', render: (row) => <StatusBadge row={row} />, nowrap: true },
     {

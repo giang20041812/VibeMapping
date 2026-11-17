@@ -4,15 +4,39 @@ import { GAP_SECTIONS, TIER_TO_IMPACT } from './portfolio.constants';
 import type { CourseSuggestion, GapParams, GapResult, GapRow, GapStatus, SkillProfileItem } from './portfolio.types';
 
 const round1 = (value: number) => Math.round(value * 10) / 10;
+const normSkill = (text: string) => normalizeSearchText(text).replace(/\s+/g, ' ');
+/** Ô khung JD chỉ có dấu gạch, chấm… (không chữ, không số) là ô trống, không phải kỹ năng */
+const hasSkillText = (text: string) => /[\p{L}\p{N}]/u.test(text);
 
-/** Hai tên kỹ năng được coi là một khi trùng nhau sau khi bỏ dấu, hoặc tên này chứa trọn tên kia (từ 4 ký tự) */
+/** Tách tên kỹ năng ghép thành từng ý: "SDLC, Agile/Scrum" → sdlc · agile · scrum */
+function skillParts(normalized: string): string[] {
+  return normalized
+    .split(/[,;/&+()]|\s(?:va|hoac)\s/)
+    .map((part) => part.trim())
+    .filter((part) => part.length >= 2);
+}
+
+/** So khớp rộng cho từ khóa gợi ý: trùng sau khi bỏ dấu, hoặc tên này chứa trọn tên kia (từ 4 ký tự) */
 export function sameSkill(a: string, b: string): boolean {
-  const x = normalizeSearchText(a).replace(/\s+/g, ' ');
-  const y = normalizeSearchText(b).replace(/\s+/g, ' ');
+  const x = normSkill(a);
+  const y = normSkill(b);
   if (!x || !y) return false;
   if (x === y) return true;
   const [short, long] = x.length <= y.length ? [x, y] : [y, x];
   return short.length >= 4 && long.includes(short);
+}
+
+/**
+ * So khớp chặt giữa kỹ năng hồ sơ và kỹ năng JD: trùng sau khi bỏ dấu, hoặc trùng trọn một ý của tên ghép
+ * ("Giải quyết vấn đề" ↔ "tư duy logic, giải quyết vấn đề"). Không lấy theo chuỗi con, để "Phân tích"
+ * không bị tính là "phân tích AS-IS/TO-BE, gap" hay "SQL & phân tích dữ liệu".
+ */
+export function sameProfileSkill(a: string, b: string): boolean {
+  const x = normSkill(a);
+  const y = normSkill(b);
+  if (!x || !y) return false;
+  if (x === y) return true;
+  return skillParts(y).includes(x) || skillParts(x).includes(y);
 }
 
 /** Mục hồ sơ ứng với một kỹ năng JD: gắn đúng dòng yêu cầu trước, sau đó trùng tên */
@@ -21,7 +45,7 @@ export function findProfileItem(items: SkillProfileItem[], itemId: string | null
     const linked = items.find((item) => item.framework_item_id === itemId);
     if (linked) return linked;
   }
-  return items.find((item) => sameSkill(item.title, content)) ?? null;
+  return items.find((item) => sameProfileSkill(item.title, content)) ?? null;
 }
 
 export function classifyGap(gap: number, largeGapLevel: number): GapStatus {
@@ -43,7 +67,7 @@ export function analyseSkillGap(
 ): GapResult {
   const required = framework.required_level ?? params.defaultRequiredLevel;
   const rows: GapRow[] = framework.items
-    .filter((item) => GAP_SECTIONS.includes(item.section))
+    .filter((item) => GAP_SECTIONS.includes(item.section) && hasSkillText(item.content))
     .map((item) => {
       const tier: FrameworkTier = item.tier ?? 'common';
       const match = findProfileItem(items, item.id ?? null, item.content);

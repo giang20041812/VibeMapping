@@ -12,12 +12,17 @@ const OTP_SECONDS = 90;
 
 interface LocationState {
   phone?: string;
+  /** 'login': đăng nhập bằng số điện thoại đã có tài khoản; mặc định là vừa đăng ký */
+  mode?: 'login' | 'register';
+  from?: string;
 }
 
 export const OtpVerifyPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const phone = (location.state as LocationState | null)?.phone ?? '';
+  const state = (location.state as LocationState | null) ?? {};
+  const phone = state.phone ?? '';
+  const isLogin = state.mode === 'login';
   const [digits, setDigits] = useState(EMPTY_OTP);
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,8 +37,8 @@ export const OtpVerifyPage: React.FC = () => {
     const key = `otp-sent:${phone}`;
     if (sessionStorage.getItem(key)) return;
     sessionStorage.setItem(key, '1');
-    requestPhoneOtp(phone).catch((error) => setFormError(describeAuthError(error)));
-  }, [phone]);
+    requestPhoneOtp(phone, { createUser: !isLogin }).catch((error) => setFormError(describeAuthError(error)));
+  }, [phone, isLogin]);
 
   useEffect(() => {
     if (remain <= 0) return;
@@ -41,7 +46,7 @@ export const OtpVerifyPage: React.FC = () => {
     return () => window.clearTimeout(timer);
   }, [remain]);
 
-  if (validatePhone(phone)) return <Navigate to="/dang-ky" replace />;
+  if (validatePhone(phone)) return <Navigate to={isLogin ? '/dang-nhap' : '/dang-ky'} replace />;
 
   const code = digits.join('');
 
@@ -49,7 +54,7 @@ export const OtpVerifyPage: React.FC = () => {
     setFormError(null);
     setIsSubmitting(true);
     try {
-      await requestPhoneOtp(phone);
+      await requestPhoneOtp(phone, { createUser: !isLogin });
       setDigits(EMPTY_OTP);
       setRemain(OTP_SECONDS);
     } catch (error) {
@@ -70,7 +75,7 @@ export const OtpVerifyPage: React.FC = () => {
     try {
       await verifyPhoneOtp(phone, code);
       sessionStorage.removeItem(`otp-sent:${phone}`);
-      navigate('/', { replace: true });
+      navigate(isLogin && state.from ? state.from : '/', { replace: true });
     } catch (error) {
       setFormError(describeAuthError(error));
     } finally {

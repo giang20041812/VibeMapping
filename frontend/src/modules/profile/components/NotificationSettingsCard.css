@@ -1,0 +1,55 @@
+/* Cài đặt thông báo theo từng loại */
+.notif-settings-table {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.notif-settings-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) calc(130 * var(--px)) calc(90 * var(--px));
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--touch-target);
+  padding: var(--space-1) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.notif-settings-row:last-child {
+  border-bottom: 0;
+}
+
+.notif-settings-row > span:not(.notif-settings-name) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+}
+
+.notif-settings-row.is-head {
+  min-height: auto;
+  padding-bottom: var(--space-2);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.notif-settings-row.is-head > span:first-child {
+  justify-content: flex-start;
+}
+
+.notif-settings-name {
+  overflow-wrap: anywhere;
+}
+
+.notif-settings-na {
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 520px) {
+  .notif-settings-row {
+    grid-template-columns: minmax(0, 1fr) calc(76 * var(--px)) calc(56 * var(--px));
+    gap: var(--space-2);
+    font-size: var(--font-size-sm);
+  }
+}

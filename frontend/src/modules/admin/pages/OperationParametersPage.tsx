@@ -5,6 +5,7 @@ import type { DataTableColumn } from '../../../components/common';
 import { useAuth } from '../../auth/AuthContext';
 import { formatDateTime } from '../admin.logic';
 import type { OperationParameter } from '../admin.types';
+import { EmailOutboxCard } from '../components/EmailOutboxCard';
 import { ParameterFormModal } from '../components/ParameterFormModal';
 import { listCurrentParameters, listParameterHistory } from '../operation_parameters.service';
 import { formatParameterValue } from '../parameter.logic';
@@ -111,16 +112,19 @@ export const OperationParametersPage: React.FC = () => {
         </div>
       )}
 
-      <Card noPadding>
-        <DataTable
-          columns={columns}
-          rows={rows}
-          rowKey={(row) => row.id}
-          isLoading={isLoading}
-          emptyText="Chưa có tham số"
-          caption="Tham số vận hành"
-        />
-      </Card>
+      <div className="admin-stack">
+        <Card noPadding>
+          <DataTable
+            columns={columns}
+            rows={rows}
+            rowKey={(row) => row.id}
+            isLoading={isLoading}
+            emptyText="Chưa có tham số"
+            caption="Tham số vận hành"
+          />
+        </Card>
+        <EmailOutboxCard />
+      </div>
 
       <ParameterFormModal
         open={editing !== null}

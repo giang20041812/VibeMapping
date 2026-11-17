@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowRight, Mail } from 'lucide-react';
-import { Alert, Button, Input, PasswordInput } from '../../../components/common';
-import { describeAuthError, getEnabledProviders, loginWithEmail, loginWithGoogle } from '../auth.service';
+import { ArrowRight, Mail, Phone } from 'lucide-react';
+import { Alert, Button, Input, PasswordInput, Tabs } from '../../../components/common';
+import { describeAuthError, getEnabledProviders, loginWithEmail, loginWithGoogle, requestPhoneOtp } from '../auth.service';
 import { AuthHomeLink } from '../components/AuthHomeLink';
-import { validateEmail } from '../auth.validation';
+import { validateEmail, validatePhone } from '../auth.validation';
 import '../auth-form.css';
 
 interface LocationState {
@@ -22,16 +22,41 @@ export const LoginPage: React.FC = () => {
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [googleEnabled, setGoogleEnabled] = useState(false);
+  const [phoneEnabled, setPhoneEnabled] = useState(false);
+  const [mode, setMode] = useState<'email' | 'phone'>('email');
+  const [phone, setPhone] = useState('');
+  const [phoneError, setPhoneError] = useState<string | undefined>();
 
   useEffect(() => {
     let active = true;
     getEnabledProviders().then((providers) => {
-      if (active) setGoogleEnabled(providers.google);
+      if (!active) return;
+      setGoogleEnabled(providers.google);
+      setPhoneEnabled(providers.phone);
     });
     return () => {
       active = false;
     };
   }, []);
+
+  /** Đăng nhập bằng số điện thoại: gửi mã OTP rồi sang trang nhập mã (không tạo tài khoản mới) */
+  const handlePhoneSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const error = validatePhone(phone);
+    setPhoneError(error);
+    setFormError(null);
+    if (error) return;
+    setIsSubmitting(true);
+    try {
+      await requestPhoneOtp(phone.trim(), { createUser: false });
+      sessionStorage.setItem(`otp-sent:${phone.trim()}`, '1');
+      navigate('/xac-minh-otp', { state: { phone: phone.trim(), mode: 'login', from: redirectTo } });
+    } catch (caught) {
+      setFormError(describeAuthError(caught));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -70,6 +95,40 @@ export const LoginPage: React.FC = () => {
 
       {formError && <Alert variant="danger">{formError}</Alert>}
 
+      {phoneEnabled && (
+        <Tabs
+          label="Cách đăng nhập"
+          value={mode}
+          onChange={(value) => {
+            setMode(value as 'email' | 'phone');
+            setFormError(null);
+          }}
+          items={[
+            { value: 'email', label: 'Email', icon: <Mail /> },
+            { value: 'phone', label: 'Số điện thoại', icon: <Phone /> },
+          ]}
+        />
+      )}
+
+      {mode === 'phone' && phoneEnabled ? (
+        <form className="auth-form" onSubmit={handlePhoneSubmit} noValidate>
+          <Input
+            label="Số điện thoại"
+            name="phone"
+            autoComplete="tel"
+            inputMode="tel"
+            placeholder="0901234567"
+            leftIcon={<Phone size={16} />}
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            error={phoneError}
+            required
+          />
+          <Button type="submit" size="lg" block isLoading={isSubmitting} rightIcon={<ArrowRight size={18} />}>
+            Gửi mã OTP
+          </Button>
+        </form>
+      ) : (
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
         <Input
           label="Email"
@@ -103,6 +162,7 @@ export const LoginPage: React.FC = () => {
           Đăng nhập
         </Button>
       </form>
+      )}
 
       {googleEnabled && (
         <>

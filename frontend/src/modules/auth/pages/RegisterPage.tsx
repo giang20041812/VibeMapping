@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Mail, Phone, User } from 'lucide-react';
 import { Alert, Button, Input, PasswordInput, Select } from '../../../components/common';
 import { isLearnerRole, parseVietnameseDate } from '../../profile/profile.logic';
-import { describeAuthError, registerWithEmail } from '../auth.service';
+import { describeAuthError, getEnabledProviders, loginWithGoogle, registerWithEmail } from '../auth.service';
 import type { LearnerInfo, LearnerInfoErrors, RegisterableRole } from '../auth.types';
 import { validateEmail, validateFullName, validateLearnerInfo, validatePassword, validatePhone } from '../auth.validation';
 import { AuthHomeLink } from '../components/AuthHomeLink';
@@ -39,6 +39,27 @@ export const RegisterPage: React.FC = () => {
   const [learnerErrors, setLearnerErrors] = useState<LearnerInfoErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [googleEnabled, setGoogleEnabled] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    getEnabledProviders().then((providers) => {
+      if (active) setGoogleEnabled(providers.google);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  /** Đăng ký bằng Google: vai trò và thông tin học tập điền ở bước hoàn tất hồ sơ sau khi quay lại */
+  const handleGoogle = async () => {
+    setFormError(null);
+    try {
+      await loginWithGoogle();
+    } catch (error) {
+      setFormError(describeAuthError(error));
+    }
+  };
 
   const handleLearnerInfoChange = (field: keyof LearnerInfo, value: string) => {
     setLearnerInfo((current) => ({ ...current, [field]: value }));
@@ -157,6 +178,22 @@ export const RegisterPage: React.FC = () => {
           Tạo tài khoản
         </Button>
       </form>
+
+      {googleEnabled && (
+        <>
+          <div className="auth-divider">hoặc</div>
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            block
+            onClick={() => void handleGoogle()}
+            leftIcon={<span className="auth-google-mark">G</span>}
+          >
+            Đăng ký với Google
+          </Button>
+        </>
+      )}
 
       <p className="auth-switch">
         Đã có tài khoản?

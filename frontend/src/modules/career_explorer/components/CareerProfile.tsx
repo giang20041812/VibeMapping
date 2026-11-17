@@ -8,6 +8,7 @@ import {
   Building2,
   ClipboardList,
   Cpu,
+  Database,
   FileText,
   GraduationCap,
   Landmark,
@@ -19,6 +20,7 @@ import {
 import { Badge, Skeleton, stickerToneAt } from '../../../components/common';
 import { loadCareerProfileInfo, type CareerMajorSchoolRow, type CareerProfileInfo } from '../career.service';
 import { CareerLevelLadder } from './CareerLevelLadder';
+import './CareerProfile.css';
 
 const SECTION_ICON: Record<string, React.ReactNode> = {
   career_description: <FileText size={18} />,
@@ -54,7 +56,22 @@ export const CareerProfile: React.FC<{ careerId: string; publicView?: boolean }>
   return (
     <>
       <section className="career-block">
-        <h2>Mô tả nghề</h2>
+        <div className="career-block-head">
+          <h2>Mô tả nghề</h2>
+          {info.source && (info.source.jdCount > 0 || info.source.checkedAt) && (
+            <span className="career-muted career-source">
+              <Database size={14} aria-hidden="true" />
+              {info.source.jdCount > 0 && <>Nguồn: {info.source.jdCount.toLocaleString('vi-VN')} tin tuyển dụng</>}
+              {info.source.jdCount > 0 && info.source.checkedAt && ' · '}
+              {info.source.checkedAt && (
+                <>
+                  Cập nhật {new Date(info.source.checkedAt).toLocaleDateString('vi-VN')}
+                  {info.source.checkedKind === 'posted' && ' (ngày đăng tin)'}
+                </>
+              )}
+            </span>
+          )}
+        </div>
         {sections.length === 0 ? <p className="career-muted">Chưa có mô tả</p> : (
           <div className="career-profile-grid">
             {sections.map((section, index) => (

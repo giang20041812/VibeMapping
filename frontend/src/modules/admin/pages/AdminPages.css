@@ -29,6 +29,10 @@
   margin-bottom: var(--space-5);
 }
 
+.admin-stack > .admin-summary {
+  margin-bottom: 0;
+}
+
 .admin-summary-item {
   display: flex;
   flex-direction: column;

@@ -24,7 +24,7 @@ Chỉ ghi việc đọc được trong hai nguồn đó. Không tick từng dòn
 | SRS dòng 6087 | Không gộp 360° bằng tỷ trọng cố định 30/20/25/25 | Trọng số từng bài, không dùng công thức S_total ở file 04 mục 4.3 |
 | F01.06 | Nhãn Tự đánh giá / Tạm thời / Cuối cùng 360°; hiệu lực rồi gắn “Cần đánh giá lại” | `ResultInsightsPanel.tsx`, tham số P17 |
 | F02 | Trường, lớp, nhập danh sách, lưới chấm, báo cáo lớp | `SchoolsPage.tsx`, `ClassListPage.tsx`, `ClassDetailPage.tsx`, `RosterImportModal.tsx`, `ClassGradeTable.tsx`, `GradeImportModal.tsx`, `ClassReportCard.tsx` |
-| F03.02.01, FR03.02.04 | Thông báo trong ứng dụng, bật tắt từng loại | `account.service.ts`, bảng `notifications` |
+| F03.02.01, FR03.02.04 | Thông báo trong ứng dụng, bật tắt từng loại trong ứng dụng và qua email | `account.service.ts` (`loadNotificationPreferences`), `NotificationSettingsCard.tsx` trên Hồ sơ cá nhân, bảng `notifications`, `notification_settings` |
 | F03.03 | Đồng ý chia sẻ, xác nhận giám hộ dưới 16 tuổi, xuất dữ liệu, yêu cầu xóa tài khoản | `PrivacyPage.tsx`, `create_guardian_consent_token`, `export_my_data` |
 | F03.04, F03.05 | Trang tham số và nhật ký | `/quan-tri/tham-so`, `/quan-tri/nhat-ky` |
 | F04.02, R08, R13, R20 | Career Fit 40/30/30 (P32–P34), thiếu thành phần thì chia lại; Top nghề và nghề gần đạt | Tham số seed P32=`0.4`, P33=`0.3`, P34=`0.3`; trang `/nghe` |
@@ -41,7 +41,7 @@ Chỉ ghi việc đọc được trong hai nguồn đó. Không tick từng dòn
 | F08 | Hồ sơ năng lực sinh viên, nhãn Đã xác thực 360°, Đạt / Gần đạt / Chưa đạt, gợi ý có nhãn Đối tác | `PortfolioPage.tsx` |
 | F09 | Tạo và tham gia cộng đồng, đăng bài, bình luận, báo cáo (ẩn khi đủ 3), từ khóa cấm, sự kiện cơ bản, người hướng dẫn đã xác minh, chặn kết nối dưới 16 tuổi | `CommunityPage.tsx`, `report_community_post` (ẩn khi `count >= 3`), `community_banned_keywords` |
 | FR01.02.10 | Sau mỗi phần, chọn câu thêm của phần sau theo điểm các phần trước | `adaptQuestions` trong `selectQuestions.ts`. Câu nền mỗi tiêu chí giữ nguyên. Quản trị đã gán câu thì không đổi |
-| FR01.03.03, F06.02 | Tải file PDF hồ sơ định hướng và báo cáo quyết định | `downloadPdf` trong `printProfile.ts`. Nút trên hồ sơ kết quả và `DecisionReportPage.tsx`. Font PDF chuẩn không có dấu tiếng Việt; bản in HTML vẫn giữ tiếng Việt |
+| FR01.03.03, F06.02 | Tải file PDF hồ sơ định hướng và báo cáo quyết định | `lib/pdf/` (`pdf-lib` + phông Be Vietnam Pro nhúng, giữ dấu tiếng Việt, chép được chữ). Nút Tải PDF trên hồ sơ kết quả và `DecisionReportPage.tsx`; nút In vẫn dùng bản in HTML |
 | FR04.01.04 | Lọc thang lương, trình độ, môi trường, mức tăng trưởng | `CareerListPage.tsx`. Lương, trình độ, môi trường lấy từ JD (`salary_reference`, `education_requirement`, `work_environment`). Tăng trưởng lấy cột `careers.growth_level`; chưa có giá trị thì hiện “Chưa có dữ liệu” |
 | FR06.01.02 | Đối chiếu điều kiện theo năm và phương thức | `DecisionComparePage.tsx` đọc `admission_data`. Không có bản ghi thì ghi “Chưa đủ dữ liệu” |
 | FR06.01.08 | Đề xuất phương án cùng nhóm ngành khi phương án ưu tiên không đạt hoặc vượt ngân sách | `DecisionComparePage.tsx` lấy tối đa 3 chương trình cùng `major_id`. Không bịa điểm chuẩn |
@@ -52,8 +52,14 @@ Chỉ ghi việc đọc được trong hai nguồn đó. Không tick từng dòn
 | BR-M09-003 | Sự kiện có số chỗ và hạn đăng ký | Cột `seat_limit`, `registration_deadline`. Hết chỗ hoặc quá hạn thì `register_career_event` từ chối |
 | BR-M09-006 | Nhãn “Nội dung thành viên” | `CommunityPage.tsx` gắn nhãn trên mỗi bài |
 | FR09.01.09 | Quản trị thành viên và chủ đề | `CommunityAdminPage`, hàm `list_community_admin`, `remove_community_member`, `add_community_topic` |
+| FR01.01.01 | Chọn vai trò khi đăng ký; đăng ký bằng Google; đăng nhập bằng số điện thoại | `RegisterPage.tsx` có ô Vai trò và nút Google (khi nhà cung cấp bật). `LoginPage.tsx` có tab Số điện thoại khi máy chủ bật SMS, gửi OTP không tạo tài khoản mới (`requestPhoneOtp(..., { createUser: false })`) |
+| FR04.01.07 | Hiện nguồn và ngày cập nhật dữ liệu nghề | `CareerProfile.tsx` cạnh tiêu đề Mô tả nghề: số tin tuyển dụng, `data_checked_at`, ghi "(ngày đăng tin)" khi `data_checked_kind = posted` |
 | FR08.02.01–04, BR-030, BR-031 | So hồ sơ năng lực với JD; % đạt; xếp hạng kỹ năng thiếu; biểu đồ | `/nang-luc?tab=phan-tich`: chọn bậc JD đã công bố (`career_level_frameworks`), `skillGap.logic.ts` so từng kỹ năng của mục Kiến thức, Kỹ năng chuyên môn, Kỹ năng mềm, Công cụ, Ngoại ngữ, Chứng chỉ. Kỹ năng JD chưa có trong hồ sơ là Chưa đạt. Biểu đồ cột 0–5 và radar theo nhóm. Bản chụp lưu ở `skill_gap_analyses` |
 | FR08.03.01–02 | Gợi ý theo kỹ năng thiếu; thêm vào lộ trình | `course_project_suggestions.skill_keywords`; kỹ năng không có gợi ý hiện "Đang cập nhật"; hộp thoại thêm vào lộ trình chọn trụ cột và hạn (`RoadmapAddDialog`) |
+| FR09.01.01, 05, 08, 11, 13, 14 | Tìm cộng đồng; Hỏi đáp; hạn chế tác giả; chi tiết sự kiện; hồ sơ và tìm người hướng dẫn | `/cong-dong` có ba tab và bộ lọc; `/cong-dong/nhom/:id` bảng tin lọc Bài viết / Hỏi đáp; `/cong-dong/su-kien/:id`; `/cong-dong/nguoi-huong-dan/:id`. Migration `20261117000200_community_m09.sql`: `post_type`, `restricted_until`, `restrict_community_author`, hồ sơ người hướng dẫn có lĩnh vực, chủ đề, số năm |
+| FR03.01.04 | Liên kết bạn bè, mời bạn bè đánh giá 360° | Quyền riêng tư → thẻ Bạn bè (`FriendsCard.tsx`): mã kết bạn 6 ký tự, nhập mã, chấp nhận/từ chối, bỏ kết bạn, Mời đánh giá (gửi thông báo kèm đường dẫn nhóm Bạn bè, chặn gửi lại trong 24 giờ). Migration `20261117000300_friend_links.sql` |
+| FR03.02.02, INT-002 | Thư thông báo qua email | Migration `20261117000400_email_outbox.sql`: trigger xếp thư vào `email_outbox` theo tham số `email_notification_types` và cài đặt của người dùng. Edge Function `send-notification-emails` gửi qua Resend. Quản trị → Tham số vận hành → thẻ Email thông báo. Cách gắn: `docs/tich-hop-ngoai.md` |
+| INT-005 | Lưu PDF và tệp dữ liệu cá nhân lên kho tệp | Migration `20261117000500_exported_files.sql`: bảng `exported_files`, bucket riêng tư `exports` theo thư mục người dùng. `lib/exportFiles.ts`; Quyền riêng tư → thẻ Tệp đã lưu (tải bằng đường dẫn ký 10 phút, xóa) |
 
 Các mã P05, P08–P13, P16, P17, P19, P21, P22, P24, P25, P27, P35–P38, P40–P45 được gán `verification_level = demo` trong `20261031000200_phase3_parameters_and_m03_m09.sql`. Số đang chạy là số seed trong file đó. SRS mục 5.3 STT 12 ghi các số Demo này chưa có căn cứ PO.
 
@@ -68,11 +74,10 @@ Các mã P05, P08–P13, P16, P17, P19, P21, P22, P24, P25, P27, P35–P38, P40�
 | Chờ chốt | SRS R16 dòng 6265 và 6267; BR-014; file 06 mục 1.2 | R16 vừa map L0,L1 → 1, vừa ghi chỉ dùng JD L1 và L2. BR-014 ghi L1 đến L2. File 06 có bậc L0 | `career_matrix_include_l0` = `true`, `pending_ba` |
 | Chờ chốt | SRS UI_08-S06 "(cần xác nhận)" | Công thức % đạt so với JD có trọng số theo mức ảnh hưởng không; mức yêu cầu khi khung chưa ghi | `skill_gap_impact_weights` = Bắt buộc 3, Thường gặp 2, Lợi thế 1; `skill_gap_default_required_level` = 3; cả hai `pending_ba` |
 | Chờ chốt | SRS chưa viết điều kiện chặn | Không có câu đã chốt về việc bắt buộc câu mở khi nộp bài 360° | `require_open_answers` = `false`, `pending_ba` |
-| Chưa làm | FR01.01.01, dòng 1596 | Người đăng ký chọn vai trò: Học sinh, Sinh viên, Phụ huynh, Giáo viên, Người hướng dẫn | Giữ nguyên. `RegisterPage.tsx` ghi cứng `role: 'student'` |
-| Chưa làm | INT-005 | Lưu PDF, ảnh QR và tệp xuất lên Cloud Storage | Chưa có kho tệp. Đã tải được file PDF về máy |
-| Tích hợp ngoài | FR01.01.01, SW_03 | Đăng ký hoặc đăng nhập bằng số điện thoại, mã gửi qua SMS | Đăng ký có ô số điện thoại. Bấm tạo tài khoản thì sang `/xac-minh-otp` (`OtpVerifyPage.tsx`, 6 ô). Hàm gửi là `supabase.auth.signInWithOtp`. Trang đăng nhập không có số điện thoại. Việc SMS đi hay không phụ thuộc nhà cung cấp trên Supabase |
-| Tích hợp ngoài | FR01.01.01, FR03.02.02 | Mã xác minh và thư thông báo qua email | Có quên mật khẩu bằng email. Không có hàm gửi email cho thông báo nghiệp vụ trong `frontend/src` |
-| Tích hợp ngoài | INT-005, EXT-13 | Cloud Storage cho PDF, ảnh QR, tệp dữ liệu cá nhân | Không có lời gọi kho tệp trong `frontend/src` |
+| Chưa làm | INT-005 | Lưu ảnh QR lên kho tệp; dọn tệp khi xóa tài khoản | PDF và dữ liệu cá nhân đã lưu vào bucket `exports`. Ảnh QR chưa lưu. Xóa tài khoản xóa dòng `exported_files` nhưng tệp trong bucket còn lại |
+| Tích hợp ngoài | FR01.01.01, SW_03 | Đăng ký hoặc đăng nhập bằng số điện thoại, mã gửi qua SMS | Giao diện đăng ký và đăng nhập đã có. Việc SMS đi hay không phụ thuộc nhà cung cấp SMS bật trên Supabase |
+| Tích hợp ngoài | FR01.01.01, FR03.02.02 | Mã xác minh và thư thông báo qua email | Hàng đợi và hàm gửi đã có. Chưa gắn khóa Resend, chưa triển khai hàm, chưa đặt lịch chạy: thư nằm chờ và hết hạn sau 48 giờ |
+| Tích hợp ngoài | INT-005, EXT-13 | Cloud Storage cho PDF, ảnh QR, tệp dữ liệu cá nhân | Dùng Supabase Storage. Cần áp migration `20261117000500` để có bucket `exports` |
 | Tích hợp ngoài | SRS mục 2.4, NFR-COMP-016 | Kiểm duyệt nội dung bằng dịch vụ bên ngoài, đổi nhà cung cấp không đổi nghiệp vụ | Đang lọc `community_banned_keywords` và ẩn bài đủ 3 báo cáo. Không gọi dịch vụ kiểm duyệt ngoài |
 | Tích hợp ngoài | NFR-COMP-013 | SDK phân tích và giám sát lỗi, chỉ chạy sau khi người dùng đồng ý | Không có SDK này trong `frontend/package.json` |
 | Ngoài MVP | SRS mục 5.3 STT 7 | INT-011…INT-015 và mô hình AI thuộc giai đoạn sau, đã loại khỏi MVP | Không có module M10 trong `App.tsx` |
@@ -83,12 +88,10 @@ Các mã P05, P08–P13, P16, P17, P19, P21, P22, P24, P25, P27, P35–P38, P40�
 
 | Màn SRS | Tình trạng trong VM |
 |---|---|
-| UI_01 đăng ký có chọn vai trò | Không còn. `RegisterPage.tsx` ghi cứng Học sinh |
 | UI_04 khám phá nghề khi chưa đăng nhập | Có `/danh-muc-nghe`. Menu thả từng nghề trên thanh điều hướng thì chưa có; thanh trên có một liên kết “Nghề nghiệp” |
 | UI_07-S01 đến S04 | Gộp một trang `/lo-trinh`. Có mục “Bản đồ đường đi” theo tháng, chưa phải sơ đồ các nút nối nhau |
 | UI_08-S01 đến S08 | Gộp một trang `/nang-luc` hai tab: Hồ sơ và Phân tích khoảng cách (chọn vị trí → kết quả). Có hộp thoại thêm gợi ý vào lộ trình |
-| UI_09-S06 | Không có trang chi tiết sự kiện. Sự kiện nằm trong `/cong-dong` |
-| UI_09-S07 | Không có trang tìm người hướng dẫn riêng. Danh sách người đã xác minh nằm trong `/cong-dong` |
+| UI_09-S07 | Tab Người hướng dẫn trong `/cong-dong`, lọc theo lĩnh vực và chủ đề; hồ sơ từng người ở `/cong-dong/nguoi-huong-dan/:id` |
 | UI_10-S08 | Có trong `/quan-tri/cong-dong`: đưa thành viên ra khỏi nhóm, thêm và xóa chủ đề |
 
 ## Chỗ tài liệu tự không thống nhất

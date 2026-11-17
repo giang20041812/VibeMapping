@@ -50,21 +50,29 @@ export const Topbar: React.FC<TopbarProps> = ({ open, onToggle, onClose }) => {
           <BrandLink className="topbar-brand" onClick={onClose} />
 
           <nav id="topbar-links" className="topbar-links hover-sweep-group" aria-label="Điều hướng chính">
-            {topbarItemsFor(isGuest).map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.end}
-                className={({ isActive }) => `topbar-link hover-sweep hover-sweep-bottom ${isActive ? 'is-active' : ''}`}
-                onClick={onClose}
-              >
-                <span className="roll">
-                  <span className="roll-inner" data-text={item.label}>
-                    {item.label}
+            {topbarItemsFor(isGuest).map((item) => {
+              const Icon = item.icon;
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.end}
+                  className={({ isActive }) =>
+                    `topbar-link ${item.cta ? 'topbar-link-cta' : 'hover-sweep hover-sweep-bottom'} ${isActive ? 'is-active' : ''}`
+                  }
+                  onClick={onClose}
+                >
+                  <span className={item.cta ? 'topbar-cta' : 'topbar-link-label'}>
+                    {Icon && <Icon size={18} />}
+                    <span className="roll">
+                      <span className="roll-inner" data-text={item.label}>
+                        {item.label}
+                      </span>
+                    </span>
                   </span>
-                </span>
-              </NavLink>
-            ))}
+                </NavLink>
+              );
+            })}
           </nav>
 
           <div className="topbar-end">

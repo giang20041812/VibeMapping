@@ -15,6 +15,7 @@ import {
   Shield,
   SlidersHorizontal,
   Sigma,
+  UserRound,
 } from 'lucide-react';
 import { Globe360Icon, HomeIcon, type NavIconProps } from './NavIcons';
 import type { UserRole } from '../../modules/auth/auth.types';
@@ -63,11 +64,14 @@ export interface TopbarItem {
   end?: boolean;
   /** Chỉ hiện khi đã có tài khoản (trang đích yêu cầu đăng nhập) */
   requiresAccount?: boolean;
+  icon?: React.FC<NavIconProps>;
+  /** Hiện thành nút kêu gọi nổi bật thay vì ô chữ thường */
+  cta?: boolean;
 }
 
 /** Mục điều hướng của thanh trên cùng: trang giới thiệu, khám phá trường và khi khách làm bài test */
 export const TOPBAR_ITEMS: TopbarItem[] = [
-  { to: '/danh-gia-360', label: 'Tổng quan', requiresAccount: true },
+  { to: '/danh-gia-360', label: 'Về Bạn', requiresAccount: true, icon: UserRound, cta: true },
   { to: '/', label: 'Giới thiệu', end: true },
   { to: '/nganh-nghe', label: 'Ngành nghề' },
   { to: '/danh-muc-nghe', label: 'Nghề nghiệp' },

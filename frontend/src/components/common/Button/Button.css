@@ -80,7 +80,7 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: var(--brand-white);
+  background: var(--color-cta-hover);
   transform: translateY(102%);
   border-radius: 50% 50% 0 0 / 100% 100% 0 0;
   transition:
@@ -95,7 +95,7 @@
 
   @media (hover: hover) {
     .btn-primary:hover:not(:disabled) {
-      color: var(--brand-navy);
+      color: var(--color-cta-text);
       box-shadow: var(--shadow-cta-hover);
       transform: translateY(-2px);
     }

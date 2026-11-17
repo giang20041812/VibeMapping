@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CalendarDays, Download } from 'lucide-react';
-import { downloadPdf, printOrientationProfile } from '../../../lib/printProfile';
+import { exportOrientationProfile } from '../../../lib/pdf/exportReports';
 import { Alert, Badge, Button, Input, ProgressBar } from '../../../components/common';
 import { INTEREST_NAME } from '../../career_explorer/careerFit.constants';
 import { SearchableSelect } from '../../../components/filters/SearchableSelect/SearchableSelect';
@@ -71,6 +71,8 @@ export const ResultProfileHeader: React.FC<HeaderProps> = ({ insights, history, 
     if (match) onSelect(match.id);
   };
 
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const [pdfNote, setPdfNote] = useState<string | null>(null);
   const weightNote = insights ? WEIGHT_NOTE[insights.qualitativeWeightStatus] ?? null : null;
 
   const exportPdf = () => {
@@ -105,16 +107,12 @@ export const ResultProfileHeader: React.FC<HeaderProps> = ({ insights, history, 
       topCareers: [],
       notes: [weightNote ?? ''].filter(Boolean),
     };
-    downloadPdf('ho-so-dinh-huong.pdf', [
-      'Ho so dinh huong ca nhan',
-      input.ownerName,
-      input.status,
-      input.holland ? `Holland ${input.holland}` : '',
-      input.validity,
-      ...input.groups.map((group) => `${group.code}: ${group.percent}`),
-      ...input.notes,
-    ].filter(Boolean));
-    printOrientationProfile(input);
+    setPdfBusy(true);
+    setPdfNote(null);
+    exportOrientationProfile(input, { saveCopy: true })
+      .then(({ saved }) => setPdfNote(saved ? 'Đã tải PDF và lưu một bản vào Tệp đã lưu.' : null))
+      .catch(() => setPdfNote('Không tạo được PDF. Thử lại sau.'))
+      .finally(() => setPdfBusy(false));
   };
 
   return (
@@ -140,10 +138,11 @@ export const ResultProfileHeader: React.FC<HeaderProps> = ({ insights, history, 
             className="result-profile-history"
           />
         </div>
-        <Button type="button" variant="outline" leftIcon={<Download size={16} />} onClick={exportPdf} disabled={!insights}>
+        <Button type="button" variant="outline" leftIcon={<Download size={16} />} onClick={exportPdf} disabled={!insights} isLoading={pdfBusy}>
           Tải PDF
         </Button>
       </div>
+      {pdfNote && <Alert variant={pdfNote.startsWith('Không') ? 'danger' : 'success'}>{pdfNote}</Alert>}
       {insights && (
         <>
           <div className="result-profile-badges">

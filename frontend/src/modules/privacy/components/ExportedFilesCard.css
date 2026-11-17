@@ -1,0 +1,115 @@
+/* Tệp đã lưu trên kho riêng tư */
+.exports-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.exports-list li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--touch-target);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.exports-list li:last-child {
+  border-bottom: 0;
+}
+
+.exports-icon {
+  width: calc(36 * var(--px));
+  height: calc(36 * var(--px));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-lg);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.exports-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.exports-title {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.exports-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.exports-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.exports-icon-btn {
+  width: var(--control-height-sm);
+  height: var(--control-height-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.exports-icon-btn:hover:not(:disabled) {
+  background: var(--color-danger-bg);
+  color: var(--color-danger-text);
+}
+
+.exports-icon-btn:focus-visible {
+  outline: 2px solid var(--color-primary-ring);
+  outline-offset: 2px;
+}
+
+.exports-icon-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.exports-empty {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-text-secondary);
+}
+
+.exports-empty svg {
+  flex: none;
+  width: calc(24 * var(--px));
+  height: calc(24 * var(--px));
+  color: var(--color-text-muted);
+}
+
+.exports-empty p {
+  margin: 0;
+  font-size: var(--font-size-sm);
+}
+
+@media (max-width: 768px) {
+  .exports-icon-btn {
+    width: var(--touch-target);
+    height: var(--touch-target);
+  }
+}

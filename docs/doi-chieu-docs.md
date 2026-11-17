@@ -52,6 +52,7 @@ Chỉ ghi việc đọc được trong hai nguồn đó. Không tick từng dòn
 | BR-M09-003 | Sự kiện có số chỗ và hạn đăng ký | Cột `seat_limit`, `registration_deadline`. Hết chỗ hoặc quá hạn thì `register_career_event` từ chối |
 | BR-M09-006 | Nhãn “Nội dung thành viên” | `CommunityPage.tsx` gắn nhãn trên mỗi bài |
 | FR09.01.09 | Quản trị thành viên và chủ đề | `CommunityAdminPage`, hàm `list_community_admin`, `remove_community_member`, `add_community_topic` |
+| FR01.01.01 | Chọn vai trò khi đăng ký; đăng ký bằng Google; đăng nhập bằng số điện thoại | `RegisterPage.tsx` có ô Vai trò và nút Google (khi nhà cung cấp bật). `LoginPage.tsx` có tab Số điện thoại khi máy chủ bật SMS, gửi OTP không tạo tài khoản mới (`requestPhoneOtp(..., { createUser: false })`) |
 | FR04.01.07 | Hiện nguồn và ngày cập nhật dữ liệu nghề | `CareerProfile.tsx` cạnh tiêu đề Mô tả nghề: số tin tuyển dụng, `data_checked_at`, ghi "(ngày đăng tin)" khi `data_checked_kind = posted` |
 | FR08.02.01–04, BR-030, BR-031 | So hồ sơ năng lực với JD; % đạt; xếp hạng kỹ năng thiếu; biểu đồ | `/nang-luc?tab=phan-tich`: chọn bậc JD đã công bố (`career_level_frameworks`), `skillGap.logic.ts` so từng kỹ năng của mục Kiến thức, Kỹ năng chuyên môn, Kỹ năng mềm, Công cụ, Ngoại ngữ, Chứng chỉ. Kỹ năng JD chưa có trong hồ sơ là Chưa đạt. Biểu đồ cột 0–5 và radar theo nhóm. Bản chụp lưu ở `skill_gap_analyses` |
 | FR08.03.01–02 | Gợi ý theo kỹ năng thiếu; thêm vào lộ trình | `course_project_suggestions.skill_keywords`; kỹ năng không có gợi ý hiện "Đang cập nhật"; hộp thoại thêm vào lộ trình chọn trụ cột và hạn (`RoadmapAddDialog`) |
@@ -70,9 +71,8 @@ Các mã P05, P08–P13, P16, P17, P19, P21, P22, P24, P25, P27, P35–P38, P40�
 | Chờ chốt | SRS R16 dòng 6265 và 6267; BR-014; file 06 mục 1.2 | R16 vừa map L0,L1 → 1, vừa ghi chỉ dùng JD L1 và L2. BR-014 ghi L1 đến L2. File 06 có bậc L0 | `career_matrix_include_l0` = `true`, `pending_ba` |
 | Chờ chốt | SRS UI_08-S06 "(cần xác nhận)" | Công thức % đạt so với JD có trọng số theo mức ảnh hưởng không; mức yêu cầu khi khung chưa ghi | `skill_gap_impact_weights` = Bắt buộc 3, Thường gặp 2, Lợi thế 1; `skill_gap_default_required_level` = 3; cả hai `pending_ba` |
 | Chờ chốt | SRS chưa viết điều kiện chặn | Không có câu đã chốt về việc bắt buộc câu mở khi nộp bài 360° | `require_open_answers` = `false`, `pending_ba` |
-| Chưa làm | FR01.01.01, dòng 1596 | Người đăng ký chọn vai trò: Học sinh, Sinh viên, Phụ huynh, Giáo viên, Người hướng dẫn | Giữ nguyên. `RegisterPage.tsx` ghi cứng `role: 'student'` |
 | Chưa làm | INT-005 | Lưu PDF, ảnh QR và tệp xuất lên Cloud Storage | Chưa có kho tệp. Đã tải được file PDF về máy |
-| Tích hợp ngoài | FR01.01.01, SW_03 | Đăng ký hoặc đăng nhập bằng số điện thoại, mã gửi qua SMS | Đăng ký có ô số điện thoại. Bấm tạo tài khoản thì sang `/xac-minh-otp` (`OtpVerifyPage.tsx`, 6 ô). Hàm gửi là `supabase.auth.signInWithOtp`. Trang đăng nhập không có số điện thoại. Việc SMS đi hay không phụ thuộc nhà cung cấp trên Supabase |
+| Tích hợp ngoài | FR01.01.01, SW_03 | Đăng ký hoặc đăng nhập bằng số điện thoại, mã gửi qua SMS | Giao diện đăng ký và đăng nhập đã có. Việc SMS đi hay không phụ thuộc nhà cung cấp SMS bật trên Supabase |
 | Tích hợp ngoài | FR01.01.01, FR03.02.02 | Mã xác minh và thư thông báo qua email | Có quên mật khẩu bằng email. Không có hàm gửi email cho thông báo nghiệp vụ trong `frontend/src` |
 | Tích hợp ngoài | INT-005, EXT-13 | Cloud Storage cho PDF, ảnh QR, tệp dữ liệu cá nhân | Không có lời gọi kho tệp trong `frontend/src` |
 | Tích hợp ngoài | SRS mục 2.4, NFR-COMP-016 | Kiểm duyệt nội dung bằng dịch vụ bên ngoài, đổi nhà cung cấp không đổi nghiệp vụ | Đang lọc `community_banned_keywords` và ẩn bài đủ 3 báo cáo. Không gọi dịch vụ kiểm duyệt ngoài |
@@ -85,7 +85,6 @@ Các mã P05, P08–P13, P16, P17, P19, P21, P22, P24, P25, P27, P35–P38, P40�
 
 | Màn SRS | Tình trạng trong VM |
 |---|---|
-| UI_01 đăng ký có chọn vai trò | Không còn. `RegisterPage.tsx` ghi cứng Học sinh |
 | UI_04 khám phá nghề khi chưa đăng nhập | Có `/danh-muc-nghe`. Menu thả từng nghề trên thanh điều hướng thì chưa có; thanh trên có một liên kết “Nghề nghiệp” |
 | UI_07-S01 đến S04 | Gộp một trang `/lo-trinh`. Có mục “Bản đồ đường đi” theo tháng, chưa phải sơ đồ các nút nối nhau |
 | UI_08-S01 đến S08 | Gộp một trang `/nang-luc` hai tab: Hồ sơ và Phân tích khoảng cách (chọn vị trí → kết quả). Có hộp thoại thêm gợi ý vào lộ trình |

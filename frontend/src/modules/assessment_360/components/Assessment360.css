@@ -77,7 +77,7 @@
   right: 0;
   bottom: -1px;
   height: 2px;
-  background: var(--brand-coral);
+  background: var(--hope-blue);
   transform: scaleX(0);
   transform-origin: left center;
   transition: transform 520ms var(--ease-out);

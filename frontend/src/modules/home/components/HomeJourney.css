@@ -6,7 +6,7 @@
   --j-rail-w: calc(28 * var(--px));
   --j-gap: var(--space-4);
   --j-dot: calc(16 * var(--px));
-  --j-accent: var(--brand-coral);
+  --j-accent: var(--hope-blue);
   --j-ink: var(--color-text-main);
   --j-muted: var(--color-text-muted);
   --j-faint: var(--ink-300);
@@ -44,7 +44,7 @@ html:has(.journey) {
   text-wrap: balance;
 }
 
-/* Tab chọn nhanh: chữ trần, vạch cam chạy dưới tab đang xem */
+/* Tab chọn nhanh: chữ trần, vạch xanh chạy dưới tab đang xem */
 .journey-quick-tabs {
   display: flex;
   flex-wrap: wrap;
@@ -310,7 +310,7 @@ html:has(.journey) {
 }
 
 .journey-step.is-current .journey-dot {
-  box-shadow: 0 0 0 calc(6 * var(--px)) var(--color-highlight-bg);
+  box-shadow: 0 0 0 calc(6 * var(--px)) var(--hope-blue-soft);
 }
 
 .journey-step.is-done .journey-meta {

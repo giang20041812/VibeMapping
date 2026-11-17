@@ -1,8 +1,9 @@
 /* ====================================================================
    DESIGN SYSTEM TOKENS
    Một ngôn ngữ giao diện duy nhất theo logo: navy đậm là màu chủ đạo, xanh trời và kem là màu phụ của logo.
-   Cam san hô là màu nổi bật duy nhất, chỉ dành cho nút kêu gọi hành động và thông tin quan trọng;
-   dải màu trực quan hóa chỉ dùng trong biểu đồ và hình minh họa.
+   Mọi sắc xanh (tiêu đề, trạng thái đang chọn, liên kết) cùng một sắc độ với navy của logo, chỉ khác độ sáng;
+   chữ thân là xám lạnh ngả navy. Cam san hô trầm là màu nổi bật duy nhất, chỉ dành cho nút kêu gọi hành động
+   và thông tin quan trọng; dải màu trực quan hóa chỉ dùng trong biểu đồ và hình minh họa.
    Mọi stylesheet chỉ dùng biến ở đây, không dùng mã màu tự do.
    ==================================================================== */
 
@@ -18,42 +19,44 @@
    --brand-pale: #d8ebff;
    --brand-mist: #e4f0ff;
    --brand-ice: #eef5ff;
-   /* Cam san hô: màu nổi bật cho nút chính và thông tin quan trọng; chữ trên nền cam dùng navy (tương phản 5,6:1) */
-   --brand-coral: #ff6b45;
-   --brand-coral-hover: #ff8160;
-   --brand-coral-active: #f2582f;
-   --brand-coral-soft: #ffe6dd;
+   /* Cam san hô trầm: màu nổi bật cho nút chính và thông tin quan trọng; chữ trắng trên nền cam (tương phản 4,5:1).
+     -hover là sắc sáng hơn cho dải chuyển màu trong biểu đồ, -active là sắc đậm khi bấm */
+   --brand-coral: #d1471c;
+   --brand-coral-hover: #e2643a;
+   --brand-coral-active: #b23a12;
+   --brand-coral-soft: #fbe6dc;
    --brand-cream: #fffcf0;
    --brand-gold: #f6b73c;
    --brand-violet: #8b5cf6;
    --brand-white: #ffffff;
 
    /* Xanh dương hy vọng: màu chữ của mọi tiêu đề lớn và trạng thái đang lọc/đang chọn.
-     --hope-blue đủ tương phản cho chữ lớn (4,7:1); chữ nhỏ trên nền nhạt dùng --hope-blue-deep (8:1) */
-   --hope-blue-deep: #1450b4;
-   --hope-blue: #1f6fe5;
-   --hope-blue-bright: #3b8cff;
-   --hope-blue-soft: #e8f1ff;
-   --hope-blue-border: #b4d2fb;
-   --hope-blue-ring: rgba(31, 111, 229, 0.28);
+     Cùng sắc độ với navy của logo (224°) để tiêu đề, logo và nút không lệch tông.
+     --hope-blue tương phản 6,8:1 trên nền trắng; --hope-blue-deep (9:1) cho chữ nhỏ trên nền nhạt */
+   --hope-blue-deep: #17389e;
+   --hope-blue: #1f4fd1;
+   --hope-blue-bright: #3d6ef0;
+   --hope-blue-soft: #ebf0fd;
+   --hope-blue-border: #c3d2f7;
+   --hope-blue-ring: rgba(31, 79, 209, 0.28);
    --color-heading: var(--hope-blue);
    /* Thanh tiến độ: đường thẳng chuyển từ xanh dương hy vọng sang xanh lơ; rãnh là nền xanh nhạt cùng sắc */
    --progress-gradient: linear-gradient(90deg, var(--hope-blue) 0%, var(--soft-cyan) 100%);
    --progress-track-tint: color-mix(in srgb, var(--hope-blue) 13%, var(--color-bg-surface));
 
-   /* Primary */
-   --color-primary: var(--brand-blue);
-   --color-primary-hover: var(--brand-azure);
+   /* Primary: chung một sắc xanh với tiêu đề để giao diện chỉ có một màu xanh chủ đạo */
+   --color-primary: var(--hope-blue);
+   --color-primary-hover: var(--hope-blue-deep);
    --color-primary-active: var(--brand-deep);
    --color-primary-light: var(--brand-ice);
-   --color-primary-ring: rgba(40, 80, 192, 0.28);
+   --color-primary-ring: var(--hope-blue-ring);
 
-   /* Nút kêu gọi hành động */
+   /* Nút kêu gọi hành động: nền cam, chữ trắng; rê chuột thì lớp mực navy trượt lên phủ nền */
    --color-cta: var(--brand-coral);
-   --color-cta-hover: var(--brand-coral-hover);
+   --color-cta-hover: var(--color-text-main);
    --color-cta-active: var(--brand-coral-active);
-   --color-cta-text: var(--brand-navy);
-   --color-cta-ring: rgba(255, 107, 69, 0.35);
+   --color-cta-text: var(--brand-white);
+   --color-cta-ring: rgba(209, 71, 28, 0.32);
    --color-accent: var(--brand-sky);
    --color-accent-gold: var(--brand-gold);
 
@@ -109,10 +112,10 @@
    --color-border-hover: #cbd0d9;
    --color-border-focus: var(--brand-blue);
 
-   /* Typography / Text hierarchy: mực đậm gần đen để dễ đọc; màu chàm để dành cho hành động */
-   --color-text-main: #0c1222;
-   --color-text-secondary: #454d62;
-   --color-text-muted: #667085;
+   /* Typography / Text hierarchy: mực gần đen ngả navy (cùng sắc với logo) để chữ, tiêu đề xanh và nút cam liền một tông */
+   --color-text-main: #0f1730;
+   --color-text-secondary: #454e66;
+   --color-text-muted: #667089;
    --color-text-inverse: #ffffff;
    --color-text-brand: var(--brand-blue);
 
@@ -284,9 +287,9 @@
    --gradient-feature: linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-azure) 100%);
    --gradient-brand-hover: linear-gradient(135deg, var(--brand-deep) 0%, var(--brand-azure) 100%);
    --gradient-brand-active: linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-deep) 100%);
-   /* Nút kêu gọi hành động: cam san hô đặc, bóng cùng sắc để nổi khỏi nền */
-   --shadow-cta: 0 1px 2px rgba(3, 25, 100, 0.18), 0 8px 20px -8px rgba(255, 107, 69, 0.65);
-   --shadow-cta-hover: 0 2px 4px rgba(3, 25, 100, 0.18), 0 14px 28px -10px rgba(255, 107, 69, 0.75);
+   /* Nút kêu gọi hành động: cam san hô đặc, bóng dịu cùng sắc để nổi khỏi nền mà không chói */
+   --shadow-cta: 0 1px 2px rgba(15, 23, 48, 0.14), 0 8px 18px -10px rgba(209, 71, 28, 0.55);
+   --shadow-cta-hover: 0 2px 4px rgba(15, 23, 48, 0.16), 0 14px 26px -12px rgba(15, 23, 48, 0.45);
    /* Giữ lại cho tới khi các màn hình thôi dùng dải màu trên nút */
    --gradient-cta: var(--color-primary);
    --gradient-cta-border: var(--color-border-hover);

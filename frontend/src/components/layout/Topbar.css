@@ -76,6 +76,58 @@
   font-weight: 600;
 }
 
+.topbar-link-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Mục kêu gọi (Về Bạn): nút xanh đặc nằm giữa ô, nổi hơn các mục chữ */
+.topbar-link-cta {
+  padding: 0 var(--space-4);
+}
+
+.topbar-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target);
+  padding: 0 var(--space-4);
+  font-weight: 600;
+  color: var(--color-text-inverse);
+  background: var(--color-primary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-cta);
+  transition:
+    background-color 420ms var(--ease-out),
+    box-shadow 420ms var(--ease-out),
+    transform 420ms var(--ease-out);
+}
+
+.topbar-link-cta:hover .topbar-cta {
+  background: var(--color-primary-hover);
+  box-shadow: var(--shadow-cta-hover);
+  transform: translateY(-1px);
+}
+
+.topbar-link-cta:active .topbar-cta {
+  background: var(--color-primary-active);
+  transform: none;
+}
+
+.topbar-link-cta.is-active .topbar-cta {
+  box-shadow: 0 0 0 3px var(--color-primary-ring), var(--shadow-cta);
+}
+
+.topbar-link-cta:focus-visible {
+  outline: none;
+}
+
+.topbar-link-cta:focus-visible .topbar-cta {
+  outline: 3px solid var(--color-primary-ring);
+  outline-offset: 2px;
+}
+
 .topbar-end {
   justify-self: end;
   align-self: center;
@@ -145,6 +197,15 @@
 
   .topbar-link:last-child {
     border-bottom: 0;
+  }
+
+  .topbar-link-cta {
+    padding: var(--space-3) 0;
+  }
+
+  .topbar-cta {
+    width: 100%;
+    justify-content: center;
   }
 
   .topbar-link.hover-sweep-bottom::after {

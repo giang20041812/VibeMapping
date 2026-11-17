@@ -28,7 +28,7 @@
 .fit-list-head {
   min-height: calc(36 * var(--px));
   font-size: var(--font-size-xs);
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.02em;
   color: var(--color-text-muted);
   border-bottom: 1px solid var(--ink-300);
@@ -72,7 +72,7 @@
 
 .fit-row-rank {
   font-size: var(--font-size-3xl);
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.04em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -89,7 +89,7 @@
 
 .fit-row-title {
   font-size: var(--font-size-lg);
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1.25;
   color: var(--color-text-main);
@@ -108,7 +108,7 @@
   align-items: center;
   gap: var(--space-1) var(--space-2);
 }
-.fit-row-meta { font-size: var(--font-size-xs); font-weight: 600; color: var(--color-text-muted); }
+.fit-row-meta { font-size: var(--font-size-xs); font-weight: 500; color: var(--color-text-muted); }
 
 .fit-row-total {
   display: flex;
@@ -118,13 +118,13 @@
 }
 .fit-row-total b {
   font-size: var(--font-size-3xl);
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.04em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
   color: var(--hope-blue);
 }
-.fit-row-total b small { margin-left: 1px; font-size: 0.5em; font-weight: 700; letter-spacing: 0; }
+.fit-row-total b small { margin-left: 1px; font-size: 0.5em; font-weight: 600; letter-spacing: 0; }
 .fit-row-total b.is-missing { color: var(--ink-300); }
 
 .fit-row-parts {
@@ -139,12 +139,12 @@
 .fit-row-parts li { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
 .fit-row-parts b {
   font-size: var(--font-size-lg);
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
   color: var(--color-text-main);
 }
-.fit-row-part-label { display: none; font-size: var(--font-size-xs); font-weight: 600; color: var(--color-text-muted); }
+.fit-row-part-label { display: none; font-size: var(--font-size-xs); font-weight: 500; color: var(--color-text-muted); }
 
 .fit-row-actions {
   position: relative;
@@ -164,7 +164,7 @@
   gap: var(--space-2);
   margin: 0;
   font-size: var(--font-size-xl);
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.025em;
   color: var(--color-text-main);
 }

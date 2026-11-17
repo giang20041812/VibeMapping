@@ -10,7 +10,7 @@
   min-height: var(--touch-target);
   padding: 0 var(--space-4);
   font-size: var(--font-size-base);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-text-main);
   background: var(--color-bg-surface);
   border: 1.5px solid var(--color-border);

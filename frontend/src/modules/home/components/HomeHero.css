@@ -1,11 +1,5 @@
 /* Phần mở đầu trang chủ: nền trắng hòa vào trang, chữ mực đậm, không khung, không bo góc.
    Navy chỉ còn ở điểm nhấn nhỏ; các nhóm thông tin phân tách bằng đường kẻ thẳng vẽ dần khi xuất hiện. */
-@property --word-fill {
-  syntax: '<color>';
-  inherits: true;
-  initial-value: transparent;
-}
-
 .hero {
   --hero-ink: var(--color-text-main);
   --hero-muted: var(--color-text-muted);
@@ -92,9 +86,10 @@
   display: flex;
   flex-direction: column;
   font-size: clamp(calc(42 * var(--px)), 6.4vw, calc(112 * var(--px)));
-  font-weight: 800;
+  font-family: var(--font-display);
+  font-weight: 500;
   line-height: 1.02;
-  letter-spacing: -0.048em;
+  letter-spacing: -0.02em;
   color: var(--color-heading);
   text-wrap: balance;
 }
@@ -106,41 +101,17 @@
 /* Rê chuột từng chữ: chữ đổi sang cam san hô */
 .hero-title .split-word {
   cursor: default;
+}
+
+.hero-title-line:not(.split-accent) .split-word {
   transition:
     transform 1050ms var(--ease-out) var(--word-delay, 0ms),
     color 380ms var(--ease-out);
 }
 
 @media (hover: hover) {
-  .hero-title-line:not(.hero-title-accent) .split-word:hover {
+  .hero-title-line:not(.split-accent) .split-word:hover {
     color: var(--brand-coral);
-  }
-}
-
-/* Dòng nhấn: chữ trồi lên ở màu nhạt rồi được tô xanh dần từng chữ */
-.hero-title-accent .split-word {
-  --word-fill: var(--hope-blue-bright);
-  background-image: linear-gradient(90deg, var(--word-fill) 0 50%, var(--hope-blue-border) 50% 100%);
-  background-size: 200% 100%;
-  background-position: 100% 0;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-  padding-bottom: 0.06em;
-  transition:
-    transform 1050ms var(--ease-out) var(--word-delay, 0ms),
-    background-position 1100ms var(--ease-out) calc(var(--word-delay, 0ms) + 650ms),
-    --word-fill 420ms var(--ease-out);
-}
-
-.hero-title-accent.is-visible .split-word {
-  background-position: 0 0;
-}
-
-@media (hover: hover) {
-  .hero-title-accent .split-word:hover {
-    --word-fill: var(--brand-coral);
   }
 }
 
@@ -164,7 +135,7 @@
   min-height: calc(56 * var(--px));
   padding: 0 var(--space-8);
   font-size: var(--font-size-md);
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--color-cta-text);
   text-decoration: none;
@@ -185,7 +156,7 @@
   gap: var(--space-3);
   min-height: var(--touch-target);
   font-size: var(--font-size-md);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--hero-ink);
   text-decoration: none;
 }
@@ -315,7 +286,7 @@
   flex: 1;
   min-width: 0;
   font-size: clamp(var(--font-size-lg), 1.35vw, var(--font-size-2xl));
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1.3;
   transition: transform 560ms var(--ease-out);
@@ -417,7 +388,7 @@
   align-items: center;
   gap: var(--space-2);
   font-size: var(--font-size-sm);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--hero-muted);
   transition: color 420ms var(--ease-out);
 }
@@ -436,7 +407,7 @@
   flex-wrap: wrap;
   margin-top: var(--space-2);
   font-size: clamp(calc(40 * var(--px)), 4.2vw, calc(68 * var(--px)));
-  font-weight: 800;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.045em;
   line-height: 1;
@@ -452,14 +423,14 @@
 .hero-stat-unit {
   margin-left: 0.28em;
   font-size: 0.42em;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--hero-muted);
 }
 
 .hero-stat-sub {
   font-size: var(--font-size-sm);
-  font-weight: 500;
+  font-weight: 400;
   color: var(--hero-muted);
 }
 

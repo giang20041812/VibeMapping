@@ -37,8 +37,8 @@
   border-radius: var(--radius-full);
 }
 .stat-sticker-text { display: flex; flex-direction: column; line-height: 1.15; }
-.stat-sticker-value { font-size: var(--font-size-lg); font-weight: 800; color: var(--color-text-main); white-space: nowrap; }
-.stat-sticker-label { font-size: var(--font-size-xs); font-weight: 600; color: var(--color-text-secondary); white-space: nowrap; }
+.stat-sticker-value { font-size: var(--font-size-lg); font-weight: 600; color: var(--color-text-main); white-space: nowrap; }
+.stat-sticker-label { font-size: var(--font-size-xs); font-weight: 500; color: var(--color-text-secondary); white-space: nowrap; }
 
 @keyframes sticker-float {
   0%, 100% { transform: translateY(0) rotate(var(--tilt, 0deg)); }

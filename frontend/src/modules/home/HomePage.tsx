@@ -9,6 +9,7 @@ import { RATER_NODES } from '../assessment_360/assessment360.constants';
 import { PACKAGES } from '../assessment_session/assessmentSession.constants';
 import { MAX_EXPECTED_PER_GROUP } from '../invitation_link/invitation.constants';
 import { getCatalogScale, type CatalogScale } from './home.service';
+import { HomeFooter } from './components/HomeFooter';
 import { HomeHero } from './components/HomeHero';
 import { HomeJourney } from './components/HomeJourney';
 import { useAuth } from '../auth/AuthContext';
@@ -48,8 +49,11 @@ const MINUTE_RANGE = `${Math.min(...PACKAGE_MINUTES)}–${Math.max(...PACKAGE_MI
 
 const JOURNEY_ID = 'hanh-trinh';
 
+/* Dải chữ chạy: hàng trên là các nhóm tố chất, hàng dưới là các nhóm người đánh giá 360° */
+
 /**
- * Trang giới thiệu: phần mở đầu (lời hứa, nút chính, bản đồ tố chất) rồi hành trình năm bước theo đúng thứ tự dùng sản phẩm.
+ * Trang giới thiệu: phần mở đầu (lời hứa, nút chính, ba trọng tâm, quy mô), dải chữ chạy,
+ * hành trình năm bước theo đúng thứ tự dùng sản phẩm, rồi phần kết với khẩu hiệu và chân trang.
  * Mỗi thông tin chỉ xuất hiện một lần, ở đúng bước của nó.
  */
 export const HomePage: React.FC = () => {
@@ -136,6 +140,8 @@ export const HomePage: React.FC = () => {
         isOwnResult={result !== null}
         isChartLoading={isChartLoading}
       />
+
+      <HomeFooter isGuest={isGuest} />
     </div>
   );
 };

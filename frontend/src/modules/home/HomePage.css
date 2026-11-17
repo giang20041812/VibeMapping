@@ -8,6 +8,5 @@
   align-items: center;
   gap: clamp(calc(64 * var(--px)), 8vw, calc(120 * var(--px)));
   min-width: 0;
-  padding-bottom: var(--space-16);
 }
 .home > * { width: 100%; max-width: var(--home-width); min-width: 0; }

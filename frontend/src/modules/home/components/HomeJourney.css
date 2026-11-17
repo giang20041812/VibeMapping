@@ -37,7 +37,7 @@ html:has(.journey) {
 .journey-title {
   max-width: calc(820 * var(--px));
   font-size: clamp(calc(30 * var(--px)), 4.2vw, calc(68 * var(--px)));
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1.04;
   letter-spacing: -0.045em;
   color: var(--color-heading);
@@ -60,7 +60,7 @@ html:has(.journey) {
   min-height: var(--touch-target);
   padding: 0;
   font-size: var(--font-size-sm);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--ink-500);
   background: transparent;
   transition: color 360ms var(--ease-out);
@@ -128,7 +128,7 @@ html:has(.journey) {
   padding-top: calc(10 * var(--px));
   font-family: var(--font-mono);
   font-size: var(--font-size-sm);
-  font-weight: 700;
+  font-weight: 600;
   text-align: right;
   font-variant-numeric: tabular-nums;
   color: var(--j-faint);
@@ -220,7 +220,7 @@ html:has(.journey) {
 .journey-step-title {
   margin: 0;
   font-size: clamp(var(--font-size-2xl), 2vw, calc(32 * var(--px)));
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1.12;
   letter-spacing: -0.035em;
   color: var(--j-faint);
@@ -256,7 +256,7 @@ html:has(.journey) {
   min-height: calc(46 * var(--px));
   padding: var(--space-2) 0;
   font-size: var(--font-size-md);
-  font-weight: 500;
+  font-weight: 400;
   line-height: 1.45;
   color: var(--ink-500);
   border-bottom: 1px solid var(--j-line);
@@ -375,7 +375,7 @@ html:has(.journey) {
   min-height: calc(56 * var(--px));
   padding: 0 var(--space-8);
   font-size: var(--font-size-md);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-cta-text);
   text-decoration: none;
   background: var(--color-cta);
@@ -393,6 +393,8 @@ html:has(.journey) {
 .journey-stage {
   position: relative;
   isolation: isolate;
+  display: flex;
+  flex-direction: column;
   height: var(--stage-h);
   overflow: hidden;
   color: var(--j-ink);
@@ -430,13 +432,78 @@ html:has(.journey) {
   display: none;
 }
 
+/* Thanh đầu sân khấu: số bước cuộn dọc như đồng hồ đếm, tên bước đang xem, vạch tiến độ ở mép phải */
+.journey-stage-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: calc(46 * var(--px));
+  padding: 0 var(--space-6);
+  border-bottom: 1px solid var(--j-line);
+}
+
+.journey-stage-count {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: calc(6 * var(--px));
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.journey-stage-count-window {
+  display: inline-block;
+  height: 1em;
+  overflow: hidden;
+}
+
+.journey-stage-count-strip {
+  display: flex;
+  flex-direction: column;
+  color: var(--j-accent);
+  transform: translate3d(0, calc(var(--count-i, 0) * -1em), 0);
+  transition: transform 620ms var(--ease-out);
+}
+
+.journey-stage-count-strip > span {
+  height: 1em;
+}
+
+.journey-stage-total {
+  color: var(--j-faint);
+}
+
+.journey-stage-title {
+  min-width: 0;
+  padding-left: var(--space-3);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--j-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-left: 1px solid var(--j-line);
+  animation: ui-rise 520ms var(--ease-out) both;
+}
+
+.journey-stage-body {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
 .journey-scene {
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-6) var(--space-6) var(--space-10);
+  padding: var(--space-6);
   opacity: 0;
   transform: translate3d(0, 28px, 0);
   filter: blur(6px);
@@ -470,31 +537,33 @@ html:has(.journey) {
 }
 
 .journey-dots {
-  position: absolute;
-  bottom: var(--space-4);
-  left: 50%;
-  z-index: 4;
+  flex: none;
   display: flex;
+  align-items: center;
   gap: calc(6 * var(--px));
+  margin-left: auto;
   list-style: none;
-  transform: translateX(-50%);
 }
 
+/* Vạch mảnh 3px nhưng vùng bấm cao hơn nhờ lớp đệm trong suốt phía trên và dưới */
 .journey-dots li {
+  box-sizing: content-box;
   width: calc(18 * var(--px));
   height: 3px;
+  padding: var(--space-3) 0;
   cursor: pointer;
-  background: var(--ink-200);
+  background-color: var(--ink-200);
+  background-clip: content-box;
   transition: width 420ms var(--ease-out), background-color 420ms var(--ease-out);
 }
 
 .journey-dots li.is-done {
-  background: var(--ink-500);
+  background-color: var(--ink-500);
 }
 
 .journey-dots li.is-active {
   width: calc(36 * var(--px));
-  background: var(--j-accent);
+  background-color: var(--j-accent);
 }
 
 /* ==========================================================================
@@ -524,7 +593,7 @@ html:has(.journey) {
   gap: calc(5 * var(--px));
   padding: calc(3 * var(--px)) var(--space-2);
   font-size: calc(11 * var(--px));
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-secondary);
   border: 1px solid var(--j-line);
   border-radius: var(--radius-xs);
@@ -548,7 +617,7 @@ html:has(.journey) {
   align-items: center;
   gap: var(--space-2);
   font-size: var(--font-size-xs);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-secondary);
 }
 
@@ -621,13 +690,13 @@ html:has(.journey) {
 
 .artifact-fit-rank-label {
   font-size: calc(11 * var(--px));
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-highlight-text);
 }
 
 .artifact-fit-big-score {
   font-size: clamp(calc(40 * var(--px)), 4vw, calc(56 * var(--px)));
-  font-weight: 800;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
   line-height: 1;
   letter-spacing: -0.05em;
@@ -636,7 +705,7 @@ html:has(.journey) {
 
 .artifact-fit-score-sub {
   font-size: calc(11 * var(--px));
-  font-weight: 600;
+  font-weight: 500;
   color: var(--j-muted);
 }
 
@@ -656,14 +725,14 @@ html:has(.journey) {
 .artifact-fit-title {
   margin: 0;
   font-size: var(--font-size-lg);
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.02em;
   color: var(--j-ink);
 }
 
 .artifact-fit-sub {
   font-size: var(--font-size-xs);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--j-muted);
 }
 
@@ -684,7 +753,7 @@ html:has(.journey) {
   display: flex;
   justify-content: space-between;
   font-size: var(--font-size-xs);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-text-secondary);
 }
 
@@ -713,7 +782,7 @@ html:has(.journey) {
 .artifact-fit-rank {
   font-family: var(--font-mono);
   font-size: var(--font-size-xs);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--j-faint);
 }
 
@@ -732,7 +801,7 @@ html:has(.journey) {
 
 .artifact-fit-next-name {
   font-size: var(--font-size-sm);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--j-ink);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -751,7 +820,7 @@ html:has(.journey) {
 
 .artifact-fit-next-score {
   font-size: var(--font-size-lg);
-  font-weight: 800;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.03em;
   color: var(--j-ink);
@@ -806,7 +875,7 @@ html:has(.journey) {
   align-items: center;
   gap: 4px;
   font-size: calc(11 * var(--px));
-  font-weight: 700;
+  font-weight: 600;
   color: var(--j-muted);
 }
 
@@ -816,14 +885,14 @@ html:has(.journey) {
 
 .artifact-plan-school {
   font-size: var(--font-size-md);
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.015em;
   color: var(--j-ink);
 }
 
 .artifact-plan-program {
   font-size: var(--font-size-xs);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--j-muted);
 }
 
@@ -842,7 +911,7 @@ html:has(.journey) {
 }
 
 .artifact-plan-row dt {
-  font-weight: 500;
+  font-weight: 400;
   color: var(--j-muted);
 }
 
@@ -850,13 +919,13 @@ html:has(.journey) {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--j-ink);
 }
 
 .artifact-plan-ok {
   font-size: calc(10 * var(--px));
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-success-text);
 }
 
@@ -871,13 +940,13 @@ html:has(.journey) {
 
 .artifact-plan-foot-label {
   font-size: var(--font-size-xs);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--j-muted);
 }
 
 .artifact-plan-total {
   font-size: var(--font-size-xl);
-  font-weight: 800;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.03em;
   color: var(--j-ink);
@@ -915,7 +984,7 @@ html:has(.journey) {
 .artifact-roadmap-code {
   font-family: var(--font-mono);
   font-size: calc(11 * var(--px));
-  font-weight: 700;
+  font-weight: 600;
   color: var(--j-faint);
 }
 
@@ -925,14 +994,14 @@ html:has(.journey) {
 
 .artifact-roadmap-title {
   font-size: var(--font-size-sm);
-  font-weight: 800;
+  font-weight: 600;
   color: var(--j-ink);
 }
 
 .artifact-roadmap-status {
   margin-left: auto;
   font-size: calc(11 * var(--px));
-  font-weight: 700;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
@@ -982,12 +1051,12 @@ html:has(.journey) {
 .artifact-task-pillar {
   flex: none;
   font-size: calc(11 * var(--px));
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-primary);
 }
 
 .artifact-task-text {
-  font-weight: 500;
+  font-weight: 400;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1017,13 +1086,13 @@ html:has(.journey) {
 
 .artifact-goal-eyebrow {
   font-size: calc(11 * var(--px));
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-highlight-text);
 }
 
 .artifact-goal-title {
   font-size: var(--font-size-lg);
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.02em;
   color: var(--j-ink);
 }
@@ -1043,10 +1112,20 @@ html:has(.journey) {
     gap: var(--space-8);
   }
 
+  /* Sân khấu dính nhả ra sớm hơn đúng bằng chiều cao nút cuối hành trình, để nút không bị sân khấu che khi cuộn tới cuối */
+  .journey {
+    --j-end-clear: calc(56 * var(--px) + var(--space-8));
+  }
+
   .journey-aside {
     order: -1;
     z-index: 2;
     top: calc(var(--topbar-height) + var(--space-2));
+    margin-bottom: var(--j-end-clear);
+  }
+
+  .journey-list {
+    margin-top: calc(-1 * var(--j-end-clear));
   }
 
   .journey-step {
@@ -1064,7 +1143,11 @@ html:has(.journey) {
   }
 
   .journey-scene {
-    padding: var(--space-4) var(--space-4) var(--space-8);
+    padding: var(--space-4);
+  }
+
+  .journey-stage-head {
+    padding: 0 var(--space-4);
   }
 
   .artifact-window {
@@ -1099,6 +1182,10 @@ html:has(.journey) {
   .journey-cta-wrap,
   .journey-cta-btn {
     width: 100%;
+  }
+
+  .journey-cta-btn {
+    padding: 0 var(--space-4);
   }
 }
 

@@ -17,7 +17,7 @@
   min-height: 44px;
   padding: 0;
   font: inherit;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-muted);
   background: transparent;
   border: 0;
@@ -81,12 +81,12 @@
   align-items: center;
   gap: var(--space-2) var(--space-3);
   font-size: var(--font-size-sm);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-text-secondary);
 }
 
 .fit-completeness b {
-  font-weight: 800;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--color-text-main);
 }
@@ -104,7 +104,7 @@
   min-height: var(--touch-target);
   padding: 0;
   font-size: var(--font-size-sm);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--hope-blue-deep);
   text-decoration: none;
   transition: color var(--transition-fast);
@@ -126,7 +126,7 @@
   align-items: center;
   padding: 4px 10px;
   font-size: var(--font-size-xs);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--hope-blue-deep);
   background: var(--hope-blue-soft);
   border-radius: var(--radius-xs);
@@ -162,13 +162,13 @@
 }
 
 .fit-bar-label {
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-secondary);
 }
 
 .fit-bar-value {
   text-align: right;
-  font-weight: 800;
+  font-weight: 600;
   color: var(--color-text-main);
   font-variant-numeric: tabular-nums;
 }
@@ -228,7 +228,7 @@
 .fit-empty h2 {
   margin: 0;
   font-size: var(--font-size-lg);
-  font-weight: 800;
+  font-weight: 600;
   color: var(--color-text-main);
 }
 
@@ -246,7 +246,7 @@
 .career-mine h2 {
   margin: 0 0 var(--space-4);
   font-size: var(--font-size-2xl);
-  font-weight: 800;
+  font-weight: 600;
   color: var(--color-text-main);
 }
 
@@ -338,7 +338,7 @@
   flex: none;
   padding: 0 var(--space-2);
   font-size: var(--font-size-sm);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-primary);
   background: var(--color-primary-light);
   border-radius: var(--radius-xs);
@@ -407,7 +407,7 @@
   width: calc(28 * var(--px));
   height: calc(28 * var(--px));
   font-size: var(--font-size-sm);
-  font-weight: 800;
+  font-weight: 600;
   color: var(--hope-blue-deep);
   background: var(--hope-blue-soft);
   border-radius: var(--radius-xs);
@@ -416,7 +416,7 @@
 .compare-side-name {
   flex: 1;
   min-width: 0;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-main);
   text-decoration: none;
   overflow-wrap: anywhere;
@@ -441,7 +441,7 @@
   padding: 0 var(--space-5);
   color: var(--brand-white);
   text-decoration: none;
-  font-weight: 700;
+  font-weight: 600;
   background: var(--color-primary);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -570,7 +570,7 @@
 .career-detail-title h1 {
   margin: 0;
   font-size: clamp(calc(28 * var(--px)), 3vw, calc(48 * var(--px)));
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1.05;
   letter-spacing: -0.045em;
   color: var(--color-heading);
@@ -600,7 +600,7 @@
 .career-block h2 {
   margin: 0;
   font-size: var(--font-size-2xl);
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.03em;
 }
 
@@ -715,7 +715,7 @@
 .career-profile-item h3 {
   margin: 0;
   font-size: var(--font-size-md);
-  font-weight: 800;
+  font-weight: 600;
   color: var(--color-text-main);
   line-height: 1.3;
   overflow-wrap: anywhere;
@@ -734,7 +734,7 @@
   position: relative;
   padding-left: var(--space-6);
   line-height: 1.5;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-text-main);
   transition: transform var(--transition-fast);
 }
@@ -762,7 +762,7 @@
 
 .career-more summary {
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-primary);
   min-height: 44px;
   display: flex;
@@ -792,7 +792,7 @@
   min-height: var(--touch-target);
   padding: 0;
   font-size: var(--font-size-sm);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--hope-blue-deep);
   text-decoration: none;
   transition: color var(--transition-fast);
@@ -870,7 +870,7 @@
 
 .career-major-col-title {
   font-size: var(--font-size-md);
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1.35;
   color: var(--color-text-main);
   text-decoration: none;
@@ -892,7 +892,7 @@
 
 .career-major-col-count {
   font-size: var(--font-size-xs);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-secondary);
 }
 
@@ -904,7 +904,7 @@
   padding: var(--space-6) var(--space-4);
   flex: 1 1 auto;
   font-size: var(--font-size-sm);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-text-muted);
 }
 
@@ -966,7 +966,7 @@
 
 .career-major-school-name {
   font-size: var(--font-size-base);
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.4;
   color: var(--color-text-main);
   text-decoration: none;
@@ -980,7 +980,7 @@
 
 .career-major-school-sub {
   font-size: var(--font-size-xs);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-text-secondary);
   overflow-wrap: anywhere;
 }
@@ -999,7 +999,7 @@
   align-items: center;
   gap: var(--space-1);
   font-size: var(--font-size-xs);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-secondary);
 }
 
@@ -1019,7 +1019,7 @@
   gap: var(--space-1);
   min-height: calc(32 * var(--px));
   font-size: var(--font-size-sm);
-  font-weight: 800;
+  font-weight: 600;
   color: var(--color-text-main);
   text-decoration: none;
 }
@@ -1071,14 +1071,14 @@
 }
 .career-score b {
   font-size: clamp(calc(40 * var(--px)), 4vw, calc(56 * var(--px)));
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.05em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
   color: var(--hope-blue);
 }
-.career-score b small { margin-left: 2px; font-size: 0.45em; font-weight: 700; letter-spacing: 0; }
-.career-score-label { font-size: var(--font-size-xs); font-weight: 700; color: var(--color-text-muted); }
+.career-score b small { margin-left: 2px; font-size: 0.45em; font-weight: 600; letter-spacing: 0; }
+.career-score-label { font-size: var(--font-size-xs); font-weight: 600; color: var(--color-text-muted); }
 .career-score .fit-bar-track { margin-top: var(--space-1); }
 
 .career-why {
@@ -1133,7 +1133,7 @@
   gap: var(--space-6);
 }
 .career-why-main { display: flex; flex-direction: column; gap: var(--space-5); min-width: 0; }
-.career-why-main .career-gaps h3 { margin-bottom: var(--space-3); font-size: var(--font-size-md); font-weight: 800; }
+.career-why-main .career-gaps h3 { margin-bottom: var(--space-3); font-size: var(--font-size-md); font-weight: 600; }
 .career-why-chart { max-width: calc(380 * var(--px)); }
 .career-block { gap: var(--space-3); }
 
@@ -1147,7 +1147,7 @@
   gap: var(--space-2);
   min-height: var(--control-height-md);
   padding: 0 var(--space-5);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-main);
   background: var(--color-bg-surface);
   border: 1px solid var(--color-text-main);

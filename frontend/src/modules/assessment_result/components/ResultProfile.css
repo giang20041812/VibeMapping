@@ -74,15 +74,15 @@
 .holland-code-letter {
   flex: none;
   font-size: var(--font-size-4xl);
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.04em;
   line-height: 1;
   color: var(--ink-300);
 }
 .holland-code li.is-first .holland-code-letter { color: var(--brand-coral); }
 .holland-code-body { display: flex; flex-direction: column; min-width: 0; }
-.holland-code-name { font-size: var(--font-size-md); font-weight: 800; color: var(--color-text-main); }
-.holland-code-rank { font-size: var(--font-size-xs); font-weight: 600; color: var(--color-text-muted); }
+.holland-code-name { font-size: var(--font-size-md); font-weight: 600; color: var(--color-text-main); }
+.holland-code-rank { font-size: var(--font-size-xs); font-weight: 500; color: var(--color-text-muted); }
 
 /* Giá trị cốt lõi: xếp theo mức quan trọng, mỗi giá trị một đường thẳng dài ngắn theo thứ hạng */
 .core-ranking { list-style: none; display: flex; flex-direction: column; }
@@ -97,14 +97,14 @@
 .core-ranking li:first-child { border-top: 0; }
 .core-ranking-no {
   font-size: var(--font-size-2xl);
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.04em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
   color: var(--ink-300);
 }
 .core-ranking li.is-first .core-ranking-no { color: var(--brand-coral); }
-.core-ranking-name { min-width: 0; font-weight: 700; color: var(--color-text-main); overflow-wrap: anywhere; }
+.core-ranking-name { min-width: 0; font-weight: 600; color: var(--color-text-main); overflow-wrap: anywhere; }
 .core-ranking-bar { grid-column: 2 / -1; }
 .core-ranking li.is-first .core-ranking-bar {
   --progress-fill: linear-gradient(90deg, var(--brand-coral), color-mix(in srgb, var(--brand-coral) 55%, white));

@@ -48,12 +48,12 @@
 }
 .complete-success-title {
   font-size: var(--font-size-3xl);
-  font-weight: 800;
+  font-weight: 600;
   color: var(--color-text-main);
 }
 .complete-success-email {
   max-width: 100%;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-brand);
   overflow-wrap: anywhere;
 }
@@ -62,6 +62,6 @@
   align-items: center;
   min-height: var(--touch-target);
   font-size: var(--font-size-sm);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-text-brand);
 }

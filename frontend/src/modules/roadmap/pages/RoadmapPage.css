@@ -59,7 +59,7 @@
   gap: var(--space-3);
   margin: 0;
   font-size: var(--font-size-xl);
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.025em;
   color: var(--color-text-main);
 }
@@ -155,7 +155,7 @@
 .roadmap-field-error {
   margin: 0;
   font-size: var(--font-size-sm);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-danger-text);
 }
 
@@ -173,7 +173,7 @@
   min-height: var(--touch-target);
   padding: var(--space-3) var(--space-4);
   font: inherit;
-  font-weight: 800;
+  font-weight: 600;
   text-align: left;
   color: var(--color-text-main);
   background: var(--color-bg-surface);
@@ -237,7 +237,7 @@
   flex: none;
   padding: 4px 10px;
   font-size: var(--font-size-xs);
-  font-weight: 700;
+  font-weight: 600;
   white-space: nowrap;
   color: var(--pillar-ink);
   background: var(--pillar-bg);
@@ -301,14 +301,14 @@
 
 .roadmap-kpis dt {
   font-size: var(--font-size-sm);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-muted);
 }
 
 .roadmap-kpis dd {
   margin: 0;
   font-size: var(--font-size-4xl);
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.04em;
   line-height: 1.05;
   font-variant-numeric: tabular-nums;
@@ -375,7 +375,7 @@ button.roadmap-node-body:focus-visible {
 
 .roadmap-node small {
   color: var(--color-text-secondary);
-  font-weight: 700;
+  font-weight: 600;
   overflow-wrap: anywhere;
 }
 
@@ -580,20 +580,20 @@ button.roadmap-node-body:focus-visible {
 
 .roadmap-stage-name {
   font-size: var(--font-size-xl);
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.025em;
 }
 
 .roadmap-stage-count {
   font-size: var(--font-size-sm);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-secondary);
 }
 
 .roadmap-stage-percent {
   margin-left: auto;
   font-size: var(--font-size-xl);
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
 }
@@ -644,7 +644,7 @@ button.roadmap-node-body:focus-visible {
 .roadmap-activity-due {
   margin-left: auto;
   font-size: var(--font-size-sm);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-secondary);
   white-space: nowrap;
 }
@@ -670,7 +670,7 @@ button.roadmap-node-body:focus-visible {
 
 .roadmap-note .input-label {
   font-size: var(--font-size-xs);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-muted);
 }
 
@@ -696,7 +696,7 @@ button.roadmap-node-body:focus-visible {
   gap: var(--space-2) var(--space-3);
   padding: var(--space-2) var(--space-3);
   font-size: var(--font-size-sm);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--tone-yellow-text);
   background: var(--tone-yellow-bg);
   border-radius: var(--radius-md);
@@ -785,7 +785,7 @@ button.roadmap-node-body:focus-visible {
 
 .roadmap-balance-head span:not(.pillar-badge) {
   font-size: var(--font-size-sm);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-secondary);
 }
 
@@ -825,24 +825,24 @@ button.roadmap-node-body:focus-visible {
 }
 
 .roadmap-checkpoints small {
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-secondary);
   overflow-wrap: anywhere;
 }
 
 .roadmap-empty-line {
   margin: 0;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-muted);
 }
 
 .roadmap-compare-sum {
   margin: 0;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .roadmap-diff {
-  font-weight: 800;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--color-success-text);
 }
@@ -875,7 +875,7 @@ button.roadmap-node-body:focus-visible {
 .roadmap-compare-col small {
   margin-bottom: calc(-22 * var(--px));
   font-size: var(--font-size-xs);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-secondary);
 }
 
@@ -911,7 +911,7 @@ button.roadmap-node-body:focus-visible {
   gap: var(--space-4);
   margin-top: calc(18 * var(--px));
   font-size: var(--font-size-sm);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .roadmap-legend span {
@@ -951,7 +951,7 @@ button.roadmap-node-body:focus-visible {
 .roadmap-banner h2 {
   margin: 0;
   font-size: var(--font-size-xl);
-  font-weight: 800;
+  font-weight: 600;
   color: var(--color-text-main);
 }
 
@@ -961,7 +961,7 @@ button.roadmap-node-body:focus-visible {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .roadmap-banner.is-danger {
@@ -1109,7 +1109,7 @@ button.roadmap-node-body:focus-visible {
 .roadmap-stage-code {
   font-family: var(--font-mono);
   font-size: var(--font-size-xs);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--ink-300);
 }
 .roadmap-stage.is-current .roadmap-stage-code { color: var(--hope-blue); }

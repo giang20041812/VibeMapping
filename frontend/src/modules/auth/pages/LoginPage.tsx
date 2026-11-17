@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowRight, Mail, Phone } from 'lucide-react';
 import { Alert, Button, Input, PasswordInput, Tabs } from '../../../components/common';
 import { describeAuthError, getEnabledProviders, loginWithEmail, loginWithGoogle, requestPhoneOtp } from '../auth.service';
-import { AuthHomeLink } from '../components/AuthHomeLink';
 import { validateEmail, validatePhone } from '../auth.validation';
 import '../auth-form.css';
 
@@ -90,7 +89,6 @@ export const LoginPage: React.FC = () => {
 
   return (
     <section className="auth-form-card">
-      <AuthHomeLink />
       <h1 className="auth-form-title">Đăng nhập</h1>
 
       {formError && <Alert variant="danger">{formError}</Alert>}
@@ -153,7 +151,6 @@ export const LoginPage: React.FC = () => {
           required
         />
         <div className="auth-form-row">
-          <span />
           <Link to="/quen-mat-khau" className="auth-link">
             Quên mật khẩu
           </Link>

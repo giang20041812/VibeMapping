@@ -1,10 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowDown, ArrowRight, ArrowUpRight, BookOpen, Building2, Compass, Layers, Target, Users } from 'lucide-react';
+import { ArrowDown, ArrowRight, ArrowUpRight, BookOpen, Building2, Compass, Layers } from 'lucide-react';
 import { Magnetic, Reveal, RollText, SplitText, trackPointer } from '../../../components/common';
 import { useCountUp } from '../../../hooks/useCountUp';
 import { useInView } from '../../../hooks/useInView';
 import { PARTS } from '../../assessment_session/assessmentSession.constants';
+import { BRAND_SLOGAN, CORE_CAPABILITIES } from '../home.constants';
 import type { CatalogScale } from '../home.service';
 import './HomeHero.css';
 
@@ -16,12 +17,6 @@ export interface HomeHeroProps {
   minuteRange: string;
   scale: CatalogScale | null;
 }
-
-const CORE_CAPABILITIES = [
-  { targetId: 'step-self', icon: Users, title: 'Đánh giá năng lực 360°' },
-  { targetId: 'step-fit', icon: Compass, title: 'Đối chiếu nghề – ngành – trường' },
-  { targetId: 'step-roadmap', icon: Target, title: 'Lộ trình phát triển cá nhân' },
-] as const;
 
 const parseRange = (range: string): [number, number] | null => {
   const nums = range.match(/\d+/g)?.map(Number) ?? [];
@@ -117,10 +112,10 @@ export const HomeHero: React.FC<HomeHeroProps> = ({
 
       <div className="hero-top">
         <h1 id="hero-title" className="hero-title">
-          <SplitText text="Biết mình là ai," className="hero-title-line" delayMs={60} staggerMs={80} />
+          <SplitText text={BRAND_SLOGAN[0]} className="hero-title-line" delayMs={60} staggerMs={80} />
           <SplitText
-            text="vững bước tương lai."
-            className="hero-title-line hero-title-accent"
+            text={BRAND_SLOGAN[1]}
+            className="hero-title-line split-accent"
             delayMs={340}
             staggerMs={80}
           />

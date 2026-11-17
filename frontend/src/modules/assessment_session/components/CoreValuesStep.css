@@ -9,7 +9,7 @@
   min-height: var(--touch-target);
   padding: 0 var(--space-5);
   font-size: var(--font-size-md);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-secondary);
   background: var(--chip-bg);
   border: 1px solid var(--chip-border);
@@ -40,13 +40,13 @@
   width: 22px;
   height: 22px;
   font-size: var(--font-size-xs);
-  font-weight: 800;
+  font-weight: 600;
   color: var(--brand-deep);
   background: var(--brand-white);
   border-radius: 50%;
 }
 
-.core-counter { font-size: var(--font-size-sm); font-weight: 600; color: var(--color-text-muted); }
+.core-counter { font-size: var(--font-size-sm); font-weight: 500; color: var(--color-text-muted); }
 .core-counter.is-valid { color: var(--color-success-text); }
 
 .core-order { display: flex; flex-direction: column; gap: var(--space-2); list-style: none; }
@@ -67,12 +67,12 @@
   justify-content: center;
   width: 28px;
   height: 28px;
-  font-weight: 800;
+  font-weight: 600;
   color: var(--color-text-inverse);
   background: var(--brand-deep);
   border-radius: 50%;
 }
-.core-order-name { flex: 1; min-width: 0; font-weight: 700; color: var(--color-text-main); }
+.core-order-name { flex: 1; min-width: 0; font-weight: 600; color: var(--color-text-main); }
 .core-order-actions { display: flex; gap: var(--space-1); }
 
 .core-icon-button {

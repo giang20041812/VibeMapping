@@ -54,7 +54,7 @@
 
 .level-step-name {
   font-size: var(--font-size-md);
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.01em;
 }
 
@@ -71,7 +71,7 @@
 
 .level-step-salary {
   font-size: var(--font-size-sm);
-  font-weight: 700;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--hope-blue-deep);
 }
@@ -111,13 +111,13 @@
   align-items: center;
   gap: var(--space-2);
   font-size: var(--font-size-xs);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-muted);
 }
 
 .level-facts dd {
   margin: 0;
-  font-weight: 600;
+  font-weight: 500;
   overflow-wrap: anywhere;
 }
 
@@ -267,7 +267,7 @@
 
 .level-salaries b {
   font-size: var(--font-size-xl);
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
   color: var(--hope-blue-deep);
@@ -284,7 +284,7 @@
   min-height: 44px;
   padding: var(--space-3) var(--space-4);
   font: inherit;
-  font-weight: 700;
+  font-weight: 600;
   text-align: left;
   color: var(--hope-blue-deep);
   background: var(--hope-blue-soft);
@@ -302,7 +302,7 @@
   align-items: center;
   gap: var(--space-1);
   min-height: 44px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--hope-blue-deep);
 }
 

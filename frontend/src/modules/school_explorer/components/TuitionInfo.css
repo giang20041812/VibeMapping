@@ -15,7 +15,7 @@
 
 .tuition-headline {
   font-size: var(--font-size-sm);
-  font-weight: 800;
+  font-weight: 600;
   color: var(--color-text-main);
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
@@ -46,11 +46,11 @@
 
 .tuition-table .is-derived .tuition-figure-value {
   color: var(--color-text-secondary);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .tuition-figure-value {
-  font-weight: 800;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 

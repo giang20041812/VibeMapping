@@ -22,8 +22,8 @@
 .trait-row-5 { --trait: var(--tone-red); --trait-text: var(--tone-red); --trait-bg: var(--tone-red-bg); }
 
 .trait-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); }
-.trait-name { font-size: var(--font-size-md); font-weight: 700; color: var(--color-text-main); }
-.trait-value { font-size: var(--font-size-xl); font-weight: 800; color: var(--trait-text); font-variant-numeric: tabular-nums; }
+.trait-name { font-size: var(--font-size-md); font-weight: 600; color: var(--color-text-main); }
+.trait-value { font-size: var(--font-size-xl); font-weight: 600; color: var(--trait-text); font-variant-numeric: tabular-nums; }
 .app-progress.trait-bar,
 .app-progress.trait-bar.is-complete {
   height: 4px;
@@ -66,11 +66,11 @@
 
 .holland-card-1 { animation-delay: 60ms; color: var(--h-ink); background: var(--h); border-color: var(--h); box-shadow: var(--shadow-sm); }
 
-.holland-letter { font-size: 56px; font-weight: 800; line-height: 1; letter-spacing: -0.02em; }
+.holland-letter { font-size: 56px; font-weight: 600; line-height: 1; letter-spacing: -0.02em; }
 .holland-card:not(.holland-card-1) .holland-letter,
 .holland-card:not(.holland-card-1) .holland-value { color: var(--h-text); }
-.holland-name { font-size: var(--font-size-md); font-weight: 700; line-height: 1.3; }
-.holland-value { font-size: var(--font-size-sm); font-weight: 700; }
+.holland-name { font-size: var(--font-size-md); font-weight: 600; line-height: 1.3; }
+.holland-value { font-size: var(--font-size-sm); font-weight: 600; }
 .holland-card-1 .holland-value { opacity: 0.85; }
 
 @keyframes report-rise {

@@ -23,7 +23,7 @@
 
 .empty-result-title {
   font-size: var(--font-size-2xl);
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.03em;
   color: var(--color-heading);
 }

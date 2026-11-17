@@ -42,7 +42,7 @@
 .career-fit-total {
   margin: 0 0 var(--space-2);
   font-size: var(--font-size-3xl);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-primary);
 }
 
@@ -57,7 +57,7 @@
 .share-code {
   font-size: var(--font-size-2xl, var(--font-size-3xl));
   letter-spacing: 0.2em;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .decision-option {
@@ -143,12 +143,12 @@
 }
 
 .explain-part-label {
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .explain-part-score {
   font-size: var(--font-size-3xl);
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
@@ -156,7 +156,7 @@
 .explain-part-score small {
   margin-left: var(--space-1);
   font-size: var(--font-size-xs);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-secondary);
 }
 
@@ -171,13 +171,13 @@
   justify-content: space-between;
   gap: var(--space-1) var(--space-3);
   font-size: var(--font-size-sm);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-text-secondary);
 }
 
 .explain-part-meta b {
   color: var(--color-text-main);
-  font-weight: 800;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
@@ -211,7 +211,7 @@
 .explain-cell-meter b {
   min-width: 3.2em;
   text-align: center;
-  font-weight: 800;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
@@ -246,14 +246,14 @@
 
 .explain-table thead th {
   font-size: var(--font-size-sm);
-  font-weight: 800;
+  font-weight: 600;
   color: var(--color-text-main);
   background: var(--brand-gold);
   border-bottom: 1px solid var(--color-border);
 }
 
 .explain-table tbody th {
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .explain-table tbody tr:hover>* {
@@ -265,18 +265,18 @@
 }
 
 .explain-table .is-num {
-  font-weight: 600;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
   color: var(--color-text-secondary);
 }
 
 .explain-table .is-strong {
-  font-weight: 800;
+  font-weight: 600;
   color: var(--color-text-main);
 }
 
 .explain-table .is-penalty {
-  font-weight: 800;
+  font-weight: 600;
   color: var(--color-danger);
 }
 
@@ -307,11 +307,11 @@
 .module-list li>span:first-child {
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .module-list li>span:last-child {
-  font-weight: 800;
+  font-weight: 600;
   color: var(--color-text-main);
   text-align: right;
 }
@@ -355,7 +355,7 @@
 
 .compare-table thead th a {
   color: var(--color-text-main);
-  font-weight: 800;
+  font-weight: 600;
   text-decoration: none;
 }
 
@@ -374,7 +374,7 @@
 }
 
 .compare-table tbody td {
-  font-weight: 600;
+  font-weight: 500;
   background: var(--color-bg-surface);
 }
 
@@ -405,12 +405,12 @@
 
 .compare-table .is-missing {
   color: var(--color-text-secondary);
-  font-weight: 500;
+  font-weight: 400;
   font-style: italic;
 }
 
 .compare-table .is-fit {
-  font-weight: 800;
+  font-weight: 600;
   font-size: var(--font-size-lg, 1.125rem);
   font-variant-numeric: tabular-nums;
 }
@@ -426,7 +426,7 @@
 .explain-table th,
 .explain-table td { border-bottom: 1px solid var(--color-border); }
 .explain-table thead th {
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-muted);
   background: transparent;
   border-bottom: 1px solid var(--ink-300);
@@ -458,7 +458,7 @@
   transition: border-color var(--transition-fast);
 }
 .explain-part:hover { transform: none; box-shadow: none; border-top-color: var(--brand-coral); }
-.explain-part-label { font-weight: 700; color: var(--color-text-muted); }
+.explain-part-label { font-weight: 600; color: var(--color-text-muted); }
 .explain-part-score { font-size: var(--font-size-4xl); letter-spacing: -0.04em; }
 
 .module-list li {

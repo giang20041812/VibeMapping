@@ -3,7 +3,6 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '../../../components/common';
 import { describeAuthError, requestPhoneOtp, verifyPhoneOtp } from '../auth.service';
-import { AuthHomeLink } from '../components/AuthHomeLink';
 import { EMPTY_OTP, OtpDigits } from '../components/OtpDigits';
 import { validatePhone } from '../auth.validation';
 import '../auth-form.css';
@@ -85,7 +84,6 @@ export const OtpVerifyPage: React.FC = () => {
 
   return (
     <section className="auth-form-card">
-      <AuthHomeLink />
       <h1 className="auth-form-title">Nhập mã OTP</h1>
       <p className="auth-switch">Mã 6 số được gửi tới {phone}</p>
       <form className="auth-form" onSubmit={handleSubmit}>

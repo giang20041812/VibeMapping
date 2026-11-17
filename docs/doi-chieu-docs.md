@@ -1,6 +1,6 @@
 # VibeMapping — đối chiếu với tài liệu
 
-Ngày đọc: 2026-11-01.
+Ngày đọc: 2026-11-01. Cập nhật: 2026-11-17 (SRS v0.0.9, BRD v0.0.3).
 
 Nguồn tài liệu: `career_guidance/docs` (00–07), chủ yếu `02_SRS_SOFTWARE_REQUIREMENTS_SPECIFICATION.md`.
 
@@ -52,6 +52,8 @@ Chỉ ghi việc đọc được trong hai nguồn đó. Không tick từng dòn
 | BR-M09-003 | Sự kiện có số chỗ và hạn đăng ký | Cột `seat_limit`, `registration_deadline`. Hết chỗ hoặc quá hạn thì `register_career_event` từ chối |
 | BR-M09-006 | Nhãn “Nội dung thành viên” | `CommunityPage.tsx` gắn nhãn trên mỗi bài |
 | FR09.01.09 | Quản trị thành viên và chủ đề | `CommunityAdminPage`, hàm `list_community_admin`, `remove_community_member`, `add_community_topic` |
+| FR08.02.01–04, BR-030, BR-031 | So hồ sơ năng lực với JD; % đạt; xếp hạng kỹ năng thiếu; biểu đồ | `/nang-luc?tab=phan-tich`: chọn bậc JD đã công bố (`career_level_frameworks`), `skillGap.logic.ts` so từng kỹ năng của mục Kiến thức, Kỹ năng chuyên môn, Kỹ năng mềm, Công cụ, Ngoại ngữ, Chứng chỉ. Kỹ năng JD chưa có trong hồ sơ là Chưa đạt. Biểu đồ cột 0–5 và radar theo nhóm. Bản chụp lưu ở `skill_gap_analyses` |
+| FR08.03.01–02 | Gợi ý theo kỹ năng thiếu; thêm vào lộ trình | `course_project_suggestions.skill_keywords`; kỹ năng không có gợi ý hiện "Đang cập nhật"; hộp thoại thêm vào lộ trình chọn trụ cột và hạn (`RoadmapAddDialog`) |
 
 Các mã P05, P08–P13, P16, P17, P19, P21, P22, P24, P25, P27, P35–P38, P40–P45 được gán `verification_level = demo` trong `20261031000200_phase3_parameters_and_m03_m09.sql`. Số đang chạy là số seed trong file đó. SRS mục 5.3 STT 12 ghi các số Demo này chưa có căn cứ PO.
 
@@ -64,6 +66,7 @@ Các mã P05, P08–P13, P16, P17, P19, P21, P22, P24, P25, P27, P35–P38, P40�
 | Chờ chốt | SRS dòng 6086–6093 | TH = 3 cho tỷ trọng rất nhỏ. Không ghi một sàn TH% khác 0 | `understanding_percent_floor` = `0`, `pending_ba` |
 | Chờ chốt | SRS công thức TH% = (TH − 3) / 9 | Khi mọi bài TH = 3 thì tổng trọng số bằng 0. Tài liệu không nói chia đều hay bỏ điểm 360° | `zero_weight_equal_fallback` = `true`, `pending_ba` |
 | Chờ chốt | SRS R16 dòng 6265 và 6267; BR-014; file 06 mục 1.2 | R16 vừa map L0,L1 → 1, vừa ghi chỉ dùng JD L1 và L2. BR-014 ghi L1 đến L2. File 06 có bậc L0 | `career_matrix_include_l0` = `true`, `pending_ba` |
+| Chờ chốt | SRS UI_08-S06 "(cần xác nhận)" | Công thức % đạt so với JD có trọng số theo mức ảnh hưởng không; mức yêu cầu khi khung chưa ghi | `skill_gap_impact_weights` = Bắt buộc 3, Thường gặp 2, Lợi thế 1; `skill_gap_default_required_level` = 3; cả hai `pending_ba` |
 | Chờ chốt | SRS chưa viết điều kiện chặn | Không có câu đã chốt về việc bắt buộc câu mở khi nộp bài 360° | `require_open_answers` = `false`, `pending_ba` |
 | Chưa làm | FR01.01.01, dòng 1596 | Người đăng ký chọn vai trò: Học sinh, Sinh viên, Phụ huynh, Giáo viên, Người hướng dẫn | Giữ nguyên. `RegisterPage.tsx` ghi cứng `role: 'student'` |
 | Chưa làm | INT-005 | Lưu PDF, ảnh QR và tệp xuất lên Cloud Storage | Chưa có kho tệp. Đã tải được file PDF về máy |
@@ -83,7 +86,7 @@ Các mã P05, P08–P13, P16, P17, P19, P21, P22, P24, P25, P27, P35–P38, P40�
 | UI_01 đăng ký có chọn vai trò | Không còn. `RegisterPage.tsx` ghi cứng Học sinh |
 | UI_04 khám phá nghề khi chưa đăng nhập | Có `/danh-muc-nghe`. Menu thả từng nghề trên thanh điều hướng thì chưa có; thanh trên có một liên kết “Nghề nghiệp” |
 | UI_07-S01 đến S04 | Gộp một trang `/lo-trinh`. Có mục “Bản đồ đường đi” theo tháng, chưa phải sơ đồ các nút nối nhau |
-| UI_08-S01 đến S08 | Gộp một trang `/nang-luc`. Không có hộp thoại riêng “thêm gợi ý vào lộ trình” |
+| UI_08-S01 đến S08 | Gộp một trang `/nang-luc` hai tab: Hồ sơ và Phân tích khoảng cách (chọn vị trí → kết quả). Có hộp thoại thêm gợi ý vào lộ trình |
 | UI_09-S06 | Không có trang chi tiết sự kiện. Sự kiện nằm trong `/cong-dong` |
 | UI_09-S07 | Không có trang tìm người hướng dẫn riêng. Danh sách người đã xác minh nằm trong `/cong-dong` |
 | UI_10-S08 | Có trong `/quan-tri/cong-dong`: đưa thành viên ra khỏi nhóm, thêm và xóa chủ đề |

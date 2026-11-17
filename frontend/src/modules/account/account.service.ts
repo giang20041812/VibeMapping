@@ -11,7 +11,67 @@ export const NOTIFICATION_TYPES = [
   'decision_report_shared',
   'decision_consensus',
   'mentor_connection',
+  'roadmap_off_track',
+  'friend_request',
+  'friend_invite',
 ] as const;
+
+export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
+
+export const NOTIFICATION_TYPE_LABEL: Record<NotificationType, string> = {
+  new_submission: 'Có bài đánh giá 360° mới',
+  result_changed: 'Kết quả thay đổi',
+  result_finalized: 'Kết quả được chốt',
+  link_expiring: 'Đường dẫn mời sắp hết hạn',
+  class_update: 'Cập nhật lớp học',
+  career_ranking_changed: 'Thứ hạng nghề thay đổi',
+  decision_report_shared: 'Báo cáo quyết định được chia sẻ',
+  decision_consensus: 'Gia đình xác nhận đồng thuận',
+  mentor_connection: 'Yêu cầu kết nối người hướng dẫn',
+  roadmap_off_track: 'Lộ trình chệch hướng',
+  friend_request: 'Lời kết bạn',
+  friend_invite: 'Bạn bè mời đánh giá 360°',
+};
+
+/** Loại được gửi thêm email khi chưa đọc được tham số email_notification_types */
+const DEFAULT_EMAIL_TYPES: NotificationType[] = [
+  'new_submission', 'result_changed', 'result_finalized', 'link_expiring', 'career_ranking_changed',
+  'decision_report_shared', 'mentor_connection', 'friend_invite',
+];
+
+export interface NotificationPreference {
+  type: NotificationType;
+  inApp: boolean;
+  email: boolean;
+  /** Loại này có gửi email theo cấu hình hệ thống không */
+  emailAvailable: boolean;
+}
+
+/** Cài đặt từng loại thông báo; loại chưa có dòng cài đặt thì mặc định bật cả hai */
+export async function loadNotificationPreferences(userId: string): Promise<NotificationPreference[]> {
+  const [settings, param] = await Promise.all([
+    supabase.from('notification_settings').select('notification_type, in_app_enabled, email_enabled').eq('user_id', userId),
+    supabase.from('operation_parameters').select('param_value').eq('param_code', 'email_notification_types').eq('is_current', true).maybeSingle(),
+  ]);
+  if (settings.error) throw settings.error;
+  const emailTypes = Array.isArray(param.data?.param_value) ? (param.data!.param_value as string[]) : DEFAULT_EMAIL_TYPES;
+  const byType = new Map((settings.data ?? []).map((row) => [row.notification_type, row]));
+  return NOTIFICATION_TYPES.map((type) => {
+    const row = byType.get(type);
+    return { type, inApp: row?.in_app_enabled ?? true, email: row?.email_enabled ?? true, emailAvailable: emailTypes.includes(type) };
+  });
+}
+
+export async function saveNotificationPreference(userId: string, pref: NotificationPreference) {
+  const { error } = await supabase.from('notification_settings').upsert(
+    { user_id: userId, notification_type: pref.type, in_app_enabled: pref.inApp, email_enabled: pref.email },
+    { onConflict: 'user_id,notification_type' },
+  );
+  if (error) {
+    console.error('Lỗi lưu cài đặt thông báo:', error.message);
+    throw error;
+  }
+}
 
 export interface AppNotification {
   id: string;

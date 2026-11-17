@@ -24,7 +24,7 @@ Chỉ ghi việc đọc được trong hai nguồn đó. Không tick từng dòn
 | SRS dòng 6087 | Không gộp 360° bằng tỷ trọng cố định 30/20/25/25 | Trọng số từng bài, không dùng công thức S_total ở file 04 mục 4.3 |
 | F01.06 | Nhãn Tự đánh giá / Tạm thời / Cuối cùng 360°; hiệu lực rồi gắn “Cần đánh giá lại” | `ResultInsightsPanel.tsx`, tham số P17 |
 | F02 | Trường, lớp, nhập danh sách, lưới chấm, báo cáo lớp | `SchoolsPage.tsx`, `ClassListPage.tsx`, `ClassDetailPage.tsx`, `RosterImportModal.tsx`, `ClassGradeTable.tsx`, `GradeImportModal.tsx`, `ClassReportCard.tsx` |
-| F03.02.01, FR03.02.04 | Thông báo trong ứng dụng, bật tắt từng loại | `account.service.ts`, bảng `notifications` |
+| F03.02.01, FR03.02.04 | Thông báo trong ứng dụng, bật tắt từng loại trong ứng dụng và qua email | `account.service.ts` (`loadNotificationPreferences`), `NotificationSettingsCard.tsx` trên Hồ sơ cá nhân, bảng `notifications`, `notification_settings` |
 | F03.03 | Đồng ý chia sẻ, xác nhận giám hộ dưới 16 tuổi, xuất dữ liệu, yêu cầu xóa tài khoản | `PrivacyPage.tsx`, `create_guardian_consent_token`, `export_my_data` |
 | F03.04, F03.05 | Trang tham số và nhật ký | `/quan-tri/tham-so`, `/quan-tri/nhat-ky` |
 | F04.02, R08, R13, R20 | Career Fit 40/30/30 (P32–P34), thiếu thành phần thì chia lại; Top nghề và nghề gần đạt | Tham số seed P32=`0.4`, P33=`0.3`, P34=`0.3`; trang `/nghe` |
@@ -58,6 +58,7 @@ Chỉ ghi việc đọc được trong hai nguồn đó. Không tick từng dòn
 | FR08.03.01–02 | Gợi ý theo kỹ năng thiếu; thêm vào lộ trình | `course_project_suggestions.skill_keywords`; kỹ năng không có gợi ý hiện "Đang cập nhật"; hộp thoại thêm vào lộ trình chọn trụ cột và hạn (`RoadmapAddDialog`) |
 | FR09.01.01, 05, 08, 11, 13, 14 | Tìm cộng đồng; Hỏi đáp; hạn chế tác giả; chi tiết sự kiện; hồ sơ và tìm người hướng dẫn | `/cong-dong` có ba tab và bộ lọc; `/cong-dong/nhom/:id` bảng tin lọc Bài viết / Hỏi đáp; `/cong-dong/su-kien/:id`; `/cong-dong/nguoi-huong-dan/:id`. Migration `20261117000200_community_m09.sql`: `post_type`, `restricted_until`, `restrict_community_author`, hồ sơ người hướng dẫn có lĩnh vực, chủ đề, số năm |
 | FR03.01.04 | Liên kết bạn bè, mời bạn bè đánh giá 360° | Quyền riêng tư → thẻ Bạn bè (`FriendsCard.tsx`): mã kết bạn 6 ký tự, nhập mã, chấp nhận/từ chối, bỏ kết bạn, Mời đánh giá (gửi thông báo kèm đường dẫn nhóm Bạn bè, chặn gửi lại trong 24 giờ). Migration `20261117000300_friend_links.sql` |
+| FR03.02.02, INT-002 | Thư thông báo qua email | Migration `20261117000400_email_outbox.sql`: trigger xếp thư vào `email_outbox` theo tham số `email_notification_types` và cài đặt của người dùng. Edge Function `send-notification-emails` gửi qua Resend. Quản trị → Tham số vận hành → thẻ Email thông báo. Cách gắn: `docs/tich-hop-ngoai.md` |
 | INT-005 | Lưu PDF và tệp dữ liệu cá nhân lên kho tệp | Migration `20261117000500_exported_files.sql`: bảng `exported_files`, bucket riêng tư `exports` theo thư mục người dùng. `lib/exportFiles.ts`; Quyền riêng tư → thẻ Tệp đã lưu (tải bằng đường dẫn ký 10 phút, xóa) |
 
 Các mã P05, P08–P13, P16, P17, P19, P21, P22, P24, P25, P27, P35–P38, P40–P45 được gán `verification_level = demo` trong `20261031000200_phase3_parameters_and_m03_m09.sql`. Số đang chạy là số seed trong file đó. SRS mục 5.3 STT 12 ghi các số Demo này chưa có căn cứ PO.
@@ -75,7 +76,7 @@ Các mã P05, P08–P13, P16, P17, P19, P21, P22, P24, P25, P27, P35–P38, P40�
 | Chờ chốt | SRS chưa viết điều kiện chặn | Không có câu đã chốt về việc bắt buộc câu mở khi nộp bài 360° | `require_open_answers` = `false`, `pending_ba` |
 | Chưa làm | INT-005 | Lưu ảnh QR lên kho tệp; dọn tệp khi xóa tài khoản | PDF và dữ liệu cá nhân đã lưu vào bucket `exports`. Ảnh QR chưa lưu. Xóa tài khoản xóa dòng `exported_files` nhưng tệp trong bucket còn lại |
 | Tích hợp ngoài | FR01.01.01, SW_03 | Đăng ký hoặc đăng nhập bằng số điện thoại, mã gửi qua SMS | Giao diện đăng ký và đăng nhập đã có. Việc SMS đi hay không phụ thuộc nhà cung cấp SMS bật trên Supabase |
-| Tích hợp ngoài | FR01.01.01, FR03.02.02 | Mã xác minh và thư thông báo qua email | Có quên mật khẩu bằng email. Không có hàm gửi email cho thông báo nghiệp vụ trong `frontend/src` |
+| Tích hợp ngoài | FR01.01.01, FR03.02.02 | Mã xác minh và thư thông báo qua email | Hàng đợi và hàm gửi đã có. Chưa gắn khóa Resend, chưa triển khai hàm, chưa đặt lịch chạy: thư nằm chờ và hết hạn sau 48 giờ |
 | Tích hợp ngoài | INT-005, EXT-13 | Cloud Storage cho PDF, ảnh QR, tệp dữ liệu cá nhân | Dùng Supabase Storage. Cần áp migration `20261117000500` để có bucket `exports` |
 | Tích hợp ngoài | SRS mục 2.4, NFR-COMP-016 | Kiểm duyệt nội dung bằng dịch vụ bên ngoài, đổi nhà cung cấp không đổi nghiệp vụ | Đang lọc `community_banned_keywords` và ẩn bài đủ 3 báo cáo. Không gọi dịch vụ kiểm duyệt ngoài |
 | Tích hợp ngoài | NFR-COMP-013 | SDK phân tích và giám sát lỗi, chỉ chạy sau khi người dùng đồng ý | Không có SDK này trong `frontend/package.json` |

@@ -17,6 +17,7 @@ import {
 } from '../profile.logic';
 import { updateMyProfile } from '../profile.service';
 import { MfaCard } from '../components/MfaCard';
+import { NotificationSettingsCard } from '../components/NotificationSettingsCard';
 import './ProfilePage.css';
 
 interface FieldErrors {
@@ -195,6 +196,7 @@ export const ProfilePage: React.FC = () => {
           </div>
         </form>
       </Card>
+      <NotificationSettingsCard userId={profile.id} />
       {(profile.role === 'system_admin' || profile.role === 'school_admin') && <MfaCard />}
     </>
   );

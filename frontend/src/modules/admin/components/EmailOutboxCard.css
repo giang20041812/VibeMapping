@@ -1,0 +1,25 @@
+/* Hàng đợi email thông báo */
+.admin-summary.email-outbox-summary {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(140 * var(--px))), 1fr));
+}
+
+.email-outbox-last {
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.email-outbox-text {
+  min-width: calc(220 * var(--px));
+  max-width: calc(480 * var(--px));
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.45;
+}
+
+.email-outbox-card .card-header {
+  flex-wrap: wrap;
+}
+
+.email-outbox-card .btn-icon-left {
+  flex-shrink: 0;
+}

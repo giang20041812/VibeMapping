@@ -1,5 +1,5 @@
 /* Sơ đồ 360° phong cách hiện đại: nền sáng, đường kẻ mảnh, khối màu phẳng, bóng mềm.
-   Hình người cam san hô trên bệ trắng xanh nhạt, vành quỹ đạo là nét mảnh, các nhóm người đánh giá là chấm màu có vòng trắng. */
+   Hình người cam san hô đội mũ tốt nghiệp navy, đứng trên bệ trắng xanh nhạt, vành quỹ đạo là nét mảnh, các nhóm người đánh giá là chấm màu có vòng trắng. */
 .rater360 {
   --r360-ink: var(--color-text-main);
   --r360-line: var(--color-border);
@@ -89,6 +89,39 @@
 .rater360-gloss {
   fill: var(--brand-white);
   opacity: 0.4;
+}
+
+/* Mũ tốt nghiệp: mặt mũ navy theo logo, bề dày và chỏm tối hơn; núm, dây và tua vàng */
+.rater360-cap-hi { stop-color: var(--brand-azure); }
+.rater360-cap-lo { stop-color: var(--brand-deep); }
+
+.rater360-cap-band {
+  fill: var(--brand-deep);
+}
+
+.rater360-cap-edge {
+  fill: var(--brand-navy);
+}
+
+.rater360-cap-shine {
+  fill: none;
+  stroke: var(--brand-white);
+  stroke-width: 2;
+  stroke-linecap: round;
+  opacity: 0.3;
+}
+
+.rater360-cap-cord {
+  fill: none;
+  stroke: var(--brand-gold);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.rater360-cap-tassel,
+.rater360-cap-knot {
+  fill: var(--brand-gold);
 }
 
 .rater360-figure {

@@ -266,7 +266,34 @@
   }
 }
 
+/* Hồ sơ chưa khai báo xong: các mục mờ đi, không bấm được */
+.sidebar-brand.is-disabled,
+.sidebar-link.is-disabled {
+  cursor: not-allowed;
+  user-select: none;
+}
+
+.sidebar-brand.is-disabled .sidebar-brand-mark {
+  transform: none;
+}
+
+.sidebar-link.is-disabled {
+  color: var(--color-text-muted);
+  opacity: 0.55;
+}
+
+.sidebar-link.is-disabled:hover {
+  color: var(--color-text-muted);
+}
+
+.sidebar-link.is-disabled:hover .sidebar-link-icon,
+.sidebar-link.is-disabled:hover .sidebar-link-label {
+  color: inherit;
+  transform: none;
+}
+
 /* Màn hình làm bài: ẩn nút mở menu để tập trung vào câu hỏi */
-.app-shell.is-focus .sidebar-toggle {
+.app-shell.is-focus .sidebar-toggle,
+.app-shell.is-locked .sidebar-toggle {
   display: none;
 }

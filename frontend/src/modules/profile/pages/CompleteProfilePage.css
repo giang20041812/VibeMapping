@@ -1,3 +1,17 @@
+.complete-card {
+  width: 100%;
+  max-width: calc(600 * var(--px));
+  margin: var(--space-4) auto 0;
+}
+
+.complete-title {
+  margin-bottom: var(--space-5);
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-text-main);
+}
+
 .complete-form {
   display: flex;
   flex-direction: column;
@@ -6,8 +20,8 @@
 
 .complete-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
-  gap: var(--space-4) var(--space-6);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
 }
 .complete-grid > * { min-width: 0; }
 .complete-grid-full { grid-column: 1 / -1; }
@@ -18,13 +32,9 @@
   gap: var(--space-4);
 }
 
-.complete-actions {
-  display: flex;
-  justify-content: flex-end;
-}
-
-@media (max-width: 640px) {
-  .complete-actions .app-button { width: 100%; }
+@media (max-width: 560px) {
+  .complete-card { margin-top: 0; }
+  .complete-grid { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* Trạng thái chờ xác nhận email */

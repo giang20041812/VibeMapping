@@ -99,7 +99,7 @@ export const App: React.FC = () => (
           <Route path="/xac-minh-otp" element={<OtpVerifyPage />} />
         </Route>
 
-        {/* Thanh điều hướng ngang, không có thanh bên: giới thiệu, ngành nghề, khám phá trường, khách làm bài test và khai báo thông tin sau bài */}
+        {/* Thanh điều hướng ngang, không có thanh bên: giới thiệu, ngành nghề, khám phá trường, khách làm bài test */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<HomeRoute />} />
           <Route path="/nganh-nghe" element={<MajorExplorerPage />} />
@@ -110,14 +110,12 @@ export const App: React.FC = () => (
           <Route path="/kham-pha-truong/nganh/:id" element={<MajorDetailPage />} />
           <Route path="/kham-pha-truong/chuong-trinh/:id" element={<ProgramDetailPage />} />
           <Route path="/lam-bai" element={<GuestTestPage />} />
-          <Route element={<RequireSession />}>
-            <Route path="/hoan-tat-ho-so" element={<CompleteProfilePage />} />
-          </Route>
         </Route>
 
-        {/* Làm bài: khách (tài khoản ẩn danh) thấy thanh ngang, người có tài khoản thấy thanh bên */}
+        {/* Làm bài và khai báo hồ sơ: khách (tài khoản ẩn danh) thấy thanh ngang, người có tài khoản thấy thanh bên (khóa khi khai báo hồ sơ) */}
         <Route element={<RequireSession />}>
           <Route element={<ShellLayout />}>
+            <Route path="/hoan-tat-ho-so" element={<CompleteProfilePage />} />
             <Route element={<RequireCompleteProfile />}>
               <Route path="/danh-gia-ca-nhan/:sessionId" element={<AssessmentRunPage />} />
             </Route>

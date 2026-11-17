@@ -1,0 +1,435 @@
+/* Cộng đồng hướng nghiệp: nhóm thảo luận, bảng tin, sự kiện, người hướng dẫn */
+
+.cm-page {
+  gap: var(--space-5);
+}
+
+.cm-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.cm-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.cm-toolbar > .app-filter-bar {
+  flex: 1 1 calc(480 * var(--px));
+  min-width: 0;
+}
+
+.cm-toolbar > .app-button,
+.cm-toolbar > button {
+  flex: none;
+}
+
+.cm-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.cm-prewrap {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.cm-span-all {
+  grid-column: 1 / -1;
+}
+
+.cm-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.cm-event-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(240 * var(--px))), 1fr));
+  gap: var(--space-4);
+}
+
+.cm-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+/* Trạng thái trống */
+.cm-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-8) var(--space-4);
+  border: 1px dashed var(--color-border-hover);
+  border-radius: var(--radius-xl);
+  background: var(--color-bg-surface);
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.cm-empty.is-large {
+  padding: var(--space-16) var(--space-4);
+}
+
+.cm-empty svg {
+  width: calc(32 * var(--px));
+  height: calc(32 * var(--px));
+  color: var(--color-text-muted);
+}
+
+.cm-empty p {
+  margin: 0;
+}
+
+/* Liên kết dạng nút và chữ */
+.cm-link-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--control-height-sm);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  color: var(--color-primary);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  text-decoration: none;
+  transition: background var(--transition-fast);
+}
+
+.cm-link-btn:hover {
+  background: var(--color-primary-light);
+}
+
+.cm-link-btn:focus-visible,
+.cm-text-link:focus-visible,
+.cm-text-btn:focus-visible {
+  outline: 2px solid var(--color-primary-ring);
+  outline-offset: 2px;
+}
+
+.cm-text-link {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.cm-text-link:hover {
+  text-decoration: underline;
+}
+
+.cm-text-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: calc(28 * var(--px));
+  padding: 0 var(--space-1);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+}
+
+.cm-text-btn:hover {
+  color: var(--color-primary);
+}
+
+/* Thẻ chip */
+.cm-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.cm-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-subtle);
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-size: var(--font-size-xs);
+  line-height: 1.5;
+}
+
+.cm-chip.is-field {
+  border-color: var(--hope-blue-border);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.cm-chip.is-more {
+  color: var(--color-text-muted);
+}
+
+.cm-chip.is-removable {
+  cursor: pointer;
+}
+
+.cm-chip.is-removable:hover {
+  border-color: var(--color-primary);
+}
+
+/* Ảnh đại diện chữ */
+.cm-avatar {
+  flex: none;
+  width: calc(48 * var(--px));
+  height: calc(48 * var(--px));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  font-weight: 700;
+  font-size: var(--font-size-base);
+}
+
+.cm-avatar.is-sm {
+  width: calc(36 * var(--px));
+  height: calc(36 * var(--px));
+  font-size: var(--font-size-sm);
+}
+
+.cm-avatar.is-xs {
+  width: calc(28 * var(--px));
+  height: calc(28 * var(--px));
+  font-size: var(--font-size-xs);
+}
+
+.cm-avatar.is-lg {
+  width: calc(80 * var(--px));
+  height: calc(80 * var(--px));
+  font-size: var(--font-size-2xl);
+}
+
+.cm-verified {
+  flex: none;
+  color: var(--color-primary);
+}
+
+/* Lưới thẻ */
+.cm-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(320 * var(--px))), 1fr));
+  gap: var(--space-4);
+}
+
+.cm-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* Bảng tin nhóm */
+.cm-feed-hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-bg-surface);
+}
+
+.cm-feed-title {
+  flex: 1 1 calc(280 * var(--px));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.cm-feed-title h1 {
+  margin: 0;
+  font-size: var(--font-size-2xl);
+  overflow-wrap: anywhere;
+}
+
+.cm-feed-title p {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+.cm-feed {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.cm-posts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.cm-composer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.cm-type-switch {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 2px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
+}
+
+.cm-type-option {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--control-height-sm);
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cm-type-option.is-active {
+  background: var(--color-bg-surface);
+  color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.cm-type-option:focus-visible {
+  outline: 2px solid var(--color-primary-ring);
+  outline-offset: 1px;
+}
+
+.cm-post {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-bg-surface);
+  min-width: 0;
+}
+
+.cm-post.is-question {
+  border-left: 3px solid var(--color-highlight, var(--color-primary));
+}
+
+.cm-post-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.cm-post-author {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cm-post-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.cm-post-body {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.6;
+}
+
+.cm-post-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border);
+}
+
+.cm-comments {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.cm-comments ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.cm-comments li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.cm-comment-body {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-subtle);
+  font-size: var(--font-size-sm);
+}
+
+.cm-comment-body p {
+  margin: var(--space-1) 0 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.cm-comment-form {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.cm-comment-input {
+  flex: 1;
+  min-width: 0;
+}

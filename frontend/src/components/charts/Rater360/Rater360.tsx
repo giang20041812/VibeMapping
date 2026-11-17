@@ -81,7 +81,7 @@ const ARC_FRONT = `M ${ORBIT.rx} 0 A ${ORBIT.rx} ${ORBIT.ry} 0 0 1 ${-ORBIT.rx} 
 const ORBIT_TRANSFORM = `translate(${CX} ${ORBIT.cy}) rotate(${ORBIT.tilt})`;
 
 /**
- * Sơ đồ 360° phong cách hiện đại (khối phẳng, đường kẻ mảnh): hình người biểu tượng cho bản thân đứng trên bệ ở giữa,
+ * Sơ đồ 360° phong cách hiện đại (khối phẳng, đường kẻ mảnh): hình người đội mũ tốt nghiệp biểu tượng cho bản thân đứng trên bệ ở giữa,
  * các nhóm người đánh giá quay quanh trên vành quỹ đạo nghiêng (vòng sau đi sau lưng, vòng trước vắt qua người).
  * Rê chuột thì quay chậm lại, rê vào một nhóm thì nhóm đó nổi lên. Tắt thì chuyển xám và dừng.
  */
@@ -196,6 +196,10 @@ export const Rater360: React.FC<Rater360Props> = ({
               <stop offset="0%" className="rater360-base-hi" />
               <stop offset="100%" className="rater360-base-lo" />
             </linearGradient>
+            <linearGradient id={g('cap')} x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" className="rater360-cap-hi" />
+              <stop offset="100%" className="rater360-cap-lo" />
+            </linearGradient>
           </defs>
 
           <g className="rater360-figure">
@@ -216,7 +220,18 @@ export const Rater360: React.FC<Rater360Props> = ({
 
             {/* Đầu cầu với vệt sáng */}
             <circle cx={CX} cy={110} r={30} fill={`url(#${g('head')})`} className="rater360-ink" />
-            <ellipse cx={189} cy={98} rx={9} ry={6} className="rater360-gloss" transform="rotate(-28 189 98)" />
+            <ellipse cx={188} cy={104} rx={9} ry={6} className="rater360-gloss" transform="rotate(-28 188 104)" />
+
+            {/* Mũ tốt nghiệp: chỏm ôm đỉnh đầu, mặt mũ vuông nhìn chéo có bề dày, núm giữa và tua rủ bên phải */}
+            <g className="rater360-cap">
+              <path d="M 176 80 L 176 92 Q 200 102 224 92 L 224 80 Z" className="rater360-cap-band" />
+              <path d="M 156 76 L 200 89 L 244 76 L 244 80 L 200 93 L 156 80 Z" className="rater360-cap-edge" />
+              <path d="M 156 76 L 200 63 L 244 76 L 200 89 Z" fill={`url(#${g('cap')})`} />
+              <path d="M 165 75 L 198 65.4" className="rater360-cap-shine" />
+              <path d="M 200 76 Q 220 74 234 77 L 236 97" className="rater360-cap-cord" />
+              <path d="M 232.5 96 L 239.5 96 L 241.5 109 Q 236 112.5 230.5 109 Z" className="rater360-cap-tassel" />
+              <circle cx={CX} cy={76} r={2.6} className="rater360-cap-knot" />
+            </g>
           </g>
         </svg>
 

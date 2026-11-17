@@ -445,3 +445,399 @@
   color: var(--color-text-brand);
   overflow-wrap: anywhere;
 }
+
+/* Kết quả */
+.pf-result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.pf-result-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.pf-result-title {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.pf-result-title h2 {
+  margin: 0;
+  font-size: var(--font-size-xl);
+  overflow-wrap: anywhere;
+}
+
+.pf-result-title span {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.pf-result-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(calc(300 * var(--px)), 2fr);
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.pf-analysing-text {
+  margin: 0 0 var(--space-3);
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
+.pf-analysing {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* Biểu đồ */
+.pf-chart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.pf-chart-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.pf-chart-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.pf-chart-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.pf-swatch {
+  width: calc(14 * var(--px));
+  height: calc(10 * var(--px));
+  border-radius: var(--radius-xs, 1px);
+}
+
+.pf-swatch.is-required,
+.pf-bar.is-required {
+  background: var(--color-bg-subtle);
+  box-shadow: inset 0 0 0 1px var(--hope-blue-border);
+}
+
+.pf-swatch.is-current,
+.pf-bar.is-current {
+  background: var(--color-primary);
+}
+
+.pf-bars {
+  --pf-label: minmax(calc(110 * var(--px)), calc(200 * var(--px)));
+  --pf-value: calc(72 * var(--px));
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.pf-bars-axis,
+.pf-bar-row {
+  display: grid;
+  grid-template-columns: var(--pf-label) minmax(0, 1fr) var(--pf-value);
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.pf-bars-ticks {
+  position: relative;
+  height: calc(18 * var(--px));
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.pf-bars-ticks span {
+  position: absolute;
+  left: var(--pf-at);
+  transform: translateX(-50%);
+}
+
+.pf-bars-ticks span:first-child {
+  transform: none;
+}
+
+.pf-bars-ticks span:last-child {
+  transform: translateX(-100%);
+}
+
+.pf-bar-row {
+  position: relative;
+  padding: var(--space-2) 0;
+  border-radius: var(--radius-md);
+  outline: none;
+}
+
+.pf-bar-row:hover,
+.pf-bar-row:focus-visible {
+  background: var(--color-bg-subtle);
+}
+
+.pf-bar-row:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-primary-ring);
+}
+
+.pf-bar-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-main);
+}
+
+.pf-bar-track {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pf-bar-grid {
+  position: absolute;
+  top: calc(-4 * var(--px));
+  bottom: calc(-4 * var(--px));
+  left: var(--pf-at);
+  width: 1px;
+  background: var(--color-border);
+}
+
+.pf-bar {
+  position: relative;
+  display: block;
+  width: var(--pf-w);
+  height: calc(10 * var(--px));
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  transition: width var(--transition-slow) var(--ease-out);
+}
+
+.pf-bar-value {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-main);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.pf-bar-value em {
+  font-style: normal;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+.pf-bar-sep {
+  margin: 0 2px;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+.pf-bar-tip {
+  position: absolute;
+  z-index: var(--z-dropdown);
+  left: 50%;
+  bottom: calc(100% + var(--space-1));
+  transform: translateX(-50%);
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+  min-width: calc(200 * var(--px));
+  max-width: calc(280 * var(--px));
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+  box-shadow: var(--shadow-dropdown);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  pointer-events: none;
+}
+
+.pf-bar-tip strong {
+  color: var(--color-text-main);
+}
+
+.pf-bar-row:hover .pf-bar-tip,
+.pf-bar-row:focus-visible .pf-bar-tip {
+  display: flex;
+}
+
+.pf-radar {
+  max-width: calc(520 * var(--px));
+  margin: 0 auto;
+}
+
+/* Danh sách kỹ năng cần bổ sung */
+.pf-rank-list {
+  list-style: none;
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(440 * var(--px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+.pf-rank-list li {
+  display: grid;
+  grid-template-columns: auto calc(24 * var(--px)) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target);
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.pf-rank-list li.is-picked {
+  background: var(--color-primary-light);
+}
+
+.pf-rank-no {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.pf-rank-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pf-rank-name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.pf-rank-meta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+/* Gợi ý */
+.pf-suggest-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(320 * var(--px))), 1fr));
+  gap: var(--space-4);
+}
+
+.pf-suggest-skill {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-subtle);
+  min-width: 0;
+}
+
+.pf-suggest-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.pf-suggest-head h3 {
+  margin: 0;
+  font-size: var(--font-size-base);
+  overflow-wrap: anywhere;
+}
+
+.pf-suggest-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.pf-suggest-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+}
+
+.pf-suggest-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+  flex: 1 1 calc(180 * var(--px));
+}
+
+.pf-suggest-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.pf-suggest-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.pf-suggest-body small {
+  color: var(--color-text-muted);
+}
+
+/* Bảng chi tiết */
+.pf-cell-skill {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: calc(180 * var(--px));
+}
+
+.pf-cell-skill small {
+  color: var(--color-text-muted);
+}
+
+.pf-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}

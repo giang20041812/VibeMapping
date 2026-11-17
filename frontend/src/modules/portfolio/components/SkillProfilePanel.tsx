@@ -74,10 +74,7 @@ export const SkillProfilePanel: React.FC<Props> = ({ items, busy, onAdd, onLevel
               if (error) setError(null);
             }}
           />
-          <div className="pf-field">
-            <span className="pf-field-label">Tự chấm</span>
-            <LevelPicker value={level} onChange={setLevel} label="Mức tự chấm" showCaption />
-          </div>
+          <LevelPicker heading="Tự chấm" value={level} onChange={setLevel} label="Mức tự chấm" />
           <div className="module-actions">
             <Button type="submit" leftIcon={<Plus size={16} />} isLoading={busy}>Thêm</Button>
           </div>
@@ -107,10 +104,13 @@ export const SkillProfilePanel: React.FC<Props> = ({ items, busy, onAdd, onLevel
                       <div className="pf-skill-name">
                         <span>{item.title}</span>
                         {item.verified_360 && (
-                          <Badge size="sm" variant="success">
-                            <BadgeCheck size={12} aria-hidden="true" /> Đã xác thực 360°
-                            {item.verified_until ? ` · đến ${formatDate(item.verified_until)}` : ''}
-                          </Badge>
+                          <span className="pf-verified" title={`Đã xác thực 360°${item.verified_until ? ` đến ${formatDate(item.verified_until)}` : ''}`}>
+                            <Badge size="sm" variant="success">
+                              <BadgeCheck size={12} aria-hidden="true" />
+                              <span className="sr-only">Đã xác thực</span> 360°
+                              {item.verified_until ? ` · đến ${formatDate(item.verified_until)}` : ''}
+                            </Badge>
+                          </span>
                         )}
                       </div>
                       <LevelPicker value={item.self_level} onChange={(next) => onLevel(item, next)} label={`Mức của ${item.title}`} disabled={busy} />

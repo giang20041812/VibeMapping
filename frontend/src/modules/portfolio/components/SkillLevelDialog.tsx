@@ -43,10 +43,7 @@ export const SkillLevelDialog: React.FC<Props> = ({ row, busy, onClose, onSubmit
           <div><dt>Mức JD yêu cầu</dt><dd>{formatLevel(row.required_level)}</dd></div>
         </dl>
         {row.verified_360 && editing && <p className="pf-muted">Tự sửa mức sẽ gỡ nhãn Đã xác thực 360°.</p>}
-        <div className="pf-field">
-          <span className="pf-field-label">Mức của bạn</span>
-          <LevelPicker value={level} onChange={setLevel} label="Mức của bạn" showCaption />
-        </div>
+        <LevelPicker heading="Mức của bạn" value={level} onChange={setLevel} label="Mức của bạn" />
       </div>
     </Modal>
   );

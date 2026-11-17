@@ -6,13 +6,19 @@ interface Props {
   onChange: (level: number) => void;
   label: string;
   disabled?: boolean;
-  /** Hiện tên mức đang chọn ngay dưới dãy nút */
-  showCaption?: boolean;
+  /** Nhãn hiện trên dãy nút, kèm tên mức đang chọn ("Tự chấm · Tự làm độc lập") */
+  heading?: string;
 }
 
 /** Chọn mức thành thạo 1–5; rê chuột hoặc chọn để thấy tên mức */
-export const LevelPicker: React.FC<Props> = ({ value, onChange, label, disabled = false, showCaption = false }) => (
+export const LevelPicker: React.FC<Props> = ({ value, onChange, label, disabled = false, heading }) => (
   <div className="pf-level">
+    {heading && (
+      <span className="pf-field-label">
+        {heading}
+        <span className="pf-field-hint"> · {value !== null ? PROFICIENCY_LABEL[value] : 'Chưa chấm'}</span>
+      </span>
+    )}
     <div className="pf-level-row" role="radiogroup" aria-label={label}>
       {PROFICIENCY_LEVELS.map((level) => {
         const active = value === level;
@@ -32,6 +38,5 @@ export const LevelPicker: React.FC<Props> = ({ value, onChange, label, disabled 
         );
       })}
     </div>
-    {showCaption && <span className="pf-level-caption">{value !== null ? PROFICIENCY_LABEL[value] : 'Chưa chấm'}</span>}
   </div>
 );

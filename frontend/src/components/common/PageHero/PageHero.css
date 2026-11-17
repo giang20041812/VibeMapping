@@ -46,7 +46,7 @@
   margin: 0;
   min-width: 0;
   font-size: clamp(calc(30 * var(--px)), 3.6vw, calc(60 * var(--px)));
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1.05;
   letter-spacing: -0.045em;
   color: var(--color-heading);
@@ -58,13 +58,13 @@
   align-items: baseline;
   gap: var(--space-1);
   font-size: var(--font-size-md);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-text-muted);
   animation: page-hero-rise var(--duration-enter) var(--ease-decelerate) calc(var(--stagger) * 2) both;
 }
 .page-hero-count b {
   font-size: var(--font-size-2xl);
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
   color: var(--color-text-main);

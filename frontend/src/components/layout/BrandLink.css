@@ -1,0 +1,78 @@
+/* Logo và tên sản phẩm: dấu tròn nghiêng nhẹ, chữ Mapping đổi sang cam san hô khi rê chuột */
+.brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--touch-target);
+  white-space: nowrap;
+  text-decoration: none;
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.brand-link:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 4px;
+}
+
+.brand-link-mark {
+  flex: none;
+  display: block;
+  width: calc(36 * var(--px));
+  height: calc(36 * var(--px));
+  border-radius: var(--radius-full);
+  transition: transform 560ms var(--ease-out);
+}
+
+.brand-link:hover .brand-link-mark {
+  transform: rotate(-10deg) scale(1.06);
+}
+
+.brand-link-mark .logo-svg {
+  display: block;
+}
+
+.brand-link-text {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.brand-link-wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.22em;
+}
+
+.brand-link-vibe {
+  color: var(--color-text-main);
+}
+
+.brand-link-mapping {
+  color: var(--color-primary);
+  transition: color 420ms var(--ease-out);
+}
+
+.brand-link:hover .brand-link-mapping {
+  color: var(--brand-coral);
+}
+
+.brand-link-tag {
+  display: inline-flex;
+  align-items: center;
+  padding-left: var(--space-3);
+  font-size: calc(10 * var(--px));
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  border-left: 1px solid var(--color-border);
+}
+
+@media (max-width: 1120px) {
+  .brand-link-tag {
+    display: none;
+  }
+}

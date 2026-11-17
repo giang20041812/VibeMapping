@@ -33,7 +33,7 @@
   white-space: nowrap;
   text-decoration: none;
   font-size: var(--font-size-xl);
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1;
   letter-spacing: -0.03em;
 }
@@ -95,7 +95,7 @@
   min-height: calc(54 * var(--px));
   padding: 0 var(--space-4) 0 var(--space-5);
   font-size: var(--font-size-base);
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: -0.01em;
   color: var(--color-text-secondary);
   text-decoration: none;
@@ -116,7 +116,7 @@
 
 .sidebar-link.is-active {
   color: var(--color-text-main);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .sidebar-link-icon {
@@ -269,4 +269,10 @@
 /* Màn hình làm bài: ẩn nút mở menu để tập trung vào câu hỏi */
 .app-shell.is-focus .sidebar-toggle {
   display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar {
+    transition: none;
+  }
 }

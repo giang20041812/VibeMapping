@@ -85,7 +85,7 @@
 
 .top-avatar {
   font-size: var(--font-size-base);
-  font-weight: 800;
+  font-weight: 600;
   color: var(--color-text-inverse);
   background: var(--gradient-brand);
   border-radius: var(--radius-full);
@@ -116,7 +116,7 @@
   height: 16px;
   padding: 0 3px;
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 600;
   line-height: 16px;
   text-align: center;
   color: var(--color-text-inverse);
@@ -146,7 +146,7 @@
 .top-popover-error {
   padding: var(--space-2) var(--space-4);
   font-size: var(--font-size-xs);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-danger-text);
 }
 
@@ -159,7 +159,7 @@
   min-height: var(--touch-target);
   padding: 0 var(--space-3);
   font-size: var(--font-size-base);
-  font-weight: 500;
+  font-weight: 400;
   color: var(--color-text-main);
   text-align: left;
   text-decoration: none;
@@ -231,7 +231,7 @@
 
 .account-menu-name {
   font-size: var(--font-size-md);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-main);
 }
 
@@ -256,7 +256,7 @@
 
 .notif-title {
   font-size: var(--font-size-lg);
-  font-weight: 800;
+  font-weight: 600;
   color: var(--color-text-main);
 }
 
@@ -275,7 +275,7 @@
 
 .notif-switch-label {
   font-size: var(--font-size-sm);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-text-secondary);
 }
 
@@ -378,12 +378,12 @@
 
 .notif-item-title {
   font-size: var(--font-size-base);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-text-main);
 }
 
 .notif-item.is-unread .notif-item-title {
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .notif-item-body {
@@ -403,7 +403,7 @@
   gap: var(--space-2);
   min-height: var(--touch-target);
   font-size: var(--font-size-sm);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-brand);
   transition: background-color var(--transition-fast);
 }

@@ -172,7 +172,7 @@
   align-items: center;
   padding: calc(2 * var(--px)) var(--space-2);
   font-size: var(--font-size-xs);
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.25;
   white-space: nowrap;
   color: var(--r360-ink);
@@ -184,7 +184,7 @@
 
 .rater360-chip-meta {
   font-size: calc(10 * var(--px));
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-text-muted);
 }
 
@@ -212,7 +212,7 @@
   align-items: center;
   padding: calc(3 * var(--px)) var(--space-3);
   font-size: var(--font-size-sm);
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.2;
   white-space: nowrap;
   color: var(--color-cta-text);
@@ -224,7 +224,7 @@
 
 .rater360-center-sub {
   font-size: calc(10 * var(--px));
-  font-weight: 600;
+  font-weight: 500;
 }
 
 /* Xuất hiện: hình người nổi lên, các nhóm hiện ra lần lượt */

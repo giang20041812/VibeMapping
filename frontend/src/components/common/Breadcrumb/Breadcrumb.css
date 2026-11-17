@@ -6,7 +6,7 @@
 .app-breadcrumb li { display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; }
 .app-breadcrumb-link {
   display: inline-flex; align-items: center; min-height: 44px;
-  color: var(--color-text-secondary); font-weight: 600; text-decoration: none;
+  color: var(--color-text-secondary); font-weight: 500; text-decoration: none;
   border-radius: var(--radius-sm);
 }
 .app-breadcrumb-link:hover { color: var(--color-primary); text-decoration: underline; }
@@ -14,7 +14,7 @@
 .app-breadcrumb-sep { flex: none; color: var(--color-text-muted); }
 .app-breadcrumb-current {
   min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  color: var(--color-text-main); font-weight: 700;
+  color: var(--color-text-main); font-weight: 600;
 }
 @media (min-width: 768px) {
   .app-breadcrumb-link { min-height: 0; }

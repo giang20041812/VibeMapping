@@ -39,6 +39,7 @@ export {
   Magnetic,
   RollText,
   SplitText,
+  VelocityMarquee,
   Reveal,
   SpotlightCard,
   trackPointer,

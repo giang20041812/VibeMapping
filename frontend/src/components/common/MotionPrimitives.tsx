@@ -205,6 +205,69 @@ export const Reveal: React.FC<{
   );
 };
 
+/** Số bản sao nội dung trong dải chữ chạy: đủ để lấp kín khung khi dịch đi một bản */
+const MARQUEE_COPIES = [0, 1, 2, 3];
+
+/**
+ * VelocityMarquee: Dải chữ chạy vô hạn, tăng tốc và đổi chiều theo tốc độ cuộn trang (kế thừa từ HTDNSK).
+ * `baseVelocity` tính bằng % bề rộng dải mỗi giây; số âm chạy sang trái. Chỉ chạy khi dải nằm trong khung nhìn.
+ */
+export const VelocityMarquee: React.FC<{
+  children: React.ReactNode;
+  baseVelocity?: number;
+  className?: string;
+}> = ({ children, baseVelocity = -1.6, className = '' }) => {
+  const { ref, inView } = useInView<HTMLDivElement>(0);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const offsetRef = useRef(-25);
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track || !inView) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    let direction = 1;
+    let boost = 0;
+    let lastScroll = window.scrollY;
+    let lastTime = performance.now();
+    let raf = 0;
+
+    const step = (now: number) => {
+      const delta = Math.min(64, now - lastTime);
+      lastTime = now;
+      const scroll = window.scrollY;
+      const scrollSpeed = delta > 0 ? ((scroll - lastScroll) / delta) * 1000 : 0;
+      lastScroll = scroll;
+
+      /* 1000px/giây cuộn thì dải chạy nhanh gấp 5; lực cuộn được làm mượt để không giật */
+      boost += (scrollSpeed / 250 - boost) * 0.1;
+      if (boost < -0.02) direction = -1;
+      else if (boost > 0.02) direction = 1;
+
+      const next = offsetRef.current + direction * baseVelocity * (delta / 1000) * (1 + Math.abs(boost));
+      /* Giữ vị trí trong đoạn (-50%, -25%]: dịch đúng một bản sao thì hình lặp lại y hệt */
+      offsetRef.current = ((((next + 25) % 25) - 25) % 25) - 25;
+      track.style.transform = `translate3d(${offsetRef.current.toFixed(3)}%, 0, 0)`;
+      raf = requestAnimationFrame(step);
+    };
+
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [inView, baseVelocity]);
+
+  return (
+    <div ref={ref} className={`marquee ${className}`}>
+      <div ref={trackRef} className="marquee-track">
+        {MARQUEE_COPIES.map((copy) => (
+          <span key={copy} className="marquee-copy">
+            {children}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 /**
  * SpotlightCard: Thẻ có viền sáng & quầng sáng đi theo con trỏ chuột (kế thừa từ HTDNSK).
  */

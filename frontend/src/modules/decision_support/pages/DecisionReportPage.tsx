@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { FileText, Printer, SearchX } from 'lucide-react';
+import { Download, FileText, Printer, SearchX } from 'lucide-react';
 import { Alert, Badge, Breadcrumb, Button, Card, PageHero, Spinner, StickerCard, StickerFact, StickerGrid, Textarea, stickerToneAt } from '../../../components/common';
 import { callRpc } from '../../../lib/rpc';
-import { printDecisionReport } from '../../../lib/printProfile';
+import { printDecisionReport, type DecisionPrintInput } from '../../../lib/printProfile';
+import { exportDecisionReport } from '../../../lib/pdf/exportReports';
 import '../../career_explorer/pages/CareerPages.css';
 import './DecisionPages.css';
 
@@ -38,6 +39,8 @@ export const DecisionReportPage: React.FC = () => {
   const [report, setReport] = useState<Report | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [comment, setComment] = useState('');
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const [pdfNote, setPdfNote] = useState<string | null>(null);
 
   const reload = useCallback(() => callRpc<Report>('get_decision_report', { p_report_id: reportId }).then(setReport), [reportId]);
   useEffect(() => {
@@ -48,6 +51,27 @@ export const DecisionReportPage: React.FC = () => {
   if (!report) return <Spinner />;
   const preferred = report.ranking.find((r) => r.id === report.preferred_option_id);
   const myShare = !report.is_owner ? report.shares[0] : null;
+  const printInput: DecisionPrintInput = {
+    title: report.title,
+    ownerName: report.owner_name,
+    budget: report.include_finance && report.budget_per_year !== null ? `${report.budget_per_year} triệu/năm` : null,
+    rows: report.ranking.map((row, index) => ({
+      rank: index + 1,
+      title: row.title,
+      eligibility: ELIGIBILITY_LABEL[row.eligibility],
+      score: row.totalScore === null ? 'Chưa đủ dữ liệu' : String(row.totalScore),
+      fit: row.careerFitPercent === null ? 'Chưa có' : `${row.careerFitPercent.toFixed(1)}%`,
+    })),
+    preferred: preferred ? `${preferred.title}${report.preferred_reason ? ` – ${report.preferred_reason}` : ''}` : null,
+  };
+  const downloadPdf = () => {
+    setPdfBusy(true);
+    setPdfNote(null);
+    exportDecisionReport(printInput, { saveCopy: report.is_owner })
+      .then(({ saved }) => setPdfNote(saved ? 'Đã tải PDF và lưu một bản vào Tệp đã lưu.' : null))
+      .catch(() => setPdfNote('Không tạo được PDF. Thử lại sau.'))
+      .finally(() => setPdfBusy(false));
+  };
 
   return (
     <div className="module-page">
@@ -62,21 +86,13 @@ export const DecisionReportPage: React.FC = () => {
         icon={<FileText />}
         tone="violet"
         actions={
-          <Button type="button" variant="outline" leftIcon={<Printer size={16} />} onClick={() => printDecisionReport({
-            title: report.title,
-            ownerName: report.owner_name,
-            budget: report.include_finance && report.budget_per_year !== null ? `${report.budget_per_year} triệu/năm` : null,
-            rows: report.ranking.map((row, index) => ({
-              rank: index + 1,
-              title: row.title,
-              eligibility: ELIGIBILITY_LABEL[row.eligibility],
-              score: row.totalScore === null ? 'Chưa đủ dữ liệu' : String(row.totalScore),
-              fit: row.careerFitPercent === null ? 'Chưa có' : `${row.careerFitPercent.toFixed(1)}%`,
-            })),
-            preferred: preferred ? `${preferred.title}${report.preferred_reason ? ` – ${report.preferred_reason}` : ''}` : null,
-          })}>In / Lưu PDF</Button>
+          <>
+            <Button type="button" variant="outline" leftIcon={<Printer size={16} />} onClick={() => printDecisionReport(printInput)}>In</Button>
+            <Button type="button" leftIcon={<Download size={16} />} isLoading={pdfBusy} onClick={downloadPdf}>Tải PDF</Button>
+          </>
         }
       />
+      {pdfNote && <Alert variant={pdfNote.startsWith('Không') ? 'danger' : 'success'}>{pdfNote}</Alert>}
       <p>Người lập: {report.owner_name}{report.is_owner ? '' : ' · Chỉ đọc'}</p>
       {!report.include_finance && !report.is_owner && <Alert variant="info">Học sinh đã ẩn thông tin tài chính trong báo cáo này.</Alert>}
       <Card title="Thứ hạng phương án">

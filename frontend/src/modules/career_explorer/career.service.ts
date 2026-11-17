@@ -677,9 +677,18 @@ export interface CareerMajorColumn {
   schools: CareerMajorSchoolRow[];
 }
 
+/** FR04.01.07: nguồn và ngày cập nhật gần nhất của dữ liệu nghề */
+export interface CareerDataSource {
+  checkedAt: string | null;
+  /** 'checked' = ngày kiểm tra JD; 'posted' = ngày đăng tin khi JD không ghi ngày kiểm tra */
+  checkedKind: 'checked' | 'posted' | null;
+  jdCount: number;
+}
+
 export interface CareerProfileInfo {
   sections: CareerProfileSection[];
   majors: CareerMajorColumn[];
+  source?: CareerDataSource;
 }
 
 const PROFILE_SECTIONS: Array<{ key: string; title: string }> = [
@@ -716,7 +725,8 @@ export async function loadCareerProfileInfo(careerId: string): Promise<CareerPro
     supabase.from('career_major_links').select('major_id, link_level, majors(major_name)').eq('career_id', careerId).limit(40),
     // Nội dung quản trị tự nhập (cột mới chưa có trong type sinh tự động)
     supabase.from('careers')
-      .select('career_description, key_skills, salary_range_text, career_path_text').eq('id', careerId).maybeSingle(),
+      .select('career_description, key_skills, salary_range_text, career_path_text, data_checked_at, data_checked_kind, qualifying_jd_count')
+      .eq('id', careerId).maybeSingle(),
   ]);
   if (jds.error) throw jds.error;
   const rows = (jds.data ?? []) as unknown as Array<Record<string, string | null>>;
@@ -797,7 +807,13 @@ export async function loadCareerProfileInfo(careerId: string): Promise<CareerPro
     ...m,
     schools: schoolsByMajor.get(m.id) ?? [],
   }));
-  return { sections, majors };
+  const meta = (authored.data ?? {}) as { data_checked_at?: string | null; data_checked_kind?: string | null; qualifying_jd_count?: number | null };
+  const source: CareerDataSource = {
+    checkedAt: meta.data_checked_at ?? null,
+    checkedKind: meta.data_checked_kind === 'checked' || meta.data_checked_kind === 'posted' ? meta.data_checked_kind : null,
+    jdCount: meta.qualifying_jd_count ?? rows.length,
+  };
+  return { sections, majors, source };
 }
 
 /** Tên nghề theo danh sách id, giữ đúng thứ tự đã chọn */

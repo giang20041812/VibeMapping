@@ -52,6 +52,11 @@ export const AUDIT_ACTION_LABEL: Record<string, string> = {
   update_career_holland: 'Sửa hồ sơ Holland',
   set_career_status: 'Đổi trạng thái',
   auto_publish_careers: 'Tự công bố',
+  create_level_framework: 'Tạo khung theo cấp',
+  update_level_framework: 'Sửa khung theo cấp',
+  set_level_framework_status: 'Đổi trạng thái khung',
+  delete_level_framework: 'Xóa khung theo cấp',
+  copy_level_framework: 'Sao chép khung theo cấp',
 };
 
 export const VERIFICATION_LABEL: Record<string, string> = {

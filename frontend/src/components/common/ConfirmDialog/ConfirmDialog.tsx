@@ -16,6 +16,8 @@ export interface AskTextOptions {
   confirmLabel?: string;
   /** Số ký tự tối thiểu để nút xác nhận bật */
   minLength?: number;
+  /** Nội dung điền sẵn khi sửa */
+  initialValue?: string;
 }
 
 /** Hộp thoại xác nhận thay cho window.confirm: `if (!(await confirm({...}))) return;` rồi đặt `dialog` trong JSX */
@@ -56,7 +58,7 @@ export function useAskText() {
   const ask = useCallback(
     (options: AskTextOptions) =>
       new Promise<string | null>((resolve) => {
-        setText('');
+        setText(options.initialValue ?? '');
         setState({ ...options, resolve });
       }),
     [],

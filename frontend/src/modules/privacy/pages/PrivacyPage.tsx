@@ -4,6 +4,10 @@ import { Alert, Badge, Button, Card, Input, useConfirm } from '../../../componen
 import { callRpc } from '../../../lib/rpc';
 import { useAuth } from '../../auth/AuthContext';
 import { ageOf, GUARDIAN_AGE } from '../../profile/profile.logic';
+import { saveExport } from '../../../lib/exportFiles';
+import { downloadBlob } from '../../../lib/pdf/pdfWriter';
+import { ExportedFilesCard } from '../components/ExportedFilesCard';
+import { FriendsCard } from '../components/FriendsCard';
 import '../../career_explorer/pages/CareerPages.css';
 
 interface Person {
@@ -34,6 +38,7 @@ export const PrivacyPage: React.FC = () => {
   const [parentCode, setParentCode] = useState<string | null>(null);
   const [acceptCode, setAcceptCode] = useState('');
   const [shareEmail, setShareEmail] = useState('');
+  const [filesVersion, setFilesVersion] = useState(0);
   const [message, setMessage] = useState<{ tone: 'info' | 'danger' | 'success'; text: string } | null>(null);
   const isLearner = profile?.role === 'student' || profile?.role === 'university_student';
   const age = ageOf(profile?.date_of_birth ?? null);
@@ -59,12 +64,11 @@ export const PrivacyPage: React.FC = () => {
     try {
       const data = await callRpc<unknown>('export_my_data');
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement('a');
-      anchor.href = url;
-      anchor.download = `du-lieu-ca-nhan-${new Date().toISOString().slice(0, 10)}.json`;
-      anchor.click();
-      URL.revokeObjectURL(url);
+      const fileName = `du-lieu-ca-nhan-${new Date().toISOString().slice(0, 10)}.json`;
+      downloadBlob(blob, fileName);
+      // Lưu thêm một bản vào kho tệp riêng tư để tải lại sau
+      const saved = await saveExport('personal_data', `Dữ liệu cá nhân ${new Date().toLocaleDateString('vi-VN')}`, fileName, blob);
+      if (saved) setFilesVersion((v) => v + 1);
     } catch {
       setMessage({ tone: 'danger', text: 'Không xuất được dữ liệu.' });
     }
@@ -180,6 +184,8 @@ export const PrivacyPage: React.FC = () => {
         </Card>
       )}
 
+      {isLearner && <FriendsCard guardianBlocked={needsGuardian} />}
+
       {!isLearner && profile?.role !== 'parent' && (connections?.shared_with_me.length ?? 0) > 0 && (
         <Card title="Kết quả được chia sẻ với bạn">
           <ul className="module-list">
@@ -210,6 +216,7 @@ export const PrivacyPage: React.FC = () => {
           <Alert variant="warning">Đã yêu cầu xóa lúc {new Date(connections.deletion_requested_at).toLocaleString('vi-VN')}.</Alert>
         )}
       </Card>
+      <ExportedFilesCard refreshKey={filesVersion} />
       {confirmDialog}
     </div>
   );

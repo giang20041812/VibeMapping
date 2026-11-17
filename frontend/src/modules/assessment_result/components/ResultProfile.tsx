@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CalendarDays, Download } from 'lucide-react';
-import { downloadPdf, printOrientationProfile } from '../../../lib/printProfile';
-import { Alert, Badge, Button, Input, Select } from '../../../components/common';
+import { exportOrientationProfile } from '../../../lib/pdf/exportReports';
+import { Alert, Badge, Button, Input, ProgressBar } from '../../../components/common';
+import { INTEREST_NAME } from '../../career_explorer/careerFit.constants';
+import { SearchableSelect } from '../../../components/filters/SearchableSelect/SearchableSelect';
 import type { AssessmentResultListItem } from '../assessmentResult.service';
 import type { ResultInsights } from '../resultInsights.service';
 import './ResultProfile.css';
@@ -18,6 +20,23 @@ const WEIGHT_NOTE: Record<string, string | null> = {
   equal_fallback: 'Mọi bài 360° đã chấp nhận có mức thấu hiểu thấp nhất (TH = 3) nên được chia đều trọng số (tham số zero_weight_equal_fallback).',
   pending_review: 'Bài 360° đã chấp nhận đang chờ chấm định tính nên chưa được tính vào điểm tổng hợp.',
 };
+
+const HOLLAND_RANK_LABEL = ['Nổi trội nhất', 'Nổi trội thứ hai', 'Nổi trội thứ ba'];
+
+/** Mã Holland: từng chữ cái một ô, ô đầu là nhóm nổi trội nhất; ghi rõ tên nhóm và thứ hạng */
+export const HollandCode: React.FC<{ code: string }> = ({ code }) => (
+  <ol className="holland-code" aria-label={`Mã Holland ${code}`}>
+    {code.split('').slice(0, 3).map((letter, index) => (
+      <li key={`${letter}-${index}`} className={index === 0 ? 'is-first' : undefined}>
+        <b className="holland-code-letter">{letter}</b>
+        <span className="holland-code-body">
+          <span className="holland-code-name">{INTEREST_NAME[letter] ?? letter}</span>
+          <span className="holland-code-rank">{HOLLAND_RANK_LABEL[index]}</span>
+        </span>
+      </li>
+    ))}
+  </ol>
+);
 
 const toDateKey = (iso: string) => {
   const date = new Date(iso);
@@ -52,6 +71,8 @@ export const ResultProfileHeader: React.FC<HeaderProps> = ({ insights, history, 
     if (match) onSelect(match.id);
   };
 
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const [pdfNote, setPdfNote] = useState<string | null>(null);
   const weightNote = insights ? WEIGHT_NOTE[insights.qualitativeWeightStatus] ?? null : null;
 
   const exportPdf = () => {
@@ -86,42 +107,42 @@ export const ResultProfileHeader: React.FC<HeaderProps> = ({ insights, history, 
       topCareers: [],
       notes: [weightNote ?? ''].filter(Boolean),
     };
-    downloadPdf('ho-so-dinh-huong.pdf', [
-      'Ho so dinh huong ca nhan',
-      input.ownerName,
-      input.status,
-      input.holland ? `Holland ${input.holland}` : '',
-      input.validity,
-      ...input.groups.map((group) => `${group.code}: ${group.percent}`),
-      ...input.notes,
-    ].filter(Boolean));
-    printOrientationProfile(input);
+    setPdfBusy(true);
+    setPdfNote(null);
+    exportOrientationProfile(input, { saveCopy: true })
+      .then(({ saved }) => setPdfNote(saved ? 'Đã tải PDF và lưu một bản vào Tệp đã lưu.' : null))
+      .catch(() => setPdfNote('Không tạo được PDF. Thử lại sau.'))
+      .finally(() => setPdfBusy(false));
   };
 
   return (
     <div className="result-profile-head">
-      <div className="result-profile-toolbar no-print">
-        <Input
-          type="date"
-          aria-label="Chọn ngày xem kết quả"
-          leftIcon={<CalendarDays size={16} aria-hidden="true" />}
-          value={dateValue}
-          min={oldest}
-          max={newest}
-          onChange={(event) => pickDate(event.target.value)}
-          className="result-profile-date"
-        />
-        <Select
-          aria-label="Chọn lần kết quả"
-          options={options}
-          value={selectedId ?? ''}
-          onChange={onSelect}
-          className="result-profile-history"
-        />
-        <Button type="button" variant="outline" leftIcon={<Download size={16} />} onClick={exportPdf} disabled={!insights}>
+      <div className="result-profile-toolbar filter-controls no-print">
+        <div className="result-profile-fields">
+          <Input
+            type="date"
+            label="Ngày xem"
+            leftIcon={<CalendarDays size={16} aria-hidden="true" />}
+            value={dateValue}
+            min={oldest}
+            max={newest}
+            onChange={(event) => pickDate(event.target.value)}
+            className="result-profile-date"
+          />
+          <SearchableSelect
+            label="Lần đánh giá"
+            options={options}
+            value={selectedId ?? ''}
+            onChange={onSelect}
+            isSearchable
+            className="result-profile-history"
+          />
+        </div>
+        <Button type="button" variant="outline" leftIcon={<Download size={16} />} onClick={exportPdf} disabled={!insights} isLoading={pdfBusy}>
           Tải PDF
         </Button>
       </div>
+      {pdfNote && <Alert variant={pdfNote.startsWith('Không') ? 'danger' : 'success'}>{pdfNote}</Alert>}
       {insights && (
         <>
           <div className="result-profile-badges">
@@ -129,13 +150,13 @@ export const ResultProfileHeader: React.FC<HeaderProps> = ({ insights, history, 
             {insights.validity.kind === 'active' && <Badge variant="success">Đang dùng</Badge>}
             {insights.validity.kind === 'reassess' && <Badge variant="warning">Cần đánh giá lại</Badge>}
             {insights.validity.kind === 'policy_pending' && <Badge>Chưa có mốc hiệu lực</Badge>}
-            {insights.holland && <Badge>Holland {insights.holland}</Badge>}
             {insights.validity.expiresAt && (
               <span className="result-profile-expiry">
                 Hiệu lực đến {new Date(insights.validity.expiresAt).toLocaleDateString('vi-VN')} ({insights.validity.months} tháng)
               </span>
             )}
           </div>
+          {insights.holland && <HollandCode code={insights.holland} />}
           {weightNote && <Alert variant="warning">{weightNote}</Alert>}
         </>
       )}
@@ -151,8 +172,15 @@ export const ResultProfileFooter: React.FC<{ insights: ResultInsights | null }> 
       {insights.coreValues.length > 0 && (
         <section>
           <h3>Giá trị cốt lõi</h3>
-          <ol className="result-profile-values">
-            {insights.coreValues.map((value) => <li key={value}>{value}</li>)}
+          <ol className="core-ranking">
+            {insights.coreValues.map((value, index, all) => (
+              <li key={value} className={index === 0 ? 'is-first' : undefined}>
+                <span className="core-ranking-no">{index + 1}</span>
+                <span className="core-ranking-name">{value}</span>
+                {index === 0 && <Badge variant="highlight" size="sm">Quan trọng nhất</Badge>}
+                <ProgressBar value={((all.length - index) / all.length) * 100} label={`Mức quan trọng của ${value}`} className="core-ranking-bar" />
+              </li>
+            ))}
           </ol>
         </section>
       )}

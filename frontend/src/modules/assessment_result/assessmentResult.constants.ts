@@ -1,4 +1,13 @@
-import { Brain, Crown, Fingerprint, Flame, Heart, MessagesSquare, Smile, type LucideIcon } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import {
+  AttitudeGroupIcon,
+  CommunicationGroupIcon,
+  InterestGroupIcon,
+  LeadershipGroupIcon,
+  MotivationGroupIcon,
+  PersonalityGroupIcon,
+  ThinkingGroupIcon,
+} from '../../components/charts/ArtifactIcons';
 import type { AssessmentResultSummary, CompetencyLevel, ResultStatusLabel } from './assessmentResult.types';
 
 /** Tên rút gọn hiển thị trên nhãn trục của biểu đồ đa giác */
@@ -12,15 +21,15 @@ export const GROUP_SHORT_LABELS: Record<string, string> = {
   G7: 'Động lực',
 };
 
-/** Biểu tượng của từng nhóm tiêu chí trên biểu đồ đa giác */
+/** Biểu tượng thiết kế riêng của từng nhóm tiêu chí trên biểu đồ đa giác */
 export const GROUP_ICONS: Record<string, LucideIcon> = {
-  G1: Fingerprint,
-  G2: Brain,
-  G3: MessagesSquare,
-  G4: Smile,
-  G5: Crown,
-  G6: Heart,
-  G7: Flame,
+  G1: PersonalityGroupIcon,
+  G2: ThinkingGroupIcon,
+  G3: CommunicationGroupIcon,
+  G4: AttitudeGroupIcon,
+  G5: LeadershipGroupIcon,
+  G6: InterestGroupIcon,
+  G7: MotivationGroupIcon,
 };
 
 export const COMPETENCY_LEVELS: { min: number; key: CompetencyLevel; label: string }[] = [

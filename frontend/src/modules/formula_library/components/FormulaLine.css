@@ -1,0 +1,594 @@
+/* ====================================================================
+   Công thức dạng dòng: tên = chuỗi thẻ, kết quả tính thử ngay bên dưới
+   ==================================================================== */
+.fx-sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.fx-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.fx-row {
+  display: grid;
+  grid-template-columns: minmax(0, calc(260 * var(--px))) auto minmax(0, 1fr);
+  align-items: start;
+  column-gap: var(--space-3);
+  border-radius: var(--radius-2xl);
+  transition: background-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.fx-row.is-highlighted {
+  background-color: var(--hope-blue-soft);
+  box-shadow: 0 0 0 var(--space-2) var(--hope-blue-soft);
+}
+
+.fx-row.is-editing {
+  padding: var(--space-3);
+  background-color: var(--color-bg-subtle);
+}
+
+.fx-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  min-height: var(--touch-target);
+  padding: var(--space-2) var(--space-4);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  color: var(--color-text-main);
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-hover);
+  border-radius: var(--radius-2xl);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.fx-name:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.fx-name:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-primary-ring);
+}
+
+.fx-name-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.fx-eq {
+  display: flex;
+  align-items: center;
+  min-height: var(--touch-target);
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.fx-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+/* Ô công thức */
+.fx-bar {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: calc(6 * var(--px));
+  min-width: 0;
+  min-height: var(--touch-target);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-hover);
+  border-radius: var(--radius-2xl);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.fx-bar:not(.is-editing):hover {
+  border-color: var(--color-primary);
+}
+
+.fx-bar:focus-visible,
+.fx-bar.is-focused {
+  outline: none;
+  border-color: var(--color-border-focus);
+  box-shadow: 0 0 0 3px var(--color-primary-ring);
+}
+
+.fx-bar.is-editing {
+  cursor: text;
+}
+
+.fx-bar.has-error {
+  border-color: var(--color-danger);
+}
+
+.fx-bar-cases {
+  cursor: default;
+}
+
+.fx-bar-content {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.fx-placeholder {
+  color: var(--color-text-muted);
+}
+
+.fx-unit {
+  margin-left: auto;
+  padding: 1px var(--space-2);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-hover);
+  border-radius: var(--radius-md);
+}
+
+/* Thẻ */
+.fx-tokens {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: calc(6 * var(--px));
+  min-width: 0;
+}
+
+.fx-chip {
+  --chip-tone: var(--tone-slate);
+  --chip-tone-bg: var(--tone-slate-bg);
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 1px var(--space-2);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: left;
+  overflow-wrap: anywhere;
+  color: color-mix(in srgb, var(--chip-tone) 62%, var(--color-text-main));
+  background-color: var(--chip-tone-bg);
+  border: 1px solid color-mix(in srgb, var(--chip-tone) 38%, transparent);
+  border-radius: var(--radius-lg);
+}
+
+.fx-chip-input {
+  --chip-tone: var(--tone-blue);
+  --chip-tone-bg: var(--tone-blue-bg);
+}
+
+.fx-chip-param {
+  --chip-tone: var(--tone-green);
+  --chip-tone-bg: var(--tone-green-bg);
+}
+
+.fx-chip-formula {
+  --chip-tone: var(--tone-purple);
+  --chip-tone-bg: var(--tone-purple-bg);
+}
+
+.fx-chip-text {
+  --chip-tone: var(--tone-yellow-text);
+  --chip-tone-bg: var(--tone-yellow-bg);
+}
+
+.fx-chip-link {
+  cursor: pointer;
+}
+
+.fx-chip-link:hover {
+  text-decoration: underline;
+}
+
+.fx-chip-link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-primary-ring);
+}
+
+.fx-num {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.fx-op {
+  padding: 0 1px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.fx-paren,
+.fx-fn,
+.fx-logic {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.fx-block {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: calc(6 * var(--px));
+  max-width: 100%;
+  padding: 2px var(--space-2);
+  background-color: var(--color-bg-subtle);
+  border: 1px dashed var(--color-border-hover);
+  border-radius: var(--radius-lg);
+}
+
+.fx-block-word {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.fx-block-icon {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+}
+
+.fx-chip.is-error,
+.fx-block.is-error,
+.fx-num.is-error {
+  outline: 2px solid var(--color-danger);
+  outline-offset: 1px;
+}
+
+.fx-op.is-error,
+.fx-paren.is-error,
+.fx-fn.is-error,
+.fx-logic.is-error {
+  color: var(--color-danger-text);
+  text-decoration: underline wavy var(--color-danger);
+}
+
+/* Kết quả tính thử */
+.fx-result {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: calc(6 * var(--px));
+  font-size: var(--font-size-sm);
+}
+
+.fx-result.is-ok {
+  color: var(--color-success-text);
+}
+
+.fx-result.is-bad {
+  color: var(--color-danger-text);
+}
+
+.fx-result strong {
+  font-weight: 700;
+}
+
+.fx-result-note {
+  color: var(--color-text-muted);
+}
+
+/* Các nhánh "nếu … thì …" */
+.fx-cases {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  min-width: 0;
+}
+
+.fx-case {
+  display: grid;
+  grid-template-columns: 2.6em minmax(0, 1fr) 2.2em minmax(0, 1fr);
+  grid-template-areas: 'k1 c k2 v';
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.fx-case > :nth-child(1) {
+  grid-area: k1;
+}
+
+.fx-case > :nth-child(2) {
+  grid-area: c;
+}
+
+.fx-case > :nth-child(3) {
+  grid-area: k2;
+}
+
+.fx-case > :nth-child(4) {
+  grid-area: v;
+}
+
+.fx-case > :nth-child(5) {
+  grid-area: x;
+}
+
+.fx-case.fx-case-else {
+  grid-template-areas: 'k1 k1 k1 c';
+}
+
+.fx-cases.is-editing .fx-case {
+  grid-template-columns: 2.6em minmax(0, 1fr) 2.2em minmax(0, 1fr) var(--touch-target);
+  grid-template-areas: 'k1 c k2 v x';
+}
+
+.fx-cases.is-editing .fx-case.fx-case-else {
+  grid-template-areas: 'k1 k1 k1 c .';
+}
+
+.fx-case-key {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.fx-case-cond,
+.fx-case-value {
+  min-width: 0;
+}
+
+.fx-case-else .fx-case-key {
+  text-align: right;
+}
+
+.fx-case-remove {
+  min-width: var(--touch-target);
+  min-height: var(--touch-target);
+}
+
+/* Trình soạn */
+.fx-editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.fx-token-hit {
+  display: inline-flex;
+  max-width: 100%;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+}
+
+.fx-token-hit.is-selected {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.fx-input {
+  min-width: 1ch;
+  padding: 2px 0;
+  font: inherit;
+  font-size: var(--font-size-base);
+  color: var(--color-text-main);
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.fx-input.is-end {
+  flex: 1 1 calc(40 * var(--px));
+}
+
+.fx-add {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: calc(28 * var(--px));
+  height: calc(28 * var(--px));
+  margin-left: auto;
+  color: var(--color-text-secondary);
+  background-color: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+}
+
+.fx-add:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.fx-menu {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  left: 0;
+  z-index: var(--z-dropdown);
+  width: min(100%, calc(460 * var(--px)));
+  max-height: 280px;
+  padding: var(--space-1) 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-dropdown);
+  cursor: default;
+}
+
+.fx-menu-section {
+  padding: var(--space-2) var(--space-3) var(--space-1);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.fx-menu-item {
+  display: flex;
+  align-items: center;
+  min-height: calc(36 * var(--px));
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.fx-menu-item.is-active {
+  background-color: var(--color-bg-hover);
+}
+
+.fx-token-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+
+.fx-token-tool-field {
+  width: min(100%, 240px);
+}
+
+.fx-issue {
+  font-size: var(--font-size-sm);
+  color: var(--color-warning-text);
+}
+
+.fx-issue.is-blocking {
+  color: var(--color-danger-text);
+}
+
+.fx-issue.is-success {
+  color: var(--color-success-text);
+}
+
+.fx-edit-area {
+  min-width: 0;
+}
+
+.fx-edit-footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px dashed var(--color-border-hover);
+}
+
+.fx-edit-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: var(--space-3);
+}
+
+.fx-edit-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.fx-edit-spacer {
+  flex: 1 1 auto;
+}
+
+/* Hộp sửa thẻ khối */
+.fx-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.fx-dialog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: var(--space-3);
+}
+
+.fx-dialog-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.fx-dialog-label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+@media (pointer: coarse) {
+  .fx-add {
+    width: var(--touch-target);
+    height: var(--touch-target);
+  }
+
+  .fx-menu-item {
+    min-height: var(--touch-target);
+  }
+}
+
+@media (max-width: 767px) {
+  .fx-row {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: var(--space-2);
+  }
+
+  .fx-eq {
+    display: none;
+  }
+
+  .fx-input {
+    font-size: 16px;
+  }
+
+  .fx-case {
+    grid-template-columns: 4em minmax(0, 1fr);
+    grid-template-areas:
+      'k1 c'
+      'k2 v';
+  }
+
+  .fx-case.fx-case-else {
+    grid-template-areas: 'k1 c';
+  }
+
+  .fx-cases.is-editing .fx-case {
+    grid-template-columns: 4em minmax(0, 1fr) var(--touch-target);
+    grid-template-areas:
+      'k1 c x'
+      'k2 v .';
+  }
+
+  .fx-cases.is-editing .fx-case.fx-case-else {
+    grid-template-areas: 'k1 c .';
+  }
+
+  .fx-case-else .fx-case-key {
+    text-align: left;
+  }
+
+  .fx-edit-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .fx-edit-spacer {
+    display: none;
+  }
+}

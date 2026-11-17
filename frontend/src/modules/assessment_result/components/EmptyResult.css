@@ -7,7 +7,7 @@
   text-align: center;
   background: var(--color-bg-surface);
   border: 1.5px dashed var(--color-border-hover);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-md);
 }
 
 .empty-result-badge {
@@ -16,16 +16,16 @@
   justify-content: center;
   width: 80px;
   height: 80px;
-  color: var(--brand-sky);
-  background: var(--brand-ice);
+  color: var(--hope-blue);
+  background: var(--hope-blue-soft);
   border-radius: 50%;
-  animation: empty-float 3.4s ease-in-out infinite;
 }
 
 .empty-result-title {
-  font-size: var(--font-size-xl);
-  font-weight: 700;
-  color: var(--color-text-secondary);
+  font-size: var(--font-size-2xl);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--color-heading);
 }
 
 @keyframes empty-in {

@@ -271,67 +271,7 @@ export async function loadCareerMap(careerId: string) {
   return { career, majors: majors.map((m) => ({ ...m, programs: byMajor.get(m.id) ?? [] })) };
 }
 
-export function formatTuition(
-  p: Pick<ProgramSummary, 'tuitionMin' | 'tuitionMax' | 'tuitionText' | 'tuitionBasis' | 'tuitionStatus' | 'tuitionPerCredit'>,
-): string {
-  if (p.tuitionStatus === 'free' || (p.tuitionMin === 0 && (p.tuitionMax === 0 || p.tuitionMax === null))) {
-    return 'Miễn học phí';
-  }
-  const fmt = (v: number) => `${(v / 1_000_000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} triệu`;
-  const estimate = p.tuitionBasis === 'year' || p.tuitionBasis === 'total' || p.tuitionBasis === 'credit' ? ' (ước tính)' : '';
-  if (p.tuitionMin !== null && p.tuitionMax !== null && p.tuitionMin !== p.tuitionMax) return `${fmt(p.tuitionMin)}–${fmt(p.tuitionMax)}/học kỳ${estimate}`;
-  if (p.tuitionMin !== null) return `${fmt(p.tuitionMin)}/học kỳ${estimate}`;
-  if (p.tuitionStatus === 'credit_only' && p.tuitionPerCredit) {
-    return `${(p.tuitionPerCredit / 1_000).toLocaleString('vi-VN', { maximumFractionDigits: 0 })} nghìn/tín chỉ`;
-  }
-  if (p.tuitionStatus === 'unpublished') return 'Chưa công bố';
-  return p.tuitionText ?? 'Đang cập nhật';
-}
-
-export function formatYearlyTuition(
-  p: Pick<ProgramSummary, 'tuitionYearMin' | 'tuitionYearMax' | 'tuitionStatus' | 'tuitionBasis' | 'tuitionIsEstimate' | 'tuitionPerCredit'>,
-): { label: string; isEstimate: boolean } {
-  if (p.tuitionStatus === 'free' || (p.tuitionYearMin === 0 && (p.tuitionYearMax === 0 || p.tuitionYearMax === null))) {
-    return { label: 'Miễn học phí', isEstimate: false };
-  }
-  const fmt = (v: number) => `${(v / 1_000_000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} triệu`;
-  const isEst = Boolean(p.tuitionIsEstimate || (p.tuitionBasis && p.tuitionBasis !== 'year'));
-  if (p.tuitionYearMin !== null && p.tuitionYearMax !== null && p.tuitionYearMin !== p.tuitionYearMax) {
-    return { label: `${fmt(p.tuitionYearMin)}–${fmt(p.tuitionYearMax)}/năm`, isEstimate: isEst };
-  }
-  if (p.tuitionYearMin !== null) {
-    return { label: `${fmt(p.tuitionYearMin)}/năm`, isEstimate: isEst };
-  }
-  if (p.tuitionStatus === 'credit_only' && p.tuitionPerCredit) {
-    return { label: `${(p.tuitionPerCredit / 1_000).toLocaleString('vi-VN', { maximumFractionDigits: 0 })} nghìn/tín chỉ`, isEstimate: false };
-  }
-  return { label: 'Chưa công bố', isEstimate: false };
-}
-
-export function formatTotalTuition(
-  p: Pick<ProgramSummary, 'tuitionTotalMin' | 'tuitionTotalMax' | 'tuitionYearMin' | 'tuitionYearMax' | 'studyYears' | 'tuitionStatus'>,
-): { label: string; isEstimate: boolean } {
-  if (p.tuitionStatus === 'free' || (p.tuitionYearMin === 0 && (p.tuitionYearMax === 0 || p.tuitionYearMax === null))) {
-    return { label: 'Miễn học phí', isEstimate: false };
-  }
-  const fmt = (v: number) => `${(v / 1_000_000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} triệu`;
-  if (p.tuitionTotalMin !== null) {
-    const high = p.tuitionTotalMax ?? p.tuitionTotalMin;
-    return {
-      label: p.tuitionTotalMin === high ? fmt(p.tuitionTotalMin) : `${fmt(p.tuitionTotalMin)}–${fmt(high)}`,
-      isEstimate: false,
-    };
-  }
-  if (p.tuitionYearMin !== null && p.studyYears && p.studyYears > 0) {
-    const low = p.tuitionYearMin * p.studyYears;
-    const high = (p.tuitionYearMax ?? p.tuitionYearMin) * p.studyYears;
-    return {
-      label: low === high ? fmt(low) : `${fmt(low)}–${fmt(high)}`,
-      isEstimate: true,
-    };
-  }
-  return { label: 'Chưa công bố', isEstimate: false };
-}
+export { formatTuition, formatYearlyTuition, formatTotalTuition } from './tuition';
 
 /** Phần phân biệt các chương trình cùng trường, cùng ngành: chuyên ngành, phần trong ngoặc, khoa */
 export function programVariant(p: Pick<ProgramSummary, 'majorName' | 'specialization' | 'qualifier' | 'faculty'>): string {

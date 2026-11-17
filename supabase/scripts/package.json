@@ -14,11 +14,18 @@
     "seed:demo": "tsx seed-demo-accounts.ts",
     "seed:demo:dry": "tsx seed-demo-accounts.ts --dry-run",
     "check:tuition": "tsx tuition-parser.check.ts",
+    "check:formulas": "tsx ../../frontend/domain-checks/formula.ts",
+    "seed:formulas": "tsx seed-formulas.ts",
+    "seed:formulas:dry": "tsx seed-formulas.ts --dry-run",
+    "seed:formulas:verify": "tsx seed-formulas.ts --verify",
+    "gen:formula-fixture": "tsx gen-formula-fixture.ts",
     "import:phase2": "tsx import-phase2-data.ts",
     "import:phase2:dry": "tsx import-phase2-data.ts --dry-run",
     "import:phase2:career": "tsx import-phase2-data.ts --step career",
     "import:phase2:school": "tsx import-phase2-data.ts --step school",
-    "import:phase2:links": "tsx import-phase2-data.ts --step links"
+    "import:phase2:links": "tsx import-phase2-data.ts --step links",
+    "import:jd-frameworks": "tsx import-jd-frameworks.ts",
+    "import:jd-frameworks:dry": "tsx import-jd-frameworks.ts --dry-run"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",

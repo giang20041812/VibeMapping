@@ -1,4 +1,4 @@
-/** Hồ sơ định hướng: mở tài liệu in riêng (INT-005 MVP — file PDF do trình duyệt lưu). */
+/** Bản in hồ sơ định hướng và báo cáo quyết định bằng trình duyệt; tệp PDF tải về dựng ở lib/pdf/reportPdfs.ts */
 
 export interface OrientationPrintInput {
   ownerName: string;
@@ -11,48 +11,6 @@ export interface OrientationPrintInput {
   coreValues: string[];
   topCareers: string[];
   notes: string[];
-}
-
-function pdfEscape(value: string): string {
-  return value.replace(/[()\\]/g, (char) => `\\${char}`);
-}
-
-/** Tải file PDF. Font chuẩn không có dấu tiếng Việt nên nội dung trong file được bỏ dấu; bản in vẫn giữ tiếng Việt. */
-export function downloadPdf(filename: string, lines: string[]) {
-  const plain = lines.map((line) => line.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D'));
-  const commands = ['BT', '/F1 11 Tf', '40 800 Td', '14 TL'];
-  plain.slice(0, 48).forEach((line, index) => {
-    commands.push(`(${pdfEscape(line.slice(0, 110))}) Tj`);
-    if (index < plain.length - 1) commands.push('T*');
-  });
-  commands.push('ET');
-  const stream = commands.join('\n');
-  const objects = [
-    '1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj',
-    '2 0 obj << /Type /Pages /Count 1 /Kids [3 0 R] >> endobj',
-    '3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >> endobj',
-    `4 0 obj << /Length ${stream.length} >> stream\n${stream}\nendstream endobj`,
-    '5 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj',
-  ];
-  let body = '%PDF-1.4\n';
-  const offsets = [0];
-  for (const object of objects) {
-    offsets.push(body.length);
-    body += `${object}\n`;
-  }
-  const xref = body.length;
-  body += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
-  offsets.slice(1).forEach((offset) => {
-    body += `${String(offset).padStart(10, '0')} 00000 n \n`;
-  });
-  body += `trailer << /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
-  const blob = new Blob([body], { type: 'application/pdf' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  link.click();
-  URL.revokeObjectURL(url);
 }
 
 export function printOrientationProfile(input: OrientationPrintInput) {
@@ -78,7 +36,7 @@ export function printOrientationProfile(input: OrientationPrintInput) {
 ${input.coreValues.length ? `<h2>Giá trị cốt lõi</h2><ol>${input.coreValues.map((v) => `<li>${esc(v)}</li>`).join('')}</ol>` : ''}
 ${input.topCareers.length ? `<h2>Nghề phù hợp (tham khảo)</h2><ol>${input.topCareers.map((v) => `<li>${esc(v)}</li>`).join('')}</ol>` : ''}
 ${input.notes.map((n) => `<p class="note">${esc(n)}</p>`).join('')}
-<p class="note">Tài liệu này không phải cam kết việc làm hoặc trúng tuyển. G6 (RIASEC) đang ở mức Demo vì công thức R05 chưa chốt.</p>
+<p class="note">Kết quả chỉ mang tính tham khảo định hướng, không phải chẩn đoán tâm lý hay cam kết trúng tuyển.</p>
 </body></html>`);
   page.document.close();
   page.focus();

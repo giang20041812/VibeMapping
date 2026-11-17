@@ -137,7 +137,7 @@ export const NotificationMenu: React.FC = () => {
     <div ref={rootRef} className="top-popover-root">
       <button
         type="button"
-        className="top-icon-button"
+        className="top-icon-button hover-sweep hover-sweep-bottom"
         aria-label={unread > 0 ? `Thông báo, ${unread} chưa đọc` : 'Thông báo'}
         aria-haspopup="dialog"
         aria-expanded={open}

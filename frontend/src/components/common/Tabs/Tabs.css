@@ -1,11 +1,15 @@
+/* Thanh tab như tab chọn nhanh trang chủ: chữ trần trên đường kẻ, vạch cam chạy dưới tab đang chọn */
 .app-tabs {
   display: flex;
-  gap: var(--space-2);
+  gap: 0 var(--space-6);
+  align-self: stretch;
+  max-width: 100%;
   min-width: 0;
-  padding: var(--space-1) var(--space-1) var(--space-2);
   overflow-x: auto;
-  scrollbar-width: thin;
+  scrollbar-width: none;
+  border-bottom: 1px solid var(--color-border);
 }
+.app-tabs::-webkit-scrollbar { display: none; }
 .app-tab {
   position: relative;
   flex: none;
@@ -13,36 +17,40 @@
   align-items: center;
   gap: var(--space-2);
   min-height: var(--touch-target);
-  padding: 0 var(--space-4);
+  padding: 0;
   font: inherit;
   font-size: var(--font-size-md);
-  font-weight: 800;
-  color: var(--color-text-secondary);
-  background: var(--color-bg-surface);
-  border: var(--cartoon-stroke-thin) solid var(--cartoon-line);
-  border-radius: var(--radius-lg);
+  font-weight: 700;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 0;
   cursor: pointer;
-  transition:
-    transform var(--transition-fast),
-    box-shadow var(--transition-fast),
-    background-color var(--transition-fast),
-    border-color var(--transition-fast);
+  transition: color 360ms var(--ease-out);
 }
-.app-tab:hover { color: var(--cartoon-ink); border-color: var(--cartoon-ink); }
+.app-tab::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--hope-blue);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 520ms var(--ease-out);
+}
+.app-tab:hover { color: var(--color-text-main); }
+.app-tab:hover::after,
+.app-tab.is-active::after { transform: scaleX(1); }
 .app-tab:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 .app-tab.is-active {
-  color: var(--cartoon-ink);
-  background: var(--brand-gold);
-  border: var(--cartoon-stroke) solid var(--cartoon-ink);
-  box-shadow: var(--cartoon-pop);
-  transform: translateY(-2px);
+  color: var(--color-text-main);
 }
 .app-tab-icon { display: inline-grid; place-items: center; }
 .app-tab-icon svg { width: calc(18 * var(--px)); height: calc(18 * var(--px)); }
 .app-tab-dot {
-  width: calc(10 * var(--px));
-  height: calc(10 * var(--px));
+  width: calc(8 * var(--px));
+  height: calc(8 * var(--px));
   background: var(--color-danger);
-  border: 2px solid var(--cartoon-ink);
   border-radius: var(--radius-full);
 }

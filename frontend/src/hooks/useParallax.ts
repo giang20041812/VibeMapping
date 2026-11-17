@@ -1,18 +1,16 @@
 import { useEffect, type RefObject } from 'react';
 import { useLowPower } from './useLowPower';
-import { useReducedMotion } from './useReducedMotion';
 
 /**
  * Ghi vị trí con trỏ trong phần tử vào --parallax-x / --parallax-y (từ -1 đến 1) để các lớp trang trí bên trong
- * xê dịch theo bằng CSS. Không làm gì khi bật giảm chuyển động, máy yếu hoặc màn hình cảm ứng.
+ * xê dịch theo bằng CSS. Không làm gì trên máy yếu hoặc màn hình cảm ứng.
  */
 export function useParallax(ref: RefObject<HTMLElement | null>) {
-  const reducedMotion = useReducedMotion();
   const lowPower = useLowPower();
 
   useEffect(() => {
     const element = ref.current;
-    if (!element || reducedMotion || lowPower) return;
+    if (!element || lowPower) return;
 
     let frame = 0;
     const setOffset = (x: number, y: number) => {
@@ -40,5 +38,5 @@ export function useParallax(ref: RefObject<HTMLElement | null>) {
       element.style.removeProperty('--parallax-x');
       element.style.removeProperty('--parallax-y');
     };
-  }, [ref, reducedMotion, lowPower]);
+  }, [ref, lowPower]);
 }

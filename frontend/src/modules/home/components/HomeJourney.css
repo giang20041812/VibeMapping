@@ -1,0 +1,1147 @@
+/* Hành trình 5 bước trên nền sáng:
+   bước bên trái là chữ trần (không khung), phân tách bằng đường kẻ; vạch tiến độ chạy theo cuộn.
+   Sân khấu bên phải là mặt giấy trắng viền mảnh, góc bo nhỏ; mọi khối bên trong phẳng, ngăn bằng đường kẻ. */
+.journey {
+  --j-meta-w: calc(44 * var(--px));
+  --j-rail-w: calc(28 * var(--px));
+  --j-gap: var(--space-4);
+  --j-dot: calc(16 * var(--px));
+  --j-accent: var(--hope-blue);
+  --j-ink: var(--color-text-main);
+  --j-muted: var(--color-text-muted);
+  --j-faint: var(--ink-300);
+  --j-line: var(--color-border);
+  --stage-h: min(calc(630 * var(--px)), 80vh);
+
+  scroll-margin-top: calc(var(--topbar-height) + var(--space-6));
+}
+
+html:has(.journey) {
+  scroll-behavior: smooth;
+}
+
+/* ---------- Đầu phần ---------- */
+.journey-head {
+  margin-bottom: clamp(var(--space-12), 6vw, calc(88 * var(--px)));
+}
+
+.journey-head-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-6) var(--space-8);
+  width: 100%;
+}
+
+.journey-title {
+  max-width: calc(820 * var(--px));
+  font-size: clamp(calc(30 * var(--px)), 4.2vw, calc(68 * var(--px)));
+  font-weight: 800;
+  line-height: 1.04;
+  letter-spacing: -0.045em;
+  color: var(--color-heading);
+  text-wrap: balance;
+}
+
+/* Tab chọn nhanh: chữ trần, vạch xanh chạy dưới tab đang xem */
+.journey-quick-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-6);
+  list-style: none;
+  border-bottom: 1px solid var(--j-line);
+}
+
+.journey-quick-tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-target);
+  padding: 0;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--ink-500);
+  background: transparent;
+  transition: color 360ms var(--ease-out);
+}
+
+.journey-quick-tab::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--j-accent);
+  transform: scaleX(0);
+  transform-origin: right center;
+  transition: transform 520ms var(--ease-out);
+}
+
+.journey-quick-tab:hover,
+.journey-quick-tab.is-done {
+  color: var(--j-muted);
+}
+
+.journey-quick-tab:hover {
+  color: var(--j-ink);
+}
+
+.journey-quick-tab.is-active {
+  color: var(--j-ink);
+}
+
+.journey-quick-tab.is-active::after {
+  transform: scaleX(1);
+  transform-origin: left center;
+}
+
+.journey-body {
+  display: grid;
+  grid-template-columns: minmax(0, 4.3fr) minmax(0, 6.7fr);
+  align-items: start;
+  gap: clamp(var(--space-6), 4.6vw, calc(72 * var(--px)));
+}
+
+/* ---------- Dòng thời gian bên trái ---------- */
+.journey-list {
+  list-style: none;
+  min-width: 0;
+}
+
+.journey-step {
+  display: grid;
+  grid-template-columns: var(--j-meta-w) var(--j-rail-w) minmax(0, 1fr);
+  column-gap: var(--j-gap);
+  min-height: clamp(calc(520 * var(--px)), 72vh, calc(680 * var(--px)));
+  padding-bottom: clamp(calc(56 * var(--px)), 8vh, calc(96 * var(--px)));
+  scroll-margin-top: calc(var(--topbar-height) + var(--space-8));
+}
+
+.journey-end {
+  min-height: 0;
+  padding-bottom: 0;
+}
+
+.journey-meta {
+  padding-top: calc(10 * var(--px));
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--j-faint);
+  transition: color 480ms var(--ease-out);
+}
+
+.journey-rail {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.journey-dot {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: var(--j-dot);
+  height: var(--j-dot);
+  margin-top: calc(12 * var(--px));
+  background: var(--color-bg-app);
+  border: 1.5px solid var(--color-border-hover);
+  border-radius: var(--radius-full);
+  transform: scale(0.8);
+  transition:
+    border-color 480ms var(--ease-out),
+    transform 480ms var(--ease-out),
+    box-shadow 480ms var(--ease-out);
+}
+
+.journey-dot-core {
+  width: calc(6 * var(--px));
+  height: calc(6 * var(--px));
+  background: var(--j-accent);
+  border-radius: var(--radius-full);
+  transform: scale(0);
+  transition: transform 480ms var(--ease-out);
+}
+
+.journey-segment {
+  position: absolute;
+  top: calc(12 * var(--px) + var(--j-dot));
+  left: 50%;
+  width: 1px;
+  height: 100%;
+  overflow: hidden;
+  background: var(--j-line);
+  transform: translateX(-50%);
+}
+
+.journey-segment::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: var(--seg-fill, 0px);
+  background: var(--j-ink);
+}
+
+/* Nội dung từng bước: chữ trần, không khung */
+.journey-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+  cursor: pointer;
+}
+
+.journey-step-top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.journey-step-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  color: var(--j-faint);
+  transition:
+    color 480ms var(--ease-out),
+    transform 560ms var(--ease-out);
+}
+
+.journey-step-heading {
+  min-width: 0;
+}
+
+.journey-step-title {
+  margin: 0;
+  font-size: clamp(var(--font-size-2xl), 2vw, calc(32 * var(--px)));
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+  color: var(--j-faint);
+  transition:
+    color 480ms var(--ease-out),
+    transform 560ms var(--ease-out);
+}
+
+.journey-step-arrow {
+  flex: none;
+  margin-left: auto;
+  color: var(--j-ink);
+  opacity: 0;
+  transform: translate(-8px, 8px);
+  transition:
+    transform 560ms var(--ease-out),
+    opacity 480ms var(--ease-out),
+    color 480ms var(--ease-out);
+}
+
+.journey-facts {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  border-top: 1px solid var(--j-line);
+}
+
+.journey-facts li {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: calc(46 * var(--px));
+  padding: var(--space-2) 0;
+  font-size: var(--font-size-md);
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--ink-500);
+  border-bottom: 1px solid var(--j-line);
+  transition:
+    color 480ms var(--ease-out),
+    transform 480ms var(--ease-out);
+}
+
+.journey-fact-check {
+  flex: none;
+  display: grid;
+  place-items: center;
+  color: var(--j-faint);
+  transition: color 480ms var(--ease-out);
+}
+
+@media (hover: hover) {
+  .journey-content:hover .journey-step-title {
+    color: var(--j-ink);
+    transform: translateX(6px);
+  }
+
+  .journey-content:hover .journey-step-icon {
+    transform: rotate(-10deg) scale(1.1);
+  }
+
+  .journey-content:hover .journey-step-arrow {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+
+  .journey-facts li:hover {
+    transform: translateX(4px);
+  }
+
+  .journey-facts li:hover .journey-fact-check {
+    color: var(--j-accent);
+  }
+}
+
+/* Trạng thái đã đi qua & đang xem */
+.journey-step.is-done .journey-dot,
+.journey-step.is-current .journey-dot {
+  border-color: var(--j-ink);
+  transform: scale(1);
+}
+
+.journey-step.is-done .journey-dot-core,
+.journey-step.is-current .journey-dot-core {
+  transform: scale(1);
+}
+
+.journey-step.is-current .journey-dot {
+  box-shadow: 0 0 0 calc(6 * var(--px)) var(--hope-blue-soft);
+}
+
+.journey-step.is-done .journey-meta {
+  color: var(--j-muted);
+}
+
+.journey-step.is-current .journey-meta {
+  color: var(--j-accent);
+}
+
+.journey-step.is-done .journey-step-title {
+  color: var(--j-muted);
+}
+
+.journey-step.is-current .journey-step-title {
+  color: var(--j-ink);
+}
+
+.journey-step.is-done .journey-step-icon {
+  color: var(--j-muted);
+}
+
+.journey-step.is-current .journey-step-icon {
+  color: var(--j-accent);
+}
+
+.journey-step.is-current .journey-step-arrow {
+  opacity: 1;
+  transform: translate(0, 0);
+}
+
+.journey-step.is-done .journey-facts li {
+  color: var(--j-muted);
+}
+
+.journey-step.is-current .journey-facts li {
+  color: var(--j-ink);
+}
+
+.journey-step.is-done .journey-fact-check {
+  color: var(--j-muted);
+}
+
+.journey-step.is-current .journey-fact-check {
+  color: var(--color-primary);
+}
+
+/* Nút cuối hành trình */
+.journey-end-cta {
+  padding-top: var(--space-1);
+}
+
+.journey-cta-wrap {
+  display: inline-flex;
+}
+
+.journey-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-height: calc(56 * var(--px));
+  padding: 0 var(--space-8);
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: var(--color-cta-text);
+  text-decoration: none;
+  background: var(--color-cta);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-cta);
+}
+
+/* ---------- Sân khấu dính bên phải: mặt giấy trắng ---------- */
+.journey-aside {
+  position: sticky;
+  top: max(calc(var(--topbar-height) + var(--space-3)), calc(50vh - var(--stage-h) / 2 + var(--topbar-height) / 2));
+  min-width: 0;
+}
+
+.journey-stage {
+  position: relative;
+  isolation: isolate;
+  height: var(--stage-h);
+  overflow: hidden;
+  color: var(--j-ink);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--j-line);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Lưới chấm mờ và quầng xanh trời rất nhạt ở góc */
+.journey-stage-glow {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(60% 50% at 92% 0%, color-mix(in srgb, var(--brand-soft) 45%, transparent), transparent 70%);
+}
+
+.journey-stage-glow::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(var(--ink-200) 1px, transparent 1px);
+  background-size: calc(22 * var(--px)) calc(22 * var(--px));
+  -webkit-mask-image: linear-gradient(180deg, var(--j-ink), transparent 80%);
+  mask-image: linear-gradient(180deg, var(--j-ink), transparent 80%);
+  opacity: 0.7;
+}
+
+/* Rê chuột trong sân khấu: vùng sáng xanh nhạt đi theo con trỏ, không viền */
+.journey-stage .spotlight::before {
+  background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--brand-blue) 7%, transparent), transparent 65%);
+}
+
+.journey-stage .spotlight::after {
+  display: none;
+}
+
+.journey-scene {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6) var(--space-6) var(--space-10);
+  opacity: 0;
+  transform: translate3d(0, 28px, 0);
+  filter: blur(6px);
+  pointer-events: none;
+  will-change: transform, opacity, filter;
+  transition:
+    opacity 560ms var(--ease-out),
+    transform 760ms var(--ease-out),
+    filter 560ms var(--ease-out);
+}
+
+.journey-scene.is-active {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  filter: blur(0);
+  pointer-events: auto;
+}
+
+.journey-scene .artifact-stagger {
+  opacity: 0;
+  transform: translate3d(0, 18px, 0);
+  transition:
+    opacity 680ms var(--ease-out),
+    transform 680ms var(--ease-out);
+  transition-delay: calc(80ms + var(--stagger-i, 0) * 95ms);
+}
+
+.journey-scene.is-active .artifact-stagger {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.journey-dots {
+  position: absolute;
+  bottom: var(--space-4);
+  left: 50%;
+  z-index: 4;
+  display: flex;
+  gap: calc(6 * var(--px));
+  list-style: none;
+  transform: translateX(-50%);
+}
+
+.journey-dots li {
+  width: calc(18 * var(--px));
+  height: 3px;
+  cursor: pointer;
+  background: var(--ink-200);
+  transition: width 420ms var(--ease-out), background-color 420ms var(--ease-out);
+}
+
+.journey-dots li.is-done {
+  background: var(--ink-500);
+}
+
+.journey-dots li.is-active {
+  width: calc(36 * var(--px));
+  background: var(--j-accent);
+}
+
+/* ==========================================================================
+   NỘI DUNG CẢNH: phẳng trên mặt giấy, các khối ngăn bằng đường kẻ
+   ========================================================================== */
+.artifact-window {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+  max-height: 100%;
+}
+
+.artifact-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--j-line);
+}
+
+.artifact-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(5 * var(--px));
+  padding: calc(3 * var(--px)) var(--space-2);
+  font-size: calc(11 * var(--px));
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--j-line);
+  border-radius: var(--radius-xs);
+  white-space: nowrap;
+}
+
+.artifact-tag.is-sky {
+  color: var(--color-primary);
+  background: var(--brand-ice);
+  border-color: var(--brand-mist);
+}
+
+.artifact-tag.is-coral {
+  color: var(--color-highlight-text);
+  background: var(--color-highlight-bg);
+  border-color: var(--color-highlight-border);
+}
+
+.artifact-status-line {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+.scene-track {
+  display: block;
+  height: 4px;
+  overflow: hidden;
+  background: var(--color-bg-subtle);
+}
+
+.scene-fill {
+  display: block;
+  width: var(--w, 100%);
+  height: 100%;
+  background: var(--color-primary);
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform 850ms var(--ease-out);
+  transition-delay: calc(200ms + var(--bar-i, 0) * 90ms);
+}
+
+.journey-scene.is-active .scene-fill {
+  transform: scaleX(1);
+}
+
+.scene-fill.is-coral {
+  background: var(--brand-coral);
+}
+
+.scene-fill.is-static,
+.journey-scene.is-active .scene-fill.is-static {
+  transform: none;
+  transition: none;
+}
+
+/* ---------- Bước 1 & 2: hình minh họa kiểu hình dán (biểu đồ đa giác, quả cầu 360°) ---------- */
+.artifact-sticker-stage {
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  max-width: calc(600 * var(--px));
+  margin: 0 auto;
+  padding: var(--space-6) 0;
+}
+
+.artifact-sticker-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+}
+
+/* ---------- Bước 3: nghề phù hợp ---------- */
+.artifact-fit-hero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: stretch;
+  gap: var(--space-5);
+  padding: var(--space-4) var(--space-3);
+  margin: 0 calc(-1 * var(--space-3));
+}
+
+.artifact-fit-score-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-right: var(--space-5);
+  border-right: 1px solid var(--j-line);
+}
+
+.artifact-fit-rank-label {
+  font-size: calc(11 * var(--px));
+  font-weight: 700;
+  color: var(--color-highlight-text);
+}
+
+.artifact-fit-big-score {
+  font-size: clamp(calc(40 * var(--px)), 4vw, calc(56 * var(--px)));
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  color: var(--j-ink);
+}
+
+.artifact-fit-score-sub {
+  font-size: calc(11 * var(--px));
+  font-weight: 600;
+  color: var(--j-muted);
+}
+
+.artifact-fit-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.artifact-fit-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.artifact-fit-title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--j-ink);
+}
+
+.artifact-fit-sub {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--j-muted);
+}
+
+.artifact-fit-bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  list-style: none;
+}
+
+.artifact-fit-bar-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.artifact-fit-bar-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.artifact-fit-bar-head strong {
+  font-variant-numeric: tabular-nums;
+  color: var(--j-ink);
+}
+
+.artifact-fit-next {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  border-top: 1px solid var(--j-line);
+}
+
+.artifact-fit-next-row {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  margin: 0 calc(-1 * var(--space-3));
+  border-bottom: 1px solid var(--j-line);
+}
+
+.artifact-fit-rank {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--j-faint);
+}
+
+.artifact-fit-next-icon {
+  display: grid;
+  place-items: center;
+  color: var(--color-primary);
+}
+
+.artifact-fit-next-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.artifact-fit-next-name {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--j-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: transform 420ms var(--ease-out);
+}
+
+.artifact-fit-next-row:hover .artifact-fit-next-name {
+  transform: translateX(3px);
+}
+
+.artifact-fit-next-holland {
+  font-size: var(--font-size-xs);
+  color: var(--j-muted);
+}
+
+.artifact-fit-next-score {
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  color: var(--j-ink);
+}
+
+/* ---------- Bước 4: so sánh phương án ---------- */
+.artifact-param-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  font-size: var(--font-size-xs);
+  color: var(--j-muted);
+}
+
+.artifact-param-list strong {
+  color: var(--j-ink);
+}
+
+.artifact-compare-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.artifact-plan-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-top: 2px solid var(--j-line);
+}
+
+.artifact-plan-card + .artifact-plan-card {
+  border-left: 1px solid var(--j-line);
+}
+
+.artifact-plan-card.is-preferred {
+  border-top-color: var(--brand-coral);
+}
+
+.artifact-plan-head {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--j-line);
+}
+
+.artifact-plan-rank {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: calc(11 * var(--px));
+  font-weight: 700;
+  color: var(--j-muted);
+}
+
+.artifact-plan-card.is-preferred .artifact-plan-rank {
+  color: var(--color-highlight-text);
+}
+
+.artifact-plan-school {
+  font-size: var(--font-size-md);
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  color: var(--j-ink);
+}
+
+.artifact-plan-program {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--j-muted);
+}
+
+.artifact-plan-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.artifact-plan-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: var(--font-size-xs);
+}
+
+.artifact-plan-row dt {
+  font-weight: 500;
+  color: var(--j-muted);
+}
+
+.artifact-plan-row dd {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 700;
+  color: var(--j-ink);
+}
+
+.artifact-plan-ok {
+  font-size: calc(10 * var(--px));
+  font-weight: 700;
+  color: var(--color-success-text);
+}
+
+.artifact-plan-foot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--j-line);
+}
+
+.artifact-plan-foot-label {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--j-muted);
+}
+
+.artifact-plan-total {
+  font-size: var(--font-size-xl);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  color: var(--j-ink);
+}
+
+.artifact-plan-card.is-preferred .artifact-plan-total {
+  color: var(--color-highlight-text);
+}
+
+/* ---------- Bước 5: lộ trình ---------- */
+.artifact-roadmap-list {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  border-top: 1px solid var(--j-line);
+}
+
+.artifact-roadmap-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  margin: 0 calc(-1 * var(--space-3));
+  border-bottom: 1px solid var(--j-line);
+}
+
+.artifact-roadmap-stage-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.artifact-roadmap-code {
+  font-family: var(--font-mono);
+  font-size: calc(11 * var(--px));
+  font-weight: 700;
+  color: var(--j-faint);
+}
+
+.artifact-roadmap-stage.is-current .artifact-roadmap-code {
+  color: var(--color-primary);
+}
+
+.artifact-roadmap-title {
+  font-size: var(--font-size-sm);
+  font-weight: 800;
+  color: var(--j-ink);
+}
+
+.artifact-roadmap-status {
+  margin-left: auto;
+  font-size: calc(11 * var(--px));
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.artifact-roadmap-status.is-done {
+  color: var(--color-success-text);
+}
+
+.artifact-roadmap-status.is-current {
+  color: var(--color-primary);
+}
+
+.artifact-roadmap-tasks {
+  display: flex;
+  flex-direction: column;
+  gap: calc(6 * var(--px));
+  list-style: none;
+}
+
+.artifact-roadmap-task {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-xs);
+  color: var(--j-muted);
+}
+
+.artifact-roadmap-task.is-done {
+  color: var(--j-ink);
+}
+
+.artifact-task-box {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: calc(15 * var(--px));
+  height: calc(15 * var(--px));
+  color: var(--color-text-inverse);
+  border: 1.5px solid var(--color-border-hover);
+  border-radius: var(--radius-full);
+}
+
+.artifact-roadmap-task.is-done .artifact-task-box {
+  background: var(--color-success);
+  border-color: var(--color-success);
+}
+
+.artifact-task-pillar {
+  flex: none;
+  font-size: calc(11 * var(--px));
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.artifact-task-text {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.artifact-roadmap-goal {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-3);
+  margin: 0 calc(-1 * var(--space-3));
+}
+
+.artifact-goal-pin {
+  flex: none;
+  display: grid;
+  place-items: center;
+  color: var(--brand-coral);
+}
+
+.artifact-goal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.artifact-goal-eyebrow {
+  font-size: calc(11 * var(--px));
+  font-weight: 700;
+  color: var(--color-highlight-text);
+}
+
+.artifact-goal-title {
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--j-ink);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 960px) {
+  .journey {
+    --stage-h: min(calc(480 * var(--px)), 56vh);
+  }
+
+  .journey-quick-tabs {
+    display: none;
+  }
+
+  .journey-body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-8);
+  }
+
+  .journey-aside {
+    order: -1;
+    z-index: 2;
+    top: calc(var(--topbar-height) + var(--space-2));
+  }
+
+  .journey-step {
+    grid-template-columns: var(--j-rail-w) minmax(0, 1fr);
+    column-gap: var(--space-3);
+    min-height: clamp(calc(380 * var(--px)), 58vh, calc(520 * var(--px)));
+  }
+
+  .journey-end {
+    min-height: 0;
+  }
+
+  .journey-meta {
+    display: none;
+  }
+
+  .journey-scene {
+    padding: var(--space-4) var(--space-4) var(--space-8);
+  }
+
+  .artifact-window {
+    overflow-y: auto;
+  }
+
+  .artifact-compare-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .artifact-plan-card + .artifact-plan-card {
+    border-left: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .artifact-fit-hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .artifact-fit-score-box {
+    padding-right: 0;
+    padding-bottom: var(--space-3);
+    border-right: 0;
+    border-bottom: 1px solid var(--j-line);
+  }
+
+  .artifact-task-text {
+    white-space: normal;
+  }
+
+  .journey-cta-wrap,
+  .journey-cta-btn {
+    width: 100%;
+  }
+}
+
+/* ===== Đồng bộ với các trang cá nhân: cùng đường tiến độ một nét, ô tick vuông, nhãn trạng thái chữ nhật ===== */
+.scene-track {
+  height: 3px;
+  background: var(--progress-track-tint);
+}
+
+.scene-fill {
+  background: var(--progress-gradient);
+}
+
+.artifact-task-box {
+  border-radius: var(--radius-xs);
+}
+
+.artifact-roadmap-status {
+  padding: calc(3 * var(--px)) var(--space-2);
+  border-radius: var(--radius-xs);
+  box-shadow: inset 0 0 0 1px currentColor;
+}
+
+.artifact-roadmap-status.is-done {
+  background: color-mix(in srgb, var(--color-success) 10%, var(--color-bg-surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-success) 28%, transparent);
+}
+
+.artifact-roadmap-status.is-current {
+  color: var(--hope-blue-deep);
+  background: var(--hope-blue-soft);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--hope-blue) 28%, transparent);
+}
+
+.artifact-roadmap-stage.is-current {
+  background-color: var(--hope-blue-soft);
+  box-shadow: inset 3px 0 0 var(--hope-blue);
+}
+
+.artifact-roadmap-stage.is-current .artifact-roadmap-code {
+  color: var(--hope-blue);
+}
+
+.artifact-fit-big-score {
+  color: var(--hope-blue);
+}

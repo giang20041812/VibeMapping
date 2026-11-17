@@ -383,15 +383,6 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .grid-cell-value,
-  .grid-fill-handle,
-  .grid-palette,
-  .grid-cell.is-missing .grid-cell-value {
-    animation: none;
-  }
-}
-
 @media (max-width: 768px) {
   .grid-settings,
   .grid-progress {

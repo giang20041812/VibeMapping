@@ -13,7 +13,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ value, label, tone = '
   const percent = value === null ? 0 : Math.max(0, Math.min(value, 100));
   return (
     <div
-      className={`app-progress progress-${tone} ${className}`}
+      className={`app-progress progress-${tone}${percent >= 100 ? ' is-complete' : ''} ${className}`}
       role="progressbar"
       aria-label={label}
       aria-valuemin={0}

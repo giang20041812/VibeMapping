@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useParams } from 'react-router-dom';
 import { AuthProvider, useAuth } from './modules/auth/AuthContext';
 import { AuthLayout } from './components/layout/AuthLayout';
 import { AppLayout } from './components/layout/AppLayout';
 import { PublicLayout } from './components/layout/PublicLayout';
 import { ShellLayout } from './components/layout/ShellLayout';
+import { ScrollToTop } from './components/layout/ScrollToTop';
 import { GuestOnly, RequireAuth, RequireCompleteProfile, RequireRole, RequireSession } from './components/layout/RouteGuards';
 import { PackageAssignmentsPage } from './modules/admin/pages/PackageAssignmentsPage';
 import { QuestionBankPage } from './modules/admin/pages/QuestionBankPage';
@@ -41,6 +42,9 @@ import { DecisionComparePage } from './modules/decision_support/pages/DecisionCo
 import { RoadmapPage } from './modules/roadmap/pages/RoadmapPage';
 import { PortfolioPage } from './modules/portfolio/pages/PortfolioPage';
 import { CommunityPage } from './modules/community/pages/CommunityPage';
+import { CommunityFeedPage } from './modules/community/pages/CommunityFeedPage';
+import { EventDetailPage } from './modules/community/pages/EventDetailPage';
+import { MentorProfilePage } from './modules/community/pages/MentorProfilePage';
 import { GuardianConfirmPage, PrivacyPage } from './modules/privacy/pages/PrivacyPage';
 import { QualitativeReviewPage } from './modules/admin/pages/QualitativeReviewPage';
 import { CommunityAdminPage, ContentLibraryAdminPage } from './modules/admin/pages/AdminModulesPages';
@@ -55,6 +59,14 @@ import {
   MajorDetailPage,
   ProgramDetailPage,
 } from './modules/school_explorer/pages/EducationDetailPages';
+
+import { Spinner } from './components/common';
+
+/** Trang công thức nạp khi mở, vì thư viện hiển thị công thức toán chỉ khu quản trị dùng */
+const FormulaListPage = lazy(() => import('./modules/formula_library/pages/FormulaListPage').then((m) => ({ default: m.FormulaListPage })));
+const FormulaGraphPage = lazy(() => import('./modules/formula_library/pages/FormulaGraphPage').then((m) => ({ default: m.FormulaGraphPage })));
+const FormulaEditPage = lazy(() => import('./modules/formula_library/pages/FormulaEditPage').then((m) => ({ default: m.FormulaEditPage })));
+const FormulaDetailPage = lazy(() => import('./modules/formula_library/pages/FormulaDetailPage').then((m) => ({ default: m.FormulaDetailPage })));
 
 /** Quản trị hệ thống vào thẳng khu quản trị, giáo viên vào thẳng lớp học */
 const HomeRoute: React.FC = () => {
@@ -72,6 +84,7 @@ const LegacySessionRedirect: React.FC = () => {
 
 export const App: React.FC = () => (
   <BrowserRouter>
+    <ScrollToTop />
     <AuthProvider>
       <Routes>
         <Route element={<GuestOnly />}>
@@ -86,7 +99,7 @@ export const App: React.FC = () => (
           <Route path="/xac-minh-otp" element={<OtpVerifyPage />} />
         </Route>
 
-        {/* Thanh điều hướng ngang, không có thanh bên: giới thiệu, ngành nghề, khám phá trường, khách làm bài test và khai báo thông tin sau bài */}
+        {/* Thanh điều hướng ngang, không có thanh bên: giới thiệu, ngành nghề, khám phá trường, khách làm bài test */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<HomeRoute />} />
           <Route path="/nganh-nghe" element={<MajorExplorerPage />} />
@@ -97,14 +110,12 @@ export const App: React.FC = () => (
           <Route path="/kham-pha-truong/nganh/:id" element={<MajorDetailPage />} />
           <Route path="/kham-pha-truong/chuong-trinh/:id" element={<ProgramDetailPage />} />
           <Route path="/lam-bai" element={<GuestTestPage />} />
-          <Route element={<RequireSession />}>
-            <Route path="/hoan-tat-ho-so" element={<CompleteProfilePage />} />
-          </Route>
         </Route>
 
-        {/* Làm bài: khách (tài khoản ẩn danh) thấy thanh ngang, người có tài khoản thấy thanh bên */}
+        {/* Làm bài và khai báo hồ sơ: khách (tài khoản ẩn danh) thấy thanh ngang, người có tài khoản thấy thanh bên (khóa khi khai báo hồ sơ) */}
         <Route element={<RequireSession />}>
           <Route element={<ShellLayout />}>
+            <Route path="/hoan-tat-ho-so" element={<CompleteProfilePage />} />
             <Route element={<RequireCompleteProfile />}>
               <Route path="/danh-gia-ca-nhan/:sessionId" element={<AssessmentRunPage />} />
             </Route>
@@ -121,6 +132,9 @@ export const App: React.FC = () => (
               <Route path="/nghe/:careerId" element={<CareerDetailPage />} />
               <Route path="/ban-do/:careerId" element={<CareerEducationMapPage />} />
               <Route path="/cong-dong" element={<CommunityPage />} />
+              <Route path="/cong-dong/nhom/:communityId" element={<CommunityFeedPage />} />
+              <Route path="/cong-dong/su-kien/:eventId" element={<EventDetailPage />} />
+              <Route path="/cong-dong/nguoi-huong-dan/:mentorId" element={<MentorProfilePage />} />
               <Route path="/quyen-rieng-tu" element={<PrivacyPage />} />
               <Route path="/giam-ho/:token" element={<GuardianConfirmPage />} />
               <Route path="/bao-cao-con/:userId" element={<SharedResultPage />} />
@@ -133,7 +147,7 @@ export const App: React.FC = () => (
               <Route element={<RequireRole roles={['parent']} />}>
                 <Route path="/bao-cao-duoc-chia-se" element={<SharedReportsPage />} />
               </Route>
-              <Route element={<RequireRole roles={['university_student']} />}>
+              <Route element={<RequireRole roles={['student', 'university_student']} />}>
                 <Route path="/nang-luc" element={<PortfolioPage />} />
               </Route>
               <Route element={<RequireRole roles={['student', 'university_student', 'teacher', 'school_admin']} />}>
@@ -151,6 +165,10 @@ export const App: React.FC = () => (
               <Route path="/quan-tri/cau-hoi" element={<QuestionBankPage />} />
               <Route path="/quan-tri/tieu-chi" element={<CriteriaPage />} />
               <Route path="/quan-tri/tham-so" element={<OperationParametersPage />} />
+              <Route path="/quan-tri/cong-thuc" element={<Suspense fallback={<Spinner />}><FormulaListPage /></Suspense>} />
+              <Route path="/quan-tri/cong-thuc/so-do" element={<Suspense fallback={<Spinner />}><FormulaGraphPage /></Suspense>} />
+              <Route path="/quan-tri/cong-thuc/:id/sua" element={<Suspense fallback={<Spinner />}><FormulaEditPage /></Suspense>} />
+              <Route path="/quan-tri/cong-thuc/:id" element={<Suspense fallback={<Spinner />}><FormulaDetailPage /></Suspense>} />
               <Route path="/quan-tri/nhat-ky" element={<AuditLogsPage />} />
               <Route path="/quan-tri/cham-dinh-tinh" element={<QualitativeReviewPage />} />
               <Route path="/quan-tri/nghe" element={<CareerAdminListPage />} />

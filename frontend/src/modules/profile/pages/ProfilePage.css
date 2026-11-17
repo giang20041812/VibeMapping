@@ -4,10 +4,6 @@
   gap: var(--space-5);
 }
 
-.profile-group {
-  display: flex;
-}
-
 .profile-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));

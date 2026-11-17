@@ -81,7 +81,7 @@ File research không có bảng nghề ↔ ngành. Liên kết sinh tự động
 3. **Cách gộp Req/CW** (trung bình, đếm JD) và việc chỉ dùng JD L0–L2 do dev đặt mặc định; JD L0–L2 thường có Required Level thấp nên Req cũng thấp (nghề kiểm thử có Req từ 1,0 đến 2,0).
 4. **Công thức Holland/RIASEC Match vẫn BLOCKED** (SRS R05); chỉ mới có dữ liệu đầu vào (hồ sơ sáu chiều + Top 3).
 5. **106 JD có Required Level trống/"N / A"** nên không vào ma trận.
-6. **Học phí và số năm**: 67,6% chương trình (6.430/9.511) tách được học phí/năm (5.923 có số: 5.473 ghi rõ mỗi kỳ, 342 ghi rõ học phí năm, 108 chia từ tổng khóa; 507 miễn học phí; lưu đủ các cột `tuition_per_semester_min/max`, `tuition_per_year_min/max`, `tuition_total_min/max`, `tuition_per_credit`, `program_credits`, `tuition_per_month`, `tuition_basis`, `tuition_status`, `tuition_is_estimate`). Phần còn lại gồm 442 chỉ có đơn giá tín chỉ, 2.328 chưa công bố, 311 chưa tách được (xuất `docs/tuition-review.csv`); 76,0% có số năm đào tạo.
+6. **Học phí và số năm**: 67,6% chương trình (6.430/9.511) tách được học phí/năm (5.923 có số: 5.473 ghi rõ mỗi kỳ, 342 ghi rõ học phí năm, 108 chia từ tổng khóa; 507 miễn học phí; lưu đủ các cột `tuition_per_semester_min/max`, `tuition_per_year_min/max`, `tuition_total_min/max`, `tuition_per_credit`, `program_credits`, `tuition_per_month`, `tuition_basis`, `tuition_status`, `tuition_is_estimate`). Giao diện phân loại mỗi chương trình theo cách thu (theo học kỳ, theo năm, theo tháng, theo tín chỉ, trọn khóa, miễn, chưa công bố) và đánh dấu số quy đổi; trần học phí năm hợp lý nâng lên 1 tỷ đồng để chương trình quốc tế đắt không bị loại (cần chạy lại `import:phase2:school` để cập nhật dữ liệu đã nạp). Phần còn lại gồm 442 chỉ có đơn giá tín chỉ, 2.328 chưa công bố, 311 chưa tách được (xuất `docs/tuition-review.csv`); 76,0% có số năm đào tạo.
 7. **Chất lượng research**: 1.240 chương trình "Chưa xác minh", 440 "Cần bổ sung" (file ghi rõ chưa đối chiếu website). Trạng thái được giữ ở `research_status` để giao diện/lọc dùng.
 8. **Liên kết nghề–ngành tự dò chưa kiểm duyệt**: 1.437/2.176 nghề có ít nhất một ngành, nhưng chỉ 324/1.078 ngành có nghề; ngành chung chung ("Kinh tế", "Luật") gắn rất nhiều nghề. Cần BA rà hoặc cung cấp bảng ngành ↔ nghề chính thức.
 9. Một số dòng nguồn lệch cột (tên trường nằm trong ô tỉnh/thành, ví dụ dòng cuối sheet thành viên) bị bỏ và liệt kê ở cảnh báo của dry-run; 2 trường chưa rõ công lập/tư thục. Tên lĩnh vực cấp 1 lấy cứng theo sheet CHIA NHÓM vì cột tương ứng trong file JD viết không thống nhất.
@@ -129,3 +129,25 @@ File research không có bảng nghề ↔ ngành. Liên kết sinh tự động
 - Trang nghề của người dùng ưu tiên nội dung quản trị nhập (tóm tắt, kỹ năng, lương, lộ trình) thay cho phần tổng hợp từ JD cùng loại.
 - Thanh điều hướng công khai có danh mục nghề thả xuống; đăng ký chọn được vai trò; trang so sánh phương án có lịch sử quyết định và nút "Đặt làm mục tiêu" (`set_decision_goal`: cần phương án ưu tiên có nghề, cần phụ huynh đồng thuận nếu đã chia sẻ báo cáo, tối đa 2 nghề mục tiêu); kỹ năng mềm lấy từ 360° chỉ gồm G2–G5.
 - Kiểm thử: `supabase/tests/phase2_career_publish.sql`, `phase2_career_admin.sql`, `phase3_decision_goal.sql`.
+
+## 9. Khung JD theo cấp (2026-11-16)
+
+Mỗi nghề có các bậc L0–L7 (Thực tập sinh, Fresher, Junior, Middle, Senior, Trưởng nhóm, Quản lý, Lãnh đạo — thang cũ của `career_job_descriptions.career_level`, thêm L0). Mỗi bậc một khung: thông tin chung + các dòng nội dung chia theo mục, mục yêu cầu và quyền lợi có mức Bắt buộc / Thường gặp / Lợi thế.
+
+| Thành phần | File |
+|---|---|
+| Bảng, RLS, RPC quản trị | `supabase/migrations/20261116000100_career_level_frameworks.sql` |
+| Khóa nguồn chữ cho JD (`source_key`, `source_file`; `source_id` thôi bắt buộc) | `supabase/migrations/20261116000200_career_jd_source_key.sql` |
+| Đọc file Word khung JD | `supabase/scripts/jd-framework-docx.ts` |
+| Nạp JD + khung | `supabase/scripts/import-jd-frameworks.ts` · `npm run import:jd-frameworks:dry` / `import:jd-frameworks [-- --step jds|frameworks] [--publish] [--json-out f] [--json-in f]` |
+| Kiểm thử | `supabase/tests/career_level_frameworks.sql` (39 kiểm tra) |
+| Quản trị | `/quan-tri/nghe/:id` tab "Khung theo cấp" (`modules/admin/components/CareerLevelFrameworksPanel.tsx`) |
+| Học sinh, khách | khối "Cấp bậc" trên `/nghe/:id` và `/danh-muc-nghe/:id` (`modules/career_explorer/components/CareerLevelLadder.tsx`) |
+
+- `career_level_frameworks` (một dòng mỗi nghề × bậc) và `career_level_framework_items` (`section` quyết định nghĩa các cột `group_label/content/detail/note`, xem chú thích trong migration). Học sinh và khách chỉ đọc khung `published` của nghề `published`; `pass_threshold` và `interview_question` chỉ quản trị đọc (chặn bằng RLS).
+- RPC: `admin_save_level_framework` (tạo/sửa, có `items` thì thay toàn bộ dòng), `admin_set_level_framework_status` (công bố cần ít nhất một nhiệm vụ), `admin_delete_level_framework`, `admin_copy_level_framework` (sao chép sang nghề/bậc khác thành Nháp, bỏ số tin căn cứ).
+- Quản trị tạo khung cho một bậc bằng ba cách: khung trống; dựng từ JD cùng bậc (tách ý, gộp cách viết giống nhau, từ 5 JD xếp mức theo 40% / 20%, ít hơn để "chưa xếp mức"); sao chép từ khung khác. Phần lớn nghề chỉ có 1 JD ở 1 bậc nên cách sao chép thường hữu ích hơn.
+- Dữ liệu BA: `RESEARCH JOB BA.xlsx` cho 281 JD sau khi bỏ trùng (sheet Senior lặp 52 dòng; tin ở "Trên senior" trùng sheet cấp được bỏ). Trưởng nhóm/Quản lý Phân tích nghiệp vụ là L5/L6 của nghề `G1-01:chuyen-vien-phan-tich-nghiep-vu`; Chủ sở hữu sản phẩm, Quản lý sản phẩm, Kiến trúc sư giải pháp, Quản lý dự án CNTT là nghề riêng ở L4 (L5 nếu chức danh Lead/Head). JD mới không có cột "Dimension liên quan" nên không vào ma trận Career Fit.
+- `KHUNG JD.docx` cho 10 khung: BA L0–L6, PO/PM, Solution Architect, Project Manager (mỗi nghề L4). Hướng phát triển được nối sang nghề đích theo từ khóa (BA Senior → Chủ sở hữu sản phẩm, BA Middle → Trưởng nhóm…). Khung trên Senior chỉ có lương "tối đa … USD" hoặc không công bố nên ô số để trống, giữ chữ gốc.
+- Nạp lại không ghi đè khung quản trị đã sửa (`updated_by` có giá trị) và không xóa JD đã nạp.
+- **Chờ BA:** Required Level của các bậc (hiện chỉ Middle = 3,5 theo docx); cột Required Level của sheet Middle bị Excel đổi thành ngày `2026-05-03` nên JD Middle để trống. Nghề nháp "Trưởng nhóm Phân tích nghiệp vụ" (2 JD từ Career_Profile) chưa gộp vào nghề BA.

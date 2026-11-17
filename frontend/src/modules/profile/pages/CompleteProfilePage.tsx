@@ -98,7 +98,6 @@ export const CompleteProfilePage: React.FC = () => {
     }
   }
 
-  const activeGroup: LearnerGroup = isGuest ? group : profile?.role === 'university_student' ? 'university_student' : 'student';
   const isoDate = parseVietnameseDate(dateOfBirth);
 
   const handleGroupChange = (next: RegisterableRole) => {
@@ -126,7 +125,8 @@ export const CompleteProfilePage: React.FC = () => {
     setIsSubmitting(true);
     try {
       // Lưu hồ sơ trước, gắn email sau: email trùng thì chỉ cần sửa email và gửi lại, phần đã lưu không phải nhập lại
-      if (isGuest && group !== profile?.role) await setMyLearnerRole(group);
+      // Học sinh, sinh viên tự đổi nhóm được (đổi nhóm thì khối lớp cũ bị xóa, ghi lại ngay bên dưới)
+      if (group !== profile?.role) await setMyLearnerRole(group);
       await updateMyProfile(session.user.id, {
         full_name: fullName.trim(),
         date_of_birth: isoDate,
@@ -156,27 +156,67 @@ export const CompleteProfilePage: React.FC = () => {
   };
 
   return (
-    <>
-      <h1 className="page-title">Thông tin cá nhân</h1>
+    <Card className="complete-card">
+      <h1 className="complete-title">Thông tin cá nhân</h1>
 
-      <Card className="complete-card">
-        <form className="complete-form" onSubmit={handleSubmit} noValidate>
-          {formError && <Alert variant="danger">{formError}</Alert>}
+      <form className="complete-form" onSubmit={handleSubmit} noValidate>
+        {formError && <Alert variant="danger">{formError}</Alert>}
 
-          {isGuest && <RoleSelect value={group} onChange={handleGroupChange} roles={LEARNER_GROUPS} legend="Nhóm" />}
+        <RoleSelect value={group} onChange={handleGroupChange} roles={LEARNER_GROUPS} legend="Nhóm" />
 
-          <div className="complete-grid">
+        <div className="complete-grid">
+          <Input
+            label="Họ và tên"
+            name="full_name"
+            autoComplete="name"
+            leftIcon={<User size={16} />}
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            error={errors.fullName}
+            required
+          />
+          <DateInput
+            label="Ngày sinh"
+            name="date_of_birth"
+            value={dateOfBirth}
+            onChange={(e) => setDateOfBirth(e.target.value)}
+            error={errors.dateOfBirth}
+            required
+          />
+          <Input
+            label="Tên hiển thị"
+            name="display_name"
+            maxLength={20}
+            leftIcon={<Tag size={16} />}
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            error={errors.displayName}
+            required
+          />
+          <Select
+            label="Khối lớp / Ngành học"
+            name="grade_or_major"
+            emptyLabel="Chọn"
+            options={GRADE_OPTIONS[group].map((option) => ({ value: option, label: option }))}
+            value={grade}
+            onChange={setGrade}
+            error={errors.grade}
+            required
+          />
+          <div className="complete-grid-full">
             <Input
-              label="Họ và tên"
-              name="full_name"
-              autoComplete="name"
-              leftIcon={<User size={16} />}
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              error={errors.fullName}
+              label="Trường"
+              name="school_name"
+              autoComplete="organization"
+              leftIcon={<School size={16} />}
+              value={schoolName}
+              onChange={(e) => setSchoolName(e.target.value)}
+              error={errors.schoolName}
               required
             />
-            {isGuest && (
+          </div>
+          {isGuest && (
+            <div className="complete-grid-full">
               <Input
                 label="Email"
                 type="email"
@@ -190,68 +230,28 @@ export const CompleteProfilePage: React.FC = () => {
                 error={errors.email}
                 required
               />
-            )}
-            {isGuest && (
-              <div className="complete-stack complete-grid-full">
-                <PasswordInput
-                  label="Mật khẩu"
-                  name="password"
-                  autoComplete="new-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  error={errors.password}
-                  required
-                />
-                <PasswordRules value={password} />
-              </div>
-            )}
-            <DateInput
-              label="Ngày sinh"
-              name="date_of_birth"
-              value={dateOfBirth}
-              onChange={(e) => setDateOfBirth(e.target.value)}
-              error={errors.dateOfBirth}
-              required
-            />
-            <Input
-              label="Tên hiển thị"
-              name="display_name"
-              maxLength={20}
-              leftIcon={<Tag size={16} />}
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              error={errors.displayName}
-              required
-            />
-            <Input
-              label="Trường"
-              name="school_name"
-              autoComplete="organization"
-              leftIcon={<School size={16} />}
-              value={schoolName}
-              onChange={(e) => setSchoolName(e.target.value)}
-              error={errors.schoolName}
-              required
-            />
-            <Select
-              label="Khối lớp / Ngành học"
-              name="grade_or_major"
-              emptyLabel="Chọn"
-              options={GRADE_OPTIONS[activeGroup].map((option) => ({ value: option, label: option }))}
-              value={grade}
-              onChange={setGrade}
-              error={errors.grade}
-              required
-            />
-          </div>
+            </div>
+          )}
+          {isGuest && (
+            <div className="complete-stack complete-grid-full">
+              <PasswordInput
+                label="Mật khẩu"
+                name="password"
+                autoComplete="new-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                error={errors.password}
+                required
+              />
+              <PasswordRules value={password} />
+            </div>
+          )}
+        </div>
 
-          <div className="complete-actions">
-            <Button type="submit" size="lg" isLoading={isSubmitting} rightIcon={<ArrowRight size={18} />}>
-              {isGuest ? 'Tạo tài khoản và xem kết quả' : from ? 'Lưu và tiếp tục' : 'Lưu và xem kết quả'}
-            </Button>
-          </div>
-        </form>
-      </Card>
-    </>
+        <Button type="submit" size="lg" block isLoading={isSubmitting} rightIcon={<ArrowRight size={18} />}>
+          {isGuest ? 'Tạo tài khoản và xem kết quả' : from ? 'Lưu và tiếp tục' : 'Lưu và xem kết quả'}
+        </Button>
+      </form>
+    </Card>
   );
 };

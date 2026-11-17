@@ -2621,6 +2621,282 @@ export type Database = {
           },
         ];
       };
+      formula_dependencies: {
+        Row: {
+          id: string;
+          version_id: string;
+          formula_id: string;
+          depends_on_formula_id: string | null;
+          depends_on_param_code: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          version_id: string;
+          formula_id: string;
+          depends_on_formula_id?: string | null;
+          depends_on_param_code?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          version_id?: string;
+          formula_id?: string;
+          depends_on_formula_id?: string | null;
+          depends_on_param_code?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "formula_dependencies_depends_on_formula_id_fkey";
+            columns: ["depends_on_formula_id"];
+            isOneToOne: false;
+            referencedRelation: "formulas";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "formula_dependencies_formula_id_fkey";
+            columns: ["formula_id"];
+            isOneToOne: false;
+            referencedRelation: "formulas";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "formula_dependencies_version_id_fkey";
+            columns: ["version_id"];
+            isOneToOne: false;
+            referencedRelation: "formula_versions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      formula_groups: {
+        Row: {
+          id: string;
+          group_code: string;
+          group_name: string;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          group_code: string;
+          group_name: string;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          group_code?: string;
+          group_name?: string;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      formula_symbols: {
+        Row: {
+          id: string;
+          symbol_code: string;
+          display_latex: string;
+          symbol_name: string;
+          source_kind: string;
+          source_ref: string | null;
+          unit: string | null;
+          value_min: number | null;
+          value_max: number | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          symbol_code: string;
+          display_latex: string;
+          symbol_name: string;
+          source_kind: string;
+          source_ref?: string | null;
+          unit?: string | null;
+          value_min?: number | null;
+          value_max?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          symbol_code?: string;
+          display_latex?: string;
+          symbol_name?: string;
+          source_kind?: string;
+          source_ref?: string | null;
+          unit?: string | null;
+          value_min?: number | null;
+          value_max?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      formula_test_cases: {
+        Row: {
+          id: string;
+          formula_id: string;
+          case_name: string;
+          inputs: Json;
+          expected: Json;
+          tolerance: number;
+          engine_fn: string | null;
+          engine_args: Json | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          formula_id: string;
+          case_name: string;
+          inputs: Json;
+          expected: Json;
+          tolerance?: number;
+          engine_fn?: string | null;
+          engine_args?: Json | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          formula_id?: string;
+          case_name?: string;
+          inputs?: Json;
+          expected?: Json;
+          tolerance?: number;
+          engine_fn?: string | null;
+          engine_args?: Json | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "formula_test_cases_formula_id_fkey";
+            columns: ["formula_id"];
+            isOneToOne: false;
+            referencedRelation: "formulas";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      formula_versions: {
+        Row: {
+          id: string;
+          formula_id: string;
+          version_no: number;
+          expression: Json;
+          status: string;
+          note: string | null;
+          changed_by: string | null;
+          effective_from: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          formula_id: string;
+          version_no?: number;
+          expression: Json;
+          status?: string;
+          note?: string | null;
+          changed_by?: string | null;
+          effective_from?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          formula_id?: string;
+          version_no?: number;
+          expression?: Json;
+          status?: string;
+          note?: string | null;
+          changed_by?: string | null;
+          effective_from?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "formula_versions_changed_by_fkey";
+            columns: ["changed_by"];
+            isOneToOne: false;
+            referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "formula_versions_formula_id_fkey";
+            columns: ["formula_id"];
+            isOneToOne: false;
+            referencedRelation: "formulas";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      formulas: {
+        Row: {
+          id: string;
+          formula_code: string;
+          formula_name: string;
+          group_id: string;
+          output_symbol: string;
+          output_unit: string | null;
+          verification_level: string;
+          spec_ref: string | null;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          formula_code: string;
+          formula_name: string;
+          group_id: string;
+          output_symbol: string;
+          output_unit?: string | null;
+          verification_level?: string;
+          spec_ref?: string | null;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          formula_code?: string;
+          formula_name?: string;
+          group_id?: string;
+          output_symbol?: string;
+          output_unit?: string | null;
+          verification_level?: string;
+          spec_ref?: string | null;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "formulas_group_id_fkey";
+            columns: ["group_id"];
+            isOneToOne: false;
+            referencedRelation: "formula_groups";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "formulas_output_symbol_fkey";
+            columns: ["output_symbol"];
+            isOneToOne: false;
+            referencedRelation: "formula_symbols";
+            referencedColumns: ["symbol_code"];
+          },
+        ];
+      };
       framework_versions: {
         Row: {
           id: string;
@@ -4093,6 +4369,10 @@ export type Database = {
       find_auth_user_id: {
         Args: { p_email: string };
         Returns: string;
+      };
+      formula_expression_refs: {
+        Args: { p_expression: Json };
+        Returns: unknown[];
       };
       get_360_questions: {
         Args: { p_resume_token: string };

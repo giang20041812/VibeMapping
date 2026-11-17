@@ -90,7 +90,7 @@
 }
 
 .role-option.is-selected .role-option-icon {
-  transform: scale(1.15) rotate(-6deg);
+  transform: scale(1.08);
 }
 
 @media (max-width: 520px) {
@@ -103,4 +103,20 @@
     grid-column: span 1;
   }
   .role-option:last-child:nth-child(odd) { grid-column: 1 / -1; }
+}
+
+/* Hai lựa chọn (học sinh / sinh viên): một hàng hai nút thấp, biểu tượng nằm cạnh chữ */
+.role-select-grid:has(.role-option:nth-child(2):last-child) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.role-select-grid:has(.role-option:nth-child(2):last-child) .role-option {
+  flex-direction: row;
+  gap: var(--space-2);
+  min-height: var(--touch-target);
+  grid-column: auto;
+}
+
+.role-select-grid:has(.role-option:nth-child(2):last-child) .role-option-label {
+  font-size: var(--font-size-sm);
 }

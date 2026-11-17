@@ -54,8 +54,12 @@ export function toAuthPhone(phone: string): string {
   return phone.trim();
 }
 
-export async function requestPhoneOtp(phone: string) {
-  const { error } = await supabase.auth.signInWithOtp({ phone: toAuthPhone(phone) });
+/** Gửi mã OTP qua SMS; đăng nhập thì không tạo tài khoản mới cho số chưa đăng ký */
+export async function requestPhoneOtp(phone: string, options: { createUser?: boolean } = {}) {
+  const { error } = await supabase.auth.signInWithOtp({
+    phone: toAuthPhone(phone),
+    options: { shouldCreateUser: options.createUser ?? true },
+  });
   if (error) throw error;
 }
 
@@ -124,6 +128,8 @@ export function describeAuthError(error: unknown): string {
     return 'Email này đã được đăng ký';
   }
   if (message.includes('provider is not enabled')) return 'Nhà cung cấp đăng nhập này chưa được bật trên máy chủ';
+  if (message.includes('signups not allowed')) return 'Số điện thoại chưa đăng ký tài khoản';
+  if (message.includes('phone provider') || message.includes('sms')) return 'Chưa gửi được tin nhắn SMS, vui lòng đăng nhập bằng email';
   if (message.includes('otp') || message.includes('token')) return 'Mã xác minh không đúng hoặc đã hết hạn';
   if (message.includes('rate limit') || message.includes('too many')) return 'Thao tác quá nhiều lần, vui lòng thử lại sau';
   if (message.includes('password')) return 'Mật khẩu chưa đạt yêu cầu';

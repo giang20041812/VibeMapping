@@ -23,30 +23,31 @@
 
 .decision-heading { margin: var(--space-2) 0 0; }
 
-.decision-rank-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+.decision-rank-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 .decision-rank-list li {
   display: flex;
   gap: var(--space-3);
   min-width: 0;
-  padding: var(--space-3);
-  background: var(--color-bg-surface);
-  border: var(--cartoon-stroke-thin) solid var(--cartoon-ink);
-  border-radius: var(--radius-md);
-  box-shadow: var(--cartoon-drop);
+  padding: var(--space-3) var(--space-3);
+  margin: 0 calc(-1 * var(--space-3));
+  border-top: 1px solid var(--color-border);
+  transition: background-color 360ms var(--ease-out);
 }
-.decision-rank-list li.is-first { background: var(--tone-yellow-bg); }
+.decision-rank-list li:first-child { border-top: 0; }
+.decision-rank-list li:hover { background-color: var(--ink-wash); }
+/* Phương án ưu tiên: vạch cam ở mép trái, như phương án ưu tiên ở trang giới thiệu */
+.decision-rank-list li.is-first { box-shadow: inset 3px 0 0 var(--brand-coral); }
 .decision-rank-no {
   flex: none;
-  display: grid;
-  place-items: center;
-  width: calc(32 * var(--px));
-  height: calc(32 * var(--px));
+  min-width: calc(24 * var(--px));
+  font-size: var(--font-size-3xl);
   font-weight: 800;
-  color: var(--color-text-inverse);
-  background: var(--color-primary);
-  border: var(--cartoon-stroke-thin) solid var(--cartoon-ink);
-  border-radius: var(--radius-full);
+  letter-spacing: -0.04em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-300);
 }
+.decision-rank-list li.is-first .decision-rank-no { color: var(--brand-coral); }
 .decision-rank-body { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; overflow-wrap: anywhere; }
 
 .decision-save { display: flex; flex-direction: column; gap: var(--space-3); margin-top: var(--space-4); }

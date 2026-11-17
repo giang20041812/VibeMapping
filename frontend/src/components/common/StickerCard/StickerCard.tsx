@@ -5,7 +5,9 @@ export type StickerTone = 'blue' | 'violet' | 'magenta' | 'gold' | 'teal' | 'cor
 
 /** Xoay vòng các sắc để lưới thẻ không đơn điệu */
 export const STICKER_TONES: StickerTone[] = ['blue', 'magenta', 'gold', 'teal', 'violet', 'coral'];
-export const stickerToneAt = (index: number): StickerTone => STICKER_TONES[index % STICKER_TONES.length];
+/** Sắc vàng dành cho mục nổi bật nên không nằm trong vòng sắc tuần tự của lưới thẻ */
+const CYCLE_TONES = STICKER_TONES.filter((tone) => tone !== 'gold');
+export const stickerToneAt = (index: number): StickerTone => CYCLE_TONES[index % CYCLE_TONES.length];
 
 /** Lưới thẻ tự lấp đầy chiều ngang */
 export const StickerGrid: React.FC<{ children: React.ReactNode; label?: string }> = ({ children, label }) => (

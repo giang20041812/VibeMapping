@@ -14,6 +14,7 @@ import {
   School,
   Shield,
   SlidersHorizontal,
+  Sigma,
 } from 'lucide-react';
 import { Globe360Icon, HomeIcon, type NavIconProps } from './NavIcons';
 import type { UserRole } from '../../modules/auth/auth.types';
@@ -40,7 +41,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/so-sanh', label: 'So sánh phương án', icon: Scale, roles: ['student', 'university_student'] },
   { to: '/bao-cao-duoc-chia-se', label: 'Báo cáo của con', icon: FileText, roles: ['parent'] },
   { to: '/lo-trinh', label: 'Lộ trình', icon: MapIcon, roles: ['student', 'university_student'] },
-  { to: '/nang-luc', label: 'Hồ sơ năng lực', icon: Briefcase, roles: ['university_student'] },
+  { to: '/nang-luc', label: 'Hồ sơ năng lực', icon: Briefcase, roles: ['student', 'university_student'] },
   { to: '/cong-dong', label: 'Cộng đồng', icon: MessagesSquare, roles: ['student', 'university_student', 'parent', 'teacher', 'mentor', 'school_admin'] },
   { to: '/quyen-rieng-tu', label: 'Quyền riêng tư', icon: Shield, roles: ['student', 'university_student', 'parent', 'teacher', 'mentor', 'school_admin'] },
   { to: '/quan-tri/cham-dinh-tinh', label: 'Chấm định tính', icon: ClipboardList, roles: ADMIN_ROLES },
@@ -52,6 +53,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/quan-tri/cau-hoi', label: 'Ngân hàng câu hỏi', icon: Library, roles: ADMIN_ROLES },
   { to: '/quan-tri/tieu-chi', label: 'Tiêu chí', icon: ClipboardList, roles: ADMIN_ROLES },
   { to: '/quan-tri/tham-so', label: 'Tham số vận hành', icon: SlidersHorizontal, roles: ADMIN_ROLES },
+  { to: '/quan-tri/cong-thuc', label: 'Công thức', icon: Sigma, roles: ADMIN_ROLES },
   { to: '/quan-tri/nhat-ky', label: 'Nhật ký', icon: History, roles: ADMIN_ROLES },
 ];
 

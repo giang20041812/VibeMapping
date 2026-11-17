@@ -46,17 +46,17 @@
   white-space: nowrap;
 }
 
-.logo-wordmark-vibe { color: var(--logo-b); }
-.logo-wordmark-mapping { color: var(--logo-a); }
+.logo-wordmark-vibe { color: var(--brand-navy); }
+.logo-wordmark-mapping { color: var(--brand-sky); }
 .logo-tone-inverse .logo-wordmark-vibe { color: var(--brand-cream); }
-.logo-tone-inverse .logo-wordmark-mapping { color: var(--brand-ice); }
+.logo-tone-inverse .logo-wordmark-mapping { color: var(--logo-pin); }
 
 /* Hình khối: đúng ba màu của logo */
 .logo-stop-a { stop-color: var(--logo-a); }
 .logo-stop-b { stop-color: var(--logo-b); }
 .logo-cap { fill: var(--brand-cream); }
 .logo-dot,
-.logo-pin { fill: var(--brand-white); }
+.logo-pin { fill: var(--logo-pin); }
 
 /* Đảo màu để nổi trên nền navy (thanh bên, thanh ngang): đĩa kem, mũ navy, chấm và ghim xanh */
 .logo-on-dark .logo-disc { fill: var(--brand-cream); }
@@ -153,12 +153,4 @@
 @keyframes logo-fill {
   from { fill-opacity: 0; stroke-opacity: 1; }
   to { fill-opacity: 1; stroke-opacity: 0; }
-}
-
-/* Giảm chuyển động: hiện logo hoàn chỉnh ngay, không chờ */
-@media (prefers-reduced-motion: reduce) {
-  .logo-svg.is-drawing .logo-disc,
-  .logo-svg.is-drawing .logo-cap,
-  .logo-svg.is-drawing .logo-dot,
-  .logo-svg.is-drawing .logo-pin { animation: none; stroke: none; }
 }

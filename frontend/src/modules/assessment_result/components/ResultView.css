@@ -26,7 +26,7 @@
   font-weight: 800;
   color: var(--color-text-main);
 }
-.result-progress .app-progress { height: 10px; }
+.result-progress .app-progress { height: 3px; }
 
 /* Lưới nội dung: biểu đồ và điểm theo nhóm cùng phủ hết chiều ngang */
 .result-grid {
@@ -66,7 +66,7 @@
   color: var(--color-warning-text);
   background: var(--alert-warning-bg);
   border: 1px solid var(--alert-warning-border);
-  border-radius: var(--radius-full, 999px);
+  border-radius: var(--radius-xs);
 }
 .result-note svg { color: var(--alert-warning-icon); }
 
@@ -138,22 +138,23 @@
   color: var(--color-text-muted);
 }
 
-/* Thanh điểm có màu theo nhóm, điểm tựa tròn ở đúng giá trị */
+/* Mọi thanh điểm của nhóm và tiêu chí là một đường xám: phần đạt xám đậm trên rãnh xám nhạt */
 .group-meter { position: relative; display: flex; align-items: center; }
-.group-row .app-progress { height: 10px; background: var(--group-track); }
-.group-row .app-progress .progress-fill { background: var(--group-color); }
-.group-meter-thumb {
+.group-row .app-progress,
+.group-row .app-progress.is-complete {
+  height: 3px;
+  --progress-fill: var(--ink-500);
+  --progress-track: var(--ink-100);
+}
+/* Đường điểm có vạch đứng nhỏ đánh dấu điểm tự đánh giá */
+.score-line { position: relative; display: block; min-width: 0; }
+.score-line-tick {
   position: absolute;
   top: 50%;
-  left: calc(var(--progress, 0) * 100%);
-  width: 16px;
-  height: 16px;
-  background: var(--brand-white);
-  border: 3px solid var(--group-color);
-  border-radius: 50%;
-  box-shadow: var(--shadow-sm);
+  width: 2px;
+  height: 9px;
+  background: var(--color-text-main);
   transform: translate(-50%, -50%);
-  animation: thumb-slide 900ms var(--ease-out) both;
 }
 
 /* Tiêu chí con và điểm thành phần: chỉ hiện khi rê chuột hoặc chạm vào nhóm */
@@ -161,15 +162,17 @@
   position: absolute;
   top: 100%;
   left: 0;
-  right: 0;
+  width: max(100%, 24em);
+  max-width: min(32em, 86vw);
   z-index: 1;
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
+  gap: var(--space-3);
+  padding: var(--space-4);
   background: var(--color-bg-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  border-top: 2px solid var(--color-text-main);
+  border-radius: var(--radius-sm);
   box-shadow: var(--shadow-dropdown);
   opacity: 0;
   visibility: hidden;
@@ -198,14 +201,18 @@
   gap: var(--space-2);
   list-style: none;
 }
-.criterion-row {
+.criterion-row,
+.group-detail-total {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 5.5em 5.5em;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: baseline;
-  gap: var(--space-1) var(--space-3);
+  gap: var(--space-2) var(--space-3);
 }
 .criterion-name {
   min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
@@ -216,35 +223,19 @@
   font-variant-numeric: tabular-nums;
   color: var(--color-text-main);
 }
-.group-row .criterion-bar { grid-column: 1 / -1; height: 4px; }
-.score-compare {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 5.5em 5.5em;
-  gap: var(--space-3);
-}
-.score-compare > span:not(:first-child) { text-align: right; }
-.score-compare-head {
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  color: var(--color-text-muted);
-}
-.group-detail-self {
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  color: var(--color-text-muted);
-}
-.criterion-list + .group-detail-self {
-  padding-top: var(--space-2);
+.group-row .criterion-bar { grid-column: 1 / -1; }
+.group-row .criterion-bar .app-progress { height: 2px; }
+.group-detail-total .criterion-name { font-weight: 700; color: var(--color-text-main); }
+.criterion-list + .group-detail-total {
+  padding-top: var(--space-3);
   border-top: 1px solid var(--color-border);
 }
-
+/* Cột phải mở lệch về bên trái để không tràn khỏi thẻ */
+.group-row:nth-child(even) .group-detail { left: auto; right: 0; }
 
 @keyframes result-rise {
   from { opacity: 0; transform: translateY(14px); }
   to { opacity: 1; transform: translateY(0); }
-}
-@keyframes thumb-slide {
-  from { left: 0; }
 }
 
 @media (max-width: 560px) {

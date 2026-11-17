@@ -7,6 +7,7 @@ import {
 import { SearchableSelect } from '../../../components/filters/SearchableSelect/SearchableSelect';
 import { compareDecisionOptions, type DecisionOptionInput, type RankedDecisionOption } from '../../../domain/assessmentRules';
 import { callRpc, db } from '../../../lib/rpc';
+import { useFormulaOverrides } from '../../formula_library/formulaOverrides';
 import { clearProgramCompare, readProgramCompare } from '../../../lib/selectionCart';
 import type { FilterOption } from '../../../types/filter';
 import { useAuth } from '../../auth/AuthContext';
@@ -20,6 +21,7 @@ import {
   loadProgramsByInstitution,
   type ProgramSummary,
 } from '../../school_explorer/education.service';
+import { TuitionSummary } from '../../school_explorer/components/TuitionInfo';
 import { listCityOptions } from '../../school_explorer/school_explorer.service';
 import { parseNumber, validateAdmissionScore, validateYearlyBudget } from '../decision.logic';
 import '../../career_explorer/pages/CareerPages.css';
@@ -306,6 +308,7 @@ export const DecisionComparePage: React.FC = () => {
     };
   });
 
+  const formulaVersion = useFormulaOverrides();
   const ranked = useMemo(
     () =>
       options.length >= MIN_OPTIONS
@@ -322,7 +325,7 @@ export const DecisionComparePage: React.FC = () => {
         )
         : [],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [JSON.stringify(inputs), weights, budget, preferredCity, options.length],
+    [JSON.stringify(inputs), weights, budget, preferredCity, options.length, formulaVersion],
   );
   const rankedById = useMemo(() => new Map(ranked.map((r) => [r.id, r])), [ranked]);
   const backups = ranked.filter((r) => r.eligibility !== 'NOT_MET' && !r.overBudget).slice(1, 4);
@@ -637,6 +640,14 @@ export const DecisionComparePage: React.FC = () => {
                   })}
                 </tr>
                 <tr>
+                  <th scope="row">Cách thu học phí</th>
+                  {options.map((o) => {
+                    const p = programsById[o.programId];
+                    if (!p) return <td key={o.id}>–</td>;
+                    return <td key={o.id}><TuitionSummary program={p} /></td>;
+                  })}
+                </tr>
+                <tr>
                   <th scope="row">Học phí mỗi năm</th>
                   {options.map((o) => {
                     const p = programsById[o.programId];
@@ -645,7 +656,7 @@ export const DecisionComparePage: React.FC = () => {
                     return (
                       <td key={o.id}>
                         <span>{yearly.label}</span>
-                        {yearly.isEstimate && <> <Badge variant="default">ước tính</Badge></>}
+                        {yearly.isEstimate && <> <Badge variant="default">quy đổi</Badge></>}
                       </td>
                     );
                   })}
@@ -659,7 +670,7 @@ export const DecisionComparePage: React.FC = () => {
                     return (
                       <td key={o.id}>
                         <span>{total.label}</span>
-                        {total.isEstimate && <> <Badge variant="default">ước tính</Badge></>}
+                        {total.isEstimate && <> <Badge variant="default">quy đổi</Badge></>}
                       </td>
                     );
                   })}

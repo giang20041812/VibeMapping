@@ -1,23 +1,29 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GraduationCap, School, Tag, User } from 'lucide-react';
-import { Alert, Badge, Button, Card, DateInput, Input } from '../../../components/common';
+import { Alert, Button, Card, DateInput, Input } from '../../../components/common';
 import { useAuth } from '../../auth/AuthContext';
+import type { RegisterableRole } from '../../auth/auth.types';
+import { RoleSelect } from '../../auth/components/RoleSelect';
 import { ProfileSkeleton } from '../components/ProfileSkeleton';
 import {
   GRADE_OPTIONS,
   ageOf,
   formatVietnameseDate,
-  groupLabel,
   isLearnerRole,
   isProfileComplete,
   parseVietnameseDate,
   validateDisplayName,
   GUARDIAN_AGE,
 } from '../profile.logic';
-import { updateMyProfile } from '../profile.service';
+import { setMyLearnerRole, updateMyProfile } from '../profile.service';
 import { MfaCard } from '../components/MfaCard';
+import { NotificationSettingsCard } from '../components/NotificationSettingsCard';
 import './ProfilePage.css';
+
+type LearnerGroup = Extract<RegisterableRole, 'student' | 'university_student'>;
+
+const LEARNER_GROUPS: LearnerGroup[] = ['student', 'university_student'];
 
 interface FieldErrors {
   fullName?: string;
@@ -33,6 +39,7 @@ export const ProfilePage: React.FC = () => {
   const wasComplete = isProfileComplete(profile);
   const learner = isLearnerRole(profile?.role);
 
+  const [group, setGroup] = useState<LearnerGroup>('student');
   const [fullName, setFullName] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -45,6 +52,7 @@ export const ProfilePage: React.FC = () => {
 
   useEffect(() => {
     if (!profile) return;
+    setGroup(profile.role === 'university_student' ? 'university_student' : 'student');
     setFullName(profile.full_name ?? '');
     setDateOfBirth(formatVietnameseDate(profile.date_of_birth));
     setDisplayName(profile.display_name ?? '');
@@ -55,7 +63,14 @@ export const ProfilePage: React.FC = () => {
   const isoDate = parseVietnameseDate(dateOfBirth);
   const age = ageOf(isoDate);
   const needsGuardian = learner && age !== null && age < GUARDIAN_AGE && !profile?.guardian_consent_confirmed;
-  const gradeOptions = profile?.role === 'university_student' ? GRADE_OPTIONS.university_student : GRADE_OPTIONS.student;
+  const gradeOptions = GRADE_OPTIONS[group];
+
+  const handleGroupChange = (next: RegisterableRole) => {
+    if (next !== 'student' && next !== 'university_student') return;
+    // Danh sách khối lớp của học sinh và sinh viên khác nhau nên lựa chọn cũ không còn hợp lệ
+    if (next !== group) setGrade('');
+    setGroup(next);
+  };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -74,6 +89,8 @@ export const ProfilePage: React.FC = () => {
 
     setIsSaving(true);
     try {
+      // Đổi nhóm thì khối lớp cũ bị xóa, ghi lại ngay bên dưới
+      if (learner && group !== profile?.role) await setMyLearnerRole(group);
       await updateMyProfile(session.user.id, {
         full_name: fullName.trim(),
         date_of_birth: isoDate,
@@ -107,11 +124,7 @@ export const ProfilePage: React.FC = () => {
           {saved && <Alert variant="success">Đã lưu hồ sơ.</Alert>}
           {formError && <Alert variant="danger">{formError}</Alert>}
 
-          {learner && (
-            <div className="profile-group">
-              <Badge variant="info">Nhóm: {groupLabel(profile.role)}</Badge>
-            </div>
-          )}
+          {learner && <RoleSelect value={group} onChange={handleGroupChange} roles={LEARNER_GROUPS} legend="Nhóm" />}
 
           <div className="profile-grid">
             <Input
@@ -195,6 +208,7 @@ export const ProfilePage: React.FC = () => {
           </div>
         </form>
       </Card>
+      <NotificationSettingsCard userId={profile.id} />
       {(profile.role === 'system_admin' || profile.role === 'school_admin') && <MfaCard />}
     </>
   );

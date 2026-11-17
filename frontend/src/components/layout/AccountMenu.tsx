@@ -64,7 +64,7 @@ export const AccountMenu: React.FC = () => {
             {email && displayName !== email && <span className="account-menu-email truncate">{email}</span>}
           </div>
 
-          <Link to="/ho-so" role="menuitem" className="top-item">
+          <Link to="/ho-so" role="menuitem" className="top-item hover-sweep">
             <UserRound size={18} aria-hidden="true" />
             Hồ sơ cá nhân
           </Link>
@@ -72,7 +72,7 @@ export const AccountMenu: React.FC = () => {
           <button
             type="button"
             role="menuitem"
-            className="top-item"
+            className="top-item hover-sweep"
             onClick={() => {
               setOpen(false);
               setPasswordOpen(true);
@@ -84,7 +84,7 @@ export const AccountMenu: React.FC = () => {
 
           <div className="top-divider" />
 
-          <button type="button" role="menuitem" className="top-item top-item-danger" onClick={handleSignOut}>
+          <button type="button" role="menuitem" className="top-item hover-sweep top-item-danger" onClick={handleSignOut}>
             <LogOut size={18} aria-hidden="true" />
             Đăng xuất
           </button>

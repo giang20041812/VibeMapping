@@ -8,6 +8,7 @@ import {
   Building2,
   ClipboardList,
   Cpu,
+  Database,
   FileText,
   GraduationCap,
   Landmark,
@@ -18,6 +19,8 @@ import {
 } from 'lucide-react';
 import { Badge, Skeleton, stickerToneAt } from '../../../components/common';
 import { loadCareerProfileInfo, type CareerMajorSchoolRow, type CareerProfileInfo } from '../career.service';
+import { CareerLevelLadder } from './CareerLevelLadder';
+import './CareerProfile.css';
 
 const SECTION_ICON: Record<string, React.ReactNode> = {
   career_description: <FileText size={18} />,
@@ -33,9 +36,13 @@ const SECTION_ICON: Record<string, React.ReactNode> = {
 const schoolVariant = (school: CareerMajorSchoolRow): string =>
   [school.specialization, school.qualifier, school.faculty].filter(Boolean).join(' · ');
 
-/** Mô tả nghề tổng hợp từ JD và các ngành liên quan */
+/** Khung theo cấp đã thay hai mục này bằng thang bậc có thu nhập và hướng phát triển */
+const REPLACED_BY_LADDER = new Set(['career_path', 'salary_reference']);
+
+/** Mô tả nghề tổng hợp từ JD, thang bậc của nghề và các ngành liên quan */
 export const CareerProfile: React.FC<{ careerId: string; publicView?: boolean }> = ({ careerId, publicView = false }) => {
   const [info, setInfo] = useState<CareerProfileInfo | null>(null);
+  const [hasLadder, setHasLadder] = useState(false);
   useEffect(() => {
     let active = true;
     loadCareerProfileInfo(careerId).then((value) => active && setInfo(value)).catch(() => active && setInfo({ sections: [], majors: [] }));
@@ -45,13 +52,29 @@ export const CareerProfile: React.FC<{ careerId: string; publicView?: boolean }>
   }, [careerId]);
 
   if (!info) return <Skeleton shape="block" />;
+  const sections = hasLadder ? info.sections.filter((section) => !REPLACED_BY_LADDER.has(section.key)) : info.sections;
   return (
     <>
       <section className="career-block">
-        <h2>Mô tả nghề</h2>
-        {info.sections.length === 0 ? <p className="career-muted">Chưa có mô tả</p> : (
+        <div className="career-block-head">
+          <h2>Mô tả nghề</h2>
+          {info.source && (info.source.jdCount > 0 || info.source.checkedAt) && (
+            <span className="career-muted career-source">
+              <Database size={14} aria-hidden="true" />
+              {info.source.jdCount > 0 && <>Nguồn: {info.source.jdCount.toLocaleString('vi-VN')} tin tuyển dụng</>}
+              {info.source.jdCount > 0 && info.source.checkedAt && ' · '}
+              {info.source.checkedAt && (
+                <>
+                  Cập nhật {new Date(info.source.checkedAt).toLocaleDateString('vi-VN')}
+                  {info.source.checkedKind === 'posted' && ' (ngày đăng tin)'}
+                </>
+              )}
+            </span>
+          )}
+        </div>
+        {sections.length === 0 ? <p className="career-muted">Chưa có mô tả</p> : (
           <div className="career-profile-grid">
-            {info.sections.map((section, index) => (
+            {sections.map((section, index) => (
               <div key={section.key} className={`career-profile-item sticker-tone-${stickerToneAt(index)}`}>
                 <div className="career-profile-head">
                   <span className="career-profile-icon" aria-hidden="true">
@@ -65,6 +88,7 @@ export const CareerProfile: React.FC<{ careerId: string; publicView?: boolean }>
           </div>
         )}
       </section>
+      <CareerLevelLadder careerId={careerId} careerLinkBase={publicView ? '/danh-muc-nghe' : '/nghe'} onLoaded={setHasLadder} />
       <section className="career-block">
         <div className="career-block-head">
           <h2>Ngành đào tạo</h2>

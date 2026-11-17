@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { LogoMark } from '../common';
@@ -21,6 +21,17 @@ export interface TopbarProps {
  */
 export const Topbar: React.FC<TopbarProps> = ({ open, onToggle, onClose }) => {
   const { isGuest } = useAuth();
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 16);
+    };
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (event: KeyboardEvent) => {
@@ -34,28 +45,35 @@ export const Topbar: React.FC<TopbarProps> = ({ open, onToggle, onClose }) => {
     <>
       {open && <div className="topbar-scrim" onClick={onClose} aria-hidden="true" />}
 
-      <header className={`topbar ${open ? 'is-open' : ''}`}>
+      <header className={`topbar ${open ? 'is-open' : ''} ${isScrolled ? 'is-scrolled' : ''}`}>
         <div className="topbar-inner">
           <Link to="/" className="topbar-brand" aria-label="Vibe Mapping" onClick={onClose}>
             <span className="topbar-brand-mark">
               <LogoMark />
             </span>
             <span className="topbar-brand-text" aria-hidden="true">
-              <span className="topbar-brand-vibe">Vibe</span>
-              <span className="topbar-brand-mapping">Mapping</span>
+              <span className="topbar-brand-wordmark">
+                <span className="topbar-brand-vibe">Vibe</span>
+                <span className="topbar-brand-mapping">Mapping</span>
+              </span>
+              <span className="topbar-brand-tag">Định hướng 360°</span>
             </span>
           </Link>
 
-          <nav id="topbar-links" className="topbar-links" aria-label="Điều hướng chính">
+          <nav id="topbar-links" className="topbar-links hover-sweep-group" aria-label="Điều hướng chính">
             {topbarItemsFor(isGuest).map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
                 end={item.end}
-                className={({ isActive }) => `topbar-link ${isActive ? 'is-active' : ''}`}
+                className={({ isActive }) => `topbar-link hover-sweep hover-sweep-bottom ${isActive ? 'is-active' : ''}`}
                 onClick={onClose}
               >
-                {item.label}
+                <span className="roll">
+                  <span className="roll-inner" data-text={item.label}>
+                    {item.label}
+                  </span>
+                </span>
               </NavLink>
             ))}
           </nav>

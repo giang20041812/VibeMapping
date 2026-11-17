@@ -20,7 +20,14 @@
     "import:phase2:dry": "npm --prefix supabase/scripts run import:phase2:dry",
     "import:phase2:career": "npm --prefix supabase/scripts run import:phase2:career",
     "import:phase2:school": "npm --prefix supabase/scripts run import:phase2:school",
-    "import:phase2:links": "npm --prefix supabase/scripts run import:phase2:links"
+    "import:phase2:links": "npm --prefix supabase/scripts run import:phase2:links",
+    "seed:formulas": "npm --prefix supabase/scripts run seed:formulas",
+    "seed:formulas:dry": "npm --prefix supabase/scripts run seed:formulas:dry",
+    "seed:formulas:verify": "npm --prefix supabase/scripts run seed:formulas:verify",
+    "check:formulas": "npm --prefix supabase/scripts run check:formulas",
+    "gen:formula-fixture": "npm --prefix supabase/scripts run gen:formula-fixture",
+    "import:jd-frameworks": "npm --prefix supabase/scripts run import:jd-frameworks --",
+    "import:jd-frameworks:dry": "npm --prefix supabase/scripts run import:jd-frameworks:dry --"
   },
   "keywords": [
     "typescript",

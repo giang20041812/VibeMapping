@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Download, History } from 'lucide-react';
-import { downloadPdf, printOrientationProfile } from '../../../lib/printProfile';
+import { exportOrientationProfile } from '../../../lib/pdf/exportReports';
 import { Alert, Badge, Button, Card, Spinner } from '../../../components/common';
 import { TopCareers } from '../../career_explorer/components/TopCareers';
 import { loadResultInsights, type ResultInsights } from '../resultInsights.service';
@@ -32,6 +32,8 @@ interface Props {
 export const ResultInsightsPanel: React.FC<Props> = ({ userId, isOwner, ownerName }) => {
   const [data, setData] = useState<ResultInsights | null | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const [pdfNote, setPdfNote] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -74,6 +76,7 @@ export const ResultInsightsPanel: React.FC<Props> = ({ userId, isOwner, ownerNam
             type="button"
             variant="outline"
             leftIcon={<Download size={16} />}
+            isLoading={pdfBusy}
             onClick={() => {
               const input = {
               ownerName: ownerName ?? 'Học sinh/Sinh viên',
@@ -101,22 +104,19 @@ export const ResultInsightsPanel: React.FC<Props> = ({ userId, isOwner, ownerNam
               topCareers: [],
               notes: [WEIGHT_NOTE[data.qualitativeWeightStatus] ?? ''].filter(Boolean),
             };
-              downloadPdf('ho-so-dinh-huong.pdf', [
-                'Ho so dinh huong ca nhan',
-                input.ownerName,
-                input.status,
-                input.holland ? `Holland ${input.holland}` : '',
-                input.validity,
-                ...input.groups.map((group) => `${group.code}: ${group.percent}`),
-                ...input.notes,
-              ].filter(Boolean));
-              printOrientationProfile(input);
+              setPdfBusy(true);
+              setPdfNote(null);
+              exportOrientationProfile(input, { saveCopy: isOwner })
+                .then(({ saved }) => setPdfNote(saved ? 'Đã tải PDF và lưu một bản vào Tệp đã lưu.' : null))
+                .catch(() => setPdfNote('Không tạo được PDF. Thử lại sau.'))
+                .finally(() => setPdfBusy(false));
             }}
           >
             Tải PDF
           </Button>
         </div>
       </div>
+      {pdfNote && <Alert variant={pdfNote.startsWith('Không') ? 'danger' : 'success'}>{pdfNote}</Alert>}
 
       <Card title="Trạng thái và hiệu lực">
         <div className="insights-badges">

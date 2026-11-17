@@ -1,0 +1,298 @@
+/* Sơ đồ 360° phong cách hiện đại: nền sáng, đường kẻ mảnh, khối màu phẳng, bóng mềm.
+   Hình người cam san hô trên bệ trắng xanh nhạt, vành quỹ đạo là nét mảnh, các nhóm người đánh giá là chấm màu có vòng trắng. */
+.rater360 {
+  --r360-ink: var(--color-text-main);
+  --r360-line: var(--color-border);
+  --r360-orbit: var(--brand-light);
+  --bubble: clamp(30px, calc(46 * var(--px)), 52px);
+
+  position: relative;
+  width: 100%;
+  margin: 0;
+}
+
+.rater360-tone-gold { --tone: color-mix(in srgb, var(--soft-gold) 68%, var(--ink-300)); }
+.rater360-tone-cyan { --tone: color-mix(in srgb, var(--soft-cyan) 68%, var(--ink-300)); }
+.rater360-tone-violet { --tone: color-mix(in srgb, var(--soft-violet) 68%, var(--ink-300)); }
+.rater360-tone-magenta { --tone: color-mix(in srgb, var(--soft-magenta) 68%, var(--ink-300)); }
+
+.rater360-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 400 / 300;
+}
+
+.rater360-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.rater360-layer-back { z-index: 1; }
+.rater360-layer-figure { z-index: 3; }
+.rater360-layer-front { z-index: 4; }
+
+/* Quầng sàn */
+.rater360-floor-in { stop-color: var(--brand-soft); stop-opacity: 0.7; }
+.rater360-floor-out { stop-color: var(--brand-ice); stop-opacity: 0; }
+
+/* Vành quỹ đạo: một nét mảnh */
+.rater360-orbit-casing,
+.rater360-orbit {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.rater360-orbit-casing {
+  stroke: none;
+}
+
+.rater360-orbit {
+  stroke: var(--r360-orbit);
+  stroke-width: 1.6;
+}
+
+/* Hình người & bệ: khối phẳng, không viền mực */
+.rater360-ink {
+  stroke: none;
+}
+
+.rater360-self-hi { stop-color: var(--brand-coral-hover); }
+.rater360-self-mid { stop-color: var(--brand-coral); }
+.rater360-self-lo { stop-color: var(--brand-coral-active); }
+
+.rater360-base-hi { stop-color: var(--brand-white); }
+.rater360-base-lo { stop-color: var(--brand-mist); }
+
+.rater360-base-top {
+  fill: var(--brand-white);
+  stroke: var(--brand-soft);
+  stroke-width: 1.6;
+}
+
+.rater360-shadow {
+  fill: var(--r360-ink);
+  opacity: 0.1;
+}
+
+.rater360-shine {
+  fill: none;
+  stroke: var(--brand-white);
+  stroke-width: 4;
+  stroke-linecap: round;
+  opacity: 0.35;
+}
+
+.rater360-gloss {
+  fill: var(--brand-white);
+  opacity: 0.4;
+}
+
+.rater360-figure {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+/* Nhóm người đánh giá: vị trí và lớp đặt bằng JS, phóng to/thu nhỏ theo độ xa */
+.rater360-node {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  width: 0;
+  height: 0;
+  will-change: transform;
+}
+
+.rater360-node-pop {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  transform: translate(-50%, -50%) scale(var(--depth-scale, 1));
+  transform-origin: 50% 50%;
+  backface-visibility: hidden;
+}
+
+.rater360-bubble {
+  display: grid;
+  place-items: center;
+  width: var(--bubble);
+  aspect-ratio: 1;
+  color: var(--brand-white);
+  background: var(--tone);
+  border-radius: var(--radius-full);
+  box-shadow:
+    0 0 0 3px var(--brand-white),
+    0 6px 14px -6px color-mix(in srgb, var(--tone) 40%, transparent);
+  cursor: default;
+  transition: transform 360ms var(--ease-out), box-shadow 360ms var(--ease-out);
+}
+
+.rater360-bubble svg {
+  width: 52%;
+  height: 52%;
+}
+
+/* Nhãn nhóm: lớp riêng luôn nằm trên vành quỹ đạo, đặt ngay dưới bong bóng */
+.rater360-label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 7;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.rater360-label .rater360-chip {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, calc(var(--bubble) * 0.5 + 8px));
+  transition: opacity 360ms var(--ease-out), border-color 360ms var(--ease-out);
+}
+
+.rater360-label.is-behind .rater360-chip {
+  opacity: 0.88;
+}
+
+.rater360-label.is-hover .rater360-chip {
+  opacity: 1;
+  border-color: var(--brand-coral);
+}
+
+.rater360-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: calc(2 * var(--px)) var(--space-2);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  line-height: 1.25;
+  white-space: nowrap;
+  color: var(--r360-ink);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--r360-line);
+  border-radius: var(--radius-xs);
+  box-shadow: var(--shadow-sm);
+}
+
+.rater360-chip-meta {
+  font-size: calc(10 * var(--px));
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+@media (hover: hover) {
+  .rater360-node.is-hover {
+    z-index: 6 !important;
+  }
+
+  .rater360-node.is-hover .rater360-bubble {
+    transform: translateY(-2px) scale(1.1);
+    box-shadow:
+      0 0 0 3px var(--brand-white),
+      0 10px 20px -6px color-mix(in srgb, var(--tone) 45%, transparent);
+  }
+}
+
+/* Nhãn người ở tâm, dưới bệ */
+.rater360-center {
+  position: absolute;
+  left: 50%;
+  top: 86%;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: calc(3 * var(--px)) var(--space-3);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: var(--color-cta-text);
+  background: var(--color-cta);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-cta);
+  transform: translateX(-50%);
+}
+
+.rater360-center-sub {
+  font-size: calc(10 * var(--px));
+  font-weight: 600;
+}
+
+/* Xuất hiện: hình người nổi lên, các nhóm hiện ra lần lượt */
+.rater360 .rater360-figure {
+  transform: translateY(8px) scale(0.94);
+  opacity: 0;
+}
+
+.rater360 .rater360-bubble,
+.rater360 .rater360-chip,
+.rater360 .rater360-center {
+  opacity: 0;
+}
+
+.rater360.is-visible .rater360-figure {
+  animation: rater360-pop 760ms var(--ease-out) forwards;
+}
+
+.rater360.is-visible .rater360-bubble,
+.rater360.is-visible .rater360-chip {
+  animation: rater360-fade 520ms var(--ease-out) calc(360ms + var(--i, 0) * 110ms) forwards;
+}
+
+.rater360.is-visible .rater360-center {
+  animation: rater360-fade 520ms var(--ease-out) 300ms forwards;
+}
+
+@keyframes rater360-pop {
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes rater360-fade {
+  to {
+    opacity: 1;
+  }
+}
+
+/* Tắt: chuyển xám */
+.rater360.is-off .rater360-stage {
+  filter: grayscale(1);
+  opacity: 0.55;
+}
+
+.rater360-stage {
+  transition: filter var(--transition-slow), opacity var(--transition-slow);
+}
+
+/* Bản thu gọn trong nút gạt: căn giữa theo chiều dọc ô vuông, bong bóng nhỏ không vòng trắng */
+.rater360.is-compact {
+  --bubble: 20px;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.rater360.is-compact .rater360-bubble {
+  box-shadow: 0 2px 6px -2px color-mix(in srgb, var(--tone) 40%, transparent);
+}
+
+.rater360.is-compact .rater360-orbit {
+  stroke-width: 3;
+}
+
+@media (max-width: 640px) {
+  .rater360-chip {
+    font-size: calc(11 * var(--px));
+  }
+}

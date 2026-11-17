@@ -1,0 +1,447 @@
+/* Hồ sơ năng lực và phân tích khoảng cách so với khung JD theo cấp */
+
+.pf-page {
+  gap: var(--space-5);
+}
+
+.pf-muted {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+/* Số liệu tóm tắt */
+.pf-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(200 * var(--px))), 1fr));
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.pf-stats .stat-tile-value b {
+  font-size: var(--font-size-3xl);
+}
+
+.pf-stats .app-progress {
+  margin-top: var(--space-2);
+}
+
+/* Trạng thái trống */
+.pf-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.pf-empty svg {
+  width: calc(32 * var(--px));
+  height: calc(32 * var(--px));
+  color: var(--color-text-muted);
+}
+
+.pf-empty p {
+  margin: 0;
+}
+
+.pf-empty.is-large {
+  padding: var(--space-12) var(--space-4);
+}
+
+/* Ô chọn mức 1–5 */
+.pf-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.pf-field-label {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--color-text-muted);
+}
+
+.pf-level {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.pf-level-row {
+  display: inline-flex;
+  gap: var(--space-1);
+}
+
+.pf-level-btn {
+  width: calc(32 * var(--px));
+  height: calc(32 * var(--px));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--color-border-hover);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-surface);
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.pf-level-btn:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.pf-level-btn:focus-visible {
+  outline: 2px solid var(--color-primary-ring);
+  outline-offset: 2px;
+}
+
+.pf-level-btn.is-filled {
+  background: var(--color-primary-light);
+  border-color: var(--hope-blue-border);
+  color: var(--color-primary);
+}
+
+.pf-level-btn.is-active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-text-inverse);
+}
+
+.pf-level-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.pf-level-caption {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+/* Danh sách kỹ năng theo nhóm */
+.pf-profile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.pf-add-form {
+  align-items: end;
+}
+
+/* Tên mức nằm cạnh dãy nút để cả hàng thêm kỹ năng cao bằng nhau */
+.pf-add-form .pf-level {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.pf-add-form .pf-level-btn {
+  width: var(--control-height-md);
+  height: var(--control-height-md);
+}
+
+.pf-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(420 * var(--px))), 1fr));
+  gap: var(--space-5);
+}
+
+.pf-group {
+  min-width: 0;
+}
+
+.pf-group-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.pf-count {
+  min-width: calc(22 * var(--px));
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  text-align: center;
+}
+
+.pf-skill-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--color-border);
+}
+
+.pf-skill-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.pf-skill-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.pf-icon-btn {
+  width: var(--control-height-sm);
+  height: var(--control-height-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.pf-icon-btn:hover:not(:disabled) {
+  background: var(--color-danger-bg);
+  color: var(--color-danger-text);
+}
+
+.pf-icon-btn:focus-visible {
+  outline: 2px solid var(--color-primary-ring);
+  outline-offset: 2px;
+}
+
+.pf-icon-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Bước chọn vị trí */
+.pf-step-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(calc(280 * var(--px)), calc(340 * var(--px)));
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.pf-step-main,
+.pf-step-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.pf-step-side {
+  position: sticky;
+  top: calc(var(--top-space, 0px) + var(--space-4));
+}
+
+.pf-position-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(260 * var(--px))), 1fr));
+  gap: var(--space-3);
+}
+
+.pf-position {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-height: var(--touch-target);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-bg-surface);
+  color: var(--color-text-main);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+}
+
+.pf-position:hover {
+  border-color: var(--color-border-hover);
+  box-shadow: var(--shadow-sm);
+}
+
+.pf-position:focus-visible {
+  outline: 2px solid var(--color-primary-ring);
+  outline-offset: 2px;
+}
+
+.pf-position.is-active {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  box-shadow: 0 0 0 1px var(--color-primary);
+}
+
+.pf-position-radio {
+  flex: none;
+  width: calc(18 * var(--px));
+  height: calc(18 * var(--px));
+  margin-top: calc(2 * var(--px));
+  border: 2px solid var(--color-border-hover);
+  border-radius: var(--radius-full);
+  background: var(--color-bg-surface);
+}
+
+.pf-position.is-active .pf-position-radio {
+  border-color: var(--color-primary);
+  box-shadow: inset 0 0 0 3px var(--color-bg-surface);
+  background: var(--color-primary);
+}
+
+.pf-position-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.pf-position-title {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.pf-position-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.pf-position-meta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.pf-more {
+  display: flex;
+  justify-content: center;
+}
+
+.pf-facts {
+  margin: 0 0 var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.pf-facts > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.pf-facts dt {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+}
+
+.pf-facts dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.pf-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.pf-legend li {
+  display: grid;
+  grid-template-columns: calc(84 * var(--px)) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.pf-history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.pf-history-item {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-0-5, 2px);
+  min-height: var(--touch-target);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-main);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pf-history-item:hover:not(:disabled),
+.pf-history-item.is-active {
+  border-color: var(--color-border);
+  background: var(--color-bg-subtle);
+}
+
+.pf-history-item:disabled {
+  cursor: default;
+  color: var(--color-text-muted);
+}
+
+.pf-history-name {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.pf-history-meta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.pf-analyse-bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.pf-analyse-target {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-brand);
+  overflow-wrap: anywhere;
+}

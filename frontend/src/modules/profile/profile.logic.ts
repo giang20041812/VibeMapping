@@ -7,10 +7,6 @@ export function isLearnerRole(role: UserRole | undefined): boolean {
   return role === 'student' || role === 'university_student';
 }
 
-export function groupLabel(role: UserRole | undefined): string {
-  return role === 'university_student' ? 'Sinh viên' : 'Học sinh';
-}
-
 export const GRADE_OPTIONS: Record<'student' | 'university_student', string[]> = {
   student: ['Lớp 9', 'Lớp 10', 'Lớp 11', 'Lớp 12'],
   university_student: ['Năm 1', 'Năm 2', 'Năm 3', 'Năm 4', 'Mới đi làm'],

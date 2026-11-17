@@ -5,6 +5,7 @@ import { useAuth } from '../../modules/auth/AuthContext';
 import { BrandLink } from './BrandLink';
 import { topbarItemsFor } from './navigation';
 import { TopActions } from './TopActions';
+import '../common/Button/Button.css';
 import './Topbar.css';
 
 export interface TopbarProps {
@@ -62,7 +63,7 @@ export const Topbar: React.FC<TopbarProps> = ({ open, onToggle, onClose }) => {
                   }
                   onClick={onClose}
                 >
-                  <span className={item.cta ? 'topbar-cta' : 'topbar-link-label'}>
+                  <span className={item.cta ? 'app-button btn-primary btn-md topbar-cta' : 'topbar-link-label'}>
                     {Icon && <Icon size={18} />}
                     <span className="roll">
                       <span className="roll-inner" data-text={item.label}>

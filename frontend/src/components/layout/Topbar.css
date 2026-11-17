@@ -82,49 +82,45 @@
   gap: var(--space-2);
 }
 
-/* Mục kêu gọi (Về Bạn): nút xanh đặc nằm giữa ô, nổi hơn các mục chữ */
+/* Mục kêu gọi (Về Bạn): mang đúng kiểu nút chính chung (.app-button.btn-primary: cam san hô, rê chuột thì lớp mực trượt lên).
+   Cả ô là liên kết nên rê chuột, bấm và focus ở bất kỳ đâu trong ô đều chuyển trạng thái cho nút bên trong. */
 .topbar-link-cta {
   padding: 0 var(--space-4);
 }
 
-.topbar-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-height: var(--touch-target);
-  padding: 0 var(--space-4);
-  font-weight: 600;
-  color: var(--color-text-inverse);
-  background: var(--color-primary);
-  border-radius: var(--radius-md);
+@media (hover: hover) {
+  .topbar-link-cta:hover .btn-primary {
+    box-shadow: var(--shadow-cta-hover);
+    transform: translateY(-2px);
+  }
+
+  .topbar-link-cta:hover .btn-primary::before {
+    transform: translateY(0);
+    border-radius: inherit;
+  }
+
+  .topbar-link-cta.is-active:hover .btn-primary {
+    box-shadow: 0 0 0 3px var(--color-cta-ring), var(--shadow-cta-hover);
+  }
+}
+
+.topbar-link-cta:active .btn-primary {
+  background: var(--color-cta-active);
   box-shadow: var(--shadow-cta);
-  transition:
-    background-color 420ms var(--ease-out),
-    box-shadow 420ms var(--ease-out),
-    transform 420ms var(--ease-out);
+  transform: translateY(0) scale(0.98);
 }
 
-.topbar-link-cta:hover .topbar-cta {
-  background: var(--color-primary-hover);
-  box-shadow: var(--shadow-cta-hover);
-  transform: translateY(-1px);
-}
-
-.topbar-link-cta:active .topbar-cta {
-  background: var(--color-primary-active);
-  transform: none;
-}
-
-.topbar-link-cta.is-active .topbar-cta {
-  box-shadow: 0 0 0 3px var(--color-primary-ring), var(--shadow-cta);
+/* Đang ở khu vực Về Bạn: viền sáng cùng tông cam */
+.topbar-link-cta.is-active .btn-primary {
+  box-shadow: 0 0 0 3px var(--color-cta-ring), var(--shadow-cta);
 }
 
 .topbar-link-cta:focus-visible {
   outline: none;
 }
 
-.topbar-link-cta:focus-visible .topbar-cta {
-  outline: 3px solid var(--color-primary-ring);
+.topbar-link-cta:focus-visible .btn-primary {
+  outline: 3px solid var(--color-cta-ring);
   outline-offset: 2px;
 }
 
@@ -205,7 +201,6 @@
 
   .topbar-cta {
     width: 100%;
-    justify-content: center;
   }
 
   .topbar-link.hover-sweep-bottom::after {

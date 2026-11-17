@@ -7,6 +7,7 @@ import { ageOf, GUARDIAN_AGE } from '../../profile/profile.logic';
 import { saveExport } from '../../../lib/exportFiles';
 import { downloadBlob } from '../../../lib/pdf/pdfWriter';
 import { ExportedFilesCard } from '../components/ExportedFilesCard';
+import { FriendsCard } from '../components/FriendsCard';
 import '../../career_explorer/pages/CareerPages.css';
 
 interface Person {
@@ -182,6 +183,8 @@ export const PrivacyPage: React.FC = () => {
           )}
         </Card>
       )}
+
+      {isLearner && <FriendsCard guardianBlocked={needsGuardian} />}
 
       {!isLearner && profile?.role !== 'parent' && (connections?.shared_with_me.length ?? 0) > 0 && (
         <Card title="Kết quả được chia sẻ với bạn">

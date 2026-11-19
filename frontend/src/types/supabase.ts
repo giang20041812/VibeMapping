@@ -850,6 +850,7 @@ export type Database = {
           created_at: string;
           seat_limit: number | null;
           registration_deadline: string | null;
+          audience: string | null;
         };
         Insert: {
           id?: string;
@@ -862,6 +863,7 @@ export type Database = {
           created_at?: string;
           seat_limit?: number | null;
           registration_deadline?: string | null;
+          audience?: string | null;
         };
         Update: {
           id?: string;
@@ -874,6 +876,7 @@ export type Database = {
           created_at?: string;
           seat_limit?: number | null;
           registration_deadline?: string | null;
+          audience?: string | null;
         };
         Relationships: [
           {
@@ -1158,7 +1161,7 @@ export type Database = {
         Row: {
           id: string;
           career_id: string;
-          source_id: number;
+          source_id: number | null;
           jd_code: string | null;
           company_name: string | null;
           job_title: string | null;
@@ -1196,11 +1199,13 @@ export type Database = {
           updated_at: string;
           data_checked_at: string | null;
           data_checked_kind: string | null;
+          source_key: string | null;
+          source_file: string | null;
         };
         Insert: {
           id?: string;
           career_id: string;
-          source_id: number;
+          source_id?: number | null;
           jd_code?: string | null;
           company_name?: string | null;
           job_title?: string | null;
@@ -1238,11 +1243,13 @@ export type Database = {
           updated_at?: string;
           data_checked_at?: string | null;
           data_checked_kind?: string | null;
+          source_key?: string | null;
+          source_file?: string | null;
         };
         Update: {
           id?: string;
           career_id?: string;
-          source_id?: number;
+          source_id?: number | null;
           jd_code?: string | null;
           company_name?: string | null;
           job_title?: string | null;
@@ -1280,10 +1287,167 @@ export type Database = {
           updated_at?: string;
           data_checked_at?: string | null;
           data_checked_kind?: string | null;
+          source_key?: string | null;
+          source_file?: string | null;
         };
         Relationships: [
           {
             foreignKeyName: "career_job_descriptions_career_id_fkey";
+            columns: ["career_id"];
+            isOneToOne: false;
+            referencedRelation: "careers";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      career_level_framework_items: {
+        Row: {
+          id: string;
+          framework_id: string;
+          section: string;
+          tier: string | null;
+          group_label: string | null;
+          content: string;
+          detail: string | null;
+          note: string | null;
+          salary_min: number | null;
+          salary_max: number | null;
+          target_career_id: string | null;
+          target_level: number | null;
+          jd_hits: number | null;
+          jd_total: number | null;
+          is_estimate: boolean;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          framework_id: string;
+          section: string;
+          tier?: string | null;
+          group_label?: string | null;
+          content: string;
+          detail?: string | null;
+          note?: string | null;
+          salary_min?: number | null;
+          salary_max?: number | null;
+          target_career_id?: string | null;
+          target_level?: number | null;
+          jd_hits?: number | null;
+          jd_total?: number | null;
+          is_estimate?: boolean;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          framework_id?: string;
+          section?: string;
+          tier?: string | null;
+          group_label?: string | null;
+          content?: string;
+          detail?: string | null;
+          note?: string | null;
+          salary_min?: number | null;
+          salary_max?: number | null;
+          target_career_id?: string | null;
+          target_level?: number | null;
+          jd_hits?: number | null;
+          jd_total?: number | null;
+          is_estimate?: boolean;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "career_level_framework_items_framework_id_fkey";
+            columns: ["framework_id"];
+            isOneToOne: false;
+            referencedRelation: "career_level_frameworks";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "career_level_framework_items_target_career_id_fkey";
+            columns: ["target_career_id"];
+            isOneToOne: false;
+            referencedRelation: "careers";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      career_level_frameworks: {
+        Row: {
+          id: string;
+          career_id: string;
+          career_level: number;
+          level_name: string;
+          status: string;
+          title_variants: string | null;
+          reports_to: string | null;
+          hiring_industries: string | null;
+          experience_text: string | null;
+          work_mode: string | null;
+          career_summary: string | null;
+          position_objectives: string | null;
+          required_level: number | null;
+          jd_count: number;
+          source_note: string | null;
+          published_at: string | null;
+          created_by: string | null;
+          updated_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          career_id: string;
+          career_level: number;
+          level_name: string;
+          status?: string;
+          title_variants?: string | null;
+          reports_to?: string | null;
+          hiring_industries?: string | null;
+          experience_text?: string | null;
+          work_mode?: string | null;
+          career_summary?: string | null;
+          position_objectives?: string | null;
+          required_level?: number | null;
+          jd_count?: number;
+          source_note?: string | null;
+          published_at?: string | null;
+          created_by?: string | null;
+          updated_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          career_id?: string;
+          career_level?: number;
+          level_name?: string;
+          status?: string;
+          title_variants?: string | null;
+          reports_to?: string | null;
+          hiring_industries?: string | null;
+          experience_text?: string | null;
+          work_mode?: string | null;
+          career_summary?: string | null;
+          position_objectives?: string | null;
+          required_level?: number | null;
+          jd_count?: number;
+          source_note?: string | null;
+          published_at?: string | null;
+          created_by?: string | null;
+          updated_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "career_level_frameworks_career_id_fkey";
             columns: ["career_id"];
             isOneToOne: false;
             referencedRelation: "careers";
@@ -1944,16 +2108,19 @@ export type Database = {
           community_id: string;
           user_id: string;
           created_at: string;
+          restricted_until: string | null;
         };
         Insert: {
           community_id: string;
           user_id: string;
           created_at?: string;
+          restricted_until?: string | null;
         };
         Update: {
           community_id?: string;
           user_id?: string;
           created_at?: string;
+          restricted_until?: string | null;
         };
         Relationships: [
           {
@@ -1980,6 +2147,7 @@ export type Database = {
           body: string;
           hidden_at: string | null;
           created_at: string;
+          post_type: string;
         };
         Insert: {
           id?: string;
@@ -1988,6 +2156,7 @@ export type Database = {
           body: string;
           hidden_at?: string | null;
           created_at?: string;
+          post_type?: string;
         };
         Update: {
           id?: string;
@@ -1996,6 +2165,7 @@ export type Database = {
           body?: string;
           hidden_at?: string | null;
           created_at?: string;
+          post_type?: string;
         };
         Relationships: [
           {
@@ -2272,6 +2442,7 @@ export type Database = {
           is_partner: boolean;
           is_active: boolean;
           created_at: string;
+          skill_keywords: string[];
         };
         Insert: {
           id?: string;
@@ -2283,6 +2454,7 @@ export type Database = {
           is_partner?: boolean;
           is_active?: boolean;
           created_at?: string;
+          skill_keywords?: string[];
         };
         Update: {
           id?: string;
@@ -2294,6 +2466,7 @@ export type Database = {
           is_partner?: boolean;
           is_active?: boolean;
           created_at?: string;
+          skill_keywords?: string[];
         };
         Relationships: [
           {
@@ -2693,6 +2866,27 @@ export type Database = {
           group_name?: string;
           sort_order?: number;
           created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      formula_live: {
+        Row: {
+          formula_code: string;
+          expression: Json;
+          version_no: number;
+          updated_at: string;
+        };
+        Insert: {
+          formula_code: string;
+          expression: Json;
+          version_no: number;
+          updated_at?: string;
+        };
+        Update: {
+          formula_code?: string;
+          expression?: Json;
+          version_no?: number;
           updated_at?: string;
         };
         Relationships: [];
@@ -3138,18 +3332,33 @@ export type Database = {
           headline: string;
           verified: boolean;
           created_at: string;
+          bio: string | null;
+          expertise_topics: string[];
+          field_ids: string[];
+          years_experience: number | null;
+          updated_at: string;
         };
         Insert: {
           user_id: string;
           headline: string;
           verified?: boolean;
           created_at?: string;
+          bio?: string | null;
+          expertise_topics?: string[];
+          field_ids?: string[];
+          years_experience?: number | null;
+          updated_at?: string;
         };
         Update: {
           user_id?: string;
           headline?: string;
           verified?: boolean;
           created_at?: string;
+          bio?: string | null;
+          expertise_topics?: string[];
+          field_ids?: string[];
+          years_experience?: number | null;
+          updated_at?: string;
         };
         Relationships: [
           {
@@ -3569,11 +3778,50 @@ export type Database = {
           },
         ];
       };
+      roadmap_group_bands: {
+        Row: {
+          id: string;
+          group_code: string;
+          band_code: string;
+          stage_name: string;
+          min_percent: number;
+          max_percent: number;
+          band_summary: string | null;
+          roadmap_summary: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          group_code: string;
+          band_code: string;
+          stage_name: string;
+          min_percent: number;
+          max_percent: number;
+          band_summary?: string | null;
+          roadmap_summary?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          group_code?: string;
+          band_code?: string;
+          stage_name?: string;
+          min_percent?: number;
+          max_percent?: number;
+          band_summary?: string | null;
+          roadmap_summary?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       roadmap_milestones: {
         Row: {
           id: string;
           roadmap_id: string;
-          pillar: string;
+          pillar: string | null;
           title: string;
           done: boolean;
           created_at: string;
@@ -3588,11 +3836,18 @@ export type Database = {
           activity_type: string | null;
           is_partner: boolean;
           expected_result: string | null;
+          criteria_group: string | null;
+          template_item_id: string | null;
+          start_date: string | null;
+          item_level: number | null;
+          quiz_score: number | null;
+          quiz_total: number | null;
+          quiz_passed_at: string | null;
         };
         Insert: {
           id?: string;
           roadmap_id: string;
-          pillar: string;
+          pillar?: string | null;
           title: string;
           done?: boolean;
           created_at?: string;
@@ -3607,11 +3862,18 @@ export type Database = {
           activity_type?: string | null;
           is_partner?: boolean;
           expected_result?: string | null;
+          criteria_group?: string | null;
+          template_item_id?: string | null;
+          start_date?: string | null;
+          item_level?: number | null;
+          quiz_score?: number | null;
+          quiz_total?: number | null;
+          quiz_passed_at?: string | null;
         };
         Update: {
           id?: string;
           roadmap_id?: string;
-          pillar?: string;
+          pillar?: string | null;
           title?: string;
           done?: boolean;
           created_at?: string;
@@ -3626,6 +3888,13 @@ export type Database = {
           activity_type?: string | null;
           is_partner?: boolean;
           expected_result?: string | null;
+          criteria_group?: string | null;
+          template_item_id?: string | null;
+          start_date?: string | null;
+          item_level?: number | null;
+          quiz_score?: number | null;
+          quiz_total?: number | null;
+          quiz_passed_at?: string | null;
         };
         Relationships: [
           {
@@ -3633,6 +3902,124 @@ export type Database = {
             columns: ["roadmap_id"];
             isOneToOne: false;
             referencedRelation: "roadmaps";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "roadmap_milestones_template_item_id_fkey";
+            columns: ["template_item_id"];
+            isOneToOne: false;
+            referencedRelation: "roadmap_template_items";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      roadmap_quiz_questions: {
+        Row: {
+          id: string;
+          item_suffix: string;
+          question_no: number;
+          question_text: string;
+          option_a: string;
+          option_b: string;
+          option_c: string;
+          correct_option: string;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          item_suffix: string;
+          question_no: number;
+          question_text: string;
+          option_a: string;
+          option_b: string;
+          option_c: string;
+          correct_option: string;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          item_suffix?: string;
+          question_no?: number;
+          question_text?: string;
+          option_a?: string;
+          option_b?: string;
+          option_c?: string;
+          correct_option?: string;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      roadmap_sample_plans: {
+        Row: {
+          id: string;
+          plan_code: string;
+          item_code: string;
+          title: string;
+          fit_when: string | null;
+          schedule_level_1: string | null;
+          schedule_level_2: string | null;
+          schedule_level_3: string | null;
+          suggested_output: string | null;
+          note: string | null;
+          sort_order: number;
+          is_active: boolean;
+          updated_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          plan_code: string;
+          item_code: string;
+          title: string;
+          fit_when?: string | null;
+          schedule_level_1?: string | null;
+          schedule_level_2?: string | null;
+          schedule_level_3?: string | null;
+          suggested_output?: string | null;
+          note?: string | null;
+          sort_order?: number;
+          is_active?: boolean;
+          updated_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          plan_code?: string;
+          item_code?: string;
+          title?: string;
+          fit_when?: string | null;
+          schedule_level_1?: string | null;
+          schedule_level_2?: string | null;
+          schedule_level_3?: string | null;
+          suggested_output?: string | null;
+          note?: string | null;
+          sort_order?: number;
+          is_active?: boolean;
+          updated_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "roadmap_sample_plans_item_code_fkey";
+            columns: ["item_code"];
+            isOneToOne: false;
+            referencedRelation: "roadmap_template_items";
+            referencedColumns: ["item_code"];
+          },
+          {
+            foreignKeyName: "roadmap_sample_plans_updated_by_fkey";
+            columns: ["updated_by"];
+            isOneToOne: false;
+            referencedRelation: "user_profiles";
             referencedColumns: ["id"];
           },
         ];
@@ -3670,6 +4057,250 @@ export type Database = {
           },
         ];
       };
+      roadmap_template_items: {
+        Row: {
+          id: string;
+          item_code: string;
+          template_code: string;
+          group_code: string;
+          band_code: string;
+          stage_name: string;
+          title: string;
+          how_to: string | null;
+          skills_gained: string | null;
+          completion_evidence: string | null;
+          pass_criteria: string | null;
+          duration_weeks: number;
+          level_duration_weeks: Json | null;
+          duration_text: string | null;
+          prerequisite_codes: string[];
+          prerequisite_required: boolean;
+          parallel_codes: string[];
+          reference_source: string | null;
+          confidence_label: string | null;
+          check_status: string | null;
+          check_note: string | null;
+          sort_order: number;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+          level_guide: string | null;
+          prior_knowledge: string | null;
+          experience_task: string | null;
+          extra_hours_text: string | null;
+          fallback_options: string | null;
+          group_boundary: string | null;
+          supplement_note: string | null;
+          updated_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          item_code: string;
+          template_code: string;
+          group_code: string;
+          band_code: string;
+          stage_name: string;
+          title: string;
+          how_to?: string | null;
+          skills_gained?: string | null;
+          completion_evidence?: string | null;
+          pass_criteria?: string | null;
+          duration_weeks: number;
+          level_duration_weeks?: Json | null;
+          duration_text?: string | null;
+          prerequisite_codes?: string[];
+          prerequisite_required?: boolean;
+          parallel_codes?: string[];
+          reference_source?: string | null;
+          confidence_label?: string | null;
+          check_status?: string | null;
+          check_note?: string | null;
+          sort_order?: number;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+          level_guide?: string | null;
+          prior_knowledge?: string | null;
+          experience_task?: string | null;
+          extra_hours_text?: string | null;
+          fallback_options?: string | null;
+          group_boundary?: string | null;
+          supplement_note?: string | null;
+          updated_by?: string | null;
+        };
+        Update: {
+          id?: string;
+          item_code?: string;
+          template_code?: string;
+          group_code?: string;
+          band_code?: string;
+          stage_name?: string;
+          title?: string;
+          how_to?: string | null;
+          skills_gained?: string | null;
+          completion_evidence?: string | null;
+          pass_criteria?: string | null;
+          duration_weeks?: number;
+          level_duration_weeks?: Json | null;
+          duration_text?: string | null;
+          prerequisite_codes?: string[];
+          prerequisite_required?: boolean;
+          parallel_codes?: string[];
+          reference_source?: string | null;
+          confidence_label?: string | null;
+          check_status?: string | null;
+          check_note?: string | null;
+          sort_order?: number;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+          level_guide?: string | null;
+          prior_knowledge?: string | null;
+          experience_task?: string | null;
+          extra_hours_text?: string | null;
+          fallback_options?: string | null;
+          group_boundary?: string | null;
+          supplement_note?: string | null;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "roadmap_template_items_template_code_fkey";
+            columns: ["template_code"];
+            isOneToOne: false;
+            referencedRelation: "roadmap_templates";
+            referencedColumns: ["template_code"];
+          },
+          {
+            foreignKeyName: "roadmap_template_items_updated_by_fkey";
+            columns: ["updated_by"];
+            isOneToOne: false;
+            referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      roadmap_template_rules: {
+        Row: {
+          id: string;
+          template_code: string;
+          group_code: string;
+          rule_code: string;
+          title: string;
+          content: string;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          template_code: string;
+          group_code?: string;
+          rule_code: string;
+          title: string;
+          content: string;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          template_code?: string;
+          group_code?: string;
+          rule_code?: string;
+          title?: string;
+          content?: string;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "roadmap_template_rules_template_code_fkey";
+            columns: ["template_code"];
+            isOneToOne: false;
+            referencedRelation: "roadmap_templates";
+            referencedColumns: ["template_code"];
+          },
+        ];
+      };
+      roadmap_template_weights: {
+        Row: {
+          id: string;
+          template_code: string;
+          group_code: string;
+          weight: number;
+          note: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          template_code: string;
+          group_code: string;
+          weight: number;
+          note?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          template_code?: string;
+          group_code?: string;
+          weight?: number;
+          note?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "roadmap_template_weights_template_code_fkey";
+            columns: ["template_code"];
+            isOneToOne: false;
+            referencedRelation: "roadmap_templates";
+            referencedColumns: ["template_code"];
+          },
+        ];
+      };
+      roadmap_templates: {
+        Row: {
+          id: string;
+          template_code: string;
+          template_name: string;
+          learner_level: string;
+          career_code_patterns: string[];
+          is_level_default: boolean;
+          sort_order: number;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          template_code: string;
+          template_name: string;
+          learner_level: string;
+          career_code_patterns?: string[];
+          is_level_default?: boolean;
+          sort_order?: number;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          template_code?: string;
+          template_name?: string;
+          learner_level?: string;
+          career_code_patterns?: string[];
+          is_level_default?: boolean;
+          sort_order?: number;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       roadmaps: {
         Row: {
           id: string;
@@ -3688,6 +4319,8 @@ export type Database = {
           regenerate_reason: string | null;
           previous_roadmap_id: string | null;
           training_program_id: string | null;
+          template_code: string | null;
+          group_snapshot: Json | null;
         };
         Insert: {
           id?: string;
@@ -3706,6 +4339,8 @@ export type Database = {
           regenerate_reason?: string | null;
           previous_roadmap_id?: string | null;
           training_program_id?: string | null;
+          template_code?: string | null;
+          group_snapshot?: Json | null;
         };
         Update: {
           id?: string;
@@ -3724,6 +4359,8 @@ export type Database = {
           regenerate_reason?: string | null;
           previous_roadmap_id?: string | null;
           training_program_id?: string | null;
+          template_code?: string | null;
+          group_snapshot?: Json | null;
         };
         Relationships: [
           {
@@ -3746,6 +4383,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "roadmaps";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "roadmaps_template_code_fkey";
+            columns: ["template_code"];
+            isOneToOne: false;
+            referencedRelation: "roadmap_templates";
+            referencedColumns: ["template_code"];
           },
           {
             foreignKeyName: "roadmaps_training_program_id_fkey";
@@ -3831,6 +4475,73 @@ export type Database = {
         };
         Relationships: [];
       };
+      skill_gap_analyses: {
+        Row: {
+          id: string;
+          owner_id: string;
+          framework_id: string | null;
+          career_id: string | null;
+          position_name: string;
+          overall_percent: number;
+          met_count: number;
+          near_count: number;
+          unmet_count: number;
+          details: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          owner_id: string;
+          framework_id?: string | null;
+          career_id?: string | null;
+          position_name: string;
+          overall_percent: number;
+          met_count?: number;
+          near_count?: number;
+          unmet_count?: number;
+          details?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          owner_id?: string;
+          framework_id?: string | null;
+          career_id?: string | null;
+          position_name?: string;
+          overall_percent?: number;
+          met_count?: number;
+          near_count?: number;
+          unmet_count?: number;
+          details?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "skill_gap_analyses_career_id_fkey";
+            columns: ["career_id"];
+            isOneToOne: false;
+            referencedRelation: "careers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "skill_gap_analyses_framework_id_fkey";
+            columns: ["framework_id"];
+            isOneToOne: false;
+            referencedRelation: "career_level_frameworks";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "skill_gap_analyses_owner_id_fkey";
+            columns: ["owner_id"];
+            isOneToOne: false;
+            referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       skill_profile_items: {
         Row: {
           id: string;
@@ -3844,6 +4555,7 @@ export type Database = {
           evidence: string | null;
           created_at: string;
           updated_at: string;
+          framework_item_id: string | null;
         };
         Insert: {
           id?: string;
@@ -3857,6 +4569,7 @@ export type Database = {
           evidence?: string | null;
           created_at?: string;
           updated_at?: string;
+          framework_item_id?: string | null;
         };
         Update: {
           id?: string;
@@ -3870,6 +4583,7 @@ export type Database = {
           evidence?: string | null;
           created_at?: string;
           updated_at?: string;
+          framework_item_id?: string | null;
         };
         Relationships: [
           {
@@ -3877,6 +4591,13 @@ export type Database = {
             columns: ["criteria_id"];
             isOneToOne: false;
             referencedRelation: "criteria";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "skill_profile_items_framework_item_id_fkey";
+            columns: ["framework_item_id"];
+            isOneToOne: false;
+            referencedRelation: "career_level_framework_items";
             referencedColumns: ["id"];
           },
           {
@@ -4203,7 +4924,7 @@ export type Database = {
         Returns: string;
       };
       add_roadmap_milestone: {
-        Args: { p_roadmap_id: string; p_pillar: string; p_title: string; p_due_date?: string; p_weight?: number; p_is_checkpoint?: boolean; p_pass_criteria?: string };
+        Args: { p_roadmap_id: string; p_pillar: string; p_title: string; p_due_date?: string; p_weight?: number; p_is_checkpoint?: boolean; p_pass_criteria?: string; p_criteria_group?: string };
         Returns: string;
       };
       add_roadmap_milestones_bulk: {
@@ -4213,6 +4934,14 @@ export type Database = {
       add_school_staff: {
         Args: { p_school_id: string; p_email: string; p_staff_role: string };
         Returns: Json;
+      };
+      admin_copy_level_framework: {
+        Args: { p_source_id: string; p_target_career_id: string; p_target_level: number; p_level_name?: string };
+        Returns: string;
+      };
+      admin_delete_level_framework: {
+        Args: { p_framework_id: string };
+        Returns: undefined;
       };
       admin_inspect_result: {
         Args: { p_owner: string; p_reason: string };
@@ -4229,6 +4958,18 @@ export type Database = {
       admin_save_career_requirements: {
         Args: { p_career_id: string; p_rows: Json };
         Returns: string;
+      };
+      admin_save_level_framework: {
+        Args: { p_framework_id: string; p_career_id: string; p_payload: Json };
+        Returns: string;
+      };
+      admin_set_level_framework_status: {
+        Args: { p_framework_id: string; p_status: string };
+        Returns: undefined;
+      };
+      assert_community_author: {
+        Args: { p_community_id: string };
+        Returns: undefined;
       };
       assign_class_teacher: {
         Args: { p_class_id: string; p_email: string; p_member_role: string };
@@ -4254,6 +4995,22 @@ export type Database = {
         Args: { p_note: string };
         Returns: string;
       };
+      calc_competency_level: {
+        Args: { p_percent: number; p_levels: Json };
+        Returns: string;
+      };
+      calc_confidence: {
+        Args: { p_native: string; p_coverage: number; p_insufficient_ratio: number };
+        Returns: string;
+      };
+      calc_criterion_percent: {
+        Args: { p_score: number };
+        Returns: number;
+      };
+      calc_rater_weight: {
+        Args: { p_th_score: number; p_supplemental: number; p_floor: number; p_default: number };
+        Returns: number;
+      };
       can_manage_class: {
         Args: { p_class_id: string };
         Returns: boolean;
@@ -4261,6 +5018,10 @@ export type Database = {
       can_view_result_of: {
         Args: { p_owner: string };
         Returns: boolean;
+      };
+      career_event_json: {
+        Args: { e: unknown };
+        Returns: Json;
       };
       career_fit_compute: {
         Args: { p_result_id: string; p_career_ids?: string[] };
@@ -4311,7 +5072,7 @@ export type Database = {
         Returns: undefined;
       };
       create_career_event: {
-        Args: { p_school_id: string; p_title: string; p_description: string; p_location: string; p_starts_at: string; p_seat_limit?: number; p_registration_deadline?: string };
+        Args: { p_school_id: string; p_title: string; p_description: string; p_location: string; p_starts_at: string; p_seat_limit?: number; p_registration_deadline?: string; p_audience?: string };
         Returns: string;
       };
       create_class: {
@@ -4323,7 +5084,7 @@ export type Database = {
         Returns: string;
       };
       create_community_post: {
-        Args: { p_community_id: string; p_body: string };
+        Args: { p_community_id: string; p_body: string; p_post_type?: string };
         Returns: string;
       };
       create_decision_report: {
@@ -4370,9 +5131,49 @@ export type Database = {
         Args: { p_email: string };
         Returns: string;
       };
+      formula_apply: {
+        Args: { p_code: string; p_native: Json; p_vars?: Json; p_refs?: Json; p_sets?: Json };
+        Returns: Json;
+      };
+      formula_apply_label: {
+        Args: { p_code: string; p_native: string; p_map: Json; p_vars?: Json; p_refs?: Json; p_sets?: Json };
+        Returns: string;
+      };
+      formula_apply_num: {
+        Args: { p_code: string; p_native: number; p_vars?: Json; p_refs?: Json; p_sets?: Json };
+        Returns: number;
+      };
+      formula_eval: {
+        Args: { p_expr: Json; p_ctx?: Json };
+        Returns: Json;
+      };
+      formula_eval_cond: {
+        Args: { p_cond: Json; p_ctx: Json; p_scope: Json; p_stack: string[] };
+        Returns: boolean;
+      };
+      formula_eval_node: {
+        Args: { p_expr: Json; p_ctx: Json; p_scope: Json; p_stack: string[] };
+        Returns: Json;
+      };
       formula_expression_refs: {
         Args: { p_expression: Json };
         Returns: unknown[];
+      };
+      formula_is_live: {
+        Args: { p_code: string };
+        Returns: boolean;
+      };
+      formula_param_value: {
+        Args: { p_symbol: string };
+        Returns: Json;
+      };
+      formula_sync_live: {
+        Args: { p_formula_id: string };
+        Returns: undefined;
+      };
+      formula_to_num: {
+        Args: { p_value: Json };
+        Returns: number;
       };
       get_360_questions: {
         Args: { p_resume_token: string };
@@ -4380,6 +5181,10 @@ export type Database = {
       };
       get_360_session: {
         Args: { p_resume_token: string };
+        Returns: Json;
+      };
+      get_career_event: {
+        Args: { p_event_id: string };
         Returns: Json;
       };
       get_career_fit_detail: {
@@ -4414,6 +5219,10 @@ export type Database = {
         Args: { p_report_id: string };
         Returns: Json;
       };
+      get_formula_overrides: {
+        Args: Record<PropertyKey, never>;
+        Returns: Json;
+      };
       get_invitation_public: {
         Args: { p_token: string };
         Returns: Json;
@@ -4436,6 +5245,10 @@ export type Database = {
       };
       get_qualitative_case: {
         Args: { p_submission_id: string };
+        Returns: Json;
+      };
+      get_roadmap_quiz: {
+        Args: { p_milestone_id: string };
         Returns: Json;
       };
       get_roadmap_soft_skills: {
@@ -4468,6 +5281,10 @@ export type Database = {
       };
       is_class_teacher: {
         Args: { p_class_id: string };
+        Returns: boolean;
+      };
+      is_level_framework_public: {
+        Args: { p_framework_id: string };
         Returns: boolean;
       };
       is_school_admin: {
@@ -4618,6 +5435,10 @@ export type Database = {
         Args: { p_topic_id: string };
         Returns: undefined;
       };
+      replace_level_framework_items: {
+        Args: { p_framework_id: string; p_items: Json };
+        Returns: number;
+      };
       report_community_post: {
         Args: { p_post_id: string; p_reason: string };
         Returns: undefined;
@@ -4638,6 +5459,10 @@ export type Database = {
         Args: { p_id: string; p_accept: boolean };
         Returns: undefined;
       };
+      restrict_community_author: {
+        Args: { p_user_id: string; p_days: number; p_community_id?: string };
+        Returns: number;
+      };
       revoke_result_share: {
         Args: { p_user_id: string };
         Returns: undefined;
@@ -4645,6 +5470,10 @@ export type Database = {
       roadmap_param: {
         Args: { p_code: string; p_default: number };
         Returns: number;
+      };
+      roadmap_quiz_suffix: {
+        Args: { p_milestone_id: string };
+        Returns: string;
       };
       roadmap_status: {
         Args: { p_roadmap_id: string };
@@ -4675,7 +5504,7 @@ export type Database = {
         Returns: undefined;
       };
       save_mentor_profile: {
-        Args: { p_headline: string };
+        Args: { p_headline: string; p_bio?: string; p_expertise_topics?: string[]; p_field_ids?: string[]; p_years_experience?: number };
         Returns: undefined;
       };
       save_my_study_finance: {
@@ -4730,8 +5559,16 @@ export type Database = {
         Args: { p_roadmap_id: string; p_career_ids: string[] };
         Returns: undefined;
       };
+      set_roadmap_milestone_level: {
+        Args: { p_milestone_id: string; p_level: number };
+        Returns: Json;
+      };
       set_roadmap_program: {
         Args: { p_roadmap_id: string; p_training_program_id: string };
+        Returns: undefined;
+      };
+      set_roadmap_template: {
+        Args: { p_roadmap_id: string; p_template_code: string; p_group_snapshot?: Json };
         Returns: undefined;
       };
       share_decision_report: {
@@ -4760,6 +5597,10 @@ export type Database = {
       };
       submit_class_grid_student: {
         Args: { p_grid_student_id: string };
+        Returns: Json;
+      };
+      submit_roadmap_quiz: {
+        Args: { p_milestone_id: string; p_answers: Json };
         Returns: Json;
       };
       supplemental_understanding_score: {

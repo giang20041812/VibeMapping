@@ -17,6 +17,8 @@ interface Props {
   errors: SetupErrors;
   choices: CareerChoice[];
   catalog: FilterOption[];
+  /** Hướng đi (lộ trình mẫu) của cấp học đang chọn */
+  templateOptions: { value: string; label: string }[];
   submitting: boolean;
   submitLabel: string;
   /** Tạo lại lộ trình: bắt buộc chọn lý do */
@@ -34,6 +36,7 @@ export const RoadmapSetup: React.FC<Props> = ({
   errors,
   choices,
   catalog,
+  templateOptions,
   submitting,
   submitLabel,
   askReason,
@@ -148,6 +151,16 @@ export const RoadmapSetup: React.FC<Props> = ({
               error={errors.schoolYear}
               disabled={!values.educationLevel}
               onChange={(value) => onChange({ schoolYear: value })}
+            />
+            <Select
+              label="Hướng đi"
+              required
+              emptyLabel="Chọn hướng đi"
+              options={templateOptions}
+              value={values.templateCode}
+              error={errors.templateCode}
+              disabled={!values.educationLevel}
+              onChange={(value) => onChange({ templateCode: value })}
             />
             <Input
               label="Chứng chỉ hiện có"

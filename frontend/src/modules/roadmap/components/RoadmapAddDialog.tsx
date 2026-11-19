@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Input, Modal, Select, Textarea } from '../../../components/common';
-import { PILLAR_LABEL, PILLAR_ORDER } from '../roadmap.logic';
-import type { RoadmapPillar } from '../roadmap.types';
-
-const PILLAR_OPTIONS = PILLAR_ORDER.map((value) => ({ value, label: PILLAR_LABEL[value] }));
+import { GROUP_OPTIONS } from '../roadmap.logic';
+import type { CriteriaGroupCode } from '../roadmap.types';
 const KIND_OPTIONS = [
   { value: 'activity', label: 'Hoạt động' },
   { value: 'checkpoint', label: 'Cột mốc' },
@@ -11,7 +9,7 @@ const KIND_OPTIONS = [
 
 export interface AddInitial {
   kind: 'activity' | 'checkpoint';
-  pillar: RoadmapPillar;
+  group: CriteriaGroupCode;
   due: string;
   /** Nội dung điền sẵn, ví dụ gợi ý khóa học từ hồ sơ năng lực */
   title?: string;
@@ -20,7 +18,7 @@ export interface AddInitial {
 export interface AddInput {
   title: string;
   due: string;
-  pillar: RoadmapPillar;
+  group: CriteriaGroupCode;
   checkpoint: boolean;
   passCriteria: string;
 }
@@ -36,7 +34,7 @@ interface Props {
 export const RoadmapAddDialog: React.FC<Props> = ({ initial, busy, onClose, onSubmit }) => {
   const [form, setForm] = useState<AddInitial & { title: string; passCriteria: string }>({
     kind: initial?.kind ?? 'activity',
-    pillar: initial?.pillar ?? 'knowledge',
+    group: initial?.group ?? 'G2',
     due: initial?.due ?? '',
     title: initial?.title ?? '',
     passCriteria: '',
@@ -59,7 +57,7 @@ export const RoadmapAddDialog: React.FC<Props> = ({ initial, busy, onClose, onSu
             isLoading={busy}
             disabled={!ready}
             onClick={() =>
-              void onSubmit({ title: form.title, due: form.due, pillar: form.pillar, checkpoint, passCriteria: form.passCriteria }).then(onClose)
+              void onSubmit({ title: form.title, due: form.due, group: form.group, checkpoint, passCriteria: form.passCriteria }).then(onClose)
             }
           >
             Thêm
@@ -69,7 +67,7 @@ export const RoadmapAddDialog: React.FC<Props> = ({ initial, busy, onClose, onSu
     >
       <div className="roadmap-fields is-single">
         <Select label="Loại" options={KIND_OPTIONS} value={form.kind} onChange={(value) => setForm({ ...form, kind: value as AddInitial['kind'] })} />
-        <Select label="Trụ cột" options={PILLAR_OPTIONS} value={form.pillar} onChange={(value) => setForm({ ...form, pillar: value as RoadmapPillar })} />
+        <Select label="Nhóm tiêu chí" options={GROUP_OPTIONS} value={form.group} onChange={(value) => setForm({ ...form, group: value as CriteriaGroupCode })} />
         <Input label={checkpoint ? 'Tên cột mốc' : 'Nội dung'} required value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} />
         <Input label="Hạn" type="date" required={checkpoint} value={form.due} onChange={(event) => setForm({ ...form, due: event.target.value })} />
         {checkpoint && (

@@ -19,6 +19,13 @@ import {
   weightedMean,
 } from '../src/domain/assessmentRules';
 import { generateRoadmapFromLibrary } from '../src/domain/roadmapGeneration';
+import {
+  bandOf,
+  generateRoadmapFromTemplates,
+  pickTemplate,
+  rankGroups,
+  type RoadmapTemplateItem,
+} from '../src/domain/roadmapTemplateGeneration';
 import { parseTuition } from '../../supabase/scripts/tuition-parser';
 
 function assertEqual<T>(actual: T, expected: T, message?: string): void {
@@ -230,6 +237,68 @@ check('R14, BR-016, M06, M07: Trust Index trừ thời gian nghỉ > 120s, Lệc
   });
   assertEqual(generated.some((m) => m.pillar === 'knowledge'), true);
   assertEqual(generated.some((m) => m.isCheckpoint), true);
+});
+
+check('Lộ trình mẫu: band theo % đạt, ưu tiên theo điểm thiếu, xếp song song theo giờ và mục tiên quyết', () => {
+  // Ranh giới 25/50/80 thuộc band cao hơn, 100 thuộc B4, chưa có điểm là B1
+  assertDeepEqual([bandOf(null), bandOf(24.9), bandOf(25), bandOf(50), bandOf(79.9), bandOf(80), bandOf(100)], ['B1', 'B1', 'B2', 'B3', 'B3', 'B4', 'B4']);
+
+  // Điểm thiếu = trọng số × (1 − % đạt): G2 (25.3 × 0.6 = 15.18) xếp trước G6 (26.8 × 0.3 = 8.04)
+  const ranked = rankGroups({ G2: 40, G6: 70 }, { G2: 25.3, G6: 26.8 });
+  assertEqual(ranked[0].groupCode, 'G2');
+  assertEqual(ranked[0].gap, 15.18);
+  assertEqual(ranked[0].band, 'B2');
+  // Không có trọng số thì chia đều, nhóm chưa có điểm coi như 0% nên thiếu nhiều nhất
+  const equal = rankGroups({ G1: 90, G2: 10 });
+  assertEqual(equal[equal.length - 1].groupCode, 'G1');
+  assertEqual(equal[0].band, 'B1');
+
+  // Chọn mẫu: sinh viên có nghề BA vào mẫu BA, nghề khác vào mẫu mặc định; học sinh vào mẫu mặc định cấp học
+  const templates = [
+    { code: 'RM1', learnerLevel: 'high_school' as const, careerCodePatterns: [], isLevelDefault: true, sortOrder: 1 },
+    { code: 'RM2', learnerLevel: 'high_school' as const, careerCodePatterns: [], isLevelDefault: false, sortOrder: 2 },
+    { code: 'RM3', learnerLevel: 'university' as const, careerCodePatterns: [], isLevelDefault: true, sortOrder: 3 },
+    { code: 'RM4', learnerLevel: 'university' as const, careerCodePatterns: ['%phan-tich-nghiep-vu%'], isLevelDefault: false, sortOrder: 4 },
+  ];
+  assertEqual(pickTemplate(templates, 'university', ['G1-01:chuyen-vien-phan-tich-nghiep-vu']), 'RM4');
+  assertEqual(pickTemplate(templates, 'university', ['G4-05']), 'RM3');
+  assertEqual(pickTemplate(templates, 'high_school', ['G1-01:chuyen-vien-phan-tich-nghiep-vu']), 'RM1');
+
+  const item = (code: string, group: RoadmapTemplateItem['groupCode'], band: RoadmapTemplateItem['bandCode'], weeks: number, pre: string[] = [], levels: RoadmapTemplateItem['levelDurationWeeks'] = null): RoadmapTemplateItem => ({
+    id: code, itemCode: code, groupCode: group, bandCode: band, title: code, durationWeeks: weeks, levelDurationWeeks: levels,
+    prerequisiteCodes: pre, passCriteria: null, completionEvidence: null, sortOrder: 0,
+  });
+  const items = [
+    item('TD-B1-01', 'G2', 'B1', 3), item('TD-B2-01', 'G2', 'B2', 4, ['TD-B1-01']), item('TD-B3-01', 'G2', 'B3', 4, ['TD-B2-01']),
+    item('GT-B2-01', 'G3', 'B2', 2), item('GT-B3-01', 'G3', 'B3', 4, ['GT-B2-01']),
+    item('LD-B1-01', 'G5', 'B1', 3, [], { 1: 1, 2: 3, 3: 3 }), item('LD-B2-01', 'G5', 'B2', 4, ['LD-B1-01']),
+  ];
+  const groups = rankGroups({ G2: 30, G3: 30, G5: 30 }, { G2: 50, G3: 30, G5: 20 });
+  // 4 giờ/tuần, 2 giờ một mục -> 2 mục song song; mỗi mục 2 giờ -> nhóm 3 cấp chọn cấp 2
+  const plan = generateRoadmapFromTemplates({ startDay: '2027-01-01', targetDate: '2027-06-30', hoursPerWeek: 4, items, groups });
+  const byCode = new Map(plan.map((m) => [m.itemCode, m]));
+  // Đang ở B2 nên không giao mục B1; band kế tiếp bắt đầu sau khi xong band trước
+  assertEqual(byCode.has('TD-B1-01'), false);
+  assertEqual(byCode.get('TD-B2-01')?.startDate, '2027-01-01');
+  assertEqual(byCode.get('GT-B2-01')?.startDate, '2027-01-01');
+  assertEqual(byCode.get('TD-B3-01')?.startDate, '2027-01-29');
+  assertEqual(byCode.get('TD-B2-01')?.dueDate, '2027-01-28');
+  assertEqual(plan.filter((m) => m.isCheckpoint).length, 2);
+  assertEqual(plan.every((m) => m.dueDate <= '2027-06-30'), true);
+
+  // Thời hạn ngắn: mục không kịp xong bị bỏ, kéo theo mục phụ thuộc nó
+  const short = generateRoadmapFromTemplates({ startDay: '2027-01-01', targetDate: '2027-01-31', hoursPerWeek: 2, items, groups });
+  assertEqual(short.map((m) => m.itemCode).join(','), 'TD-B2-01');
+  // Nhóm 3 cấp: 1 giờ/tuần chọn cấp 1 (1 tuần), mục mẫu đã có thì không gợi ý lại
+  const low = generateRoadmapFromTemplates({
+    startDay: '2027-01-01', targetDate: '2027-12-31', hoursPerWeek: 1, items, groups: rankGroups({ G5: 0 }, { G5: 100 }),
+    excludeItemIds: new Set(['TD-B2-01']),
+  });
+  const ld = low.find((m) => m.itemCode === 'LD-B1-01');
+  assertEqual(ld?.itemLevel, 1);
+  assertEqual(ld?.dueDate, '2027-01-07');
+  assertEqual(low.some((m) => m.itemCode === 'TD-B2-01'), false);
+  assertThrows(() => generateRoadmapFromTemplates({ startDay: '2027-01-01', targetDate: '2026-12-01', hoursPerWeek: 4, items, groups }));
 });
 
 check('M05 & M06 mới: Tách số học phí (kỳ, năm, tổng khóa, tín chỉ, miễn) & công thức so sánh phương án mới', () => {

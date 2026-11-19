@@ -50,6 +50,7 @@ import { QualitativeReviewPage } from './modules/admin/pages/QualitativeReviewPa
 import { CommunityAdminPage, ContentLibraryAdminPage } from './modules/admin/pages/AdminModulesPages';
 import { CareerAdminListPage } from './modules/admin/pages/CareerAdminListPage';
 import { CareerAdminDetailPage } from './modules/admin/pages/CareerAdminDetailPage';
+import { RoadmapTemplatesAdminPage } from './modules/admin/pages/RoadmapTemplatesAdminPage';
 import { ResultHistoryPage } from './modules/assessment_result/pages/ResultHistoryPage';
 import { SharedResultPage } from './modules/privacy/pages/SharedResultPage';
 import { DecisionReportPage, SharedReportsPage } from './modules/decision_support/pages/DecisionReportPage';
@@ -174,6 +175,7 @@ export const App: React.FC = () => (
               <Route path="/quan-tri/nghe" element={<CareerAdminListPage />} />
               <Route path="/quan-tri/nghe/:id" element={<CareerAdminDetailPage />} />
               <Route path="/quan-tri/thu-vien" element={<ContentLibraryAdminPage />} />
+              <Route path="/quan-tri/lo-trinh-mau" element={<RoadmapTemplatesAdminPage />} />
               <Route path="/quan-tri/cong-dong" element={<CommunityAdminPage />} />
             </Route>
           </Route>

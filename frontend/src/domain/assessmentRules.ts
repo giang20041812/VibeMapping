@@ -902,7 +902,9 @@ export function compareDecisionOptions(
 
 export interface RoadmapMilestoneProgressInput {
   id: string;
-  pillar: 'knowledge' | 'experience' | 'exploration';
+  pillar: 'knowledge' | 'experience' | 'exploration' | null;
+  /** Nhóm tiêu chí G1–G7 của hoạt động sinh từ lộ trình mẫu; có thì tính theo nhóm thay cho trụ cột */
+  criteriaGroup?: string | null;
   title: string;
   done: boolean;
   weight?: number;
@@ -914,7 +916,8 @@ const ROADMAP_PILLARS = ['knowledge', 'experience', 'exploration'] as const;
 const DAY_MS = 86400000;
 
 /**
- * BR-027: % tổng thể là trung bình cộng các trụ cột có hoạt động (mỗi trụ nặng như nhau, trong trụ theo trọng số).
+ * BR-027: % tổng thể là trung bình cộng các nhóm có hoạt động (mỗi nhóm nặng như nhau, trong nhóm theo trọng số).
+ * Nhóm là nhóm tiêu chí G1–G7 với hoạt động từ lộ trình mẫu, hoặc trụ cột với hoạt động cũ.
  * Chệch hướng khi (% thời gian đã trôi − % hoàn thành) > 20 điểm hoặc quá hạn một cột mốc chính.
  * Không có đích thì % thời gian lấy theo phần việc đã đến hạn.
  */
@@ -924,24 +927,28 @@ export function evaluateRoadmapProgress(
   range?: { startIso: string; targetIso: string | null },
 ) {
   const weightOf = (m: RoadmapMilestoneProgressInput) => m.weight ?? 1;
-  const byPillar = ROADMAP_PILLARS.map((pillar) => {
-    const items = milestones.filter((m) => m.pillar === pillar);
+  const trackOf = (items: readonly RoadmapMilestoneProgressInput[]) => {
     const w = items.reduce((s, m) => s + weightOf(m), 0);
     const doneW = items.filter((m) => m.done).reduce((s, m) => s + weightOf(m), 0);
-    const pillarPercent = applyNumber('roadmap_pillar_percent', w > 0 ? (doneW / w) * 100 : null, {
+    const percent = applyNumber('roadmap_pillar_percent', w > 0 ? (doneW / w) * 100 : null, {
       sets: { milestones: items.map((m) => ({ milestone_weight: weightOf(m), milestone_done: m.done ? 1 : 0 })) },
     });
     return {
-      pillar,
       total: items.length,
       done: items.filter((m) => m.done).length,
-      percent: pillarPercent !== null ? Number(pillarPercent.toFixed(1)) : (null as number | null),
+      percent: percent !== null ? Number(percent.toFixed(1)) : (null as number | null),
     };
-  });
-  const counted = byPillar.filter((p) => p.percent !== null);
+  };
+  const byPillar = ROADMAP_PILLARS.map((pillar) => ({
+    pillar,
+    ...trackOf(milestones.filter((m) => !m.criteriaGroup && m.pillar === pillar)),
+  }));
+  const groupCodes = [...new Set(milestones.map((m) => m.criteriaGroup).filter((g): g is string => Boolean(g)))].sort();
+  const byGroup = groupCodes.map((groupCode) => ({ groupCode, ...trackOf(milestones.filter((m) => m.criteriaGroup === groupCode)) }));
+  const counted = [...byPillar, ...byGroup].filter((p) => p.percent !== null);
   const actualNative = counted.length > 0 ? counted.reduce((s, p) => s + (p.percent ?? 0), 0) / counted.length : null;
   const actualHooked = applyNumber('roadmap_actual_percent', actualNative, {
-    sets: { pillars: byPillar.map((p) => ({ roadmap_pillar_percent: p.percent })) },
+    sets: { pillars: counted.map((p) => ({ roadmap_pillar_percent: p.percent })) },
   });
   const actualPercent = actualHooked !== null ? Number(actualHooked.toFixed(1)) : 0;
 
@@ -971,7 +978,7 @@ export function evaluateRoadmapProgress(
       vars: { missed_checkpoints: missedCheckpoints.length },
       refs: { roadmap_delay: delayPercent },
     }) === 'off';
-  return { actualPercent, plannedPercent, delayPercent, offTrack, missedCheckpoints, byPillar };
+  return { actualPercent, plannedPercent, delayPercent, offTrack, missedCheckpoints, byPillar, byGroup };
 }
 
 /** Số ngày còn lại tới đích (âm khi đã quá hạn) */

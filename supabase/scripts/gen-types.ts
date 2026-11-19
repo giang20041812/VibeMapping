@@ -131,10 +131,12 @@ async function main() {
           WHERE n.nspname = $1 AND p.prokind = 'f' AND p.prorettype <> 'trigger'::regtype
             AND p.prorettype <> 'event_trigger'::regtype
             AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.objid = p.oid AND d.deptype = 'e')
-          ORDER BY p.proname`,
+          ORDER BY p.proname, p.pronargs DESC`,
         [SCHEMA],
       )
-    ).rows;
+    ).rows
+      // Hàm nạp chồng (bản cũ còn sót trong database): giữ bản nhiều tham số nhất, là bản mới theo migration
+      .filter((row, index, all) => all.findIndex((other) => other.name === row.name) === index);
 
     // ---- Dựng nội dung file
     const lines: string[] = [];

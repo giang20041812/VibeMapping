@@ -25,7 +25,9 @@
     "import:phase2:school": "tsx import-phase2-data.ts --step school",
     "import:phase2:links": "tsx import-phase2-data.ts --step links",
     "import:jd-frameworks": "tsx import-jd-frameworks.ts",
-    "import:jd-frameworks:dry": "tsx import-jd-frameworks.ts --dry-run"
+    "import:jd-frameworks:dry": "tsx import-jd-frameworks.ts --dry-run",
+    "import:roadmap-templates": "tsx import-roadmap-templates.ts",
+    "import:roadmap-templates:dry": "tsx import-roadmap-templates.ts --dry-run"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",

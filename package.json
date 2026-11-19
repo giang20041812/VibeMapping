@@ -27,7 +27,9 @@
     "check:formulas": "npm --prefix supabase/scripts run check:formulas",
     "gen:formula-fixture": "npm --prefix supabase/scripts run gen:formula-fixture",
     "import:jd-frameworks": "npm --prefix supabase/scripts run import:jd-frameworks --",
-    "import:jd-frameworks:dry": "npm --prefix supabase/scripts run import:jd-frameworks:dry --"
+    "import:jd-frameworks:dry": "npm --prefix supabase/scripts run import:jd-frameworks:dry --",
+    "import:roadmap-templates": "npm --prefix supabase/scripts run import:roadmap-templates --",
+    "import:roadmap-templates:dry": "npm --prefix supabase/scripts run import:roadmap-templates:dry --"
   },
   "keywords": [
     "typescript",

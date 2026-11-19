@@ -1,5 +1,17 @@
 import { evaluateRoadmapProgress } from '../../domain/assessmentRules';
-import type { ActivityType, Milestone, RegenerateReason, Roadmap, RoadmapPillar, SetupErrors, SetupValues, Stage } from './roadmap.types';
+import { CRITERIA_GROUP_CODES } from '../../domain/roadmapTemplateGeneration';
+import type {
+  ActivityType,
+  BandCode,
+  CriteriaGroupCode,
+  Milestone,
+  RegenerateReason,
+  Roadmap,
+  RoadmapPillar,
+  SetupErrors,
+  SetupValues,
+  Stage,
+} from './roadmap.types';
 
 export const PILLAR_ORDER: RoadmapPillar[] = ['knowledge', 'experience', 'exploration'];
 
@@ -9,8 +21,31 @@ export const PILLAR_LABEL: Record<RoadmapPillar, string> = {
   exploration: 'Trải nghiệm',
 };
 
+export const GROUP_LABEL: Record<CriteriaGroupCode, string> = {
+  G1: 'Tính cách cá nhân',
+  G2: 'Tư duy & Năng lực học tập',
+  G3: 'Giao tiếp & Xã hội',
+  G4: 'Thái độ & Tinh thần làm việc',
+  G5: 'Lãnh đạo & Tổ chức',
+  G6: 'Sở thích nghề nghiệp',
+  G7: 'Động lực',
+};
+
+export const GROUP_OPTIONS = CRITERIA_GROUP_CODES.map((value) => ({ value, label: GROUP_LABEL[value] }));
+
+/** Tên giai đoạn của từng band, dùng khi lộ trình không có chi tiết mục mẫu */
+export const BAND_STAGE: Record<BandCode, string> = { B1: 'Khởi động', B2: 'Xây nền', B3: 'Vận dụng', B4: 'Bứt phá' };
+
+/** Cấp học trong form -> đối tượng của lộ trình mẫu */
+export function learnerLevelOf(educationLevel: string): 'high_school' | 'university' | null {
+  if (educationLevel === 'Trung học phổ thông') return 'high_school';
+  if (educationLevel === 'Đại học / Cao đẳng') return 'university';
+  return null;
+}
+
 export const EMPTY_SETUP: SetupValues = {
   careerIds: [],
+  templateCode: '',
   reason: '',
   educationLevel: '',
   schoolYear: '',
@@ -118,6 +153,7 @@ export function validateSetup(values: SetupValues, requireReason = false, todayI
   if (requireReason && !values.reason) errors.reason = 'Chọn lý do tạo lại.';
   if (values.careerIds.length === 0) errors.careerIds = 'Chọn nghề mục tiêu.';
   if (!values.educationLevel) errors.educationLevel = 'Chọn cấp học.';
+  else if (!values.templateCode) errors.templateCode = 'Chọn hướng đi.';
   if (!values.schoolYear) errors.schoolYear = 'Chọn năm học hoặc lớp.';
   const end = monthEndFromInput(values.targetMonth);
   if (!values.targetMonth.trim()) errors.targetMonth = 'Vui lòng chọn thời hạn đạt mục tiêu.';
@@ -142,7 +178,7 @@ export function formatDate(iso: string | null): string {
 
 const weightOf = (m: Milestone) => Number(m.weight) || 1;
 
-/** Nhóm hoạt động thành giai đoạn theo tháng của hạn; xác định giai đoạn đang diễn ra và trụ cột còn thiếu */
+/** Nhóm hoạt động thành giai đoạn theo tháng của hạn; xác định giai đoạn đang diễn ra */
 export function buildStages(milestones: readonly Milestone[], todayIso = new Date().toISOString().slice(0, 10)): Stage[] {
   const groups = new Map<string, Milestone[]>();
   for (const m of milestones) {
@@ -178,7 +214,6 @@ export function buildStages(milestones: readonly Milestone[], todayIso = new Dat
       startIso,
       endIso,
       items,
-      missingPillars: PILLAR_ORDER.filter((p) => !items.some((m) => m.pillar === p)),
       actualPercent,
       plannedPercent,
       status,
@@ -209,6 +244,7 @@ export function progressOf(roadmap: Roadmap, overrides: Readonly<Record<string, 
     roadmap.milestones.map((m) => ({
       id: m.id,
       pillar: m.pillar,
+      criteriaGroup: m.criteria_group,
       title: m.title,
       done: overrides[m.id] ?? m.done,
       weight: Number(m.weight) || 1,

@@ -3,7 +3,7 @@ import { MapPinned, Plus, Save, Sparkles, Undo2 } from 'lucide-react';
 import { Alert, Button } from '../../../components/common';
 import { useFormulaOverrides } from '../../formula_library/formulaOverrides';
 import { progressOf } from '../roadmap.logic';
-import type { Milestone, Roadmap, RoadmapPillar, SoftSkill, Stage } from '../roadmap.types';
+import type { Milestone, Roadmap, SoftSkill, Stage } from '../roadmap.types';
 import type { AddInitial } from './RoadmapAddDialog';
 import { RoadmapDueDialog } from './RoadmapDueDialog';
 import { RoadmapOverview } from './RoadmapOverview';
@@ -30,6 +30,8 @@ interface Props {
   onPreviewDue: (id: string, due: string) => Promise<{ conflicts: DueConflict[] }>;
   onApplyDue: (id: string, due: string) => Promise<void>;
   onRegenerate: () => void;
+  onChangeLevel: (item: Milestone, level: 1 | 2 | 3) => void;
+  onQuiz: (item: Milestone) => void;
 }
 
 /** Lộ trình: tổng quan, các giai đoạn tick hoàn thành tại chỗ, và cột chỉ số bên phải */
@@ -47,6 +49,8 @@ export const RoadmapPlan: React.FC<Props> = ({
   onPreviewDue,
   onApplyDue,
   onRegenerate,
+  onChangeLevel,
+  onQuiz,
 }) => {
   const formulaVersion = useFormulaOverrides();
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -112,8 +116,6 @@ export const RoadmapPlan: React.FC<Props> = ({
     setSaved({ from: Math.round(from), to: Math.round(to) });
   };
 
-  const addMissing = (stage: Stage, pillar: RoadmapPillar) => onAdd({ kind: 'activity', pillar, due: stage.endIso ?? '' });
-
   return (
     <div className="roadmap-plan">
       <RoadmapOverview
@@ -138,7 +140,7 @@ export const RoadmapPlan: React.FC<Props> = ({
                 <Button size="sm" variant="outline" leftIcon={<Sparkles size={14} />} onClick={onSuggest}>
                   Gợi ý hoạt động
                 </Button>
-                <Button size="sm" variant="outline" leftIcon={<Plus size={14} />} onClick={() => onAdd({ kind: 'activity', pillar: 'knowledge', due: '' })}>
+                <Button size="sm" variant="outline" leftIcon={<Plus size={14} />} onClick={() => onAdd({ kind: 'activity', group: 'G2', due: '' })}>
                   Thêm
                 </Button>
               </>
@@ -163,7 +165,8 @@ export const RoadmapPlan: React.FC<Props> = ({
               onToggle={() => toggle(stage.key)}
               onChange={change}
               onEditDue={setDueTarget}
-              onAddMissing={addMissing}
+              onChangeLevel={onChangeLevel}
+              onQuiz={onQuiz}
             />
           ))}
         </div>
@@ -173,10 +176,11 @@ export const RoadmapPlan: React.FC<Props> = ({
           stages={stages}
           softSkills={softSkills}
           byPillar={progress.byPillar}
+          byGroup={progress.byGroup}
           actualPercent={progress.actualPercent}
           plannedPercent={progress.plannedPercent}
           readOnly={readOnly}
-          onAddCheckpoint={() => onAdd({ kind: 'checkpoint', pillar: 'exploration', due: '' })}
+          onAddCheckpoint={() => onAdd({ kind: 'checkpoint', group: 'G7', due: '' })}
         />
       </div>
 

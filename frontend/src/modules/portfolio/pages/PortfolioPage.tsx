@@ -203,7 +203,7 @@ export const PortfolioPage: React.FC = () => {
         return;
       }
       setRoadmap(active);
-      setAdding({ kind: 'activity', pillar: 'knowledge', due: '', title });
+      setAdding({ kind: 'activity', group: 'G2', due: '', title });
     } catch {
       setNotice({ tone: 'danger', text: 'Không mở được lộ trình.' });
     }
@@ -212,7 +212,7 @@ export const PortfolioPage: React.FC = () => {
   const addToRoadmap = async (input: AddInput) => {
     if (!roadmap) return;
     await run(async () => {
-      await addRoadmapItem(roadmap.id, { title: input.title, pillar: input.pillar, due: input.due, checkpoint: input.checkpoint, passCriteria: input.passCriteria });
+      await addRoadmapItem(roadmap.id, { title: input.title, group: input.group, due: input.due, checkpoint: input.checkpoint, passCriteria: input.passCriteria });
       setNotice({ tone: 'success', text: `Đã thêm vào lộ trình "${roadmap.title}".`, link: { to: '/lo-trinh', label: 'Xem lộ trình' } });
     }, 'Không thêm được vào lộ trình.');
   };

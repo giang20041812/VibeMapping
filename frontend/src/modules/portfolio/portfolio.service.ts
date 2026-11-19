@@ -171,10 +171,11 @@ export async function getActiveRoadmap(): Promise<ActiveRoadmap | null> {
   return active ? { id: active.id, title: active.title } : null;
 }
 
-export function addRoadmapItem(roadmapId: string, input: { title: string; pillar: string; due: string; checkpoint: boolean; passCriteria: string }) {
+export function addRoadmapItem(roadmapId: string, input: { title: string; group: string; due: string; checkpoint: boolean; passCriteria: string }) {
   return callRpc<string>('add_roadmap_milestone', {
     p_roadmap_id: roadmapId,
-    p_pillar: input.pillar,
+    p_pillar: null,
+    p_criteria_group: input.group,
     p_title: input.title,
     p_due_date: input.due || null,
     p_weight: 1,

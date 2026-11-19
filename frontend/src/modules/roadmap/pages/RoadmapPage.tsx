@@ -13,24 +13,27 @@ import {
   type TabItem,
 } from '../../../components/common';
 import { daysUntil } from '../../../domain/assessmentRules';
-import { generateRoadmapFromLibrary, type ApprovedActivityTemplate } from '../../../domain/roadmapGeneration';
-import { callRpc, db } from '../../../lib/rpc';
-import { listPublishedCareers, loadLearnerProfile, recommendCareers, listSavedCareers } from '../../career_explorer/career.service';
+import { generateRoadmapFromTemplates, pickTemplate, rankGroups } from '../../../domain/roadmapTemplateGeneration';
+import { callRpc } from '../../../lib/rpc';
+import { listPublishedCareers, recommendCareers, listSavedCareers } from '../../career_explorer/career.service';
 import { useAuth } from '../../auth/AuthContext';
 import type { FilterOption } from '../../../types/filter';
 import { RoadmapAddDialog, type AddInitial, type AddInput } from '../components/RoadmapAddDialog';
 import { RoadmapHistory } from '../components/RoadmapHistory';
 import { RoadmapPlan } from '../components/RoadmapPlan';
+import { RoadmapQuizDialog } from '../components/RoadmapQuizDialog';
 import { RoadmapSetup, type CareerChoice } from '../components/RoadmapSetup';
 import {
   EMPTY_SETUP,
   buildStages,
+  learnerLevelOf,
   monthEndFromInput,
   monthsLeft,
   originFromProfile,
   validateSetup,
 } from '../roadmap.logic';
-import type { Roadmap, SetupErrors, SetupValues, SoftSkill } from '../roadmap.types';
+import { loadGroupPercents, loadTemplateContent, loadTemplateLibrary, type TemplateLibrary } from '../roadmap.service';
+import type { Milestone, Roadmap, SetupErrors, SetupValues, SoftSkill } from '../roadmap.types';
 import './RoadmapPage.css';
 
 type TabKey = 'thiet-lap' | 'lo-trinh' | 'lich-su';
@@ -40,7 +43,7 @@ const LEGACY_TABS: Record<string, TabKey> = { 'cot-moc': 'lo-trinh', 'tien-do': 
 
 function generationError(caught: unknown): string {
   const text = String((caught as { message?: string })?.message ?? caught);
-  if (text.includes('library_incomplete')) return 'Chưa có đủ hoạt động gợi ý cho cả ba trụ cột.';
+  if (text.includes('library_incomplete') || text.includes('template_required')) return 'Chưa có hoạt động gợi ý cho hướng đi này.';
   if (text.includes('horizon_invalid') || text.includes('hours_per_week')) return 'Thời hạn phải ở tương lai (tối đa 10 năm) và số giờ mỗi tuần lớn hơn 0.';
   return 'Không gợi ý được hoạt động. Thử lại sau.';
 }
@@ -67,6 +70,9 @@ export const RoadmapPage: React.FC = () => {
   const [roadmaps, setRoadmaps] = useState<Roadmap[] | null>(null);
   const [choices, setChoices] = useState<CareerChoice[]>([]);
   const [catalog, setCatalog] = useState<FilterOption[]>([]);
+  const [careerCodes, setCareerCodes] = useState<Map<string, string>>(() => new Map());
+  const [library, setLibrary] = useState<TemplateLibrary | null>(null);
+  const [templateTouched, setTemplateTouched] = useState(false);
   const [values, setValues] = useState<SetupValues>(() => ({ ...EMPTY_SETUP, careerIds: params.get('nghe') ? [params.get('nghe') as string] : [] }));
   const [errors, setErrors] = useState<SetupErrors>({});
   const [viewingId, setViewingId] = useState<string | null>(null);
@@ -79,6 +85,7 @@ export const RoadmapPage: React.FC = () => {
   const [hours, setHours] = useState('8');
   const [softSkills, setSoftSkills] = useState<SoftSkill[]>([]);
   const [adding, setAdding] = useState<AddInitial | null>(null);
+  const [quizItem, setQuizItem] = useState<Milestone | null>(null);
 
   const reload = useCallback(async () => {
     const value = await callRpc<Roadmap[]>('list_my_roadmaps');
@@ -94,10 +101,13 @@ export const RoadmapPage: React.FC = () => {
       recommendCareers().catch(() => null),
       listPublishedCareers().catch(() => []),
       callRpc<SoftSkill[]>('get_roadmap_soft_skills').catch(() => []),
+      loadTemplateLibrary().catch(() => null),
     ])
-      .then(([, saved, recs, all, skills]) => {
+      .then(([, saved, recs, all, skills, lib]) => {
         if (!alive) return;
         setSoftSkills(skills ?? []);
+        setLibrary(lib);
+        setCareerCodes(new Map(all.map((c) => [c.id, c.career_code])));
         const map = new Map<string, CareerChoice>();
         for (const item of recs?.items.slice(0, 5) ?? []) map.set(item.careerId, { id: item.careerId, name: item.careerName, from360: true });
         for (const t of saved.filter((s) => s.kind === 'target')) {
@@ -144,11 +154,48 @@ export const RoadmapPage: React.FC = () => {
     [choices, catalog],
   );
 
+  /** Hướng đi tự chọn theo cấp học và nghề mục tiêu (nghề BA, DEV có lộ trình riêng cho sinh viên) */
+  const autoTemplate = useCallback(
+    (educationLevel: string, careerIds: string[]) =>
+      library
+        ? pickTemplate(library.templates, learnerLevelOf(educationLevel), careerIds.map((id) => careerCodes.get(id) ?? '').filter(Boolean)) ?? ''
+        : '',
+    [library, careerCodes],
+  );
+
+  const templateOptions = useMemo(
+    () =>
+      (library?.templates ?? [])
+        .filter((t) => t.learnerLevel === learnerLevelOf(values.educationLevel))
+        .map((t) => ({ value: t.code, label: t.name })),
+    [library, values.educationLevel],
+  );
+
+  const changeSetup = (patch: Partial<SetupValues>) => {
+    const next = { ...values, ...patch };
+    const levelChanged = patch.educationLevel !== undefined && patch.educationLevel !== values.educationLevel;
+    if (patch.templateCode !== undefined) setTemplateTouched(true);
+    else if (levelChanged || (patch.careerIds !== undefined && !templateTouched)) {
+      next.templateCode = autoTemplate(next.educationLevel, next.careerIds);
+      if (levelChanged) setTemplateTouched(false);
+    }
+    setValues(next);
+    setErrors((prev) => {
+      const copy = { ...prev };
+      for (const k of Object.keys(patch) as (keyof typeof prev)[]) delete copy[k];
+      if (next.templateCode) delete copy.templateCode;
+      return copy;
+    });
+  };
+
   /** Mở màn thiết lập: điền sẵn từ lộ trình hiện tại khi tạo lại */
   const openSetup = () => {
     if (active) {
+      const careerIds = active.careers.length > 0 ? active.careers.map((c) => c.id) : active.career_id ? [active.career_id] : [];
+      setTemplateTouched(Boolean(active.template_code));
       setValues({
-        careerIds: active.careers.length > 0 ? active.careers.map((c) => c.id) : active.career_id ? [active.career_id] : [],
+        careerIds,
+        templateCode: active.template_code ?? autoTemplate(active.education_level ?? '', careerIds),
         reason: '',
         educationLevel: active.education_level ?? '',
         schoolYear: active.school_year ?? '',
@@ -166,52 +213,54 @@ export const RoadmapPage: React.FC = () => {
 
   const fillFromProfile = () => {
     const origin = originFromProfile(profile?.role, profile?.grade_or_major);
-    setValues((prev) => ({ ...prev, ...origin }));
+    changeSetup(origin);
   };
 
-  const generateInto = async (roadmapId: string, targetDate: string, hoursPerWeek: number) => {
-    const { data, error: loadError } = await db.from('approved_roadmap_activities').select('*').eq('is_active', true);
-    if (loadError) throw loadError;
-    const templates: ApprovedActivityTemplate[] = ((data ?? []) as Array<{
-      id: string; pillar: ApprovedActivityTemplate['pillar']; title: string;
-      duration_weeks: number; hours: number; criteria_id: string | null; repeatable: boolean;
-      activity_type: ApprovedActivityTemplate['activityType']; is_partner: boolean; expected_result: string | null;
-    }>).map((row) => ({
-      id: row.id,
-      pillar: row.pillar,
-      title: row.title,
-      durationWeeks: Number(row.duration_weeks),
-      hours: Number(row.hours),
-      criteriaId: row.criteria_id,
-      repeatable: row.repeatable,
-      activityType: row.activity_type,
-      isPartner: row.is_partner,
-      expectedResult: row.expected_result,
-    }));
-    const learner = session?.user.id ? await loadLearnerProfile(session.user.id).catch(() => null) : null;
-    const generated = generateRoadmapFromLibrary({
+  /**
+   * Gợi ý hoạt động từ lộ trình mẫu: band từng nhóm theo % đạt ở kết quả đánh giá mới nhất, ưu tiên nhóm thiếu nhiều
+   * theo trọng số nghề, xếp song song theo số giờ mỗi tuần. Mục mẫu đã có trong lộ trình không gợi ý lại.
+   */
+  const generateInto = async (
+    roadmap: { id: string; templateCode: string; hasSnapshot: boolean; existingItemIds: string[] },
+    targetDate: string,
+    hoursPerWeek: number,
+  ) => {
+    if (!roadmap.templateCode || !library) throw new Error('template_required');
+    const [content, percents] = await Promise.all([
+      loadTemplateContent(roadmap.templateCode),
+      session?.user.id ? loadGroupPercents(session.user.id).catch(() => ({})) : Promise.resolve({}),
+    ]);
+    const groups = rankGroups(percents, content.weights, library.bandMin);
+    const generated = generateRoadmapFromTemplates({
       startDay: new Date().toISOString().slice(0, 10),
       targetDate,
       hoursPerWeek,
-      templates,
-      // BR-026: kỹ năng mềm điểm thấp hoặc lệch được xếp lên đầu, nên hoạt động rèn chúng rơi vào giai đoạn 1
-      scoresByCriterionId: learner
-        ? { ...Object.fromEntries(learner.scoreByCriterionId), ...Object.fromEntries(softSkills.map((skill) => [skill.criteria_id, -1])) }
-        : undefined,
+      items: content.items,
+      groups,
+      itemHoursPerWeek: library.itemHoursPerWeek,
+      excludeItemIds: new Set(roadmap.existingItemIds),
     });
+    if (!roadmap.hasSnapshot) {
+      await callRpc('set_roadmap_template', {
+        p_roadmap_id: roadmap.id,
+        p_template_code: roadmap.templateCode,
+        p_group_snapshot: groups.map((g) => ({ group_code: g.groupCode, percent: g.percent, band_code: g.band, weight: g.weight, gap: g.gap })),
+      });
+    }
     await callRpc<number>('add_roadmap_milestones_bulk', {
-      p_roadmap_id: roadmapId,
+      p_roadmap_id: roadmap.id,
       p_items: generated.map((item) => ({
-        pillar: item.pillar,
+        criteria_group: item.criteriaGroup,
+        template_item_id: item.templateItemId,
+        item_level: item.itemLevel,
         title: item.title,
+        start_date: item.startDate,
         due_date: item.dueDate,
         weight: item.weight,
         is_checkpoint: item.isCheckpoint,
-        activity_type: item.activityType,
-        is_partner: item.isPartner,
-        expected_result: item.expectedResult,
-        pass_criteria: item.isCheckpoint ? 'Hoàn thành mọi hoạt động của giai đoạn' : null,
+        pass_criteria: item.passCriteria ?? (item.isCheckpoint ? 'Hoàn thành mọi hoạt động của chặng' : null),
         fail_criteria: item.isCheckpoint ? 'Còn hoạt động chưa xong khi đến hạn' : null,
+        expected_result: item.expectedResult,
       })),
     });
   };
@@ -248,7 +297,7 @@ export const RoadmapPage: React.FC = () => {
         p_extracurricular: values.extracurricular,
       });
       setHours(values.hoursPerWeek);
-      await generateInto(createdId, targetDate, Number(values.hoursPerWeek));
+      await generateInto({ id: createdId, templateCode: values.templateCode, hasSnapshot: false, existingItemIds: [] }, targetDate, Number(values.hoursPerWeek));
       setNotice('Đã tạo lộ trình mới. Lộ trình cũ được lưu vào lịch sử.');
     } catch (caught) {
       setError(createdId ? generationError(caught) : 'Không tạo được lộ trình. Thử lại sau.');
@@ -265,7 +314,16 @@ export const RoadmapPage: React.FC = () => {
     setBusy(true);
     setError(null);
     try {
-      await generateInto(active.id, active.target_date, Number(hours));
+      await generateInto(
+        {
+          id: active.id,
+          templateCode: active.template_code ?? autoTemplate(active.education_level ?? '', active.careers.map((c) => c.id)),
+          hasSnapshot: Boolean(active.template_code && active.group_snapshot),
+          existingItemIds: active.milestones.map((m) => m.template_item_id).filter((id): id is string => Boolean(id)),
+        },
+        active.target_date,
+        Number(hours),
+      );
       await reload();
       setSuggestOpen(false);
     } catch (caught) {
@@ -311,7 +369,8 @@ export const RoadmapPage: React.FC = () => {
         () =>
           callRpc('add_roadmap_milestone', {
             p_roadmap_id: active.id,
-            p_pillar: input.pillar,
+            p_pillar: null,
+            p_criteria_group: input.group,
             p_title: input.title,
             p_due_date: input.due || null,
             p_weight: 1,
@@ -321,6 +380,9 @@ export const RoadmapPage: React.FC = () => {
         'Không thêm được. Nhập nội dung và hạn.',
       )
       : Promise.resolve();
+
+  const changeLevel = (item: Milestone, level: 1 | 2 | 3) =>
+    run(() => callRpc('set_roadmap_milestone_level', { p_milestone_id: item.id, p_level: level }), 'Không đổi được cấp. Thử lại sau.');
 
   const tabs: TabItem[] = [
     { value: 'lo-trinh', label: 'Lộ trình', icon: <Route /> },
@@ -369,20 +431,12 @@ export const RoadmapPage: React.FC = () => {
           errors={errors}
           choices={choices}
           catalog={catalog}
+          templateOptions={templateOptions}
           submitting={submitting}
           submitLabel={active ? 'Tạo lại lộ trình' : 'Tạo lộ trình'}
           askReason={Boolean(active)}
           nameOf={careerName}
-          onChange={(patch) => {
-            setValues((prev) => ({ ...prev, ...patch }));
-            setErrors((prev) => {
-              const next = { ...prev };
-              for (const k of Object.keys(patch) as (keyof typeof prev)[]) {
-                delete next[k];
-              }
-              return next;
-            });
-          }}
+          onChange={changeSetup}
           onFillFromProfile={fillFromProfile}
           onSubmit={() => void submitSetup()}
           onCancel={active ? () => setTab('lo-trinh') : undefined}
@@ -405,6 +459,8 @@ export const RoadmapPage: React.FC = () => {
           onPreviewDue={previewDue}
           onApplyDue={applyDue}
           onRegenerate={openSetup}
+          onChangeLevel={(item, level) => void changeLevel(item, level)}
+          onQuiz={setQuizItem}
         />
       )}
 
@@ -459,8 +515,17 @@ export const RoadmapPage: React.FC = () => {
         />
       </Modal>
 
+      {quizItem && (
+        <RoadmapQuizDialog
+          key={quizItem.id}
+          milestone={quizItem}
+          onClose={() => setQuizItem(null)}
+          onSubmitted={() => void reload()}
+        />
+      )}
+
       <RoadmapAddDialog
-        key={adding ? `${adding.kind}-${adding.pillar}-${adding.due}` : 'closed'}
+        key={adding ? `${adding.kind}-${adding.group}-${adding.due}` : 'closed'}
         initial={adding}
         busy={busy}
         onClose={() => setAdding(null)}

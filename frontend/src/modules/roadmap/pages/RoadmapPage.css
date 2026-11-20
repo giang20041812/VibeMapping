@@ -112,6 +112,13 @@
   gap: var(--space-3);
 }
 
+/* Hiệu ứng xuất hiện tạo lớp chồng riêng cho từng khối: khối đang mở menu chọn phải nổi trên khối kế tiếp */
+.roadmap-block:has(.select-trigger.is-open),
+.roadmap-block:focus-within {
+  position: relative;
+  z-index: 2;
+}
+
 .roadmap-fields {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(240 * var(--px))), 1fr));
